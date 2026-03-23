@@ -2,15 +2,5 @@
 __pycache__/
 *.pyc
 .cache/
-data/raw/
-data/raw_hourly/
-data/processed/
-data/processed_hourly/
 .ipynb_checkpoints/
-*.keras
-*.pdf
-!Final_Q1_Manuscript_30Pages.pdf
-reports/
-manuscript/section_*.md
-Final_Nature_Manuscript*.md
 dummy.csv
