@@ -1,7 +1,7 @@
 # Urban Environmental Informatics: Pan-India High-Resolution Study (2021-2026)
 
 ## 🌟 Project Overview
-This repository hosts a seminal spatiotemporal informatics pipeline for air quality analysis across 7 major Indian metropolises: **Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, and Ahmedabad**. It integrates high-resolution hourly data with Deep Learning, Explainable AI (XAI), and Causal Inference to bridge the gap between "Black Box" predictions and actionable urban policy.
+This repository hosts a seminal spatiotemporal informatics pipeline for air quality analysis across 4 major Indian metropolises: **Delhi, Mumbai, Bengaluru, and Kolkata**. It integrates high-resolution hourly data with Deep Learning, Explainable AI (XAI), and Causal Inference to bridge the gap between "Black Box" predictions and actionable urban policy.
 
 ## 📄 Final Manuscript
 - **[Final_Q1_Manuscript_30Pages.pdf](./Final_Q1_Manuscript_30Pages.pdf)**: An 11,000+ word professional manuscript formatted for Q1 journal submission.
