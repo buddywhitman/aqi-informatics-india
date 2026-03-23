@@ -45,6 +45,3 @@ Based on our multi-disciplinary approach, the following are recommended:
 2. **The Lancet Planetary Health** (IF: 21.6): For the integrated health impact findings.
 3. **Environmental Science & Technology (ES&T)** (IF: 11.3): For methodological rigor in atmospheric modeling.
 4. **Atmospheric Environment** (IF: 4.3): For specialized spatiotemporal air quality studies.
-
-## 👤 Author
-- **buddywhitman**
