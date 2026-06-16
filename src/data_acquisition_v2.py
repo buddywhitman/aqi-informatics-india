@@ -80,7 +80,7 @@ def fetch_weather_hourly(lat, lon, start_date, end_date):
         "longitude": lon,
         "start_date": start_date.strftime("%Y-%m-%d"),
         "end_date": end_date.strftime("%Y-%m-%d"),
-        "hourly": ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m"],
+        "hourly": ["temperature_2m", "relative_humidity_2m", "precipitation", "rain", "wind_speed_10m", "wind_direction_10m", "surface_pressure"],
         "timezone": "GMT"
     }
     responses = openmeteo.weather_api(url, params=params)
@@ -96,8 +96,10 @@ def fetch_weather_hourly(lat, lon, start_date, end_date):
     hourly_data["temperature"] = hourly.Variables(0).ValuesAsNumpy()
     hourly_data["humidity"] = hourly.Variables(1).ValuesAsNumpy()
     hourly_data["precipitation"] = hourly.Variables(2).ValuesAsNumpy()
-    hourly_data["wind_speed"] = hourly.Variables(3).ValuesAsNumpy()
-    hourly_data["wind_direction"] = hourly.Variables(4).ValuesAsNumpy()
+    hourly_data["rain"] = hourly.Variables(3).ValuesAsNumpy()
+    hourly_data["wind_speed"] = hourly.Variables(4).ValuesAsNumpy()
+    hourly_data["wind_direction"] = hourly.Variables(5).ValuesAsNumpy()
+    hourly_data["pressure"] = hourly.Variables(6).ValuesAsNumpy()
 
     return pd.DataFrame(hourly_data)
 
@@ -121,8 +123,9 @@ def main():
         weath_df = fetch_weather_hourly(info["coords"][0], info["coords"][1], start_date, end_date)
         if not weath_df.empty:
             weath_df.to_csv(f"{RAW_DATA_PATH}/{city}_weather_hourly.csv", index=False)
-            
-    client.close()
+        
+        print(f"  Finished {city}, cooling down for 10s...")
+        time.sleep(10)
 
 if __name__ == "__main__":
     main()

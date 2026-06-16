@@ -16,7 +16,7 @@ def run_policy_simulation():
     
     # Policy Simulation 1: Traffic Emission Reduction (Proxy: NO2)
     # Target: PM2.5, Treatment: NO2, Confounders: Weather
-    features = ['temperature_x', 'humidity', 'wind_speed', 'precipitation']
+    features = ['temperature_x', 'humidity', 'wind_speed_y', 'precipitation']
     
     cities = df['city'].unique()
     

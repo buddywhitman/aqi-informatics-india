@@ -12,6 +12,19 @@ import os
 DATA_PATH = "data/processed_hourly/combined_hourly_v3.csv"
 PLOTS_PATH = "plots/regimes"
 
+from sklearn.metrics import silhouette_score, davies_bouldin_score
+
+def label_regime(row):
+    """Assign qualitative labels based on pollutant profile."""
+    # Logic: High PM but low wind = Stagnation
+    # High NO2/CO = Traffic
+    # High SO2 = Industrial
+    if row['pm25'] > 100 and row['wind_speed_y'] < 10: return 'Stagnation-Driven'
+    if row['no2'] > 50 or row.get('co', 0) > 1000: return 'Traffic-Dominated'
+    if row['so2'] > 30: return 'Industrial-Bypass'
+    if row['pm10'] > 150 and row['pm25'] < 50: return 'Dust-Event'
+    return 'Low-Pollution/Clearance'
+
 def perform_regime_discovery():
     if not os.path.exists(PLOTS_PATH): os.makedirs(PLOTS_PATH)
     
@@ -20,14 +33,11 @@ def perform_regime_discovery():
     
     # 1. Feature Selection for Clustering
     # Dynamically select available columns
-    potential_cols = ['pm25', 'pm10', 'no2', 'o3', 'co', 'so2', 'temperature_x', 'humidity', 'wind_speed']
-    cluster_cols = [c for col in potential_cols for c in df.columns if col == c]
+    potential_cols = ['pm25', 'pm10', 'no2', 'o3', 'co', 'so2', 'temperature_x', 'humidity', 'wind_speed_y', 'pressure']
+    cluster_cols = [c for c in potential_cols if c in df.columns]
     
-    print(f"Clustering using features: {cluster_cols}")
-    
-    # Drop rows with NaNs in these essential columns for clustering
+    # Drop rows with NaNs
     cluster_df = df.dropna(subset=cluster_cols).copy()
-    
     X = cluster_df[cluster_cols].values
     
     # 2. Standardization
@@ -37,19 +47,30 @@ def perform_regime_discovery():
     # 3. PCA (95% variance)
     pca = PCA(n_components=0.95)
     X_pca = pca.fit_transform(X_scaled)
-    print(f"PCA reduced dimensions from {len(cluster_cols)} to {X_pca.shape[1]}")
     
-    # 4. Clustering (GMM as it's more stable for regime labeling than HDBSCAN sometimes)
-    # We'll use GMM with 5 components as suggested by framework
+    # 4. Clustering (GMM)
     gmm = GaussianMixture(n_components=5, random_state=42)
     labels = gmm.fit_predict(X_pca)
+    cluster_df['regime_id'] = labels
     
-    cluster_df['regime'] = labels
+    # 5. Validation Metrics
+    sil = silhouette_score(X_pca, labels, sample_size=2000)
+    db = davies_bouldin_score(X_pca, labels)
+    print(f"\n--- Cluster Validation ---")
+    print(f"Silhouette Score: {sil:.4f}")
+    print(f"Davies-Bouldin Index: {db:.4f}")
+
+    # 6. Characterize and Map Labels
+    # Use mean-based mapping for consistent across-city labeling
+    regime_stats = cluster_df.groupby('regime_id')[cluster_cols].mean()
+    label_map = {}
+    for rid in range(5):
+        stats = regime_stats.loc[rid]
+        label_map[rid] = label_regime(stats)
     
-    # 5. Characterize Regimes
-    regime_means = cluster_df.groupby('regime')[cluster_cols].mean()
-    print("\n--- Regime Characteristics ---")
-    print(regime_means)
+    cluster_df['regime_label'] = cluster_df['regime_id'].map(label_map)
+    print("\n--- Regime Mapping ---")
+    print(cluster_df.groupby(['regime_id', 'regime_label']).size())
     
     # 6. Markov Transition Analysis (Phase 3)
     for city in cluster_df['city'].unique():
@@ -57,7 +78,7 @@ def perform_regime_discovery():
         city_data = cluster_df[cluster_df['city'] == city].sort_values('timestamp')
         
         # Calculate transitions
-        transitions = city_data['regime'].values
+        transitions = city_data['regime_id'].values
         n_regimes = 5
         matrix = np.zeros((n_regimes, n_regimes))
         
