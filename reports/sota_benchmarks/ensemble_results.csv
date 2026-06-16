@@ -1,0 +1,3 @@
+city,model,rmse,r2
+Delhi,SOTA_Stacking_Ensemble,29.05617307736403,0.858107498855451
+Bengaluru,SOTA_Stacking_Ensemble,2.9497279311558464,0.8877146407585297
