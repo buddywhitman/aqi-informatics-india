@@ -56,10 +56,9 @@ def convert_latex_to_unicode(text):
 
 def generate_pro_pdf():
     # 1. Load the manuscript
-    md_path = "Final_Nature_Manuscript_Extended.md"
+    md_path = "Final_Nature_Manuscript_Framework.md"
     if not os.path.exists(md_path):
-        # Fallback to the other extended name if needed
-        md_path = "manuscript/Final_Nature_Manuscript_Extended.md"
+        md_path = "manuscript/Final_Nature_Manuscript_Framework.md"
         
     with open(md_path, "r", encoding="utf-8") as f:
         md_text = f.read()
