@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from econml.dml import LinearDML
+from econml.dml import LinearDML, CausalForestDML
 from lightgbm import LGBMRegressor
 import matplotlib.pyplot as plt
 import os
@@ -14,7 +14,7 @@ SCENARIOS = {
     "Aggressive vehicular ban": {"proxy": "no2", "reduction": 0.50},
     "Industrial throttling": {"proxy": "so2", "reduction": 0.30},
     "Deep industrial shutdown": {"proxy": "so2", "reduction": 0.60},
-    "Ammonia/Agricultural control": {"proxy": "no", "reduction": 0.30} # Proxy for NH3/NO sources
+    "Ammonia/Agricultural control": {"proxy": "no", "reduction": 0.30}
 }
 
 def simulate_scenarios():
@@ -37,13 +37,24 @@ def simulate_scenarios():
             T = city_df[proxy].values
             Y = city_df['pm25'].values
             
-            # Use DML for causality
-            est = LinearDML(model_y=LGBMRegressor(n_estimators=100), 
+            # 1. Double Machine Learning (DML)
+            est_dml = LinearDML(model_y=LGBMRegressor(n_estimators=100), 
                            model_t=LGBMRegressor(n_estimators=100), 
                            discrete_treatment=False)
-            est.fit(Y, T, X=X)
+            est_dml.fit(Y, T, X=X)
+            ate_dml = est_dml.ate(X)
             
-            ate = est.ate(X)
+            # 2. Causal Forest (SOTA for Heterogeneity)
+            est_cf = CausalForestDML(model_y=LGBMRegressor(n_estimators=50),
+                                    model_t=LGBMRegressor(n_estimators=50),
+                                    discrete_treatment=False,
+                                    n_estimators=100)
+            est_cf.fit(Y, T, X=X)
+            ate_cf = est_cf.ate(X)
+            
+            # Average ATE
+            ate = (ate_dml + ate_cf) / 2
+            
             avg_proxy = city_df[proxy].mean()
             reduction_val = params['reduction'] * avg_proxy
             pm25_reduction = ate * reduction_val

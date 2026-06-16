@@ -1,0 +1,16 @@
+city,regime,avg_hours
+Delhi,Low-Pollution/Clearance,0.0
+Delhi,Low-Pollution/Clearance,18.85343228200371
+Delhi,Stagnation-Driven,13.693877551020408
+Delhi,Low-Pollution/Clearance,0.0
+Delhi,Low-Pollution/Clearance,1.0
+Mumbai,Low-Pollution/Clearance,180.39583333333334
+Mumbai,Low-Pollution/Clearance,2.216867469879518
+Mumbai,Stagnation-Driven,2.0
+Mumbai,Low-Pollution/Clearance,6.0
+Mumbai,Low-Pollution/Clearance,0.0
+Bengaluru,Low-Pollution/Clearance,0.0
+Bengaluru,Low-Pollution/Clearance,45.100478468899524
+Bengaluru,Stagnation-Driven,4.7894736842105265
+Bengaluru,Low-Pollution/Clearance,0.0
+Bengaluru,Low-Pollution/Clearance,42.026178010471206

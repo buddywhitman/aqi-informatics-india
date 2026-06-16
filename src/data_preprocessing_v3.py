@@ -66,6 +66,22 @@ def preprocess_city_hourly_v3(city):
 
     return combined
 
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer, KNNImputer
+
+def perform_advanced_imputation(df, method='mice'):
+    """Handle missing values using SOTA multivariate strategies."""
+    num_cols = df.select_dtypes(include=[np.number]).columns
+    print(f"  Performing {method.upper()} imputation on: {len(num_cols)} columns")
+    
+    if method == 'mice':
+        imputer = IterativeImputer(max_iter=10, random_state=42)
+    else:
+        imputer = KNNImputer(n_neighbors=5)
+        
+    df[num_cols] = imputer.fit_transform(df[num_cols])
+    return df
+
 def main():
     if not os.path.exists(PROCESSED_DATA_PATH):
         os.makedirs(PROCESSED_DATA_PATH)
@@ -74,9 +90,11 @@ def main():
     all_combined = []
     
     for city in cities:
-        print(f"Processing {city} (v3.0)...")
+        print(f"Processing {city} (v3.1 SOTA)...")
         df = preprocess_city_hourly_v3(city)
         if df is not None:
+            # Apply imputation per city to preserve local correlations
+            df = perform_advanced_imputation(df, method='mice')
             all_combined.append(df)
             
     if not all_combined:

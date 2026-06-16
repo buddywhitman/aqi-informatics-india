@@ -25,6 +25,42 @@ def label_regime(row):
     if row['pm10'] > 150 and row['pm25'] < 50: return 'Dust-Event'
     return 'Low-Pollution/Clearance'
 
+from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score
+from sklearn.utils import resample
+
+def perform_bootstrap_stability(X, n_iter=5):
+    """Assess cluster stability using Bootstrap resampling and Adjusted Rand Index."""
+    print("\n--- Bootstrap Stability Analysis ---")
+    scores = []
+    for i in range(n_iter):
+        X_resample = resample(X, random_state=i)
+        gmm1 = GaussianMixture(n_components=5, random_state=42).fit(X)
+        gmm2 = GaussianMixture(n_components=5, random_state=i).fit(X_resample)
+        
+        l1 = gmm1.predict(X)
+        l2 = gmm2.predict(X)
+        scores.append(adjusted_rand_score(l1, l2))
+    
+    avg_stability = np.mean(scores)
+    print(f"Mean Bootstrap Adjusted Rand Index (Stability): {avg_stability:.4f}")
+    return avg_stability
+
+def calculate_persistence(city_df):
+    """Calculate the average duration (in hours) a city stays in each regime."""
+    persistence = {}
+    for rid in range(5):
+        # Create a series of booleans for being in this regime
+        in_regime = (city_df['regime_id'] == rid).astype(int)
+        # Identify blocks of consecutive matches
+        blocks = (in_regime.diff() != 0).cumsum()
+        regime_blocks = blocks[in_regime == 1]
+        if not regime_blocks.empty:
+            durations = regime_blocks.value_counts()
+            persistence[rid] = durations.mean()
+        else:
+            persistence[rid] = 0
+    return persistence
+
 def perform_regime_discovery():
     if not os.path.exists(PLOTS_PATH): os.makedirs(PLOTS_PATH)
     
@@ -32,11 +68,9 @@ def perform_regime_discovery():
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     
     # 1. Feature Selection for Clustering
-    # Dynamically select available columns
     potential_cols = ['pm25', 'pm10', 'no2', 'o3', 'co', 'so2', 'temperature_x', 'humidity', 'wind_speed_y', 'pressure']
-    cluster_cols = [c for c in potential_cols if c in df.columns]
+    cluster_cols = [c for potential in potential_cols for c in df.columns if potential == c]
     
-    # Drop rows with NaNs
     cluster_df = df.dropna(subset=cluster_cols).copy()
     X = cluster_df[cluster_cols].values
     
@@ -44,7 +78,7 @@ def perform_regime_discovery():
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     
-    # 3. PCA (95% variance)
+    # 3. PCA
     pca = PCA(n_components=0.95)
     X_pca = pca.fit_transform(X_scaled)
     
@@ -53,54 +87,47 @@ def perform_regime_discovery():
     labels = gmm.fit_predict(X_pca)
     cluster_df['regime_id'] = labels
     
-    # 5. Validation Metrics
+    # 5. SOTA Validation
     sil = silhouette_score(X_pca, labels, sample_size=2000)
     db = davies_bouldin_score(X_pca, labels)
-    print(f"\n--- Cluster Validation ---")
-    print(f"Silhouette Score: {sil:.4f}")
-    print(f"Davies-Bouldin Index: {db:.4f}")
-
+    stability = perform_bootstrap_stability(X_pca)
+    
     # 6. Characterize and Map Labels
-    # Use mean-based mapping for consistent across-city labeling
     regime_stats = cluster_df.groupby('regime_id')[cluster_cols].mean()
-    label_map = {}
-    for rid in range(5):
-        stats = regime_stats.loc[rid]
-        label_map[rid] = label_regime(stats)
-    
+    label_map = {rid: label_regime(regime_stats.loc[rid]) for rid in range(5)}
     cluster_df['regime_label'] = cluster_df['regime_id'].map(label_map)
-    print("\n--- Regime Mapping ---")
-    print(cluster_df.groupby(['regime_id', 'regime_label']).size())
-    
-    # 6. Markov Transition Analysis (Phase 3)
+
+    # 7. Persistence and Transitions
+    persistence_results = []
     for city in cluster_df['city'].unique():
-        print(f"\n--- Transition Matrix for {city} ---")
+        print(f"\n--- Transition and Persistence for {city} ---")
         city_data = cluster_df[cluster_df['city'] == city].sort_values('timestamp')
         
-        # Calculate transitions
-        transitions = city_data['regime_id'].values
-        n_regimes = 5
-        matrix = np.zeros((n_regimes, n_regimes))
+        # Persistence
+        p = calculate_persistence(city_data)
+        for rid, dur in p.items():
+            persistence_results.append({'city': city, 'regime': label_map[rid], 'avg_hours': dur})
         
+        # Transitions
+        transitions = city_data['regime_id'].values
+        matrix = np.zeros((5, 5))
         for i in range(len(transitions)-1):
             matrix[transitions[i], transitions[i+1]] += 1
-            
-        # Normalize to probabilities
+        
         row_sums = matrix.sum(axis=1)
         matrix_prob = np.divide(matrix, row_sums[:, np.newaxis], where=row_sums[:, np.newaxis]!=0)
         
-        # Plot Heatmap
         plt.figure(figsize=(10, 8))
-        sns.heatmap(matrix_prob, annot=True, cmap='Blues', fmt=".2f")
-        plt.title(f'Regime Transition Probabilities - {city}')
-        plt.xlabel('To Regime')
-        plt.ylabel('From Regime')
-        plt.savefig(f"{PLOTS_PATH}/transitions_{city}.png")
+        sns.heatmap(matrix_prob, annot=True, cmap='Blues', fmt=".2f", 
+                    xticklabels=[label_map[i] for i in range(5)],
+                    yticklabels=[label_map[i] for i in range(5)])
+        plt.title(f'SOTA Transition Matrix - {city}')
+        plt.savefig(f"{PLOTS_PATH}/transitions_{city}_sota.png")
         plt.close()
 
-    # Save data with regimes
+    pd.DataFrame(persistence_results).to_csv("reports/regime_persistence_sota.csv", index=False)
     cluster_df.to_csv("data/processed_hourly/combined_hourly_with_regimes.csv", index=False)
-    print("\nRegime discovery and transition analysis complete.")
+    print("\nRegime analysis v3.2 (SOTA) complete.")
 
 if __name__ == "__main__":
     perform_regime_discovery()

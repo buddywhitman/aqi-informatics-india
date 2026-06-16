@@ -12,7 +12,10 @@ DATA_PATH = "data/processed_hourly/combined_hourly_with_regimes.csv"
 
 def benchmark_models():
     df = pd.read_csv(DATA_PATH)
-    features = [c for c in df.columns if '_lag_' in c or '_roll_' in c] + ['temperature_x', 'humidity', 'wind_speed', 'regime']
+    # Correcting feature names for merged v3 data
+    features = [c for c in df.columns if '_lag_' in c or '_roll_' in c] + ['temperature_x', 'humidity', 'wind_speed_y']
+    if 'regime_id' in df.columns: features.append('regime_id')
+    
     target = 'pm25'
     
     cities = df['city'].unique()
