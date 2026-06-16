@@ -1,0 +1,16 @@
+city,sector_scenario,optimal_reduction_pct,marginal_contribution
+Delhi,Baseline vehicular reduction,3.470892758898837e-08,1.4371155473724256e-08
+Delhi,Aggressive vehicular ban,19.485391605282597,19.999999989471416
+Delhi,Industrial throttling,-9.088205048996978e-10,-2.1925633274332852e-11
+Delhi,Deep industrial shutdown,1.891476932639473e-09,1.151596826088009e-10
+Delhi,Ammonia/Agricultural control,2.4703775726266207e-08,8.60269636439635e-09
+Mumbai,Baseline vehicular reduction,-6.245373956202685e-10,1.0962100470997305e-09
+Mumbai,Aggressive vehicular ban,1.5732376320814844e-09,-7.296169193462169e-09
+Mumbai,Industrial throttling,3.038769481221496e-10,-3.5523200368056163e-10
+Mumbai,Deep industrial shutdown,-9.50398162312265e-10,2.0814595421336276e-09
+Mumbai,Ammonia/Agricultural control,74.08826366618875,20.000000002865143
+Bengaluru,Baseline vehicular reduction,-3.2943232442810644e-10,6.321286901961947e-12
+Bengaluru,Aggressive vehicular ban,-3.366739721441043e-10,1.6461260522416625e-11
+Bengaluru,Industrial throttling,17.182599308268166,1.9651740105820492
+Bengaluru,Deep industrial shutdown,79.99999999716184,18.03482598933401
+Bengaluru,Ammonia/Agricultural control,7.202001794470237e-09,3.4258105753108666e-10

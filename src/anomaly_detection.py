@@ -5,24 +5,24 @@ import matplotlib.pyplot as plt
 import os
 
 # Configuration
-PROCESSED_DATA_PATH = "data/processed_hourly/combined_hourly.csv"
+PROCESSED_DATA_PATH = "data/processed_hourly/combined_hourly_v3.csv"
 PLOTS_PATH = "plots/v2_hourly"
 
 def detect_anomalies(df, city):
     """Identify anthropogenic 'Super-Spreader' events using Isolation Forest."""
     print(f"Detecting anomalies for {city}...")
     city_df = df[df['city'] == city].copy()
-    
+
     # Features for anomaly detection: Pollutants + Weather
-    # We want to find cases where pollution is high but weather is NOT typically conducive
-    features = ['pm25', 'pm10', 'temperature_x', 'humidity', 'wind_speed']
+    features = ['pm25', 'pm10', 'temperature_x', 'humidity', 'wind_speed_y']
     city_df = city_df.dropna(subset=features)
-    
-    if len(city_df) < 100: return
-    
+
+    if len(city_df) < 100:
+        print(f"Not enough data for {city}")
+        return
+
     model = IsolationForest(contamination=0.01, random_state=42) # 1% anomalies
     city_df['is_anomaly'] = model.fit_predict(city_df[features])
-    
     anomalies = city_df[city_df['is_anomaly'] == -1]
     
     # Plot

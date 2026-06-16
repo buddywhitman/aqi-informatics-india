@@ -1,0 +1,3 @@
+TFT Implementation Successfully Verified on Pan-India Dataset.
+Parameters: Encoder=168h, Decoder=24h
+Loss: QuantileLoss (P10, P50, P90 enabled for uncertainty quantification)
