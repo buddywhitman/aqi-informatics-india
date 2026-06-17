@@ -4,7 +4,10 @@
 This project establishes a State-of-the-Art (SOTA) environmental intelligence system for the Indian subcontinent. By integrating high-resolution (hourly) ground-sensor data, atmospheric physics, and advanced causal inference, we provide a transparent, interpretable framework for urban planners and sustainable development policy-makers. The work addresses critical gaps in data resolution, "Black Box" model opacity, and the lack of causal attribution in standard environmental datasets.
 
 ## 📄 Key Deliverables
-- **[Final_Q1_Manuscript_30Pages.pdf](./Final_Q1_Manuscript_30Pages.pdf)**: An 11,000+ word seminal research paper including exhaustive spatiotemporal profiling, public health risk assessments, and counterfactual policy simulations, providing equal, deep-dive analysis for all 7 major metropolises (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Ahmedabad).
+In accordance with the stringent submission guidelines of high-impact Q1 journals (e.g., *Nature Sustainability*, *The Lancet*), the research output is divided into two focused documents:
+
+1. **[Final_Q1_Manuscript_30Pages.pdf](./Final_Q1_Manuscript_30Pages.pdf)**: The primary, highly concentrated seminal research article. It contains the core spatiotemporal profiling, public health risk assessments, and counterfactual policy simulations, providing equal, deep-dive analysis for all 7 major metropolises (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Ahmedabad).
+2. **[Supplementary_Information_Q1.pdf](./Supplementary_Information_Q1.pdf)**: The exhaustive technical appendix. It contains all extended methodological justifications (e.g., MICE vs KNN, TFT hyperparameter tuning), exhaustive data tables, raw SHAP dependence plots for every variable, and the full outputs of the Causal Inference engines and Super-Spreader anomaly detections.
 - **Full Automated Pipeline**: 25+ Python scripts covering the entire lifecycle from raw API ingestion to professional PDF rendering.
 
 ---
