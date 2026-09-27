@@ -69,7 +69,6 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or Causal F
 
 \textbf{Contributions.} In this paper, we develop this framework:
 \begin{itemize}
-    \item \textbf{Decomposition of Omitted Regime Bias (Theorem~\ref{thm:bias}):} We prove a closed-form theorem decomposing standard DML bias into treatment heterogeneity and omitted regime confounding, proving how sign inversion arises.
     \item \textbf{Omitted Regime Bias Decomposition (Theorem~\ref{thm:bias}):} We derive the exact closed-form bias of naive DML under latent regime omission, decomposing it into a treatment heterogeneity term and a confounding cross-term. We prove that when regime-conditional treatment variance is small relative to cross-regime covariance, the confounding bias undergoes \emph{Frisch-Waugh amplification}, driving the estimator to sign inversion — a pathology invisible to standard DML diagnostics.
 
     \item \textbf{Universal Multiway Gateaux Orthogonality (Theorem~\ref{thm:gateaux}):} We prove that the coupled RC-DML score vector is exactly Neyman-orthogonal to \emph{any} perturbation of the HMM parameters, under \emph{any} finite overlap ($\Delta_Z = O(1)$), without oracle regime separation. The proof proceeds via two algebraic identities: (i) the structural innovation identity ($\mathbb{E}[\varepsilon_t \mid \mathcal{F}_t] = 0$ by construction of the SCM) and (ii) simplex conservation ($\sum_k \nabla_\Lambda \gamma_{tk}^*[\mathbf{h}] = 0$ on the probability simplex). This subsumes \citet{foster2023orthogonal}'s orthogonal learning framework and \citet{chernozhukov2022automatic}'s automatic debiasing for the regime-mixture case.
@@ -97,9 +96,9 @@ We formalize the atmospheric data-generating process via the following Structura
     Z_t &= \mu_Z(S_t) + \xi_t, \label{eq:state_obs} \\
     X_t &= \phi(X_{t-1}, S_t) + \epsilon_t, \label{eq:confounders} \\
     T_t &= m(X_t, S_t) + V_t, \quad \E[V_t \mid X_t, S_t] = 0, \label{eq:treatment} \\
-    Y_t &= \theta(S_t) T_t + g(X_t, S_t) + U_t, \quad \E[U_t \mid X_t, S_t, T_t] = 0, \label{eq:outcome}
+    Y_t &= \theta(S_t) T_t + g(X_t, S_t) + U_t, \label{eq:outcome}
 \end{align}
-where:
+with $\E[U_t \mid X_t, S_t, T_t] = 0$, where:
 \begin{itemize}
     \item $S_t$ is an unobserved discrete Markov regime with transition matrix $\Pi_{jk} = P(S_t = k \mid S_{t-1} = j)$ and stationary distribution $\pi^*$.
     \item $Z_t \in \R^q$ denotes observed auxiliary physical state indicators (e.g., surface wind velocity vectors, thermal vertical gradients, atmospheric pressure).
@@ -182,9 +181,10 @@ with $\pi_k(X_t) \equiv P(S_t = k \mid X_t)$, $\bar{m}(X_t) \equiv \E[T_t \mid X
 
 \begin{proof}
 Under Neyman orthogonality and consistency of cross-fitted nuisance estimators on $X_t$, $\hat{\theta}_{\mathrm{naive}} \xrightarrow{p} \frac{\E[\tilde{T}_t \tilde{Y}_t]}{\E[\tilde{T}_t^2]}$. By SCM \eqref{eq:treatment}, $T_t = m(X_t, S_t) + V_t$ with $\E[V_t \mid X_t, S_t] = 0$. Thus $\tilde{T}_t = \sum_{k=1}^K \one(S_t=k) \Delta m_k(X_t) + V_t$. Similarly, $\bar{\ell}(X_t) \equiv \E[Y_t \mid X_t] = \sum_{k=1}^K \pi_k(X_t) [\theta_k^* m_k(X_t) + g_k(X_t)]$. Substituting $Y_t$ from \eqref{eq:outcome} and writing $T_t = \tilde{T}_t + \bar{m}(X_t)$, the outcome residual decomposes into:
-\begin{equation*}
-    \tilde{Y}_t = \sum_{k=1}^K \theta_k^* \one(S_t=k) \tilde{T}_t + \sum_{k=1}^K \theta_k^* \left[\one(S_t=k)\bar{m}(X_t) - \pi_k(X_t)m_k(X_t)\right] + \Delta g(X_t, S_t) + U_t.
-\end{equation*}
+\begin{align*}
+    \tilde{Y}_t ={}& \sum_{k=1}^K \theta_k^* \one(S_t=k) \tilde{T}_t + \Delta g(X_t, S_t) + U_t \\
+    & + \sum_{k=1}^K \theta_k^* \left[\one(S_t=k)\bar{m}(X_t) - \pi_k(X_t)m_k(X_t)\right].
+\end{align*}
 Multiplying by $\tilde{T}_t$ and taking expectations conditional on $(X_t, S_t)$:
 First, $\E[\tilde{T}_t U_t] = 0$ by Assumption~\ref{ass:unconfoundedness}.
 Second, $\E\left[ \tilde{T}_t \sum_k \theta_k^* \one(S_t=k)\tilde{T}_t \right] = \sum_k \theta_k^* \E[\one(S_t=k)\tilde{T}_t^2]$.
@@ -219,7 +219,7 @@ Using the Forward-Backward algorithm, we compute the smoothed posterior regime p
 \subsection{Coupled Multi-Regime Orthogonal Score System}
 Rather than treating each latent state as an isolated one-dimensional heuristic regression (which suffers cross-talk bias under regime overlap), we formulate the structural estimating system over the vector of regime-interacted pseudo-treatments:
 \begin{equation}
-    \boldsymbol{D}_t = (\gamma_{t1} T_t, \dots, \gamma_{tK} T_t)^\top \in \R^K, \quad \text{satisfying} \quad \sum_{k=1}^K D_{tk} = T_t.
+    \boldsymbol{D}_t = (\gamma_{t1} T_t, \dots, \gamma_{tK} T_t)^\top \in \R^K, \quad \sum_{k=1}^K D_{tk} = T_t.
 \end{equation}
 Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the conditional expectation of $Y_t$ given $(X_t, T_t, Z_{1:N})$ admits the partially linear representation:
 \begin{equation}
@@ -248,7 +248,7 @@ To satisfy nuisance rate requirements in dependent time series, standard random 
 \STATE Partition $\{1, \dots, N\}$ into $B$ contiguous blocks $\mathcal{B}_1, \dots, \mathcal{B}_B$.
 \FOR{each block $b \in \{1, \dots, B\}$}
     \STATE Construct purged training set:
-    $\mathcal{T}_b = \left\{ t \in \{1, \dots, N\} : \min_{t' \in \mathcal{B}_b} |t - t'| > \tau \right\}$.
+    $\mathcal{T}_b = \left\{ t : \min_{t' \in \mathcal{B}_b} |t - t'| > \tau \right\}$.
     \STATE Fit nuisance models $\hat{\mu}_Y^{(-b)}$ and $\hat{\boldsymbol{\mu}}_D^{(-b)}$ on $\mathcal{T}_b$.
     \FOR{each $t \in \mathcal{B}_b$}
         \STATE Compute out-of-fold residuals:
@@ -260,11 +260,11 @@ To satisfy nuisance rate requirements in dependent time series, standard random 
 \end{algorithm}
 
 \subsection{Closed-Form Coupled Estimator \& Duality}
-Equating the empirical score vector $\frac{1}{N}\sum_{t=1}^N \boldsymbol{\Psi}(W_t; \hat{\boldsymbol{\theta}}, \hat{\eta}) = \mathbf{0}$ yields the closed-form coupled solution:
-\begin{equation}
+\begin{align}
 \label{eq:theta_coupled_hat}
-    \hat{\boldsymbol{\theta}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}, \quad \text{where} \quad \hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top \in \R^{K \times K}, \quad \hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t \in \R^K.
-\end{equation}
+    \hat{\boldsymbol{\theta}} &= \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}, \quad \text{where} \\
+    \hat{\boldsymbol{J}} &= \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top, \quad \hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t. \nonumber
+\end{align}
 \textbf{Asymptotic Duality:} When latent regimes are well-separated ($\Delta_Z \to \infty$), the cross-regime covariance $\hat{J}_{jk} \to 0$ for $j \neq k$, and $\hat{\boldsymbol{\theta}}$ smoothly collapses to the decoupled coordinate-wise estimator:
 \begin{equation}
 \label{eq:theta_decoupled_hat}
@@ -353,6 +353,7 @@ where for a two-state chain with persistence $\rho$, $\Var(\bar{S}_N) = \frac{\p
 \small
 \caption{Monte Carlo Benchmark Results across Multi-Configuration Persistence Regimes ($45$ Replications across High, Moderate, and Rapid Persistence, $N=1,200$, Mean True $\theta_{\mathrm{ATE}}^* = 1.4988$).}
 \label{tab:benchmark}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{True ATE} & \textbf{Abs Bias} & \textbf{Rel Bias (\%)} & \textbf{RMSE} & \textbf{95\% Coverage} \\
@@ -364,7 +365,8 @@ Block DML (Purged CV, no regimes) & 9.2344 & 1.4988 & 7.7356 & +516.97\% & 7.736
 \midrule
 \textbf{RC-DML (Ours)} & \textbf{1.4856} & \textbf{1.4988} & \textbf{0.0132} & \textbf{-0.76\%} & \textbf{0.0900} & \textbf{88.9\% (pop) / 66.7\% (cond)} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
 
 \subsection{Data Generating Process}
@@ -394,6 +396,7 @@ As reported in Table~\ref{tab:benchmark} and Figure~\ref{fig:convergence}:
 \small
 \caption{Empirical Treatment Elasticities on Real Hourly Sensor Data across Contrasting Metropolises (Reporting All Latent Regimes per Airshed).}
 \label{tab:empirical}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llcc}
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$ [$\pm 1.96\mathrm{SE}$]} \\
@@ -416,7 +419,8 @@ Bengaluru & RC-DML & Regime 1 (Nocturnal) & $-1.386 \pm 1.026$ \\
 Bengaluru & RC-DML & Regime 2 (Convective) & $-0.437 \pm 1.046$ \\
 Bengaluru & RC-DML & Regime 3 (Traffic Peak) & $+1.754 \pm 1.105$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 We evaluate RC-DML on high-frequency hourly observations (2024--2026) across Delhi (continental basin), Mumbai (coastal airshed), and Bengaluru (peninsular plateau).
