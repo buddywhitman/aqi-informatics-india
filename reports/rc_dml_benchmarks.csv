@@ -1,0 +1,6 @@
+Estimator,Mean_Estimate,Mean_True_ATE,Absolute_Bias,Relative_Bias_Pct,RMSE,Std_Dev,Coverage_95_Pct
+OLS,9.3627,1.4988,7.864,525.48,7.8645,0.086,0.0%
+Random_Forest,3.7735,1.4988,2.2747,151.87,2.7381,1.5264,0.0%
+Standard_DML,9.2209,1.4988,7.7221,515.99,7.723,0.1113,0.0%
+Block_DML,9.2344,1.4988,7.7356,516.97,7.7369,0.1266,0.0%
+RC_DML_Ours,1.4856,1.4988,0.0132,-0.76,0.09,0.0761,88.9% (pop) / 66.7% (cond)

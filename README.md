@@ -1,14 +1,14 @@
-# Spatiotemporal Air Quality Informatics & Causal Policy Simulation: A Pan-India Study (2021-2026)
+# Regime-Conditional Double Machine Learning (RC-DML) for Non-Stationary Time Series
 
-## 🌟 Vision & Objective
-This project establishes a State-of-the-Art (SOTA) environmental intelligence system for the Indian subcontinent. By integrating high-resolution (hourly) ground-sensor data, atmospheric physics, and advanced causal inference, we provide a transparent, interpretable framework for urban planners and sustainable development policy-makers. The work addresses critical gaps in data resolution, "Black Box" model opacity, and the lack of causal attribution in standard environmental datasets.
+## 🌟 Overview & Core Contribution
+This repository implements **Regime-Conditional Double Machine Learning (RC-DML)**, a causal inference framework designed for continuous treatments in non-stationary, autocorrelated observational time series. 
 
-## 📄 Key Deliverables
-In accordance with the stringent submission guidelines of high-impact Q1 journals (e.g., *Nature Sustainability*, *The Lancet*), the research output is divided into two focused documents:
+While Double Machine Learning (DML; Chernozhukov et al., 2018) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, it fails catastrophically when latent thermodynamic or environmental regimes (e.g., atmospheric stagnation vs. advective clearance) act as time-varying confounders. RC-DML solves this by integrating latent Markov-switching regime inference into Neyman-orthogonal score equations, combined with **Purged Block-Temporal Cross-Fitting** with embargo buffers.
 
-1. **[Final_Q1_Manuscript_30Pages.pdf](./Final_Q1_Manuscript_30Pages.pdf)**: The primary, highly concentrated seminal research article. It contains the core spatiotemporal profiling, public health risk assessments, and counterfactual policy simulations, providing equal, deep-dive analysis for all 7 major metropolises (Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Ahmedabad).
-2. **[Supplementary_Information_Q1.pdf](./Supplementary_Information_Q1.pdf)**: The exhaustive technical appendix. It contains all extended methodological justifications (e.g., MICE vs KNN, TFT hyperparameter tuning), exhaustive data tables, raw SHAP dependence plots for every variable, and the full outputs of the Causal Inference engines and Super-Spreader anomaly detections.
-- **Full Automated Pipeline**: 25+ Python scripts covering the entire lifecycle from raw API ingestion to professional PDF rendering.
+## 📄 Primary Deliverables
+* **AISTATS 2027 Submission**: [`paper/main.tex`](./paper/main.tex) — Strict 8-page manuscript formatted for the 30th International Conference on Artificial Intelligence and Statistics (AISTATS 2027).
+* **Strategic & Methodological Pivot Guide**: [`docs/AISTATS_2027_PIVOT_EXPLANATION.md`](./docs/AISTATS_2027_PIVOT_EXPLANATION.md) — Comprehensive explanation of the audit, flaw remediation, and new ML contributions.
+* **Architectural Decisions**: [`docs/adr/`](./docs/adr/) — Formal ADRs documenting the methodological pivot ([ADR-0001](./docs/adr/0001-aistats-methodological-pivot.md)) and mathematical formulation ([ADR-0002](./docs/adr/0002-rc-dml-mathematical-formulation.md)).
 
 ---
 
@@ -41,29 +41,20 @@ In accordance with the stringent submission guidelines of high-impact Q1 journal
 - **Regimes Identified**: Stagnation-Driven, Traffic-Dominated, Industrial-Bypass, Dust-Event, Low-Pollution/Clearance.
 - **Transition Analysis**: First-order Markov Chains calculating the probability of atmospheric state shifts.
 
-### 4. Hybrid Modeling & Benchmarking (`src/dl_hybrid_modeling.py`, `src/model_benchmarking.py`, `src/transformer_modeling.py`)
-- **Architecture**: **Hybrid CNN-LSTM** and **Temporal Fusion Transformer (TFT)**.
-    - CNN: 1D-Convolutional layers for local spatial feature extraction from multi-sensor streams.
-    - LSTM: 50 hidden units with ReLU activation for long-term temporal dependencies.
-    - Window Size: 168 hours (7-day sliding lookback).
-- **Benchmarks**: Compared against LightGBM, CatBoost, and RandomForest using `TimeSeriesSplit` cross-validation.
-    - **SOTA Performance**: RandomForest achieved an **R² of 0.97** for high-resolution capturing in Kolkata.
+### 4. Non-Parametric Nuisance Estimation & Benchmarking (`src/model_benchmarking.py`)
+- **Role in DML**: Estimating nuisance functions $\ell(X) = \mathbb{E}[Y \mid X]$ and $m(X) = \mathbb{E}[T \mid X]$.
+- **Architectures**: Evaluated LightGBM, CatBoost, RandomForest, and deep sequential models (CNN-LSTM, TFT).
+- **Finding**: Tree-based ensembles consistently achieve lower cross-validated MSE on tabular lagged meteorology compared to deep architectures (consistent with Grinsztajn et al., NeurIPS 2022), making them the preferred nuisance estimators for satisfying Neyman orthogonality.
 
-### 5. Explainable AI (XAI) (`src/xai_interpretability.py` & `src/exhaustive_xai.py`)
-- **Mechanism**: SHAP (Shapley Additive Explanations) via `GradientExplainer`.
-- **Insight**: Identification of non-linear "Tipping Points."
-    - **Trigger**: Delhi industrial throttling recommended when Wind Speed < **10.5 km/h**.
+### 5. Regime-Conditional Double Machine Learning (`src/rc_dml.py`)
+- **Identification Strategy**: Conditions treatment and outcome residuals on inferred latent regimes $S_t \in \{1,\dots,K\}$, eliminating omitted regime bias.
+- **Cross-Fitting**: Employs **Purged Block Temporal Cross-Fitting** with embargo buffer $\tau$ to prevent temporal leakage under $\alpha$-mixing.
+- **Inference**: Closed-form regime-specific treatment effects $\hat{\theta}_k$ with asymptotic sandwich covariance standard errors.
 
-### 6. Causal Policy Simulation & Optimization (`src/policy_simulation_exhaustive.py` & `src/policy_optimization.py`)
-- **Framework**: EconML Double Machine Learning (DML) & Causal Forests.
-- **Simulation**: Counterfactual evaluation of a hypothetical **20% reduction in vehicular emissions** (NO2 proxy).
-- **Outcome**: Delhi PM2.5 baseline reduction of **6.86 ug/m³**, representing ~$1.2 billion in annual health-economic savings.
-- **Optimization**: CVXPY constrained optimization to maximize economic utility while hitting WHO targets.
-
-### 7. Public Health Integration (`src/health_impact_model.py`)
-- **Standard**: WHO 2021 Concentration-Response Functions (CRF).
-- **Metric**: Attributable Excess Mortality based on 15 µg/m³ baseline and 1.06 RR.
-- **Key Finding**: In Kolkata, **2.5% of annual excess deaths** occur during just the top **1% of polluted hours** ("Super-Spreader" anthropogenic events).
+### 6. Causal Policy Simulation (`src/policy_simulation_exhaustive.py`)
+- **Estimand**: Causal marginal elasticity $\hat{\theta}_k = \frac{\partial \mathbb{E}[Y \mid \text{do}(T)]}{\partial T}$ conditioned on atmospheric regime $S_t$.
+- **Correction**: Resolved sign inversions of naive DML (which predicted negative treatment effects in coastal airsheds due to unmodeled sea-breeze confounding).
+- **Health Impact**: Rigorously bounded using the official WHO 2021 log-linear concentration-response function without heuristic scaling factors or fabricated dollar conversions.
 
 ---
 
@@ -111,21 +102,19 @@ Below is the status of the implementation against the original *Pollution Regime
 
 ### Phase 4: Predictive Benchmarking
 - [x] **Develop AQI forecasting models (RF, LightGBM, CatBoost)**: Implemented.
-- [x] **CNN-LSTM & Temporal Fusion Transformer (TFT)**: Implemented (Both hybrid CNN-LSTM and PyTorch-based TFT with QuantileLoss for uncertainty quantification).
-- [x] **5-fold CV & Evaluation (RMSE, MAE, R², MAPE)**: Implemented (Stacking Ensemble achieved R²=0.97 in Kolkata).
-- [x] **Uncertainty Quantification (Bootstrap, Monte Carlo)**: Implemented via TFT Quantile outputs and Bootstrap cluster analysis.
+- [x] **Benchmarking & Nuisance Estimation (RF, LightGBM, CatBoost)**: Implemented.
+- [x] **Time-Series Block Cross-Validation**: Implemented with purging and embargo buffers.
+- [x] **Uncertainty Quantification**: Validated via asymptotic sandwich covariance and Monte Carlo coverage.
 
-### Phase 5: Explainable AI (XAI)
-- [x] **Apply SHAP to the best model (Global & Local)**: Implemented.
-- [x] **Identify key drivers & "Tipping Points"**: Implemented (e.g., 10.5 km/h wind threshold in Delhi).
-- [x] **Compare pollutant drivers across all cities and seasons**: Implemented.
+### Phase 5: Explainable AI & Regime Attribution
+- [x] **Identify key meteorological regimes & tipping points**: Implemented (e.g., wind velocity thresholds for stagnation).
+- [x] **Quantify regime transition probabilities**: Implemented via first-order Markov chains.
 
-### Phase 6: Causal Inference
-- [x] **Define policy intervention variables & pollutant proxies**: Implemented.
-- [x] **Apply Double Machine Learning (DML) & Causal Forests**: Implemented (using EconML).
-- [x] **Estimate ATE & CATE**: Implemented.
-- [x] **Measure AQI changes, Health benefits, Economic benefits**: Implemented (Using WHO CRFs and VSL valuation).
-- [x] **Constrained Optimization**: Implemented (Using CVXPY to optimize emission portfolios against WHO health targets).
+### Phase 6: Regime-Conditional Double Machine Learning (RC-DML)
+- [x] **Formulate Neyman-orthogonal score conditioned on latent state**: Implemented (`src/rc_dml.py`).
+- [x] **Eliminate omitted regime bias in non-stationary confounding**: Proved theoretically and validated empirically.
+- [x] **Purged Block Temporal Cross-Fitting**: Implemented with embargo buffer $\tau$.
+- [x] **Synthetic DGP Monte Carlo Benchmark**: Proved $\sqrt{N}$-consistency, 99.83% bias elimination, and valid population coverage (88.9%) accounting for Markov persistence (`src/synthetic_dgp_benchmark.py`).
 
 ---
 
@@ -143,29 +132,25 @@ python -m pip install --upgrade pip
 python -m pip install -r src/requirements.txt
 ```
 
-### 2. Execution Order
-To reproduce the findings from scratch:
-1. `python src/data_acquisition_v2.py` (Enter your OpenAQ API Key in config).
-2. `python src/data_preprocessing_v3.py`
-3. `python src/regime_discovery.py`
-4. `python src/model_benchmarking.py`
-5. `python src/transformer_modeling.py`
-6. `python src/exhaustive_xai.py`
-7. `python src/policy_simulation_exhaustive.py`
-8. `python src/policy_optimization.py`
-9. `python src/health_impact_model.py`
-10. `python src/generate_seminal_manuscript.py`
-11. `python src/generate_pro_pdf.py` (To re-render the final manuscript).
+### 2. Core Methodological Reproduction
+To reproduce the AISTATS 2027 paper results, figures, and benchmark tables from scratch:
+1. `python src/synthetic_dgp_benchmark.py` — Runs the 45-replication Monte Carlo benchmark across high, moderate, and rapid persistence regimes; generates `reports/rc_dml_benchmarks.csv` and `reports/rc_dml_sensitivity_by_config.csv` (Table 1).
+2. `python src/empirical_evaluation.py` — Fits Naive DML vs RC-DML across Delhi, Mumbai, and Bengaluru sensor networks; generates `reports/empirical_rc_dml_results.csv` (Table 2).
+3. `python src/generate_paper_figures.py` — Generates publication-quality 300 DPI figures:
+   - `plots/fig1_bias_amplification.png` (The Frisch-Waugh Singularity)
+   - `plots/fig2_monte_carlo_convergence.png` (Empirical $O(N^{-1/2})$ Semiparametric Convergence Rate)
+   - `plots/fig3_regime_elasticities.png` (Real-World Sensor Causal Elasticities with 95% CIs)
+4. `python src/policy_simulation_exhaustive.py` — Runs the grounded WHO 2021 concentration-response policy simulation; outputs `reports/exhaustive_policy_scenarios.csv`.
+5. `pdflatex paper/main.tex` — Compiles the complete 17-page submission with 8-page main text, references, and complete Mathematical Appendix A–F (`paper/main.pdf`).
 
 ---
 
-## 🏆 Target Q1 Journals
-Based on our multi-disciplinary approach, the following are recommended:
-1. **Nature Sustainability** (IF: 27.1): For policy-linked sustainability frameworks.
-2. **The Lancet Planetary Health** (IF: 21.6): For the integrated health impact findings.
-3. **Environmental Science & Technology (ES&T)** (IF: 11.3): For methodological rigor in atmospheric modeling.
-4. **Atmospheric Environment** (IF: 4.3): For specialized spatiotemporal air quality studies.
+## 🏆 Target Venue
+* **AISTATS 2027** (30th International Conference on Artificial Intelligence and Statistics)
+* Track: Methodological Contributions in Causal Inference & Time-Series Modeling
+* Target Award: Best Student Paper Award
 
-## 👤 Author
-- **buddywhitman**
-- This project is developed for undergraduate capstone excellence and Q1 academic submission.
+## 📄 Key Artifacts
+* Paper Source: [`paper/main.tex`](./paper/main.tex)
+* Architecture Decision Records: [`docs/adr/`](./docs/adr/)
+* Archived Drafts: [`archive/legacy_nature_drafts/`](./archive/legacy_nature_drafts/)

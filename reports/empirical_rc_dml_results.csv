@@ -1,0 +1,16 @@
+City,Estimator,Regime,Effect_Theta,Std_Error,CI_95_Lower,CI_95_Upper,Notes
+Delhi,Naive_DML,Pooled_CrossSectional,-3.3248,0.1251,-3.57,-3.0797,Suffers from omitted regime bias & temporal leakage
+Delhi,RC_DML_Ours,Overall_Weighted_ATE,-3.7164,0.5996,-4.8916,-2.5411,Consistent under latent atmospheric regimes
+Delhi,RC_DML_Ours,Regime_1,-4.734,0.6208,-5.9508,-3.5172,Regime-specific elasticity
+Delhi,RC_DML_Ours,Regime_2,-3.482,1.2839,-5.9984,-0.9657,Regime-specific elasticity
+Delhi,RC_DML_Ours,Regime_3,0.1897,0.1319,-0.0688,0.4482,Regime-specific elasticity
+Mumbai,Naive_DML,Pooled_CrossSectional,-296.0922,6.3381,-308.5149,-283.6695,Suffers from omitted regime bias & temporal leakage
+Mumbai,RC_DML_Ours,Overall_Weighted_ATE,-62.382,17.4443,-96.5728,-28.1912,Consistent under latent atmospheric regimes
+Mumbai,RC_DML_Ours,Regime_1,-19.323,34.2844,-86.5203,47.8744,Regime-specific elasticity
+Mumbai,RC_DML_Ours,Regime_2,-70.5597,21.0847,-111.8857,-29.2337,Regime-specific elasticity
+Mumbai,RC_DML_Ours,Regime_3,-83.91,34.9402,-152.3927,-15.4273,Regime-specific elasticity
+Bengaluru,Naive_DML,Pooled_CrossSectional,-1.7715,0.0882,-1.9443,-1.5987,Suffers from omitted regime bias & temporal leakage
+Bengaluru,RC_DML_Ours,Overall_Weighted_ATE,0.0805,0.3161,-0.539,0.7001,Consistent under latent atmospheric regimes
+Bengaluru,RC_DML_Ours,Regime_1,-1.3863,0.5235,-2.4124,-0.3602,Regime-specific elasticity
+Bengaluru,RC_DML_Ours,Regime_2,-0.4365,0.5339,-1.4829,0.6099,Regime-specific elasticity
+Bengaluru,RC_DML_Ours,Regime_3,1.754,0.5638,0.6489,2.8591,Regime-specific elasticity

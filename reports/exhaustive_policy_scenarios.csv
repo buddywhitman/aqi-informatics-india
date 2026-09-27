@@ -1,16 +1,46 @@
-city,scenario,ate_marginal,pm25_reduction_ugm3,est_lives_saved_annual,econ_benefit_m_usd
-Delhi,Baseline vehicular reduction,1.2610944304568574,10.351195263004607,4658,2329.018934176037
-Delhi,Aggressive vehicular ban,1.2504834941050484,25.66024896318905,11547,5773.556016717536
-Delhi,Industrial throttling,0.081467301663906,0.6031343140951876,271,135.7052206714172
-Delhi,Deep industrial shutdown,0.10279659216724443,1.5220867965873186,684,342.4695292321467
-Delhi,Ammonia/Agricultural control,1.139479021473928,8.70585174885793,3917,1958.8166434930342
-Mumbai,Baseline vehicular reduction,-10.31775986280136,-43.88088106441622,13822,6911.238767645555
-Mumbai,Aggressive vehicular ban,-10.904622786215228,-115.94194425366172,36521,18260.85621995172
-Mumbai,Industrial throttling,-8.699435207336297,-29.224987768549717,9205,4602.935573546581
-Mumbai,Deep industrial shutdown,-8.149090084014778,-54.75230342064094,17246,8623.48778875095
-Mumbai,Ammonia/Agricultural control,1.3711636292146332,6.748707222029428,2125,1062.921387469635
-Bengaluru,Baseline vehicular reduction,-0.09524493026235964,-0.47971058342071343,93,46.77178188351956
-Bengaluru,Aggressive vehicular ban,-0.09707694786879195,-1.2223443066881052,238,119.17856990209026
-Bengaluru,Industrial throttling,0.6871194469191754,2.8592501857917663,557,278.77689311469726
-Bengaluru,Deep industrial shutdown,0.6771923829613901,5.635883121866823,1098,549.4986043820153
-Bengaluru,Ammonia/Agricultural control,0.529031059841113,1.1891869347843107,231,115.94572614147029
+City,Scenario,Intervention Strategy,Targeted Pollutant,Reduction (%),Causal Elasticity,Annual PM2.5 Abatement (ug/m3),Annual Lives Saved,Economic Benefit ($M USD),Economic Friction Index,Abatement Efficiency (ug/m3 per cost unit),Epidemiological CRF,VSL Baseline
+Delhi,Baseline vehicular reduction,Naive DML (Blanket),NO2,20,1.0488,8.59,11968,5385.78,1.0,8.59,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Baseline vehicular reduction,RC-DML (Blanket),NO2,20,1.1901,9.75,13535,6090.55,1.0,9.75,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Baseline vehicular reduction,RC-DML (Regime-Targeted Stagnation),NO2,20,1.8332,9.73,13504,6076.6,0.648,15.01,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Aggressive vehicular ban,Naive DML (Blanket),NO2,50,1.0488,21.48,28800,12960.08,1.0,21.48,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Aggressive vehicular ban,RC-DML (Blanket),NO2,50,1.1901,24.38,32405,14582.09,1.0,24.38,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Aggressive vehicular ban,RC-DML (Regime-Targeted Stagnation),NO2,50,1.8332,24.32,32334,14550.15,0.648,37.53,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Industrial throttling,Naive DML (Blanket),SO2,30,-0.3236,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Industrial throttling,RC-DML (Blanket),SO2,30,-0.3014,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Industrial throttling,RC-DML (Regime-Targeted Stagnation),SO2,30,-0.4226,0.0,0,0.0,0.648,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Deep industrial shutdown,Naive DML (Blanket),SO2,60,-0.3236,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Deep industrial shutdown,RC-DML (Blanket),SO2,60,-0.3014,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Deep industrial shutdown,RC-DML (Regime-Targeted Stagnation),SO2,60,-0.4226,0.0,0,0.0,0.648,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Ammonia/Agricultural control,Naive DML (Blanket),NO,30,-1.1229,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Ammonia/Agricultural control,RC-DML (Blanket),NO,30,-0.8482,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Delhi,Ammonia/Agricultural control,RC-DML (Regime-Targeted Stagnation),NO,30,-1.06,0.0,0,0.0,0.648,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Baseline vehicular reduction,Naive DML (Blanket),NO2,20,129.4461,550.44,147766,66494.81,1.0,550.44,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Baseline vehicular reduction,RC-DML (Blanket),NO2,20,119.3661,507.58,146121,65754.43,1.0,507.58,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Baseline vehicular reduction,RC-DML (Regime-Targeted Stagnation),NO2,20,156.0995,347.84,134437,60496.58,0.524,663.82,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Aggressive vehicular ban,Naive DML (Blanket),NO2,50,129.4461,1376.11,153321,68994.47,1.0,1376.11,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Aggressive vehicular ban,RC-DML (Blanket),NO2,50,119.3661,1268.95,153286,68978.59,1.0,1268.95,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Aggressive vehicular ban,RC-DML (Regime-Targeted Stagnation),NO2,50,156.0995,869.6,152540,68642.91,0.524,1659.55,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Industrial throttling,Naive DML (Blanket),SO2,30,0.1624,0.5,461,207.24,1.0,0.5,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Industrial throttling,RC-DML (Blanket),SO2,30,0.1017,0.31,289,129.9,1.0,0.31,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Industrial throttling,RC-DML (Regime-Targeted Stagnation),SO2,30,0.033,0.05,49,22.1,0.524,0.1,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Deep industrial shutdown,Naive DML (Blanket),SO2,60,0.1624,1.0,920,413.86,1.0,1.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Deep industrial shutdown,RC-DML (Blanket),SO2,60,0.1017,0.63,577,259.56,1.0,0.63,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Deep industrial shutdown,RC-DML (Regime-Targeted Stagnation),SO2,60,0.033,0.11,98,44.18,0.524,0.2,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Ammonia/Agricultural control,Naive DML (Blanket),NO,30,44.0555,216.87,111756,50290.0,1.0,216.87,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Ammonia/Agricultural control,RC-DML (Blanket),NO,30,56.6358,278.8,124695,56112.76,1.0,278.8,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Mumbai,Ammonia/Agricultural control,RC-DML (Regime-Targeted Stagnation),NO,30,109.1447,281.56,125166,56324.61,0.524,537.32,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Baseline vehicular reduction,Naive DML (Blanket),NO2,20,-2.2792,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Baseline vehicular reduction,RC-DML (Blanket),NO2,20,-2.4997,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Baseline vehicular reduction,RC-DML (Regime-Targeted Stagnation),NO2,20,-3.5067,0.0,0,0.0,0.558,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Aggressive vehicular ban,Naive DML (Blanket),NO2,50,-2.2792,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Aggressive vehicular ban,RC-DML (Blanket),NO2,50,-2.4997,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Aggressive vehicular ban,RC-DML (Regime-Targeted Stagnation),NO2,50,-3.5067,0.0,0,0.0,0.558,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Industrial throttling,Naive DML (Blanket),SO2,30,-0.4192,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Industrial throttling,RC-DML (Blanket),SO2,30,-0.5027,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Industrial throttling,RC-DML (Regime-Targeted Stagnation),SO2,30,-0.5171,0.0,0,0.0,0.558,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Deep industrial shutdown,Naive DML (Blanket),SO2,60,-0.4192,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Deep industrial shutdown,RC-DML (Blanket),SO2,60,-0.5027,0.0,0,0.0,1.0,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Deep industrial shutdown,RC-DML (Regime-Targeted Stagnation),SO2,60,-0.5171,0.0,0,0.0,0.558,0.0,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Ammonia/Agricultural control,Naive DML (Blanket),NO,30,5.5755,12.22,6940,3123.05,1.0,12.22,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Ammonia/Agricultural control,RC-DML (Blanket),NO,30,5.2627,11.54,6564,2953.83,1.0,11.54,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
+Bengaluru,Ammonia/Agricultural control,RC-DML (Regime-Targeted Stagnation),NO,30,5.9251,7.24,4174,1878.36,0.558,12.98,"WHO 2021 (RR=1.062 per 10 ug/m3, Y0=7.2/1000)",$0.45M USD / Life (World Bank 2016/2024)
