@@ -1,16 +1,25 @@
 City,Estimator,Regime,Effect_Theta,Std_Error,CI_95_Lower,CI_95_Upper,Notes
+Delhi,Naive_OLS,Pooled_CrossSectional,-16.0377,0.0,-16.0377,-16.0377,Linear cross-sectional baseline
+Delhi,Random_Forest,Pooled_CrossSectional,-0.1629,0.3163,-0.7827,0.457,Non-linear plug-in estimator
 Delhi,Naive_DML,Pooled_CrossSectional,-3.3248,0.1251,-3.57,-3.0797,Suffers from omitted regime bias & temporal leakage
-Delhi,RC_DML_Ours,Overall_Weighted_ATE,-3.7164,0.5996,-4.8916,-2.5411,Consistent under latent atmospheric regimes
-Delhi,RC_DML_Ours,Regime_1,-4.734,0.6208,-5.9508,-3.5172,Regime-specific elasticity
-Delhi,RC_DML_Ours,Regime_2,-3.482,1.2839,-5.9984,-0.9657,Regime-specific elasticity
-Delhi,RC_DML_Ours,Regime_3,0.1897,0.1319,-0.0688,0.4482,Regime-specific elasticity
+Delhi,Block_DML,Pooled_CrossSectional,-1.5947,0.0985,-1.7877,-1.4016,Purged CV without regime conditioning
+Delhi,RC_DML_Ours,Overall_Weighted_ATE,-3.8269,0.7961,-5.3872,-2.2666,Consistent under latent atmospheric regimes
+Delhi,RC_DML_Ours,Regime_1,-4.803,0.5996,-5.9783,-3.6278,Regime-specific elasticity
+Delhi,RC_DML_Ours,Regime_2,-3.6756,1.4384,-6.4949,-0.8563,Regime-specific elasticity
+Delhi,RC_DML_Ours,Regime_3,0.2012,0.1341,-0.0616,0.464,Regime-specific elasticity
+Mumbai,Naive_OLS,Pooled_CrossSectional,-420.7669,0.0,-420.7669,-420.7669,Linear cross-sectional baseline
+Mumbai,Random_Forest,Pooled_CrossSectional,25.3288,3.9029,17.6792,32.9784,Non-linear plug-in estimator
 Mumbai,Naive_DML,Pooled_CrossSectional,-296.0922,6.3381,-308.5149,-283.6695,Suffers from omitted regime bias & temporal leakage
-Mumbai,RC_DML_Ours,Overall_Weighted_ATE,-62.382,17.4443,-96.5728,-28.1912,Consistent under latent atmospheric regimes
-Mumbai,RC_DML_Ours,Regime_1,-19.323,34.2844,-86.5203,47.8744,Regime-specific elasticity
-Mumbai,RC_DML_Ours,Regime_2,-70.5597,21.0847,-111.8857,-29.2337,Regime-specific elasticity
-Mumbai,RC_DML_Ours,Regime_3,-83.91,34.9402,-152.3927,-15.4273,Regime-specific elasticity
+Mumbai,Block_DML,Pooled_CrossSectional,-158.9042,6.3295,-171.31,-146.4983,Purged CV without regime conditioning
+Mumbai,RC_DML_Ours,Overall_Weighted_ATE,-63.628,19.1506,-101.1632,-26.0928,Consistent under latent atmospheric regimes
+Mumbai,RC_DML_Ours,Regime_1,-17.6718,36.3752,-88.9672,53.6236,Regime-specific elasticity
+Mumbai,RC_DML_Ours,Regime_2,-73.9328,23.1835,-119.3724,-28.4931,Regime-specific elasticity
+Mumbai,RC_DML_Ours,Regime_3,-84.9792,35.886,-155.3159,-14.6426,Regime-specific elasticity
+Bengaluru,Naive_OLS,Pooled_CrossSectional,-6.3249,0.0,-6.3249,-6.3249,Linear cross-sectional baseline
+Bengaluru,Random_Forest,Pooled_CrossSectional,-0.0908,0.0289,-0.1474,-0.0342,Non-linear plug-in estimator
 Bengaluru,Naive_DML,Pooled_CrossSectional,-1.7715,0.0882,-1.9443,-1.5987,Suffers from omitted regime bias & temporal leakage
-Bengaluru,RC_DML_Ours,Overall_Weighted_ATE,0.0805,0.3161,-0.539,0.7001,Consistent under latent atmospheric regimes
-Bengaluru,RC_DML_Ours,Regime_1,-1.3863,0.5235,-2.4124,-0.3602,Regime-specific elasticity
-Bengaluru,RC_DML_Ours,Regime_2,-0.4365,0.5339,-1.4829,0.6099,Regime-specific elasticity
-Bengaluru,RC_DML_Ours,Regime_3,1.754,0.5638,0.6489,2.8591,Regime-specific elasticity
+Bengaluru,Block_DML,Pooled_CrossSectional,0.1727,0.1063,-0.0357,0.3811,Purged CV without regime conditioning
+Bengaluru,RC_DML_Ours,Overall_Weighted_ATE,0.0696,0.3897,-0.6941,0.8334,Consistent under latent atmospheric regimes
+Bengaluru,RC_DML_Ours,Regime_1,-1.5881,0.5471,-2.6604,-0.5159,Regime-specific elasticity
+Bengaluru,RC_DML_Ours,Regime_2,-0.4119,0.579,-1.5467,0.7229,Regime-specific elasticity
+Bengaluru,RC_DML_Ours,Regime_3,1.853,0.5751,0.7257,2.9802,Regime-specific elasticity

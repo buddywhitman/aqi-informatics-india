@@ -51,7 +51,26 @@ def run_empirical_evaluation():
         X = city_df[controls].values
         Z = city_df[regime_features].values
         
-        # 1. Naive Standard DML (Random 5-fold CV, ignoring regimes)
+        # 1. Naive OLS (Pooled OLS regression Y ~ T + X)
+        from sklearn.linear_model import LinearRegression
+        ols = LinearRegression()
+        ols.fit(np.hstack([T.reshape(-1, 1), X]), Y)
+        theta_ols = ols.coef_[0]
+        res_ols = Y - ols.predict(np.hstack([T.reshape(-1, 1), X]))
+        se_ols = np.sqrt(np.mean(res_ols**2) / np.sum((T - np.mean(T))**2))
+        
+        # 2. Random Forest Plug-in
+        from sklearn.ensemble import RandomForestRegressor
+        rf_y = RandomForestRegressor(n_estimators=50, max_depth=10, random_state=42)
+        rf_y.fit(np.hstack([T.reshape(-1, 1), X]), Y)
+        # Numerical partial derivative dT
+        eps = 1e-4
+        pred_plus = rf_y.predict(np.hstack([(T + eps).reshape(-1, 1), X]))
+        pred_minus = rf_y.predict(np.hstack([(T - eps).reshape(-1, 1), X]))
+        theta_rf = np.mean((pred_plus - pred_minus) / (2 * eps))
+        se_rf = np.std((pred_plus - pred_minus) / (2 * eps)) / np.sqrt(N)
+        
+        # 3. Naive Standard DML (Random 5-fold CV, ignoring regimes)
         kf = KFold(n_splits=5, shuffle=True, random_state=42)
         tilde_Y_naive = np.zeros(N)
         tilde_T_naive = np.zeros(N)
@@ -65,11 +84,25 @@ def run_empirical_evaluation():
             tilde_T_naive[test_idx] = T[test_idx] - m_t.predict(X[test_idx])
             
         theta_naive = np.sum(tilde_T_naive * tilde_Y_naive) / np.sum(tilde_T_naive ** 2)
-        # Naive standard error
         res_naive = tilde_Y_naive - theta_naive * tilde_T_naive
         se_naive = np.sqrt(np.mean(res_naive ** 2) / (np.sum(tilde_T_naive ** 2)))
         
-        print(f"Naive DML ATE: {theta_naive:.4f} +/- {1.96*se_naive:.4f}")
+        # 4. Block DML (Purged CV, no regimes)
+        purged_cv = PurgedBlockKFold(n_splits=5, embargo_tau=24)
+        tilde_Y_block = np.zeros(N)
+        tilde_T_block = np.zeros(N)
+        for train_idx, test_idx in purged_cv.split(N):
+            m_y = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
+            m_y.fit(X[train_idx], Y[train_idx])
+            tilde_Y_block[test_idx] = Y[test_idx] - m_y.predict(X[test_idx])
+            
+            m_t = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
+            m_t.fit(X[train_idx], T[train_idx])
+            tilde_T_block[test_idx] = T[test_idx] - m_t.predict(X[test_idx])
+            
+        theta_block = np.sum(tilde_T_block * tilde_Y_block) / np.sum(tilde_T_block ** 2)
+        res_block = tilde_Y_block - theta_block * tilde_T_block
+        se_block = np.sqrt(np.mean(res_block ** 2) / (np.sum(tilde_T_block ** 2)))
         
         # 2. RC-DML (Ours: Latent Regimes + Purged Block Cross-Fitting)
         rc_model = RegimeConditionalDML(n_regimes=3, n_splits=5, embargo_tau=24)
@@ -83,6 +116,28 @@ def run_empirical_evaluation():
             
         all_results.append({
             'City': city,
+            'Estimator': 'Naive_OLS',
+            'Regime': 'Pooled_CrossSectional',
+            'Effect_Theta': round(float(theta_ols), 4),
+            'Std_Error': round(float(se_ols), 4),
+            'CI_95_Lower': round(float(theta_ols - 1.96 * se_ols), 4),
+            'CI_95_Upper': round(float(theta_ols + 1.96 * se_ols), 4),
+            'Notes': 'Linear cross-sectional baseline'
+        })
+
+        all_results.append({
+            'City': city,
+            'Estimator': 'Random_Forest',
+            'Regime': 'Pooled_CrossSectional',
+            'Effect_Theta': round(float(theta_rf), 4),
+            'Std_Error': round(float(se_rf), 4),
+            'CI_95_Lower': round(float(theta_rf - 1.96 * se_rf), 4),
+            'CI_95_Upper': round(float(theta_rf + 1.96 * se_rf), 4),
+            'Notes': 'Non-linear plug-in estimator'
+        })
+
+        all_results.append({
+            'City': city,
             'Estimator': 'Naive_DML',
             'Regime': 'Pooled_CrossSectional',
             'Effect_Theta': round(float(theta_naive), 4),
@@ -90,6 +145,17 @@ def run_empirical_evaluation():
             'CI_95_Lower': round(float(theta_naive - 1.96 * se_naive), 4),
             'CI_95_Upper': round(float(theta_naive + 1.96 * se_naive), 4),
             'Notes': 'Suffers from omitted regime bias & temporal leakage'
+        })
+
+        all_results.append({
+            'City': city,
+            'Estimator': 'Block_DML',
+            'Regime': 'Pooled_CrossSectional',
+            'Effect_Theta': round(float(theta_block), 4),
+            'Std_Error': round(float(se_block), 4),
+            'CI_95_Lower': round(float(theta_block - 1.96 * se_block), 4),
+            'CI_95_Upper': round(float(theta_block + 1.96 * se_block), 4),
+            'Notes': 'Purged CV without regime conditioning'
         })
         
         all_results.append({
