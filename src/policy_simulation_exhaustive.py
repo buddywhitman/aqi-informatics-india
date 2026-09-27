@@ -11,8 +11,11 @@ Methodological & Theoretical Grounding:
      - beta = ln(1.062) / 10.0 (WHO 2021 pooled relative risk: RR = 1.062 per 10 ug/m3 long-term PM2.5)
 3. Economic Valuation: Grounded Value of Statistical Life (VSL) for India:
    VSL = $0.45 Million USD (World Bank / Narain & Sall 2016, adjusted to 2024 USD).
-4. Dynamic Policy Targeting: Demonstrates that regime-targeted throttling (during atmospheric stagnation)
-   yields 4.2x higher abatement efficiency per unit economic cost than continuous blanket restrictions.
+4. Dynamic Policy Targeting: Demonstrates that episodic regime-targeted throttling (during atmospheric stagnation)
+   yields 1.13x to 1.93x higher abatement efficiency per unit economic cost than continuous blanket restrictions
+   for ground-level vehicular and agricultural emissions (e.g. 1.54x in Delhi vehicular reduction), while reducing
+   annual economic friction by 35% to 48%. Evaluates an operational 2-regime framework (stagnation vs background)
+   aligned with municipal emergency response triggers (e.g. Delhi GRAP Stage IV).
 """
 
 import os

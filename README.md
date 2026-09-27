@@ -53,7 +53,7 @@ While Double Machine Learning (DML; Chernozhukov et al., 2018) provides $\sqrt{N
 
 ### 6. Causal Policy Simulation (`src/policy_simulation_exhaustive.py`)
 - **Estimand**: Causal marginal elasticity $\hat{\theta}_k = \frac{\partial \mathbb{E}[Y \mid \text{do}(T)]}{\partial T}$ conditioned on atmospheric regime $S_t$.
-- **Correction**: Resolved sign inversions of naive DML (which predicted negative treatment effects in coastal airsheds due to unmodeled sea-breeze confounding).
+- **Correction**: Resolved sign inversions of naive DML in peninsular plateau airsheds (Bengaluru: $-1.772 \to +0.081$) and collapsed spurious negative confounding artifacts by 79% in coastal megacities (Mumbai: $-296.092 \to -62.382$). Transparently evaluates persistent negative confounding in continental basins (Delhi).
 - **Health Impact**: Rigorously bounded using the official WHO 2021 log-linear concentration-response function without heuristic scaling factors or fabricated dollar conversions.
 
 ---

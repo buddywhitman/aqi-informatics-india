@@ -1,5 +1,7 @@
-\documentclass[twoside]{article}
+\documentclass[twoside,10pt]{article}
 
+\usepackage[letterpaper,top=1in,bottom=1in,left=0.75in,right=0.75in]{geometry}
+\usepackage{times}
 \usepackage{amsmath,amssymb,amsthm,amsfonts}
 \usepackage{algorithm}
 \usepackage{algorithmic}
@@ -28,7 +30,7 @@
 \newcommand{\Cov}{\mathrm{Cov}}
 \newcommand{\one}{\mathbb{I}}
 
-\title{Regime-Conditional Double Machine Learning for Non-Stationary Environmental Time Series}
+\title{\textbf{Regime-Conditional Double Machine Learning for Non-Stationary Environmental Time Series}}
 
 \author{
   Anonymous Authors \\
@@ -38,13 +40,17 @@
 
 \begin{document}
 
-\maketitle
+\twocolumn[
+  \begin{@twocolumnfalse}
+    \maketitle
+    \begin{abstract}
+    Evaluating continuous policy interventions in observational environmental and atmospheric systems is fundamentally hindered by non-stationary confounding and temporal autocorrelation. While Double Machine Learning (DML) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, we demonstrate both theoretically and empirically that standard DML breaks down in the presence of latent thermodynamic regimes (e.g., atmospheric stagnation vs.\ advective boundary layer clearance). Under such regimes, naive DML incurs an asymptotic \emph{Omitted Regime Bias} that can flip the sign of estimated treatment effects, rendering policy simulations severely flawed. 
 
-\begin{abstract}
-Evaluating continuous policy interventions in observational environmental and atmospheric systems is fundamentally hindered by non-stationary confounding and temporal autocorrelation. While Double Machine Learning (DML) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, we demonstrate both theoretically and empirically that standard DML breaks down in the presence of latent thermodynamic regimes (e.g., atmospheric stagnation vs.\ advective boundary layer clearance). Under such regimes, naive DML incurs an asymptotic \emph{Omitted Regime Bias} that can flip the sign of estimated treatment effects, rendering policy simulations severely flawed. 
-
-To resolve this challenge, we introduce \textbf{Regime-Conditional Double Machine Learning (RC-DML)}. RC-DML integrates latent Markov regime smoothing into Neyman-orthogonal score equations, combined with a \textbf{Purged Block-Temporal Cross-Fitting} scheme that establishes an embargo buffer $\tau$ to prevent temporal dependency leakage under $\alpha$-mixing. We prove that RC-DML is $\sqrt{N}$-consistent and asymptotically normal, achieving the semiparametric efficiency bound under mild regularity conditions. In controlled semi-synthetic benchmarks across diverse persistence regimes, RC-DML reduces absolute bias by over $99.8\%$ (from $7.7221$ to $0.0132$) relative to standard DML, and achieves 88.9\% population coverage once Markov regime occupation variance is explicitly integrated. When applied to high-frequency ground-sensor networks across complex Indian airsheds, RC-DML resolves severe empirical sign inversions in coastal regimes, recovering structurally coherent, regime-stratified policy elasticities.
-\end{abstract}
+    To resolve this challenge, we introduce \textbf{Regime-Conditional Double Machine Learning (RC-DML)}. RC-DML integrates latent Markov regime smoothing into Neyman-orthogonal score equations, combined with a \textbf{Purged Block-Temporal Cross-Fitting} scheme that establishes an embargo buffer $\tau$ to prevent temporal dependency leakage under $\alpha$-mixing. We prove that RC-DML is $\sqrt{N}$-consistent and asymptotically normal, achieving the semiparametric efficiency bound under mild regularity conditions. In controlled semi-synthetic benchmarks across diverse persistence regimes, RC-DML reduces absolute bias by over $99.8\%$ (from $7.7221$ to $0.0132$) relative to standard DML, and achieves 88.9\% population coverage once Markov regime occupation variance is explicitly integrated. When applied to high-frequency ground-sensor networks across complex Indian airsheds, RC-DML resolves empirical sign inversion in peninsular plateau airsheds (Bengaluru: $-1.772 \to +0.081$) and collapses spurious confounding artifacts by 79\% in coastal megacities (Mumbai: $-296.092 \to -62.382$), recovering structurally coherent, regime-stratified policy elasticities.
+    \end{abstract}
+    \vspace{1.5em}
+  \end{@twocolumnfalse}
+]
 
 \section{INTRODUCTION}
 \label{sec:intro}
@@ -55,7 +61,7 @@ Estimating the causal impact of continuous interventions—such as reducing vehi
     \item \textbf{Temporal Autocorrelation ($\alpha$-Mixing):} Standard sample-splitting and cross-fitting schemes \citep{chernozhukov2018double} rely on exchangeable observations. Autoregressive temporal persistence causes nuisance function errors to leak across training and test folds.
 \end{enumerate}
 
-When standard Double Machine Learning \citep{chernozhukov2018double} or Causal Forests \citep{athey2019generalized} are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands are frequently biased. In complex airsheds (such as coastal megacities), naive estimators can even produce \emph{sign inversions}—estimating that emission reductions lead to massive increases in ambient pollution.
+When standard Double Machine Learning \citep{chernozhukov2018double} or Causal Forests \citep{athey2019generalized} are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands are frequently biased. In complex airsheds, naive estimators can even produce \emph{sign inversions}—estimating that emission reductions lead to massive increases in ambient pollution.
 
 \textbf{Prior Art \& Lineage.} Latent-class and regime-switching models possess a foundational history in macroeconometrics \citep{hamilton1989new} and panel econometrics \citep{bai2009panel,bonhomme2015grouped}. Concurrently, purged cross-validation with temporal embargo buffers was pioneered by \citet{lopezdeprado2018advances} to prevent financial information leakage under serial dependence. However, existing causal DML literature lacks a unified framework synthesizing latent Markov regime smoothing with Neyman-orthogonal score equations, continuous-treatment residualization, and asymptotic efficiency guarantees under $\alpha$-mixing. RC-DML bridges this exact gap.
 
@@ -65,7 +71,7 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or Causal F
     \item \textbf{The RC-DML Estimator:} We formulate RC-DML, constructing a doubly robust Neyman-orthogonal score conditioned on latent Markov state posterior distributions.
     \item \textbf{Purged Block Cross-Fitting with Embargo Buffer:} We adapt purged block cross-fitting \citep{lopezdeprado2018advances} with an embargo window $\tau$ exceeding autocorrelation horizons, guaranteeing nuisance rates under $\alpha$-mixing.
     \item \textbf{Theoretical Guarantees (Theorems~\ref{thm:asymptotics}--\ref{thm:oracle}):} We prove $\sqrt{N}$-consistency and asymptotic normality, establishing valid variance decomposition between sample (SATE) and population (PATE) causal estimands.
-    \item \textbf{Empirical Resolution of Sign Inversions:} Across Delhi, Mumbai, and Bengaluru sensor networks, RC-DML eliminates empirical sign inversions.
+    \item \textbf{Empirical Resolution and Airshed Heterogeneity:} In Bengaluru, RC-DML eliminates empirical sign inversion (from $-1.772$ to $+0.081$), while in Mumbai it collapses spurious negative confounding by 79\%. In Delhi, where continuous winter stagnation weakens regime separability, we transparently analyze persistent negative confounding and isolate positive elasticities during advective clearance.
 \end{itemize}
 
 \section{STRUCTURAL CAUSAL MODEL \& IDENTIFICATION}
@@ -279,14 +285,24 @@ where $\sigma_k^2 = J_k^{-2} \Omega_k$, with Jacobian $J_k = \E[\gamma_{tk} (T_t
 Furthermore, the score function generates the efficient influence function $\tilde{\psi}_k(W_t) = J_k^{-1} \psi_k(W_t; \theta_k^*, \eta_k^*)$, which attains the semiparametric efficiency bound for regular asymptotically linear estimators.
 \end{theorem}
 
+\begin{assumption}[Informative Auxiliary State Separation]
+\label{ass:separation}
+The auxiliary physical state observations $Z_{1:N}$ provide informative separation between thermodynamic regimes such that the emission distributions $f(Z_t \mid S_t = k)$ satisfy exponential tail separation: $\min_{j \neq k} \|\boldsymbol{\mu}_j - \boldsymbol{\mu}_k\|_{\boldsymbol{\Sigma}^{-1}} \ge \Delta_N$ with $\Delta_N \to \infty$, guaranteeing that the posterior state misclassification probability is bounded by $\sup_t P(S_t = j \mid Z_{1:N}, S_t = k) = o_P(N^{-1/2})$ for all $j \neq k$.
+\end{assumption}
+
 \begin{theorem}[Multiway Gateaux Orthogonality to Latent Dynamics]
 \label{thm:gateaux}
-Let $\boldsymbol{\Lambda}$ parameterize the Gaussian HMM governing latent regimes, estimated with $\sqrt{N}$-consistency $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_P(1)$. The Gateaux derivative of the expected score with respect to $\boldsymbol{\Lambda}$ is identically zero:
+Let $\boldsymbol{\Lambda}$ parameterize the Gaussian HMM governing latent regimes, estimated with $\sqrt{N}$-consistency $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_P(1)$. Under Assumption~\ref{ass:separation}, the Gateaux derivative of the expected score with respect to $\boldsymbol{\Lambda}$ satisfies:
 \begin{equation}
-    \nabla_{\boldsymbol{\Lambda}} \E\left[ \psi_k(W_t; \theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*) \right] = \mathbf{0}.
+    \sqrt{N} \nabla_{\boldsymbol{\Lambda}} \E\left[ \psi_k(W_t; \theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*) \right] = \mathbf{0} + o(1).
 \end{equation}
-Thus, preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to $\hat{\theta}_k$.
+Consequently, preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to the limiting distribution of $\hat{\theta}_k$.
 \end{theorem}
+
+\begin{remark}[Boundary of Orthogonality \& Practical Identification]
+\label{rem:gateaux_boundary}
+If auxiliary state separation is imperfect ($\Delta_Z = O(1)$), cross-regime residual terms $\Delta_{j \to k}(X_t) = \E[\tilde{T}_{tk}^* (\tilde{Y}_{tk}^* - \theta_k^* \tilde{T}_{tk}^*) \mid X_t, S_t = j]$ do not vanish in expectation, and preliminary estimation of $\boldsymbol{\Lambda}$ contributes an additional variance penalty $\mathcal{J}_{\boldsymbol{\Lambda}} \Var(\hat{\boldsymbol{\Lambda}}) \mathcal{J}_{\boldsymbol{\Lambda}}^\top$. This theoretical boundary highlights why RC-DML conditions on physical state dynamics $Z_t$ with pronounced thermodynamic modes (e.g., boundary-layer height and ventilation vectors) rather than noisy ambient concentrations alone.
+\end{remark}
 
 \begin{theorem}[Oracle Equivalence]
 \label{thm:oracle}
@@ -382,19 +398,20 @@ We evaluate RC-DML on high-frequency hourly observations (2024--2026) across Del
 \begin{itemize}
     \item \emph{Bengaluru (Peninsular Plateau):} Naive pooled DML estimates a statistically significant negative elasticity ($\hat{\theta}_{\mathrm{naive}} = -1.772 \pm 0.173$), an artifact of conflating nighttime boundary layer collapse with daytime traffic emissions. RC-DML eliminates this sign inversion, yielding an overall positive ATE of $+0.081 \pm 0.620$. Stratification reveals that high-traffic Regime 3 exhibits a strong, positive, and statistically significant causal elasticity ($\hat{\theta}_3 = +1.754 \pm 1.105$, $p < 0.002$), while convective mixing in Regime 2 is neutral ($\hat{\theta}_2 = -0.437 \pm 1.046$).
     \item \emph{Mumbai (Coastal Airshed):} Naive DML produces an absurdly inflated negative estimate ($\hat{\theta}_{\mathrm{naive}} = -296.092 \pm 12.423$) induced by diurnal marine-land breeze oscillations where strong marine ventilation clears particulates while precursor levels fluctuate. RC-DML collapses this spurious artifact by 79\% to $\hat{\theta}_{\mathrm{ATE}} = -62.382 \pm 34.191$. Under marine breeze clearance (Regime 1), the elasticity collapses toward zero and is statistically indistinguishable from zero ($\hat{\theta}_1 = -19.323 \pm 67.197$, 95\% CI $[-86.520, +47.874]$).
+    \item \emph{Delhi (Continental Basin):} In Delhi, naive pooled DML ($\hat{\theta}_{\mathrm{naive}} = -3.325 \pm 0.245$) and RC-DML Overall ATE ($\hat{\theta}_{\mathrm{ATE}} = -3.716 \pm 1.175$) both remain negative. Rather than forcing a uniform sign reversal across heterogeneous geography, regime stratification reveals crucial physical distinctions: under advective dispersion (Regime 3), the elasticity becomes positive ($\hat{\theta}_3 = +0.190 \pm 0.259$), confirming that precursor reductions successfully lower particulate levels when ventilation is active. Conversely, during transitional and stagnant conditions (Regimes 1 and 2), elasticities remain negative with wide standard errors (Regime 2 SE $\pm 2.516$, the widest across all cities). This reflects the fact that Delhi's landlocked continental basin suffers from deep, persistent winter temperature inversions where auxiliary physical separation is weaker ($\Delta_Z = O(1)$), consistent with the variance penalty characterized in Remark~\ref{rem:gateaux_boundary}.
 \end{itemize}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{plots/fig3_regime_elasticities.png}
-\caption{Empirical Regime-Stratified Causal Elasticities across Contrasting Metropolises (Delhi, Mumbai, Bengaluru). Reporting point estimates and 95\% HAC confidence intervals. (a) In Bengaluru and Delhi, RC-DML resolves sign inversions and isolates positive elasticities during traffic peaks and advective clearance. (b) In Mumbai, RC-DML collapses spurious negative confounding by 79\% and demonstrates that marine ventilation produces near-zero marginal elasticity.}
+\caption{Empirical Regime-Stratified Causal Elasticities across Contrasting Metropolises (Delhi, Mumbai, Bengaluru). Reporting point estimates and 95\% HAC confidence intervals. (a) In Bengaluru, RC-DML resolves the empirical sign inversion (isolating positive elasticity $+1.754$ during traffic peaks). In Delhi, it isolates positive elasticity during advective clearance ($+0.190$) from stagnation inversion. (b) In Mumbai, RC-DML collapses spurious negative confounding by 79\% and demonstrates that marine ventilation produces near-zero marginal elasticity.}
 \label{fig:elasticities}
 \end{figure*}
 
 \subsection{Counterfactual Health Policy \& WHO 2021 Targeting}
 Translating causal estimates into actionable interventions requires evaluating health and economic outcomes under grounded epidemiological response models. Using the WHO 2021 Global Air Quality Guidelines log-linear Concentration-Response Function (CRF), $\Delta M = y_0 \cdot \text{Pop} \cdot (1 - \exp(-\beta \Delta \text{PM}_{2.5}))$ with baseline annual mortality $y_0 = 7.2/1000$ (India SRS) and $\beta = \ln(1.062)/10$, we compare continuous blanket emissions throttling with dynamic regime-targeted interventions.
 
-Targeting emissions restrictions exclusively during atmospheric stagnation episodes ($S_t = 1$, representing $\approx 15\%$ of annual hours) reduces economic disruption by 85\% while capturing the dominant phase of particulate accumulation. Across vehicular and industrial throttling scenarios, regime-targeted intervention delivers \textbf{4.2$\times$ higher particulate abatement efficiency per unit economic cost} than blanket continuous mandates, preventing thousands of premature deaths annually without imposing paralyzing year-round economic friction.
+To evaluate real-world regulatory policy instruments that operate on binary alert levels (such as Delhi's Graded Response Action Plan Stage IV), we evaluate an operational 2-regime framework (severe stagnation vs.\ dispersive background). Stagnation episodes account for $52.4\%$ of annual hours in Mumbai, $55.8\%$ in Bengaluru, and $64.8\%$ in Delhi. Restricting emissions exclusively during these high-accumulation windows reduces annual economic operating friction by $35.2\%$ to $47.6\%$ across metropolises. For ground-level vehicular and agricultural emissions, regime targeting delivers \textbf{1.13$\times$ to 1.93$\times$ higher particulate abatement efficiency per unit economic cost} than blanket continuous mandates (e.g., $1.54\times$ in Delhi vehicular reduction, abating $9.73\ \mu\text{g/m}^3$ $\text{PM}_{2.5}$ and saving an estimated $13,504$ lives annually with an economic friction index of $0.648$). Crucially, targeting is not universally optimal: in industrial $\text{SO}_2$ throttling where elevated smokestacks disperse during advective winds, targeted efficiency drops to $0.32\times$ of blanket mandates, demonstrating the necessity of causal regime modeling prior to policy enactment.
 
 \textbf{Ablation: Tree vs.\ Deep Nuisance Models.} Nuisance models were evaluated across LightGBM, Random Forest, and LSTM networks. Gradient-boosted trees achieved lower cross-validated MSE on 1-hour to 24-hour meteorological lags ($28.4$ vs $36.2$ $\mu\text{g/m}^3$), confirming that tabular tree ensembles provide superior nuisance estimators for Neyman orthogonality in physical time series.
 
@@ -523,25 +540,77 @@ Under Assumption~\ref{ass:rates}, $\|\hat{\ell}_k - \ell_k^*\|_{L_2} \|\hat{m}_k
 
 \section{Proof of Theorem 3: Multiway Gateaux Orthogonality to Latent Dynamics}
 \label{app:proof_thm3}
-Let $\boldsymbol{\Lambda} = (\boldsymbol{\Pi}, \boldsymbol{\pi}_0, \{\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}_{k=1}^K)$ denote the finite-dimensional parameter vector of the Gaussian HMM on auxiliary state dynamics $Z_{1:N}$. The smoothed posterior probabilities are $\gamma_{tk}(\boldsymbol{\Lambda}) = P(S_t = k \mid Z_{1:N}; \boldsymbol{\Lambda})$.
-The expected estimating equation is:
+Let $\boldsymbol{\Lambda} = (\boldsymbol{\Pi}, \boldsymbol{\pi}_0, \{\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}_{k=1}^K)$ denote the parameter vector of the Gaussian HMM on auxiliary physical state dynamics $Z_{1:N}$. The smoothed posterior probabilities computed via the forward-backward algorithm are $\gamma_{tk}(\boldsymbol{\Lambda}) = P(S_t = k \mid Z_{1:N}; \boldsymbol{\Lambda})$.
+The population estimating equation for regime $k$ is:
 \begin{equation}
-    \mathcal{M}_k(\theta_k, \eta_k, \boldsymbol{\Lambda}) \equiv \E\left[ \gamma_{tk}(\boldsymbol{\Lambda}) \cdot \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t)) \right].
+    \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}) \equiv \E\left[ \gamma_{tk}(\boldsymbol{\Lambda}) \cdot \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t)) \right].
 \end{equation}
-Consider the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ in an arbitrary direction $\boldsymbol{h}$:
+Let $R_{tk}^* \equiv \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t))$.
+The Gateaux derivative in an arbitrary direction $\boldsymbol{h} \in \mathbb{R}^{\dim(\boldsymbol{\Lambda})}$ is:
+\begin{equation}
+    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot R_{tk}^* \right].
+\end{equation}
+Since $\gamma_{tk}(\boldsymbol{\Lambda})$ is a measurable function of the auxiliary trajectory $Z_{1:N}$, its gradient $\nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}]$ is $\sigma(Z_{1:N})$-measurable. Applying the law of iterated expectations by conditioning on $(X_t, Z_{1:N})$:
 \begin{align}
-    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] &= \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t)) \right].
+    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] &= \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot \E\left[ R_{tk}^* \mid X_t, Z_{1:N} \right] \right].
 \end{align}
-Applying the law of iterated expectations by conditioning on $\mathcal{F}_t = (X_t, Z_{1:N}, S_t)$:
-\begin{align*}
-    \E\left[ (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \mid X_t, Z_{1:N}, S_t = k \right] &= \E\left[ Y_t \mid X_t, S_t = k \right] - \ell_k^*(X_t) - \theta_k^* \left( \E[T_t \mid X_t, S_t = k] - m_k^*(X_t) \right) \\
-    &= \ell_k^*(X_t) - \ell_k^*(X_t) - \theta_k^*(m_k^*(X_t) - m_k^*(X_t)) = 0.
-\end{align*}
-Since $\nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}]$ is a deterministic function of $Z_{1:N}$, it pulls out of the inner expectation:
+Expanding the inner expectation over the full mixture distribution of true latent states $S_t \in \{1, \dots, K\}$:
 \begin{equation}
-    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot \mathbf{0} \right] = 0.
+\label{eq:inner_expansion}
+    \E\left[ R_{tk}^* \mid X_t, Z_{1:N} \right] = \sum_{j=1}^K P(S_t = j \mid X_t, Z_{1:N}) \cdot \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right].
 \end{equation}
-Because the Gateaux derivative vanishes identically, $\sqrt{N}$-estimation of $\boldsymbol{\Lambda}$ has zero first-order influence on the asymptotic distribution of $\hat{\theta}_k$. $\blacksquare$
+We now rigorously evaluate the conditional expectation $\E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right]$ across both on-regime and cross-regime branches:
+
+\paragraph{Case 1: On-Regime Branch ($j = k$).}
+When the true state matches the evaluated regime ($S_t = k$):
+Under SCM \eqref{eq:treatment}--\eqref{eq:outcome}, $Y_t - \ell_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t)) = U_t$ and $T_t - m_k^*(X_t) = V_t$.
+By Assumption~\ref{ass:unconfoundedness} (Regime-Conditional Unconfoundedness):
+\begin{equation}
+    \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = k \right] = \E\left[ U_t V_t \mid X_t, Z_{1:N}, S_t = k \right] = \E\left[ V_t \E[U_t \mid X_t, Z_{1:N}, S_t = k, V_t] \mid X_t, Z_{1:N}, S_t = k \right] = 0.
+\end{equation}
+Thus, the $j = k$ diagonal term in \eqref{eq:inner_expansion} vanishes identically for any perturbation $\boldsymbol{h}$.
+
+\paragraph{Case 2: Cross-Regime Off-Diagonal Branches ($j \neq k$).}
+When the true state is $S_t = j \neq k$:
+Under $S_t = j$, the outcome equation is $Y_t = \theta_j^* T_t + g_j^*(X_t) + U_t$ and treatment is $T_t = m_j^*(X_t) + V_t$.
+The residual terms evaluate to:
+\begin{align*}
+    Y_t - \ell_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t)) &= (\theta_j^* - \theta_k^*) T_t + g_j^*(X_t) - g_k^*(X_t) - \theta_k^*(m_j^*(X_t) - m_k^*(X_t)) + U_t, \\
+    T_t - m_k^*(X_t) &= (m_j^*(X_t) - m_k^*(X_t)) + V_t.
+\end{align*}
+Taking conditional expectations given $(X_t, Z_{1:N}, S_t = j)$, the cross-term residual is:
+\begin{align}
+    \Delta_{j \to k}(X_t) &\equiv \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right] \nonumber \\
+    &= (\theta_j^* - \theta_k^*) \left[ (m_j^*(X_t) - m_k^*(X_t)) m_j^*(X_t) + \Var(V_t \mid X_t, S_t = j) \right] \nonumber \\
+    &\quad + (m_j^*(X_t) - m_k^*(X_t)) \left[ g_j^*(X_t) - g_k^*(X_t) - \theta_k^*(m_j^*(X_t) - m_k^*(X_t)) \right].
+\end{align}
+In general, $\Delta_{j \to k}(X_t) \neq 0$ whenever structural elasticities or conditional profiles differ across regimes ($\theta_j^* \neq \theta_k^*$, $m_j^* \neq m_k^*$).
+Therefore, the Gateaux derivative decomposes into:
+\begin{equation}
+    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \sum_{j \neq k} \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot P(S_t = j \mid X_t, Z_{1:N}) \cdot \Delta_{j \to k}(X_t) \right].
+\end{equation}
+
+\paragraph{Asymptotic Vanishing under Informative Auxiliary Separation.}
+Under Assumption~\ref{ass:separation}, the auxiliary physical dynamics $Z_{1:N}$ satisfy exponential state separation: $\sup_t P(S_t = j \mid Z_{1:N}, S_t = k) \le C \exp(-\kappa \Delta_N^2) = o_P(N^{-1/2})$ for all $j \neq k$.
+For the Gaussian HMM posterior, $\gamma_{tk}(\boldsymbol{\Lambda}) = \frac{\alpha_{tk} \beta_{tk}}{\sum_{m=1}^K \alpha_{tm} \beta_{tm}}$. By the softmax derivative property:
+\begin{equation}
+    \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*) = \gamma_{tk}(\boldsymbol{\Lambda}^*) \left( \nabla_{\boldsymbol{\Lambda}} \log(\alpha_{tk} \beta_{tk}) - \sum_{m=1}^K \gamma_{tm}(\boldsymbol{\Lambda}^*) \nabla_{\boldsymbol{\Lambda}} \log(\alpha_{tm} \beta_{tm}) \right).
+\end{equation}
+When the true state is $S_t = j \neq k$, $\gamma_{tk}(\boldsymbol{\Lambda}^*)$ is exponentially small: $\E[\gamma_{tk}(\boldsymbol{\Lambda}^*) \mid S_t = j] \le C \exp(-\kappa \Delta_N^2)$.
+Because the score functions $\nabla \log(\alpha_{tm} \beta_{tm})$ have uniformly bounded second moments under standard HMM regularity conditions \citep{bickel1993efficient}, the Cauchy-Schwarz inequality yields:
+\begin{align}
+    \left| \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot P(S_t = j \mid X_t, Z_{1:N}) \cdot \Delta_{j \to k}(X_t) \right] \right| &\le \|\nabla_{\boldsymbol{\Lambda}} \gamma_{tk}[\boldsymbol{h}]\|_{L_2} \cdot \|\Delta_{j \to k}\|_{L_2} \nonumber \\
+    &\le C \|\boldsymbol{h}\| \cdot o_P(N^{-1/2}) \cdot O(1) = o_P(N^{-1/2}).
+\end{align}
+Summing over the finite set of regimes $j \in \{1, \dots, K\} \setminus \{k\}$:
+\begin{equation}
+    \sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] \xrightarrow{p} \mathbf{0}.
+\end{equation}
+Because the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ is $o_P(N^{-1/2})$, applying the delta method to the standard M-estimation asymptotic expansion yields:
+\begin{equation}
+    \sqrt{N}(\hat{\theta}_k - \theta_k^*) = J_k^{-1} \frac{1}{\sqrt{N}}\sum_{t=1}^N \psi_k(W_t; \theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*) + \underbrace{\sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\boldsymbol{\Lambda}^*) (\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*)}_{= o_P(1) \cdot O_P(1) = o_P(1)} + o_P(1).
+\end{equation}
+Hence, preliminary $\sqrt{N}$-estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to $\hat{\theta}_k$. $\blacksquare$
 
 \section{Proof of Theorem 4: Oracle Equivalence}
 \label{app:proof_thm4}
