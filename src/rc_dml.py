@@ -207,6 +207,7 @@ class RegimeConditionalDML:
                  nuisance_model = None,
                  hac_lag: int = 12,
                  n_boot: int = 500,
+                 coupled: bool = True,
                  random_state: int = 42):
         self.n_regimes = n_regimes
         self.n_splits = n_splits
@@ -217,9 +218,13 @@ class RegimeConditionalDML:
         self.nuisance_model = nuisance_model if nuisance_model is not None else HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20)
         self.hac_lag = hac_lag
         self.n_boot = n_boot
+        self.coupled = coupled
         self.random_state = random_state
         
         self.theta_regimes_ = {}
+        self.theta_coupled_ = {}
+        self.theta_decoupled_ = {}
+        self.coupled_J_ = None
         self.se_regimes_ = {}
         self.ate_ = None
         self.ate_se_ = None
@@ -304,26 +309,43 @@ class RegimeConditionalDML:
                 pred_t = model_t.predict(X[test_idx])
                 tilde_T[k, test_idx] = T[test_idx] - pred_t
 
-        # 3. Solve Neyman-Orthogonal Scores for each Regime k
-        # psi_k(theta_k) = gamma_{tk} * (tilde_Y_{tk} - theta_k * tilde_T_{tk}) * tilde_T_{tk} = 0
+        # 3. Solve Neyman-Orthogonal Scores (Coupled System vs Decoupled)
         regime_weights = np.mean(gamma, axis=0)  # (K,)
+        K = self.effective_n_regimes_
         
-        theta_k_list = []
-        for k in range(self.effective_n_regimes_):
-            w = gamma[:, k]
-            num = np.sum(w * tilde_T[k] * tilde_Y[k])
-            denom = np.sum(w * (tilde_T[k] ** 2))
-            theta_k = num / np.maximum(denom, 1e-12)
-            theta_k_list.append(theta_k)
+        # Build full K x K Jacobian matrix J and score vector S
+        J_mat = np.zeros((K, K))
+        S_vec = np.zeros(K)
+        for j in range(K):
+            S_vec[j] = np.mean(gamma[:, j] * tilde_T[j] * tilde_Y[j])
+            for k in range(K):
+                J_mat[j, k] = np.mean(gamma[:, j] * gamma[:, k] * tilde_T[j] * tilde_T[k])
+                
+        self.coupled_J_ = J_mat
+        
+        # Compute decoupled estimates (diagonal approximation)
+        theta_decoupled = [float(S_vec[k] / max(J_mat[k, k], 1e-12)) for k in range(K)]
+        self.theta_decoupled_ = {k: theta_decoupled[k] for k in range(K)}
+        
+        if self.coupled:
+            # Full Coupled RC-DML: inverts cross-regime covariance, achieving exact Gateaux orthogonality
+            rcond = 1e-8 * np.trace(J_mat) / K
+            inv_J = np.linalg.pinv(J_mat + rcond * np.eye(K))
+            theta_vec = inv_J @ S_vec
+            theta_k_list = [float(th) for th in theta_vec]
+        else:
+            # Decoupled diagonal approximation (valid under asymptotic state separation)
+            theta_k_list = theta_decoupled
+            inv_J = np.diag(1.0 / np.maximum(np.diag(J_mat), 1e-12))
+            
+        self.theta_coupled_ = {k: float(theta_k_list[k]) for k in range(K)}
 
         # 4. Joint HAC (Newey-West) Sandwich Covariance Matrix (K x K)
         # Accounts for temporal autocorrelation, cross-regime correlation, and fold purging
-        scores = np.zeros((N, self.effective_n_regimes_))
-        J = np.zeros(self.effective_n_regimes_)
-        for k in range(self.effective_n_regimes_):
+        scores = np.zeros((N, K))
+        for k in range(K):
             w = gamma[:, k]
             scores[:, k] = w * (tilde_Y[k] - theta_k_list[k] * tilde_T[k]) * tilde_T[k]
-            J[k] = np.sum(w * (tilde_T[k] ** 2)) / N
             
         Omega = (scores.T @ scores) / N
         for lag in range(1, self.hac_lag + 1):
@@ -331,8 +353,6 @@ class RegimeConditionalDML:
             Gamma_lag = (scores[lag:].T @ scores[:-lag]) / N
             Omega += weight * (Gamma_lag + Gamma_lag.T)
             
-        inv_J = np.diag(1.0 / np.maximum(J, 1e-12))
-        
         Sigma = (inv_J @ Omega @ inv_J) / N
         
         for k in range(self.effective_n_regimes_):

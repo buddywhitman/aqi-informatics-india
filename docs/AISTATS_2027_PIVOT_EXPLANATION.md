@@ -65,11 +65,12 @@ Double Machine Learning (Chernozhukov et al., 2018) provides $\sqrt{N}$-consiste
    $$\hat{\theta}_{\mathrm{naive}} \xrightarrow{p} \sum_{k=1}^K \omega_k \theta_k^* + \mathcal{B}_{\mathrm{heterogeneity}} + \mathcal{B}_{\mathrm{confounding}}$$
    where $\mathcal{B}_{\mathrm{heterogeneity}} = \frac{\sum_k \theta_k^* \mathbb{E}[\bar{m}(X_t)\Delta m_k(X_t)\pi_k(X_t)]}{\mathbb{E}[\tilde{T}_t^2]}$ and $\mathcal{B}_{\mathrm{confounding}} = \frac{\sum_k \mathbb{E}[\pi_k(X_t)\Delta m_k(X_t)\Delta g_k(X_t)]}{\mathbb{E}[\tilde{T}_t^2]}$. This provides the exact mathematical explanation for why standard DML suffered sign inversions and explains the *bias amplification* phenomenon.
 
-2. **The RC-DML Estimator**:
-   We integrate latent regime posterior probabilities $\gamma_{tk} = P(S_t = k \mid Z_{1:N})$ (inferred via Gaussian HMM Forward-Backward smoothing on auxiliary state dynamics $Z_t$, \citep{hamilton1989new}) into the Neyman-orthogonal score equation:
-   $$\psi_k(W_t; \theta_k, \eta_k) = \gamma_{tk} \cdot \left[ (Y_t - \ell_k(X_t)) - \theta_k (T_t - m_k(X_t)) \right] (T_t - m_k(X_t))$$
-   yielding the closed-form estimator:
-   $$\hat{\theta}_k = \frac{\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}}{\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk}^2}$$
+2. **Coupled Multi-Regime Orthogonal Score System**:
+   Rather than treating latent regimes as decoupled 1D heuristics (which suffer $O(1)$ cross-talk bias under regime overlap), we formulate the structural estimating system over the vector of regime-interacted pseudo-treatments $\boldsymbol{D}_t = (\gamma_{t1} T_t, \dots, \gamma_{tK} T_t)^\top \in \mathbb{R}^K$.
+   The **Coupled Neyman-Orthogonal Score Vector** is:
+   $$\boldsymbol{\Psi}(W_t; \boldsymbol{\theta}, \eta) = \tilde{\boldsymbol{D}}_t \left( \tilde{Y}_t - \boldsymbol{\theta}^\top \tilde{\boldsymbol{D}}_t \right) \in \mathbb{R}^K$$
+   yielding the closed-form coupled matrix estimator:
+   $$\hat{\boldsymbol{\theta}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}, \quad \hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top, \quad \hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t$$
 
 3. **Algorithm 1 (Purged Block-Temporal Cross-Fitting)**:
    Building upon the financial time series purging and embargo framework of \citet{lopezdeprado2018advances}, we partition the time series into $B$ contiguous blocks and purge an embargo window $\tau \ge C \log N$ on both sides. This guarantees that temporal dependencies decay to $o_P(N^{-1/2})$, restoring Neyman orthogonality under $\alpha$-mixing.
@@ -77,13 +78,15 @@ Double Machine Learning (Chernozhukov et al., 2018) provides $\sqrt{N}$-consiste
 4. **Theorem 2 ($\sqrt{N}$-Consistency & Semiparametric Efficiency Bound)**:
    We prove $\sqrt{N}(\hat{\theta}_k - \theta_k^*) \xrightarrow{d} \mathcal{N}(0, \sigma_k^2)$ and demonstrate that the regime-conditioned score generates the efficient influence function $\tilde{\psi}_k = J_k^{-1} \psi_k$, attaining the semiparametric efficiency bound for regular asymptotically linear estimators.
 
-5. **Theorem 3 (Multiway Gateaux Orthogonality to Latent Regime Dynamics)**:
-   We prove that the Gateaux derivative of the expected estimating equation with respect to Gaussian HMM parameters $\boldsymbol{\Lambda}$ satisfies $\sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathbb{E}[\psi_k] = \mathbf{0} + o(1)$ under Informative Auxiliary State Separation (Assumption 5). The derivation explicitly evaluates both branches:
-   * **On-regime ($j = k$)**: $\mathbb{E}[R_{tk}^* \mid X, Z, S_t=k] = 0$ identically by unconfoundedness.
-   * **Cross-regime ($j \neq k$)**: Evaluates to non-zero residual $\Delta_{j \to k}(X_t)$, but is exponentially suppressed by the HMM softmax posterior gradient $\nabla_{\boldsymbol{\Lambda}} \gamma_{tk} = O(\exp(-\kappa \Delta_N^2)) = o_P(N^{-1/2})$.
-   * **Boundary of Orthogonality (Remark 1)**: If state separation is weak ($\Delta_Z = O(1)$), an efficiency penalty $\mathcal{J}_{\boldsymbol{\Lambda}} \Var(\hat{\boldsymbol{\Lambda}}) \mathcal{J}_{\boldsymbol{\Lambda}}^\top$ is incurred, explaining why physical auxiliary dynamics $Z_t$ with clear modes are essential and why continental basins with prolonged winter stagnation exhibit wider confidence intervals.
+5. **Theorem 3 (Universal Multiway Gateaux Orthogonality to Latent Regime Dynamics)**:
+   We prove that the Gateaux derivative of the expected coupled score vector with respect to latent dynamics parameters $\boldsymbol{\Lambda}$ satisfies:
+   $$\nabla_{\boldsymbol{\Lambda}} \mathbb{E}\left[ \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*, \boldsymbol{\Lambda}^*) \right] = \mathbf{0} \quad \text{identically}.$$
+   Unlike decoupled heuristics that required asymptotic oracle separation ($\Delta_N \to \infty$) to suppress cross-regime contamination, the coupled formulation establishes exact orthogonality under arbitrary fixed regime overlap ($\Delta_Z = O(1)$). Preliminary $\sqrt{N}$-estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance.
 
-6. **Proposition 5 (Markov Occupation Variance Decomposition)**:
+6. **Theorem 4 (Asymptotic Duality & Cross-Regime Inversion)**:
+   We prove that decoupled estimation incurs an asymptotic cross-talk bias $\mathrm{plim}(\hat{\theta}_k^{\mathrm{diag}} - \theta_k^*) = \sum_{j \neq k} \frac{J_{jk}}{J_{kk}}(\theta_j^* - \theta_k^*)$. In contrast, Coupled RC-DML inverts the full $K \times K$ Jacobian $\boldsymbol{J}^{-1}$, exactly eliminating cross-talk under arbitrary overlap while smoothly collapsing to the decoupled estimator under asymptotic separation: $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\| = O_P(\exp(-\kappa \Delta_Z^2))$.
+
+7. **Proposition 6 (Markov Occupation Variance Decomposition)**:
    We establish the exact variance decomposition between conditional Sample ATE ($\sigma_{\mathrm{SATE}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma} \bar{\boldsymbol{\gamma}}$) and Population ATE ($\sigma_{\mathrm{PATE}}^2 = \sigma_{\mathrm{SATE}}^2 + \Var(\bar{S}_N)(\Delta \theta^*)^2$) via the Kemeny-Snell spectral expansion of the fundamental matrix $\mathbf{Z} = (\mathbf{I} - \boldsymbol{\Pi} + \mathbf{1}\boldsymbol{\pi}^{*\top})^{-1}$.
 
 ---

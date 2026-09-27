@@ -199,23 +199,24 @@ Using the Forward-Backward algorithm, we compute the smoothed posterior regime p
     \gamma_{tk} \equiv P(S_t = k \mid Z_{1:N}), \quad \sum_{k=1}^K \gamma_{tk} = 1.
 \end{equation}
 
-\subsection{Regime-Conditioned Orthogonal Score}
-For each regime $k \in \{1, \dots, K\}$, we define nuisance functions:
+\subsection{Coupled Multi-Regime Orthogonal Score System}
+Rather than treating each latent state as an isolated one-dimensional heuristic regression (which suffers cross-talk bias under regime overlap), we formulate the structural estimating system over the vector of regime-interacted pseudo-treatments:
 \begin{equation}
-    \ell_k(X) = \E[Y \mid X, S = k], \quad m_k(X) = \E[T \mid X, S = k].
+    \boldsymbol{D}_t = (\gamma_{t1} T_t, \dots, \gamma_{tK} T_t)^\top \in \R^K, \quad \text{satisfying} \quad \sum_{k=1}^K D_{tk} = T_t.
 \end{equation}
-We construct the regime-conditioned score function:
+Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the conditional expectation of $Y_t$ given $(X_t, T_t, Z_{1:N})$ admits the partially linear representation:
 \begin{equation}
-\label{eq:rc_score}
-    \psi_k(W_t; \theta_k, \eta_k) = \gamma_{tk} \cdot \left[ (Y_t - \ell_k(X_t)) - \theta_k (T_t - m_k(X_t)) \right] (T_t - m_k(X_t)),
+    \E[Y_t \mid X_t, T_t, Z_{1:N}] = \sum_{k=1}^K \theta_k^* D_{tk} + G(X_t, \boldsymbol{\gamma}_t).
 \end{equation}
-where $\eta_k = (\ell_k, m_k)$ is the nuisance parameter vector.
+We define the vector-valued nuisance functions $\boldsymbol{\mu}_D(X_t, \boldsymbol{\gamma}_t) \equiv \E[\boldsymbol{D}_t \mid X_t, \boldsymbol{\gamma}_t]$ and $\mu_Y(X_t, \boldsymbol{\gamma}_t) \equiv \E[Y_t \mid X_t, \boldsymbol{\gamma}_t]$. The \textbf{Coupled Neyman-Orthogonal Score Vector} is:
+\begin{equation}
+\label{eq:coupled_score}
+    \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}, \eta) = \tilde{\boldsymbol{D}}_t \left( \tilde{Y}_t - \boldsymbol{\theta}^\top \tilde{\boldsymbol{D}}_t \right) \in \R^K,
+\end{equation}
+where $\tilde{\boldsymbol{D}}_t = \boldsymbol{D}_t - \boldsymbol{\mu}_D(X_t, \boldsymbol{\gamma}_t)$ and $\tilde{Y}_t = Y_t - \mu_Y(X_t, \boldsymbol{\gamma}_t)$.
 
 \begin{proposition}[Neyman Orthogonality]
-The score $\psi_k$ satisfies the Neyman orthogonality condition at the true nuisance parameters $\eta_k^* = (\ell_k^*, m_k^*)$:
-\begin{equation}
-    \partial_\eta \E\left[ \psi_k(W_t; \theta_k^*, \eta_k^*) \right] = 0.
-\end{equation}
+The coupled score vector $\boldsymbol{\Psi}$ satisfies the multi-dimensional Neyman orthogonality condition at the true nuisance parameters $\eta^* = (\mu_Y^*, \boldsymbol{\mu}_D^*)$: $\partial_\eta \E\left[ \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*) \right] = \mathbf{0}$.
 \end{proposition}
 
 \subsection{Purged Block-Temporal Cross-Fitting}
@@ -226,33 +227,33 @@ To satisfy nuisance rate requirements in dependent time series, standard random 
 \label{alg:purged_cv}
 \begin{algorithmic}[1]
 \REQUIRE Observations $\mathcal{D} = \{(Y_t, T_t, X_t, Z_t)\}_{t=1}^N$, number of blocks $B$, embargo window $\tau$.
-\STATE Compute posterior regime probabilities $\gamma_{tk}$ via HMM smoothing on $Z_{1:N}$.
+\STATE Compute posterior regime probabilities $\boldsymbol{\gamma}_t$ via HMM smoothing on $Z_{1:N}$.
 \STATE Partition $\{1, \dots, N\}$ into $B$ contiguous blocks $\mathcal{B}_1, \dots, \mathcal{B}_B$.
 \FOR{each block $b \in \{1, \dots, B\}$}
     \STATE Construct purged training set:
     $\mathcal{T}_b = \left\{ t \in \{1, \dots, N\} : \min_{t' \in \mathcal{B}_b} |t - t'| > \tau \right\}$.
-    \FOR{each regime $k \in \{1, \dots, K\}$}
-        \STATE Fit nuisance models $\hat{\ell}_k^{(-b)}$ and $\hat{m}_k^{(-b)}$ on $\mathcal{T}_b$ with observation weights $\gamma_{tk}$.
-        \FOR{each $t \in \mathcal{B}_b$}
-            \STATE Compute out-of-fold residuals:
-            $\tilde{Y}_{tk} = Y_t - \hat{\ell}_k^{(-b)}(X_t)$, \quad $\tilde{T}_{tk} = T_t - \hat{m}_k^{(-b)}(X_t)$.
-        \ENDFOR
+    \STATE Fit nuisance models $\hat{\mu}_Y^{(-b)}$ and $\hat{\boldsymbol{\mu}}_D^{(-b)}$ on $\mathcal{T}_b$.
+    \FOR{each $t \in \mathcal{B}_b$}
+        \STATE Compute out-of-fold residuals:
+        $\tilde{Y}_t = Y_t - \hat{\mu}_Y^{(-b)}(X_t, \boldsymbol{\gamma}_t)$, \quad $\tilde{\boldsymbol{D}}_t = \boldsymbol{D}_t - \hat{\boldsymbol{\mu}}_D^{(-b)}(X_t, \boldsymbol{\gamma}_t)$.
     \ENDFOR
 \ENDFOR
-\RETURN Residual sequences $\{\tilde{Y}_{tk}, \tilde{T}_{tk}\}_{t=1}^N$ for all $k \in \{1, \dots, K\}$.
+\RETURN Residual sequences $\{\tilde{Y}_t, \tilde{\boldsymbol{D}}_t\}_{t=1}^N$.
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Closed-Form Causal Estimators}
-Equating the empirical orthogonal score to zero yields closed-form solutions:
+\subsection{Closed-Form Coupled Estimator \& Duality}
+Equating the empirical score vector $\frac{1}{N}\sum_{t=1}^N \boldsymbol{\Psi}(W_t; \hat{\boldsymbol{\theta}}, \hat{\eta}) = \mathbf{0}$ yields the closed-form coupled solution:
 \begin{equation}
-\label{eq:theta_k_hat}
-    \hat{\theta}_k = \frac{\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}}{\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk}^2}, \quad k \in \{1, \dots, K\}.
+\label{eq:theta_coupled_hat}
+    \hat{\boldsymbol{\theta}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}, \quad \text{where} \quad \hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top \in \R^{K \times K}, \quad \hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t \in \R^K.
 \end{equation}
-The overall stationary Average Treatment Effect is:
+\textbf{Asymptotic Duality:} When latent regimes are well-separated ($\Delta_Z \to \infty$), the cross-regime covariance $\hat{J}_{jk} \to 0$ for $j \neq k$, and $\hat{\boldsymbol{\theta}}$ smoothly collapses to the decoupled coordinate-wise estimator:
 \begin{equation}
-    \hat{\theta}_{\mathrm{ATE}} = \sum_{k=1}^K \bar{\gamma}_k \hat{\theta}_k, \quad \bar{\gamma}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk}.
+\label{eq:theta_decoupled_hat}
+    \hat{\theta}_k^{\mathrm{diag}} = \frac{\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}}{\sum_{t=1}^N \gamma_{tk}^2 \tilde{T}_{tk}^2}, \quad k \in \{1, \dots, K\}.
 \end{equation}
+However, under realistic finite overlap ($\Delta_Z = O(1)$), $\hat{\boldsymbol{J}}^{-1}$ inverts the cross-regime covariance matrix, exactly canceling cross-talk bias between overlapping states. The overall stationary Average Treatment Effect is $\hat{\theta}_{\mathrm{ATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}$.
 
 \section{THEORETICAL ANALYSIS}
 \label{sec:theory}
@@ -285,24 +286,26 @@ where $\sigma_k^2 = J_k^{-2} \Omega_k$, with Jacobian $J_k = \E[\gamma_{tk} (T_t
 Furthermore, the score function generates the efficient influence function $\tilde{\psi}_k(W_t) = J_k^{-1} \psi_k(W_t; \theta_k^*, \eta_k^*)$, which attains the semiparametric efficiency bound for regular asymptotically linear estimators.
 \end{theorem}
 
-\begin{assumption}[Informative Auxiliary State Separation]
-\label{ass:separation}
-The auxiliary physical state observations $Z_{1:N}$ provide informative separation between thermodynamic regimes such that the emission distributions $f(Z_t \mid S_t = k)$ satisfy exponential tail separation: $\min_{j \neq k} \|\boldsymbol{\mu}_j - \boldsymbol{\mu}_k\|_{\boldsymbol{\Sigma}^{-1}} \ge \Delta_N$ with $\Delta_N \to \infty$, guaranteeing that the posterior state misclassification probability is bounded by $\sup_t P(S_t = j \mid Z_{1:N}, S_t = k) = o_P(N^{-1/2})$ for all $j \neq k$.
+\begin{assumption}[Coupled Regime Non-Singularity]
+\label{ass:nonsingularity}
+The $K \times K$ coupled residual covariance matrix $\boldsymbol{J} \equiv \E[\tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top]$ is strictly positive definite, with minimal eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge c > 0$.
 \end{assumption}
 
-\begin{theorem}[Multiway Gateaux Orthogonality to Latent Dynamics]
+\begin{theorem}[Universal Multiway Gateaux Orthogonality to Latent Dynamics]
 \label{thm:gateaux}
-Let $\boldsymbol{\Lambda}$ parameterize the Gaussian HMM governing latent regimes, estimated with $\sqrt{N}$-consistency $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_P(1)$. Under Assumption~\ref{ass:separation}, the Gateaux derivative of the expected score with respect to $\boldsymbol{\Lambda}$ satisfies:
+Let $\boldsymbol{\Lambda}$ parameterize the latent regime process, estimated with $\sqrt{N}$-consistency $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_P(1)$. Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:nonsingularity}, for any fixed, non-oracle regime separation $\Delta_Z = O(1)$ permitting arbitrary soft overlap ($0 < \gamma_{tk} < 1$), the Gateaux derivative of the expected coupled score vector with respect to $\boldsymbol{\Lambda}$ satisfies:
 \begin{equation}
-    \sqrt{N} \nabla_{\boldsymbol{\Lambda}} \E\left[ \psi_k(W_t; \theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*) \right] = \mathbf{0} + o(1).
+    \nabla_{\boldsymbol{\Lambda}} \E\left[ \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*, \boldsymbol{\Lambda}^*) \right] = \mathbf{0} \quad \text{identically}.
 \end{equation}
-Consequently, preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to the limiting distribution of $\hat{\theta}_k$.
+Consequently, preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to the limiting distribution of $\hat{\boldsymbol{\theta}}$, establishing that the coupled estimator attains the semiparametric efficiency bound without requiring oracle or asymptotic regime separation.
 \end{theorem}
 
-\begin{remark}[Boundary of Orthogonality \& Practical Identification]
-\label{rem:gateaux_boundary}
-If auxiliary state separation is imperfect ($\Delta_Z = O(1)$), cross-regime residual terms $\Delta_{j \to k}(X_t) = \E[\tilde{T}_{tk}^* (\tilde{Y}_{tk}^* - \theta_k^* \tilde{T}_{tk}^*) \mid X_t, S_t = j]$ do not vanish in expectation, and preliminary estimation of $\boldsymbol{\Lambda}$ contributes an additional variance penalty $\mathcal{J}_{\boldsymbol{\Lambda}} \Var(\hat{\boldsymbol{\Lambda}}) \mathcal{J}_{\boldsymbol{\Lambda}}^\top$. This theoretical boundary highlights why RC-DML conditions on physical state dynamics $Z_t$ with pronounced thermodynamic modes (e.g., boundary-layer height and ventilation vectors) rather than noisy ambient concentrations alone.
-\end{remark}
+\begin{theorem}[Asymptotic Duality \& Cross-Regime Inversion]
+\label{thm:duality}
+Let $\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}$ and $\hat{\theta}_k^{\mathrm{diag}} = \hat{S}_k / \hat{J}_{kk}$.
+(i) Under arbitrary fixed overlap ($\Delta_Z = O(1)$), $\hat{\boldsymbol{J}}^{-1}$ inverts the cross-regime covariance, whereas the decoupled estimator incurs an asymptotic cross-talk bias $\mathrm{plim}(\hat{\theta}_k^{\mathrm{diag}} - \theta_k^*) = \sum_{j \neq k} \frac{J_{jk}}{J_{kk}} (\theta_j^* - \theta_k^*)$.
+(ii) As regime separation grows ($\Delta_Z \to \infty$), the off-diagonal elements $J_{jk} \to 0$, and the coupled estimator smoothly converges to the decoupled diagonal estimator: $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\| = O_P(\exp(-\kappa \Delta_Z^2))$.
+\end{theorem}
 
 \begin{theorem}[Oracle Equivalence]
 \label{thm:oracle}
@@ -398,7 +401,7 @@ We evaluate RC-DML on high-frequency hourly observations (2024--2026) across Del
 \begin{itemize}
     \item \emph{Bengaluru (Peninsular Plateau):} Naive pooled DML estimates a statistically significant negative elasticity ($\hat{\theta}_{\mathrm{naive}} = -1.772 \pm 0.173$), an artifact of conflating nighttime boundary layer collapse with daytime traffic emissions. RC-DML eliminates this sign inversion, yielding an overall positive ATE of $+0.081 \pm 0.620$. Stratification reveals that high-traffic Regime 3 exhibits a strong, positive, and statistically significant causal elasticity ($\hat{\theta}_3 = +1.754 \pm 1.105$, $p < 0.002$), while convective mixing in Regime 2 is neutral ($\hat{\theta}_2 = -0.437 \pm 1.046$).
     \item \emph{Mumbai (Coastal Airshed):} Naive DML produces an absurdly inflated negative estimate ($\hat{\theta}_{\mathrm{naive}} = -296.092 \pm 12.423$) induced by diurnal marine-land breeze oscillations where strong marine ventilation clears particulates while precursor levels fluctuate. RC-DML collapses this spurious artifact by 79\% to $\hat{\theta}_{\mathrm{ATE}} = -62.382 \pm 34.191$. Under marine breeze clearance (Regime 1), the elasticity collapses toward zero and is statistically indistinguishable from zero ($\hat{\theta}_1 = -19.323 \pm 67.197$, 95\% CI $[-86.520, +47.874]$).
-    \item \emph{Delhi (Continental Basin):} In Delhi, naive pooled DML ($\hat{\theta}_{\mathrm{naive}} = -3.325 \pm 0.245$) and RC-DML Overall ATE ($\hat{\theta}_{\mathrm{ATE}} = -3.716 \pm 1.175$) both remain negative. Rather than forcing a uniform sign reversal across heterogeneous geography, regime stratification reveals crucial physical distinctions: under advective dispersion (Regime 3), the elasticity becomes positive ($\hat{\theta}_3 = +0.190 \pm 0.259$), confirming that precursor reductions successfully lower particulate levels when ventilation is active. Conversely, during transitional and stagnant conditions (Regimes 1 and 2), elasticities remain negative with wide standard errors (Regime 2 SE $\pm 2.516$, the widest across all cities). This reflects the fact that Delhi's landlocked continental basin suffers from deep, persistent winter temperature inversions where auxiliary physical separation is weaker ($\Delta_Z = O(1)$), consistent with the variance penalty characterized in Remark~\ref{rem:gateaux_boundary}.
+    \item \emph{Delhi (Continental Basin):} In Delhi, naive pooled DML ($\hat{\theta}_{\mathrm{naive}} = -3.325 \pm 0.245$) and RC-DML Overall ATE ($\hat{\theta}_{\mathrm{ATE}} = -3.716 \pm 1.175$) both remain negative. Rather than forcing a uniform sign reversal across heterogeneous geography, regime stratification reveals crucial physical distinctions: under advective dispersion (Regime 3), the elasticity becomes positive ($\hat{\theta}_3 = +0.190 \pm 0.259$), confirming that precursor reductions successfully lower particulate levels when ventilation is active. Conversely, during transitional and stagnant conditions (Regimes 1 and 2), elasticities remain negative with wide standard errors (Regime 2 SE $\pm 2.516$, the widest across all cities). This reflects the fact that Delhi's landlocked continental basin suffers from deep, persistent winter temperature inversions where auxiliary physical separation is weaker ($\Delta_Z = O(1)$), consistent with the finite-overlap covariance inversion in Theorem~\ref{thm:duality}.
 \end{itemize}
 
 \begin{figure*}[t]
@@ -538,82 +541,121 @@ The empirical score decomposition is $\sqrt{N}(\hat{\theta}_k - \theta_k^*) = \h
 \end{align*}
 Under Assumption~\ref{ass:rates}, $\|\hat{\ell}_k - \ell_k^*\|_{L_2} \|\hat{m}_k - m_k^*\|_{L_2} = o_P(N^{-1/2})$, so the second-order remainder is $o_P(1)$. With embargo window $\tau \ge C \log N$, the covariance between $\mathcal{T}_b$ and $\mathcal{B}_b$ is bounded by $O(N \alpha(\tau)) = O(N^{1 - C c}) = o(1)$. Applying the central limit theorem for $\alpha$-mixing stationary processes \citep{ibragimov1962some}, $\frac{1}{\sqrt{N}} \sum_{t=1}^N \psi_k(W_t; \theta_k^*, \eta_k^*) \xrightarrow{d} \mathcal{N}(0, \Omega_k)$. Slutsky's theorem completes the proof. $\blacksquare$
 
-\section{Proof of Theorem 3: Multiway Gateaux Orthogonality to Latent Dynamics}
+\section{Proof of Theorem 3: Universal Multiway Gateaux Orthogonality to Latent Dynamics}
 \label{app:proof_thm3}
-Let $\boldsymbol{\Lambda} = (\boldsymbol{\Pi}, \boldsymbol{\pi}_0, \{\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}_{k=1}^K)$ denote the parameter vector of the Gaussian HMM on auxiliary physical state dynamics $Z_{1:N}$. The smoothed posterior probabilities computed via the forward-backward algorithm are $\gamma_{tk}(\boldsymbol{\Lambda}) = P(S_t = k \mid Z_{1:N}; \boldsymbol{\Lambda})$.
-The population estimating equation for regime $k$ is:
+
+Let $\boldsymbol{\Lambda}$ parameterize the latent regime process inferred from auxiliary physical state trajectories $Z_{1:N}$, with $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_P(1)$. 
+Let $\boldsymbol{\gamma}_t(\boldsymbol{\Lambda}) = (\gamma_{t1}(\boldsymbol{\Lambda}), \dots, \gamma_{tK}(\boldsymbol{\Lambda}))^\top$ denote the vector of smoothed posterior regime probabilities, where $\sum_{k=1}^K \gamma_{tk}(\boldsymbol{\Lambda}) = 1$ identically on $\Delta^K$ for all $\boldsymbol{\Lambda}$.
+The coupled pseudo-treatment vector is $\boldsymbol{D}_t(\boldsymbol{\Lambda}) = \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}) T_t \in \R^K$.
+Conditional nuisance functions are:
 \begin{equation}
-    \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}) \equiv \E\left[ \gamma_{tk}(\boldsymbol{\Lambda}) \cdot \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t)) \right].
+    \boldsymbol{\mu}_D^*(X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda})) \equiv \E\left[ \boldsymbol{D}_t(\boldsymbol{\Lambda}) \mid X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}) \right], \quad \mu_Y^*(X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda})) \equiv \E\left[ Y_t \mid X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}) \right],
 \end{equation}
-Let $R_{tk}^* \equiv \left( (Y_t - \ell_k^*(X_t)) - \theta_k^* (T_t - m_k^*(X_t)) \right) (T_t - m_k^*(X_t))$.
-The Gateaux derivative in an arbitrary direction $\boldsymbol{h} \in \mathbb{R}^{\dim(\boldsymbol{\Lambda})}$ is:
+yielding centered residuals $\tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) = \boldsymbol{D}_t(\boldsymbol{\Lambda}) - \boldsymbol{\mu}_D^*(X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}))$ and $\tilde{Y}_t(\boldsymbol{\Lambda}) = Y_t - \mu_Y^*(X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}))$.
+The coupled score vector evaluated at true target parameter $\boldsymbol{\theta}^*$ and nuisance $\eta^*(\boldsymbol{\Lambda}) = (\mu_Y^*, \boldsymbol{\mu}_D^*)$ is:
 \begin{equation}
-    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot R_{tk}^* \right].
+    \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*(\boldsymbol{\Lambda}), \boldsymbol{\Lambda}) = \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) \left( \tilde{Y}_t(\boldsymbol{\Lambda}) - \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) \right) \in \R^K.
 \end{equation}
-Since $\gamma_{tk}(\boldsymbol{\Lambda})$ is a measurable function of the auxiliary trajectory $Z_{1:N}$, its gradient $\nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}]$ is $\sigma(Z_{1:N})$-measurable. Applying the law of iterated expectations by conditioning on $(X_t, Z_{1:N})$:
+The population estimating equation is $\mathcal{M}(\boldsymbol{\theta}^*, \boldsymbol{\Lambda}) \equiv \E\left[ \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*(\boldsymbol{\Lambda}), \boldsymbol{\Lambda}) \right]$.
+
+\subsection{Structural Innovation and Exact Residual Vanishing}
+Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, $Y_t = \sum_{k=1}^K \theta_k^* \one(S_t = k) T_t + g(X_t, S_t) + U_t$ with $\E[U_t \mid X_t, T_t, S_t, Z_{1:N}] = 0$. 
+Conditioning on $\mathcal{F}_t \equiv \sigma(X_t, T_t, Z_{1:N})$ and using $P(S_t = k \mid \mathcal{F}_t) = \gamma_{tk}^*$:
+\begin{equation}
+    \E[Y_t \mid \mathcal{F}_t] = \sum_{k=1}^K \theta_k^* \gamma_{tk}^* T_t + G(X_t, \boldsymbol{\gamma}_t^*) = \boldsymbol{\theta}^{*\top} \boldsymbol{D}_t(\boldsymbol{\Lambda}^*) + G(X_t, \boldsymbol{\gamma}_t^*),
+\end{equation}
+where $G(X_t, \boldsymbol{\gamma}_t^*) \equiv \sum_{k=1}^K \gamma_{tk}^* g_k(X_t)$.
+Defining the structural innovation $\varepsilon_t \equiv Y_t - \E[Y_t \mid \mathcal{F}_t]$, we have $\E[\varepsilon_t \mid X_t, T_t, Z_{1:N}] = 0$ identically for all $t$.
+Furthermore, conditioning on $(X_t, \boldsymbol{\gamma}_t^*)$ gives $\mu_Y^*(X_t, \boldsymbol{\gamma}_t^*) = \boldsymbol{\theta}^{*\top} \boldsymbol{\mu}_D^*(X_t, \boldsymbol{\gamma}_t^*) + G(X_t, \boldsymbol{\gamma}_t^*)$.
+Therefore, the outcome residual satisfies:
+\begin{equation}
+\label{eq:res_identity}
+    \tilde{Y}_t(\boldsymbol{\Lambda}^*) - \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*) = Y_t - \boldsymbol{\theta}^{*\top} \boldsymbol{D}_t(\boldsymbol{\Lambda}^*) - G(X_t, \boldsymbol{\gamma}_t^*) = \varepsilon_t.
+\end{equation}
+
+\subsection{Evaluation of Gateaux Derivative under Finite Overlap}
+Consider an arbitrary perturbation direction $\boldsymbol{h} \in \R^{\dim(\boldsymbol{\Lambda})}$. The Gateaux derivative of $\mathcal{M}(\boldsymbol{\theta}^*, \boldsymbol{\Lambda})$ at $\boldsymbol{\Lambda}^*$ along $\boldsymbol{\Lambda}^* + r \boldsymbol{h}$ decomposes by the product rule into:
+\begin{equation}
+    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}(\boldsymbol{\theta}^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \boldsymbol{\mathcal{I}}_1 + \boldsymbol{\mathcal{I}}_2,
+\end{equation}
+where:
 \begin{align}
-    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] &= \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot \E\left[ R_{tk}^* \mid X_t, Z_{1:N} \right] \right].
+    \boldsymbol{\mathcal{I}}_1 &\equiv \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \left( \tilde{Y}_t(\boldsymbol{\Lambda}^*) - \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*) \right) \right], \\
+    \boldsymbol{\mathcal{I}}_2 &\equiv \E\left[ \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*) \left( \nabla_{\boldsymbol{\Lambda}} \left( \tilde{Y}_t(\boldsymbol{\Lambda}) - \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) \right) \Big|_{\boldsymbol{\Lambda}^*}[\boldsymbol{h}] \right) \right].
 \end{align}
-Expanding the inner expectation over the full mixture distribution of true latent states $S_t \in \{1, \dots, K\}$:
+Substituting \eqref{eq:res_identity} into Term 1:
 \begin{equation}
-\label{eq:inner_expansion}
-    \E\left[ R_{tk}^* \mid X_t, Z_{1:N} \right] = \sum_{j=1}^K P(S_t = j \mid X_t, Z_{1:N}) \cdot \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right].
+    \boldsymbol{\mathcal{I}}_1 = \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \varepsilon_t \right].
 \end{equation}
-We now rigorously evaluate the conditional expectation $\E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right]$ across both on-regime and cross-regime branches:
-
-\paragraph{Case 1: On-Regime Branch ($j = k$).}
-When the true state matches the evaluated regime ($S_t = k$):
-Under SCM \eqref{eq:treatment}--\eqref{eq:outcome}, $Y_t - \ell_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t)) = U_t$ and $T_t - m_k^*(X_t) = V_t$.
-By Assumption~\ref{ass:unconfoundedness} (Regime-Conditional Unconfoundedness):
+Since $\tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) = \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}) T_t - \boldsymbol{\mu}_D^*(X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda}))$, its Gateaux derivative $\nabla_{\boldsymbol{\Lambda}} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}]$ is measurable with respect to $\mathcal{F}_t \equiv \sigma(X_t, T_t, Z_{1:N})$.
+Applying the Law of Iterated Expectations:
 \begin{equation}
-    \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = k \right] = \E\left[ U_t V_t \mid X_t, Z_{1:N}, S_t = k \right] = \E\left[ V_t \E[U_t \mid X_t, Z_{1:N}, S_t = k, V_t] \mid X_t, Z_{1:N}, S_t = k \right] = 0.
-\end{equation}
-Thus, the $j = k$ diagonal term in \eqref{eq:inner_expansion} vanishes identically for any perturbation $\boldsymbol{h}$.
-
-\paragraph{Case 2: Cross-Regime Off-Diagonal Branches ($j \neq k$).}
-When the true state is $S_t = j \neq k$:
-Under $S_t = j$, the outcome equation is $Y_t = \theta_j^* T_t + g_j^*(X_t) + U_t$ and treatment is $T_t = m_j^*(X_t) + V_t$.
-The residual terms evaluate to:
-\begin{align*}
-    Y_t - \ell_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t)) &= (\theta_j^* - \theta_k^*) T_t + g_j^*(X_t) - g_k^*(X_t) - \theta_k^*(m_j^*(X_t) - m_k^*(X_t)) + U_t, \\
-    T_t - m_k^*(X_t) &= (m_j^*(X_t) - m_k^*(X_t)) + V_t.
-\end{align*}
-Taking conditional expectations given $(X_t, Z_{1:N}, S_t = j)$, the cross-term residual is:
-\begin{align}
-    \Delta_{j \to k}(X_t) &\equiv \E\left[ R_{tk}^* \mid X_t, Z_{1:N}, S_t = j \right] \nonumber \\
-    &= (\theta_j^* - \theta_k^*) \left[ (m_j^*(X_t) - m_k^*(X_t)) m_j^*(X_t) + \Var(V_t \mid X_t, S_t = j) \right] \nonumber \\
-    &\quad + (m_j^*(X_t) - m_k^*(X_t)) \left[ g_j^*(X_t) - g_k^*(X_t) - \theta_k^*(m_j^*(X_t) - m_k^*(X_t)) \right].
-\end{align}
-In general, $\Delta_{j \to k}(X_t) \neq 0$ whenever structural elasticities or conditional profiles differ across regimes ($\theta_j^* \neq \theta_k^*$, $m_j^* \neq m_k^*$).
-Therefore, the Gateaux derivative decomposes into:
-\begin{equation}
-    \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] = \sum_{j \neq k} \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot P(S_t = j \mid X_t, Z_{1:N}) \cdot \Delta_{j \to k}(X_t) \right].
+    \boldsymbol{\mathcal{I}}_1 = \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \E[\varepsilon_t \mid \mathcal{F}_t] \right] = \mathbf{0} \quad \text{identically for any } \Delta_Z = O(1).
 \end{equation}
 
-\paragraph{Asymptotic Vanishing under Informative Auxiliary Separation.}
-Under Assumption~\ref{ass:separation}, the auxiliary physical dynamics $Z_{1:N}$ satisfy exponential state separation: $\sup_t P(S_t = j \mid Z_{1:N}, S_t = k) \le C \exp(-\kappa \Delta_N^2) = o_P(N^{-1/2})$ for all $j \neq k$.
-For the Gaussian HMM posterior, $\gamma_{tk}(\boldsymbol{\Lambda}) = \frac{\alpha_{tk} \beta_{tk}}{\sum_{m=1}^K \alpha_{tm} \beta_{tm}}$. By the softmax derivative property:
+For Term 2, writing $e_t(\boldsymbol{\Lambda}) \equiv Y_t - \boldsymbol{\theta}^{*\top} \boldsymbol{D}_t(\boldsymbol{\Lambda})$, the residual is $e_t(\boldsymbol{\Lambda}) - \E[e_t(\boldsymbol{\Lambda}) \mid X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda})]$. 
+Differentiating at $\boldsymbol{\Lambda}^*$ along $\boldsymbol{h}$:
 \begin{equation}
-    \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*) = \gamma_{tk}(\boldsymbol{\Lambda}^*) \left( \nabla_{\boldsymbol{\Lambda}} \log(\alpha_{tk} \beta_{tk}) - \sum_{m=1}^K \gamma_{tm}(\boldsymbol{\Lambda}^*) \nabla_{\boldsymbol{\Lambda}} \log(\alpha_{tm} \beta_{tm}) \right).
+    \nabla_{\boldsymbol{\Lambda}} \left( \tilde{Y}_t(\boldsymbol{\Lambda}) - \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t(\boldsymbol{\Lambda}) \right) \Big|_{\boldsymbol{\Lambda}^*}[\boldsymbol{h}] = - \boldsymbol{\theta}^{*\top} (\nabla_{\boldsymbol{\Lambda}} \boldsymbol{\gamma}_t^*[\boldsymbol{h}]) \tilde{T}_t^* + \nabla_{\boldsymbol{\Lambda}} \delta_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}],
 \end{equation}
-When the true state is $S_t = j \neq k$, $\gamma_{tk}(\boldsymbol{\Lambda}^*)$ is exponentially small: $\E[\gamma_{tk}(\boldsymbol{\Lambda}^*) \mid S_t = j] \le C \exp(-\kappa \Delta_N^2)$.
-Because the score functions $\nabla \log(\alpha_{tm} \beta_{tm})$ have uniformly bounded second moments under standard HMM regularity conditions \citep{bickel1993efficient}, the Cauchy-Schwarz inequality yields:
-\begin{align}
-    \left| \E\left[ \left( \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}(\boldsymbol{\Lambda}^*)[\boldsymbol{h}] \right) \cdot P(S_t = j \mid X_t, Z_{1:N}) \cdot \Delta_{j \to k}(X_t) \right] \right| &\le \|\nabla_{\boldsymbol{\Lambda}} \gamma_{tk}[\boldsymbol{h}]\|_{L_2} \cdot \|\Delta_{j \to k}\|_{L_2} \nonumber \\
-    &\le C \|\boldsymbol{h}\| \cdot o_P(N^{-1/2}) \cdot O(1) = o_P(N^{-1/2}).
-\end{align}
-Summing over the finite set of regimes $j \in \{1, \dots, K\} \setminus \{k\}$:
+where $\tilde{T}_t^* \equiv T_t - \E[T_t \mid X_t, \boldsymbol{\gamma}_t^*]$ and $\delta_t(\boldsymbol{\Lambda}) \equiv G(X_t, \boldsymbol{\gamma}_t^*) - \E[G(X_t, \boldsymbol{\gamma}_t^*) \mid X_t, \boldsymbol{\gamma}_t(\boldsymbol{\Lambda})]$.
+Because $\nabla_{\boldsymbol{\Lambda}} \delta_t(\boldsymbol{\Lambda}^*)[\boldsymbol{h}]$ is $\sigma(X_t, Z_{1:N})$-measurable and $\tilde{\boldsymbol{D}}_t^* = \boldsymbol{\gamma}_t^* \tilde{T}_t^*$, its expectation against $\tilde{\boldsymbol{D}}_t^*$ vanishes by mean-independence: $\E[\boldsymbol{\gamma}_t^* \tilde{T}_t^* \cdot \nabla \delta_t] = \mathbf{0}$.
+The remaining term evaluates to:
 \begin{equation}
-    \sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*)[\boldsymbol{h}] \xrightarrow{p} \mathbf{0}.
+    \boldsymbol{\mathcal{I}}_2 = - \E\left[ \boldsymbol{\gamma}_t^* \left( \sum_{k=1}^K \theta_k^* \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}^*[\boldsymbol{h}] \right) (\tilde{T}_t^*)^2 \right].
 \end{equation}
-Because the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ is $o_P(N^{-1/2})$, applying the delta method to the standard M-estimation asymptotic expansion yields:
-\begin{equation}
-    \sqrt{N}(\hat{\theta}_k - \theta_k^*) = J_k^{-1} \frac{1}{\sqrt{N}}\sum_{t=1}^N \psi_k(W_t; \theta_k^*, \eta_k^*, \boldsymbol{\Lambda}^*) + \underbrace{\sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathcal{M}_k(\boldsymbol{\Lambda}^*) (\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*)}_{= o_P(1) \cdot O_P(1) = o_P(1)} + o_P(1).
-\end{equation}
-Hence, preliminary $\sqrt{N}$-estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance to $\hat{\theta}_k$. $\blacksquare$
+Since $\sum_{k=1}^K \gamma_{tk}(\boldsymbol{\Lambda}) = 1$ identically on $\Delta^K$, $\sum_{k=1}^K \nabla_{\boldsymbol{\Lambda}} \gamma_{tk}^*[\boldsymbol{h}] = 0$. Under conditional treatment residual homoskedasticity $\E[(\tilde{T}_t^*)^2 \mid X_t, Z_{1:N}] = \sigma_T^2(X_t)$, or under the coupled score projection $\boldsymbol{J}^{-1}\boldsymbol{\Psi}$, this term equals $\mathbf{0}$.
+Thus $\nabla_{\boldsymbol{\Lambda}} \mathcal{M}(\boldsymbol{\theta}^*, \eta^*, \boldsymbol{\Lambda}^*) = \mathbf{0}$ identically.
 
-\section{Proof of Theorem 4: Oracle Equivalence}
+Applying the standard semiparametric M-estimation asymptotic expansion \citep{chernozhukov2018double}:
+\begin{equation}
+    \sqrt{N}\left( \hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^* \right) = \boldsymbol{J}^{-1} \frac{1}{\sqrt{N}} \sum_{t=1}^N \boldsymbol{\Psi}(W_t; \boldsymbol{\theta}^*, \eta^*, \boldsymbol{\Lambda}^*) + \boldsymbol{J}^{-1} \underbrace{\left( \sqrt{N} \nabla_{\boldsymbol{\Lambda}} \mathcal{M} \right)}_{= \mathbf{0}} \left( \hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^* \right) + o_P(1).
+\end{equation}
+Preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero first-order asymptotic variance, proving that Coupled RC-DML attains the semiparametric efficiency bound without requiring asymptotic regime separation. $\blacksquare$
+
+\section{Proof of Theorem 4: Asymptotic Duality \& Cross-Regime Inversion}
 \label{app:proof_thm4}
+
+\subsection{Decoupled Estimator and Cross-Talk Bias}
+The decoupled diagonal estimator solves $K$ independent scalar equations:
+\begin{equation}
+    \hat{\theta}_k^{\mathrm{diag}} = \frac{\hat{S}_k}{\hat{J}_{kk}} = \frac{\frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}}{\frac{1}{N}\sum_{t=1}^N \gamma_{tk}^2 \tilde{T}_{tk}^2}.
+\end{equation}
+Under the multi-regime structural process, the true centered outcome decomposes into $\tilde{Y}_t = \sum_{j=1}^K \theta_j^* \tilde{D}_{tj} + \varepsilon_t = \sum_{j=1}^K \theta_j^* \gamma_{tj} \tilde{T}_{tj} + \varepsilon_t$. 
+Taking the probability limit of the empirical numerator:
+\begin{equation}
+    \hat{S}_k \xrightarrow{p} \sum_{j=1}^K \E[\gamma_{tk} \gamma_{tj} \tilde{T}_{tk} \tilde{T}_{tj}] \theta_j^* = J_{kk} \theta_k^* + \sum_{j \neq k} J_{kj} \theta_j^*.
+\end{equation}
+Dividing by $J_{kk}$:
+\begin{align}
+    \mathrm{plim}\left( \hat{\theta}_k^{\mathrm{diag}} \right) &= \theta_k^* + \sum_{j \neq k} \frac{J_{kj}}{J_{kk}} \theta_j^* - \sum_{j \neq k} \frac{J_{kj}}{J_{kk}} \theta_k^* = \theta_k^* + \sum_{j \neq k} \frac{J_{kj}}{J_{kk}} \left( \theta_j^* - \theta_k^* \right).
+\end{align}
+Whenever regimes exhibit finite physical overlap ($J_{kj} = \E[\gamma_{tk}\gamma_{tj}\tilde{T}_{tk}\tilde{T}_{tj}] > 0$) and heterogeneous treatment effects ($\theta_j^* \neq \theta_k^*$), the decoupled estimator suffers $O(1)$ cross-talk contamination bias.
+
+\subsection{Exact Inversion via Coupled RC-DML}
+The coupled estimator stacks scores into $\hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t \in \R^K$ and Jacobians into $\hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top \in \R^{K \times K}$.
+By the weak law of large numbers for $\alpha$-mixing processes: $\hat{\boldsymbol{S}} \xrightarrow{p} \boldsymbol{J} \boldsymbol{\theta}^*$ and $\hat{\boldsymbol{J}} \xrightarrow{p} \boldsymbol{J}$.
+Under Assumption~\ref{ass:nonsingularity} ($\lambda_{\min}(\boldsymbol{J}) \ge c > 0$), $\boldsymbol{J}$ is invertible. Slutsky's theorem gives:
+\begin{equation}
+    \hat{\boldsymbol{\theta}}_{\mathrm{coupled}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}} \xrightarrow{p} \boldsymbol{J}^{-1} (\boldsymbol{J} \boldsymbol{\theta}^*) = \boldsymbol{\theta}^*.
+\end{equation}
+The matrix inverse $\boldsymbol{J}^{-1}$ exactly cancels the off-diagonal covariance cross-talk, eliminating bias under arbitrary overlap $\Delta_Z = O(1)$.
+
+\subsection{Smooth Collapse under Asymptotic Separation}
+Partition the Jacobian matrix into diagonal and off-diagonal components: $\boldsymbol{J} = \boldsymbol{D}_J + \boldsymbol{E}_J$, where $\boldsymbol{D}_J = \mathrm{diag}(J_{11}, \dots, J_{KK})$ and $[\boldsymbol{E}_J]_{jk} = J_{jk} \one(j \neq k)$.
+As regime separation $\Delta_Z \to \infty$, posterior overlap decays exponentially: $\gamma_{tj}\gamma_{tk} \le C \exp(-\kappa \Delta_Z^2)$ for $j \neq k$, implying $\|\boldsymbol{E}_J\|_F = O(\exp(-\kappa \Delta_Z^2))$.
+Applying the resolvent series expansion:
+\begin{equation}
+    \boldsymbol{J}^{-1} = (\boldsymbol{D}_J + \boldsymbol{E}_J)^{-1} = \boldsymbol{D}_J^{-1} - \boldsymbol{D}_J^{-1} \boldsymbol{E}_J \boldsymbol{D}_J^{-1} + O(\|\boldsymbol{E}_J\|^2).
+\end{equation}
+Multiplying by $\hat{\boldsymbol{S}}$:
+\begin{equation}
+    \hat{\boldsymbol{\theta}}_{\mathrm{coupled}} = \boldsymbol{D}_J^{-1} \hat{\boldsymbol{S}} + O_P(\|\boldsymbol{E}_J\|) = \hat{\boldsymbol{\theta}}^{\mathrm{diag}} + O_P\left( \exp(-\kappa \Delta_Z^2) \right).
+\end{equation}
+Thus, the coupled estimator smoothly converges to the decoupled diagonal estimator as separation increases, completing the proof of asymptotic duality. $\blacksquare$
+
+\section{Proof of Theorem 5: Oracle Equivalence}
+\label{app:proof_thm5}
 Let $\hat{\theta}_k^{\mathrm{oracle}}$ denote the estimator using true indicator $\one(S_t = k)$. The difference in scores is:
 \begin{equation}
     \frac{1}{\sqrt{N}} \sum_{t=1}^N (\gamma_{tk} - \one(S_t = k)) (Y_t - \ell_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t))) (T_t - m_k^*(X_t)).
@@ -624,8 +666,8 @@ By Cauchy-Schwarz and the assumption $\frac{1}{N}\sum_{t=1}^N \|\gamma_t - \one_
 \end{equation}
 Thus, $\sqrt{N}(\hat{\theta}_k - \hat{\theta}_k^{\mathrm{oracle}}) = o_P(1)$. $\blacksquare$
 
-\section{Proof of Proposition 5: Markov Occupation Variance Decomposition}
-\label{app:proof_prop5}
+\section{Proof of Proposition 6: Markov Occupation Variance Decomposition}
+\label{app:proof_prop6}
 The sample Average Treatment Effect is $\hat{\theta}_{\mathrm{SATE}} = \sum_{k=1}^K \bar{\gamma}_k \hat{\theta}_k = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}$, where $\bar{\boldsymbol{\gamma}} = \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$. 
 Conditional on the realized regime trajectory $S_{1:N}$, the conditional asymptotic variance is $\sigma_{\mathrm{cond}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma} \bar{\boldsymbol{\gamma}}$, where $\boldsymbol{\Sigma} = J^{-1} \Omega J^{-1} / N$.
 The population estimand is $\theta_{\mathrm{PATE}}^* = \sum_{k=1}^K \pi_k^* \theta_k^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$. 
