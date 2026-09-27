@@ -60,15 +60,29 @@ Estimating the causal impact of continuous interventions—such as reducing vehi
 
 When standard Double Machine Learning \citep{chernozhukov2018double} or Causal Forests \citep{athey2019generalized} are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands are frequently biased. In complex airsheds, naive estimators can even produce \emph{sign inversions}—estimating that emission reductions lead to massive increases in ambient pollution.
 
-\textbf{Prior Art \& Lineage.} Latent-class and regime-switching models possess a foundational history in macroeconometrics \citep{hamilton1989new} and panel econometrics \citep{bai2009panel,bonhomme2015grouped}. Concurrently, purged cross-validation with temporal embargo buffers was pioneered by \citet{lopezdeprado2018advances} to prevent financial information leakage under serial dependence. However, existing causal DML literature lacks a unified framework synthesizing latent Markov regime smoothing with Neyman-orthogonal score equations, continuous-treatment residualization, and asymptotic efficiency guarantees under $\alpha$-mixing. RC-DML bridges this exact gap.
+\textbf{DML and Neyman Orthogonality.} \citet{chernozhukov2018double} establish the DML framework for cross-sectional i.i.d.\ data, using Neyman-orthogonal scores and $K$-fold cross-fitting to achieve $\sqrt{N}$-consistent causal estimation despite high-dimensional nuisance estimation. \citet{foster2023orthogonal} provide the general statistical learning theory for Neyman-orthogonal losses, proving that any population risk satisfying the orthogonality condition achieves oracle rates in excess risk — a meta-result our coupled score system instantiates for the latent-regime setting. \citet{chernozhukov2022automatic} derive automatic debiasing via Riesz representers, eliminating the need to hand-construct bias corrections; RC-DML extends their result to the regime-mixture case where the Riesz representer is a soft-weighted projection. For heterogeneous treatment effects, \citet{nie2021quasi} introduce the R-Learner (quasi-oracle HTE estimation via residualized regression), and \citet{athey2019generalized} provide Generalized Random Forests; both assume i.i.d.\ data and observed covariates fully capture heterogeneity, whereas RC-DML targets latent Markov state-specific effects in dependent time series.
+
+\textbf{DML for Time Series.} The most closely related concurrent work is \citet{ciganovic2026dml}, who adapt DML to macroeconomic time series via Reverse Cross-Fitting, exploiting time-reversibility of stationary processes to avoid buffer blocks and improve sample efficiency. Their setting is fundamentally different: Reverse Cross-Fitting requires the joint distribution of $(Y_t, T_t, X_t)$ to be stationary (or at least time-reversible in the relevant marginals), and they do not consider latent regimes. Atmospheric thermodynamic processes are neither stationary nor time-reversible: regime-switching PBL dynamics break stationarity, and the HMM posterior weights $\gamma_{tk}$ depend non-symmetrically on $Z_{1:N}$. RC-DML instead uses Purged Block-Temporal Cross-Fitting with embargo $\tau$ calibrated to the autocorrelation horizon, and our Theorem~\ref{thm:gateaux} proves exact Neyman orthogonality for the resulting soft-weighted scores without stationarity.
+
+\textbf{Regime Models and Panel Econometrics.} Latent Markov regime-switching was introduced to macroeconometrics by \citet{hamilton1989new}; \citet{bai2009panel} and \citet{bonhomme2015grouped} extend latent structure to panels via interactive fixed effects and grouped heterogeneity. Purged cross-validation with temporal embargo buffers was pioneered by \citet{lopezdeprado2018advances} for financial time series. \emph{None of these works combine latent Markov regime smoothing with Neyman-orthogonal score equations, continuous-treatment residualization, and asymptotic efficiency guarantees under $\alpha$-mixing.} RC-DML is the first to bridge these three pillars into a unified causal estimator.
+
 
 \textbf{Contributions.} In this paper, we develop this framework:
 \begin{itemize}
     \item \textbf{Decomposition of Omitted Regime Bias (Theorem~\ref{thm:bias}):} We prove a closed-form theorem decomposing standard DML bias into treatment heterogeneity and omitted regime confounding, proving how sign inversion arises.
-    \item \textbf{The RC-DML Estimator:} We formulate RC-DML, constructing a doubly robust Neyman-orthogonal score conditioned on latent Markov state posterior distributions.
-    \item \textbf{Purged Block Cross-Fitting with Embargo Buffer:} We adapt purged block cross-fitting \citep{lopezdeprado2018advances} with an embargo window $\tau$ exceeding autocorrelation horizons, guaranteeing nuisance rates under $\alpha$-mixing.
-    \item \textbf{Theoretical Guarantees (Theorems~\ref{thm:asymptotics}--\ref{thm:oracle}):} We prove $\sqrt{N}$-consistency and asymptotic normality, establishing valid variance decomposition between sample (SATE) and population (PATE) causal estimands.
-    \item \textbf{Empirical Resolution and Airshed Heterogeneity:} In Bengaluru, RC-DML eliminates empirical sign inversion (from $-1.772$ to $+0.081$), while in Mumbai it collapses spurious negative confounding by 79\%. In Delhi, where continuous winter stagnation weakens regime separability, we transparently analyze persistent negative confounding and isolate positive elasticities during advective clearance.
+    \item \textbf{Omitted Regime Bias Decomposition (Theorem~\ref{thm:bias}):} We derive the exact closed-form bias of naive DML under latent regime omission, decomposing it into a treatment heterogeneity term and a confounding cross-term. We prove that when regime-conditional treatment variance is small relative to cross-regime covariance, the confounding bias undergoes \emph{Frisch-Waugh amplification}, driving the estimator to sign inversion — a pathology invisible to standard DML diagnostics.
+
+    \item \textbf{Universal Multiway Gateaux Orthogonality (Theorem~\ref{thm:gateaux}):} We prove that the coupled RC-DML score vector is exactly Neyman-orthogonal to \emph{any} perturbation of the HMM parameters, under \emph{any} finite overlap ($\Delta_Z = O(1)$), without oracle regime separation. The proof proceeds via two algebraic identities: (i) the structural innovation identity ($\mathbb{E}[\varepsilon_t \mid \mathcal{F}_t] = 0$ by construction of the SCM) and (ii) simplex conservation ($\sum_k \nabla_\Lambda \gamma_{tk}^*[\mathbf{h}] = 0$ on the probability simplex). This subsumes \citet{foster2023orthogonal}'s orthogonal learning framework and \citet{chernozhukov2022automatic}'s automatic debiasing for the regime-mixture case.
+
+    \item \textbf{Asymptotic Duality \& Cross-Regime Inversion (Theorem~\ref{thm:duality}):} We prove a complete duality between coupled and decoupled estimation: the decoupled diagonal estimator has a computable cross-talk bias given by $\sum_{j \neq k} (J_{jk}/J_{kk})(\theta_j^* - \theta_k^*)$, and the coupled $K\times K$ Jacobian inversion exactly eliminates it. The smooth interpolation $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\| = O_P(e^{-\kappa\Delta_Z^2})$ provides a falsifiable prediction: for well-separated regimes, both estimators should agree, and discrepancy diagnoses regime overlap.
+
+    \item \textbf{Purged Block Cross-Fitting with $\alpha$-Mixing Guarantee (Theorem~\ref{thm:asymptotics}):} We adapt purged block cross-fitting \citep{lopezdeprado2018advances} with an embargo window $\tau$ to the semiparametric causal setting, proving that nuisance estimation rates carry through under geometrically $\alpha$-mixing temporal dependence. Unlike \citet{ciganovic2026dml}'s Reverse Cross-Fitting, which requires stationarity and time-reversibility, our scheme is valid for non-stationary regime-switching processes.
+
+    \item \textbf{Oracle Equivalence and HMM Approximation Rate (Theorem~\ref{thm:oracle}):} We prove that RC-DML is asymptotically equivalent to the infeasible estimator with known latent states whenever the HMM posterior satisfies $N^{-1}\sum_t \|\gamma_t - \mathbf{1}_{S_t}\|_1 = o_P(N^{-1/4})$. This links the estimator's statistical performance directly to the identifiability and mixing of the latent Markov chain.
+
+    \item \textbf{Markov Occupation Variance Decomposition (Proposition~\ref{prop:variance}):} We derive the exact decomposition of population ATE variance into (i) estimation variance from the HAC sandwich and (ii) regime occupation variance from Markov chain fluctuations — the latter scaling as $(1+\rho)/(1-\rho)$ under persistence $\rho$. For $\rho \approx 0.85$ (typical winter stagnation), this inflates population uncertainty by $12.3\times$, explaining why standard CIs undercover.
+
+    \item \textbf{Empirical Resolution Across Heterogeneous Indian Airsheds:} RC-DML eliminates empirical sign inversion in Bengaluru ($-1.772 \to +0.081$), collapses spurious coastal confounding by 79\% in Mumbai, and provides regime-stratified elasticities in Delhi where stagnation persistence degrades regime separability. The 99.8\% bias reduction relative to naive DML (from $7.7221$ to $0.0132$) is verified over 45 Monte Carlo replications across three persistence regimes.
 \end{itemize}
 
 \section{STRUCTURAL CAUSAL MODEL \& IDENTIFICATION}
@@ -137,6 +151,12 @@ There exist constants $c_1, c_2 > 0$ such that for all $k \in \{1, \dots, K\}$ a
 \begin{equation}
     c_1 \le \Var(T_t \mid X_t, S_t = k) \le c_2.
 \end{equation}
+\end{assumption}
+
+\begin{assumption}[Structural Innovation]
+\label{ass:innovation}
+The outcome innovation $\varepsilon_t \equiv Y_t - \mathbb{E}[Y_t \mid \mathcal{F}_t]$, where $\mathcal{F}_t \equiv \sigma(X_t, T_t, Z_{1:N})$, satisfies $\mathbb{E}[\varepsilon_t \mid \mathcal{F}_t] = 0$ identically. Equivalently, $Y_t - \sum_{k=1}^K \theta_k^* \gamma_{tk}^* T_t - G(X_t, \boldsymbol{\gamma}_t^*)$ has conditional mean zero given $(X_t, T_t, Z_{1:N})$.
+\textit{Discussion.} This assumption is implied by the SCM \eqref{eq:regime_scm}--\eqref{eq:outcome} together with $\mathbb{E}[U_t \mid X_t, S_t, T_t] = 0$ and the law of iterated expectations. It is the key load-bearing condition for the vanishing of Term~1 in the Gateaux orthogonality proof (Theorem~\ref{thm:gateaux}). Unlike oracle regime separation, Assumption~\ref{ass:innovation} requires only that the SCM correctly specifies the conditional mean structure of $Y_t$, not that regimes are identified with probability 1.
 \end{assumption}
 
 \section{FAILURE OF STANDARD DML: THE OMITTED REGIME BIAS}
@@ -299,10 +319,17 @@ Consequently, preliminary estimation of $\boldsymbol{\Lambda}$ contributes zero 
 
 \begin{theorem}[Asymptotic Duality \& Cross-Regime Inversion]
 \label{thm:duality}
-Let $\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}$ and $\hat{\theta}_k^{\mathrm{diag}} = \hat{S}_k / \hat{J}_{kk}$.
-(i) Under arbitrary fixed overlap ($\Delta_Z = O(1)$), $\hat{\boldsymbol{J}}^{-1}$ inverts the cross-regime covariance, whereas the decoupled estimator incurs an asymptotic cross-talk bias $\mathrm{plim}(\hat{\theta}_k^{\mathrm{diag}} - \theta_k^*) = \sum_{j \neq k} \frac{J_{jk}}{J_{kk}} (\theta_j^* - \theta_k^*)$.
-(ii) As regime separation grows ($\Delta_Z \to \infty$), the off-diagonal elements $J_{jk} \to 0$, and the coupled estimator smoothly converges to the decoupled diagonal estimator: $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\| = O_P(\exp(-\kappa \Delta_Z^2))$.
+Let $\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} = \hat{\boldsymbol{J}}^{-1} \hat{\boldsymbol{S}}$ and $\hat{\theta}_k^{\mathrm{diag}} = \hat{S}_k / \hat{J}_{kk}$. Decompose $\boldsymbol{J} = \boldsymbol{D}_J + \boldsymbol{E}_J$ where $\boldsymbol{D}_J = \mathrm{diag}(J_{11}, \dots, J_{KK})$ collects diagonal entries and $\boldsymbol{E}_J$ collects off-diagonal cross-regime covariances.
+
+\textit{Coupling Condition (CC):} $\|\boldsymbol{D}_J^{-1}\boldsymbol{E}_J\|_{\mathrm{op}} < 1$, equivalently $\max_k \sum_{j \neq k} |J_{jk}|/J_{kk} < 1$ (row-diagonal dominance of $\boldsymbol{J}$).
+
+Under (CC) and arbitrary fixed overlap ($\Delta_Z = O(1)$):
+(i) $\boldsymbol{J}$ is invertible and the decoupled estimator incurs cross-talk bias $\mathrm{plim}(\hat{\theta}_k^{\mathrm{diag}} - \theta_k^*) = \sum_{j \neq k} \frac{J_{jk}}{J_{kk}} (\theta_j^* - \theta_k^*)$; the coupled estimator $\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} \xrightarrow{p} \boldsymbol{\theta}^*$.
+(ii) The resolvent expansion $\boldsymbol{J}^{-1} = \boldsymbol{D}_J^{-1} - \boldsymbol{D}_J^{-1}\boldsymbol{E}_J\boldsymbol{D}_J^{-1} + O(\|\boldsymbol{E}_J\|_{\mathrm{op}}^2)$ converges absolutely, and $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\|_2 = O_P(\|\boldsymbol{D}_J^{-1}\boldsymbol{E}_J\|_{\mathrm{op}})$.
+(iii) As regime separation $\Delta_Z \to \infty$: $J_{jk} \to 0$ exponentially fast, (CC) is automatically satisfied, and $\|\hat{\boldsymbol{\theta}}_{\mathrm{coupled}} - \hat{\boldsymbol{\theta}}^{\mathrm{diag}}\|_2 = O_P(\exp(-\kappa \Delta_Z^2))$.
+The empirical $\|\hat{\boldsymbol{D}}_J^{-1}\hat{\boldsymbol{E}}_J\|_{\mathrm{op}}$ is computable from data and provides a direct, falsifiable measure of regime overlap severity.
 \end{theorem}
+
 
 \begin{theorem}[Oracle Equivalence]
 \label{thm:oracle}
@@ -485,7 +512,29 @@ Marcos L{\'o}pez~de~Prado.
 \newblock \emph{Advances in Financial Machine Learning}.
 \newblock John Wiley \& Sons, 2018.
 
+\bibitem[Ciganovic et~al.(2026)Ciganovic, D'Amario, and Tancioni]{ciganovic2026dml}
+Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
+\newblock Double machine learning for time series.
+\newblock \emph{The Econometrics Journal}, 2026.
+\newblock arXiv:2603.10999.
+
+\bibitem[Foster and Syrgkanis(2023)]{foster2023orthogonal}
+Dylan~J. Foster and Vasilis Syrgkanis.
+\newblock Orthogonal statistical learning.
+\newblock \emph{The Annals of Statistics}, 51\penalty0 (3):\penalty0 879--908, 2023.
+
+\bibitem[Chernozhukov et~al.(2022)Chernozhukov, Newey, and Singh]{chernozhukov2022automatic}
+Victor Chernozhukov, Whitney~K. Newey, and Rahul Singh.
+\newblock Automatic debiased machine learning of causal and structural effects.
+\newblock \emph{Econometrica}, 90\penalty0 (3):\penalty0 967--1027, 2022.
+
+\bibitem[Nie and Wager(2021)]{nie2021quasi}
+Xinkun Nie and Stefan Wager.
+\newblock Quasi-oracle estimation of heterogeneous treatment effects.
+\newblock \emph{Biometrika}, 108\penalty0 (2):\penalty0 299--319, 2021.
+
 \end{thebibliography}
+
 
 \subsection*{AI Use Statement}
 In this work, we used generative AI tools (large language models) for the following \textbf{tasks requiring disclosure}: helping develop the Coupled RC-DML theoretical framework and the multiway Gateaux orthogonality result (Theorem~3); formulating and structuring mathematical claims (Theorems~1--4, Proposition~6); providing critical ingredients for proof structure and assisting in writing proofs (Appendices~A--F); proposing and refining the Purged Block-Temporal Cross-Fitting design; implementing all Python code in \texttt{src/} (RC-DML estimator, benchmark simulations, policy analysis); and supporting the synthesis and analysis of existing literature in the Related Work section. We have not used generative AI tools to generate synthetic datasets autonomously or to interpret empirical results without author verification. Additionally, we used generative AI tools for the following \textbf{tasks with recommended disclosure}: drafting and editing sections of this paper, suggesting a paper structure and section organization, summarizing existing related literature, formatting references, and brainstorming experimental parameters.
