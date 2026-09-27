@@ -275,11 +275,11 @@ def plot_fig3_regime_elasticities():
         plt.Line2D([0], [0], marker='D', color='#1B9E77', label='RC-DML Overall ATE (Ours)', markersize=8, linestyle='None'),
         plt.Line2D([0], [0], marker='o', color='#7570B3', label='RC-DML Latent Regimes (Ours)', markersize=8, linestyle='None'),
     ]
-    fig.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, 0.03), ncol=3, framealpha=0.95)
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, 0.01), ncol=3, framealpha=0.95, fontsize=9.5)
     
-    plt.tight_layout(rect=[0, 0.06, 1, 1])
+    plt.tight_layout(rect=[0, 0.08, 1, 0.98])
     out_path = os.path.join('plots', 'fig3_regime_elasticities.png')
-    fig.savefig(out_path, dpi=300)
+    fig.savefig(out_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
     print(f"Saved: {out_path}")
 
