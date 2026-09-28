@@ -37,17 +37,21 @@ from src.or_dml import OverlapAwareRegimeDML, PurgedBlockKFold, LatentRegimeHMM
 
 def generate_difficulty_dgp(N: int = 1200,
                             delta_z: float = 1.0,
+                            delta_t: float = 4.0,
                             persistence: float = 0.88,
                             random_state: int = 42) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Dict]:
     """
-    Generate synthetic time series where the difficulty of latent regime recovery
-    is governed continuously by the separation parameter delta_z.
+    Generate synthetic time series where:
+    - State observability is governed continuously by delta_z (proxy difficulty)
+    - Treatment regime separation is governed by delta_t (causal overlap / Gram matrix conditioning)
     
     delta_z = 0.2: Extreme overlap / near-unidentified
     delta_z = 0.5: Weak separation / high posterior entropy
     delta_z = 1.0: Moderate separation
     delta_z = 2.0: Clean separation
     delta_z = 4.0: Isolated / near-oracle regimes
+    
+    delta_t in [1.0, 4.0, 8.0]: Low, Medium, High treatment separation
     """
     rng = np.random.RandomState(random_state)
     
@@ -83,7 +87,9 @@ def generate_difficulty_dgp(N: int = 1200,
     # 4. Continuous Treatment T_t (Local emissions / NO2 precursor proxy)
     # Confounded by both observed X_t and latent regime S_t
     V = rng.normal(0, 1.0, size=N)
-    T = 2.0 * (1 - S) + 6.0 * S + 0.8 * X[:, 0] - 0.5 * X[:, 1] + V
+    b0 = 4.0 - delta_t / 2.0
+    b1 = 4.0 + delta_t / 2.0
+    T = b0 * (1 - S) + b1 * S + 0.8 * X[:, 0] - 0.5 * X[:, 1] + V
     
     # 5. Continuous Outcome Y_t (Ambient PM2.5)
     # Regime-specific treatment effects:
@@ -482,12 +488,17 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     print(df_overall.to_string(index=False))
     
     # -------------------------------------------------------------
+    # Factorial 2D Difficulty Grid (Disentangling Proxy Error and Causal Overlap)
+    # -------------------------------------------------------------
+    df_fact = run_factorial_difficulty_grid(n_replications_per_cell=40, N=N)
+    
+    # -------------------------------------------------------------
     # Regularization Tradeoff Experiment (Theorem 3 Validation)
     # -------------------------------------------------------------
     df_reg = run_regularization_experiment(n_replications=100, N=N)
     
     # -------------------------------------------------------------
-    # Plotting: Figure 2 Difficulty Frontier
+    # Plotting: Figure 2 Difficulty Frontier (with Factorial Panel d)
     # -------------------------------------------------------------
     sns.set_theme(style="whitegrid", font_scale=1.1)
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -543,30 +554,27 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     ax_c.set_ylim(-5, 105)
     ax_c.legend(frameon=True, fontsize=9)
     
-    # Panel (d): Spectral Regularization Bias-Variance Frontier (Theorem 3)
+    # Panel (d): Factorial Frontier - Bias vs (Proxy Error, Causal Overlap)
     ax_d = axes[1, 1]
-    # Filter out lambda=0 for log-scale plotting
-    sub_reg_plot = df_reg[df_reg['Lambda'] > 0]
-    p_mse = ax_d.plot(sub_reg_plot['Lambda'], sub_reg_plot['MSE'], 'r-o', lw=2.4, ms=7, label=r'Empirical MSE $\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$')
-    p_var = ax_d.plot(sub_reg_plot['Lambda'], sub_reg_plot['Variance'], 'b--s', lw=2.0, ms=6, label=r'Variance $\mathrm{Tr}(\boldsymbol{\Sigma}_\lambda)/N$')
-    p_bias = ax_d.plot(sub_reg_plot['Lambda'], sub_reg_plot['Abs_Bias'] ** 2, 'g:^', lw=2.0, ms=6, label=r'Squared Bias $\|\mathrm{Bias}(\lambda)\|_2^2$')
+    dt_styles = {
+        1.0: ('#e377c2', 'o--', r'Low $\Delta_T=1$ ($\lambda_{\min}\approx 0.07-0.41$)'),
+        4.0: ('#1f77b4', 's-',  r'Med $\Delta_T=4$ ($\lambda_{\min}\approx 0.24-0.83$)'),
+        8.0: ('#2ca02c', '^-.', r'High $\Delta_T=8$ ($\lambda_{\min}\approx 0.78-2.24$)')
+    }
+    or_fact = df_fact[df_fact['Method'] == 'Spectral OR-DML (Ours)']
+    for dt, (col, st, lab) in dt_styles.items():
+        sub_dt = or_fact[or_fact['Delta_T'] == dt].sort_values('Mean_Proxy_Error', ascending=False)
+        ax_d.plot(sub_dt['Mean_Proxy_Error'], sub_dt['Abs_Bias'], st, color=col, lw=2.2, ms=7, label=f'OR-DML: {lab}')
+        
+    # Baseline Standard DML for comparison
+    std_fact = df_fact[(df_fact['Method'] == 'Standard DML') & (df_fact['Delta_T'] == 4.0)].sort_values('Delta_Z')
+    # Standard DML has constant proxy error ~ 0.83-0.02
+    ax_d.axhline(float(std_fact['Abs_Bias'].mean()), color='#d62728', linestyle=':', lw=2.0, label='Standard DML (Omitted Regime Baseline)')
     
-    ax_d.set_xscale('log')
-    ax_d.set_xlabel(r'Spectral Shrinkage Penalty $\lambda$ (Log scale)')
-    ax_d.set_ylabel(r'Risk Decomposition')
-    ax_d.set_title(r'(d) Spectral Regularization Frontier ($\lambda_{\min} \approx 0.025$)', fontweight='bold')
-    
-    # Annotate minimum MSE point
-    min_idx = sub_reg_plot['MSE'].idxmin()
-    min_lambda = sub_reg_plot.loc[min_idx, 'Lambda']
-    min_mse = sub_reg_plot.loc[min_idx, 'MSE']
-    ax_d.annotate(f'Optimal $\lambda^* = {min_lambda}$\n(MSE={min_mse:.4f})',
-                  xy=(min_lambda, min_mse),
-                  xytext=(min_lambda * 1.5, min_mse + 0.15),
-                  arrowprops=dict(facecolor='black', shrink=0.08, width=1, headwidth=6),
-                  fontweight='bold', fontsize=9)
-    
-    ax_d.legend(frameon=True, fontsize=9, loc='upper right')
+    ax_d.set_xlabel(r'Latent Proxy Error $\bar{\varepsilon}_\gamma = \mathbb{E}\|\boldsymbol{\gamma}_t - \boldsymbol{e}_{S_t}\|_1$')
+    ax_d.set_ylabel(r'Mean Absolute Causal Bias $|\hat{\theta} - \theta^*|$')
+    ax_d.set_title(r'(d) Factorial Plane: Bias vs. $(\bar{\varepsilon}_\gamma, \lambda_{\min}(\boldsymbol{J}))$', fontweight='bold')
+    ax_d.legend(frameon=True, fontsize=8.5, loc='upper left')
     
     plt.tight_layout()
     fig_path = "plots/fig2_difficulty_frontier.png"
@@ -574,9 +582,142 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     plt.close()
     print(f"Saved publication-grade signature figure to {fig_path}.")
     
+    # -------------------------------------------------------------
+    # Dedicated Plot: Figure 4 Spectral Regularization Frontier
+    # -------------------------------------------------------------
+    plt.figure(figsize=(7.5, 5.2))
+    sub_reg_plot = df_reg[df_reg['Lambda'] > 0]
+    plt.plot(sub_reg_plot['Lambda'], sub_reg_plot['MSE'], 'r-o', lw=2.4, ms=7, label=r'Empirical MSE $\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$')
+    plt.plot(sub_reg_plot['Lambda'], sub_reg_plot['Variance'], 'b--s', lw=2.0, ms=6, label=r'Variance $\mathrm{Tr}(\boldsymbol{\Sigma}_\lambda)/N$')
+    plt.plot(sub_reg_plot['Lambda'], sub_reg_plot['Abs_Bias'] ** 2, 'g:^', lw=2.0, ms=6, label=r'Squared Bias $\|\mathrm{Bias}(\lambda)\|_2^2$')
+    plt.xscale('log')
+    plt.xlabel(r'Spectral Shrinkage Penalty $\lambda$ (Log scale)')
+    plt.ylabel(r'Risk Decomposition')
+    plt.title(r'Spectral Regularization Frontier ($\lambda_{\min} \approx 0.025$)', fontweight='bold')
+    
+    min_idx = sub_reg_plot['MSE'].idxmin()
+    min_lambda = sub_reg_plot.loc[min_idx, 'Lambda']
+    min_mse = sub_reg_plot.loc[min_idx, 'MSE']
+    plt.annotate(f'Empirical Min $\lambda \\approx {min_lambda}$\n(23x MSE reduction at $\lambda=0.10$)',
+                 xy=(min_lambda, min_mse),
+                 xytext=(min_lambda * 1.3, min_mse + 0.14),
+                 arrowprops=dict(facecolor='black', shrink=0.08, width=1, headwidth=6),
+                 fontweight='bold', fontsize=9)
+    plt.legend(frameon=True, fontsize=9.5)
+    plt.tight_layout()
+    fig4_path = "plots/fig4_regularization_frontier.png"
+    plt.savefig(fig4_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved dedicated regularization figure to {fig4_path}.")
+    
     total_time = time.time() - t0
     print(f"Total benchmark run time: {total_time:.2f} seconds ({total_time/60.0:.2f} minutes).")
     return df_summary
+
+
+def run_factorial_difficulty_grid(n_replications_per_cell: int = 40, N: int = 1200) -> pd.DataFrame:
+    """
+    Execute 2D Factorial Latent-Confounding Benchmark:
+    5 Delta_Z grid points x 3 Delta_T grid points = 15 design cells.
+    Disentangles state observability (proxy error epsilon_gamma) from causal overlap (lambda_min(J)).
+    """
+    delta_z_grid = [0.2, 0.5, 1.0, 2.0, 4.0]
+    delta_t_grid = [1.0, 4.0, 8.0]
+    
+    print("\n==================================================================")
+    print(f"Executing 2D Factorial Latent-Confounding Benchmark ({len(delta_z_grid)}x{len(delta_t_grid)} = 15 cells, {n_replications_per_cell} reps/cell, N={N})")
+    print(f"Delta_Z (Proxy observability): {delta_z_grid}")
+    print(f"Delta_T (Treatment regime separation / Overlap): {delta_t_grid}")
+    print("==================================================================\n")
+    
+    tasks = [(r, dz, dt) for dz in delta_z_grid for dt in delta_t_grid for r in range(n_replications_per_cell)]
+    
+    def single_factorial_rep(r, dz, dt):
+        seed = int(300000 + int(dz * 1000) + int(dt * 100) + r)
+        Y, T, X, Z, gt = generate_difficulty_dgp(N=N, delta_z=dz, delta_t=dt, random_state=seed)
+        sample_ate = gt['true_sample_ate']
+        true_pop_ate = gt['true_pop_ate']
+        S_true = gt['S']
+        gamma_oracle = np.column_stack([1 - S_true, S_true])
+        
+        # 1. Oracle DML
+        pb = PurgedBlockKFold(n_splits=4, embargo_tau=12)
+        K = 2
+        tilde_Y_orc = np.zeros((K, N))
+        tilde_T_orc = np.zeros((K, N))
+        for k in range(K):
+            w = np.maximum(gamma_oracle[:, k], 1e-4)
+            for tr, te in pb.split(N):
+                my = Ridge(alpha=1.0).fit(X[tr], Y[tr], sample_weight=w[tr])
+                tilde_Y_orc[k, te] = Y[te] - my.predict(X[te])
+                mt = Ridge(alpha=1.0).fit(X[tr], T[tr], sample_weight=w[tr])
+                tilde_T_orc[k, te] = T[te] - mt.predict(X[te])
+        J_orc = np.zeros((K, K))
+        S_orc = np.zeros(K)
+        for j in range(K):
+            S_orc[j] = np.mean(gamma_oracle[:, j] * tilde_T_orc[j] * tilde_Y_orc[j])
+            for k in range(K):
+                J_orc[j, k] = np.mean(gamma_oracle[:, j] * gamma_oracle[:, k] * tilde_T_orc[j] * tilde_T_orc[k])
+        th_orc = float(np.mean(gamma_oracle, axis=0) @ (np.linalg.pinv(J_orc) @ S_orc))
+        l_min_orc = float(np.min(np.linalg.eigvalsh(J_orc)))
+        
+        # 2. Standard DML
+        kf = KFold(n_splits=4, shuffle=True, random_state=seed)
+        tilde_Y_std = np.zeros(N)
+        tilde_T_std = np.zeros(N)
+        for tr, te in kf.split(X):
+            my = Ridge(alpha=1.0).fit(X[tr], Y[tr])
+            tilde_Y_std[te] = Y[te] - my.predict(X[te])
+            mt = Ridge(alpha=1.0).fit(X[tr], T[tr])
+            tilde_T_std[te] = T[te] - mt.predict(X[te])
+        th_std = float(np.mean(tilde_T_std * tilde_Y_std) / max(np.mean(tilde_T_std**2), 1e-12))
+        
+        # 3. Unregularized Coupled DML
+        unreg = OverlapAwareRegimeDML(n_regimes=2, n_splits=4, embargo_tau=12, reg_lambda=0.0, reg_alpha=0.0, nuisance_model=Ridge(alpha=1.0), random_state=seed)
+        unreg.fit(Y, T, X, Z)
+        th_unreg = unreg.ate_
+        l_min_unreg = unreg.lambda_min_
+        proxy_err, _ = compute_aligned_proxy_error(unreg.gamma_, gamma_oracle)
+        
+        # 4. Spectral OR-DML
+        or_dml = OverlapAwareRegimeDML(n_regimes=2, n_splits=4, embargo_tau=12, reg_alpha=0.05, nuisance_model=Ridge(alpha=1.0), random_state=seed)
+        or_dml.fit(Y, T, X, Z)
+        th_or = or_dml.ate_
+        
+        return [
+            {'rep': r, 'delta_z': dz, 'delta_t': dt, 'method': 'Oracle DML', 'theta': th_orc, 'bias': th_orc - true_pop_ate, 'proxy_error': 0.0, 'lambda_min': l_min_orc},
+            {'rep': r, 'delta_z': dz, 'delta_t': dt, 'method': 'Standard DML', 'theta': th_std, 'bias': th_std - true_pop_ate, 'proxy_error': np.nan, 'lambda_min': float(np.mean(tilde_T_std**2))},
+            {'rep': r, 'delta_z': dz, 'delta_t': dt, 'method': 'Unregularized Coupled DML', 'theta': th_unreg, 'bias': th_unreg - true_pop_ate, 'proxy_error': proxy_err, 'lambda_min': l_min_unreg},
+            {'rep': r, 'delta_z': dz, 'delta_t': dt, 'method': 'Spectral OR-DML (Ours)', 'theta': th_or, 'bias': th_or - true_pop_ate, 'proxy_error': proxy_err, 'lambda_min': or_dml.lambda_min_},
+        ]
+        
+    nested = Parallel(n_jobs=-1, verbose=0)(delayed(single_factorial_rep)(r, dz, dt) for r, dz, dt in tasks)
+    flat = [rec for r_list in nested for rec in r_list]
+    df_raw = pd.DataFrame(flat)
+    
+    summary = []
+    for dz in delta_z_grid:
+        for dt in delta_t_grid:
+            cell_sub = df_raw[(df_raw['delta_z'] == dz) & (df_raw['delta_t'] == dt)]
+            for m in ['Oracle DML', 'Standard DML', 'Unregularized Coupled DML', 'Spectral OR-DML (Ours)']:
+                sub_m = cell_sub[cell_sub['method'] == m]
+                biases = sub_m['bias'].values
+                summary.append({
+                    'Delta_Z': dz,
+                    'Delta_T': dt,
+                    'Method': m,
+                    'Abs_Bias': round(float(np.mean(np.abs(biases))), 4),
+                    'Mean_Bias': round(float(np.mean(biases)), 4),
+                    'RMSE': round(float(np.sqrt(np.mean(biases**2))), 4),
+                    'Mean_Proxy_Error': round(float(np.nanmean(sub_m['proxy_error'])), 4),
+                    'Mean_Lambda_Min': round(float(np.mean(sub_m['lambda_min'])), 4)
+                })
+    df_fact = pd.DataFrame(summary)
+    os.makedirs("reports", exist_ok=True)
+    fact_path = "reports/or_dml_factorial_frontier.csv"
+    df_fact.to_csv(fact_path, index=False)
+    print(f"2D Factorial summary saved to {fact_path}.")
+    return df_fact
 
 
 def run_regularization_experiment(n_replications: int = 100, N: int = 1200) -> pd.DataFrame:

@@ -1,0 +1,5 @@
+City,Total_Hours,Complete_Analysis_Hours,PM25_Raw_Observed_Pct,PM25_Forward_Filled_Pct,NO2_Raw_Observed_Pct,NO2_Forward_Filled_Pct,Weather_Source,Pollution_Source
+Delhi,5349,4640,86.69,0.32,99.33,0.45,Open-Meteo_Reanalysis (100% complete),CPCB_OpenAQ_Hourly
+Mumbai,4932,4180,99.94,0.06,84.14,0.67,Open-Meteo_Reanalysis (100% complete),CPCB_OpenAQ_Hourly
+Bengaluru,4098,4093,99.78,0.15,99.71,0.22,Open-Meteo_Reanalysis (100% complete),CPCB_OpenAQ_Hourly
+Kolkata,1210,1209,99.75,0.25,100.0,0.0,Open-Meteo_Reanalysis (100% complete),CPCB_OpenAQ_Hourly

@@ -1,0 +1,9 @@
+City,Regime,Fraction,Persistence,Wind_Speed_ms,Temperature_C,Relative_Humidity_Pct,Pressure_hPa
+Delhi,Regime 1,0.427,0.989,5.98,19.63,61.4,988.3
+Delhi,Regime 2,0.573,0.992,7.52,30.93,56.3,976.7
+Mumbai,Regime 1,0.417,0.789,11.49,26.69,83.2,1008.3
+Mumbai,Regime 2,0.583,0.857,16.48,28.39,77.9,1007.8
+Bengaluru,Regime 1,0.522,0.843,10.83,20.77,84.6,911.7
+Bengaluru,Regime 2,0.478,0.828,11.22,27.67,45.3,912.8
+Kolkata,Regime 1,0.607,0.871,7.32,26.73,85.3,1004.8
+Kolkata,Regime 2,0.393,0.81,7.89,32.65,51.2,1005.8

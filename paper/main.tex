@@ -217,30 +217,33 @@ To overcome the failure of standard cross-sectional DML, we introduce \textbf{Ov
 
 \subsection{Latent Regime Formulation \& Observability Diagnostics}
 Let $Z_t \in \R^q$ denote exogenous meteorological state trajectories (strictly pre-treatment, avoiding outcome contamination). We model the latent atmospheric state $S_t \in \{1, \dots, K\}$ via a Hidden Markov Model with transition matrix $\boldsymbol{\Pi}$ and emission parameters $\boldsymbol{\phi}$.
-Using the Forward-Backward recursion, we compute either:
+Depending on the regulatory horizon, state posteriors fall into three operational modes:
 \begin{enumerate}
-    \item \textbf{Retrospective Smoothed Posteriors:} $\gamma_{tk}^{\mathrm{smooth}} \equiv P(S_t = k \mid Z_{1:N})$ for offline environmental epidemiology; or
-    \item \textbf{Causal Forward Filtered Posteriors:} $\gamma_{tk}^{\mathrm{filter}} \equiv P(S_t = k \mid Z_{1:t})$ for real-time sequential regulatory alerts.
+    \item \textbf{Retrospective Smoothed Posteriors (Offline):} $\gamma_{tk}^{\mathrm{smooth}} \equiv P(S_t = k \mid Z_{1:N})$ for retrospective environmental epidemiology and structural causal auditing;
+    \item \textbf{Training-Fitted Forward Filtered Posteriors:} $\gamma_{tk}^{\mathrm{filter}} \equiv P(S_t = k \mid Z_{1:t}, \hat{\boldsymbol{\phi}})$ where global transition/emission dynamics $\hat{\boldsymbol{\phi}}$ are calibrated offline, but sequential state updates proceed strictly causally on past-to-present observations $Z_{1:t}$; or
+    \item \textbf{Expanding-Window Online Filter:} where both parameter estimation and forward filtering update causally without access to future measurements.
 \end{enumerate}
-We define the mean posterior entropy as a direct diagnostic of latent state observability:
+Our empirical and benchmark implementations evaluate Mode 1 (offline smoothing) and Mode 2 (training-fitted forward filtering). We define the mean posterior entropy as a direct diagnostic of latent state observability:
 \begin{equation}
     \bar{H}(\boldsymbol{\gamma}) \equiv -\frac{1}{N}\sum_{t=1}^N \sum_{k=1}^K \gamma_{tk} \ln(\gamma_{tk} + \epsilon).
 \end{equation}
 
-\subsection{Coupled Score System \& Spectral Regularization}
-Let $\boldsymbol{D}_t = (\gamma_{t1} T_t, \dots, \gamma_{tK} T_t)^\top \in \R^K$. To avoid heuristic independent regressions that suffer cross-talk bias under regime overlap, we construct the coupled system with vector-valued nuisances $\boldsymbol{\mu}_D(X_t, \boldsymbol{\gamma}_t) \equiv \E[\boldsymbol{D}_t \mid X_t, \boldsymbol{\gamma}_t]$ and $\mu_Y(X_t, \boldsymbol{\gamma}_t) \equiv \E[Y_t \mid X_t, \boldsymbol{\gamma}_t]$.
-The centered residuals are $\tilde{\boldsymbol{D}}_t = \boldsymbol{D}_t - \hat{\boldsymbol{\mu}}_D(X_t, \boldsymbol{\gamma}_t)$ and $\tilde{Y}_t = Y_t - \hat{\mu}_Y(X_t, \boldsymbol{\gamma}_t)$.
-
-The empirical coupled Gram matrix $\hat{\boldsymbol{J}}$ and score vector $\hat{\boldsymbol{S}}$ are:
+\subsection{State-Weighted Coupled System \& Spectral Regularization}
+To avoid heuristic decoupled regressions that suffer cross-talk bias under regime overlap, OR-DML estimates regime-specific conditional expectations via state-weighted regressions. For each regime $k \in \{1, \dots, K\}$, we fit nuisances:
+\begin{align}
+    \hat{m}_k(X) &= \arg\min_{m} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (T_t - m(X_t))^2, \label{eq:nuisance_m} \\
+    \hat{\mu}_k(X) &= \arg\min_{\mu} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (Y_t - \mu(X_t))^2. \label{eq:nuisance_mu}
+\end{align}
+On the out-of-fold evaluation fold $\mathcal{B}_b$, we form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$. The empirical coupled Gram matrix $\hat{\boldsymbol{J}} \in \R^{K \times K}$ and score vector $\hat{\boldsymbol{S}} \in \R^K$ are constructed as:
 \begin{equation}
-    \hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top \in \R^{K \times K}, \quad \hat{\boldsymbol{S}} = \frac{1}{N}\sum_{t=1}^N \tilde{\boldsymbol{D}}_t \tilde{Y}_t \in \R^K.
+    \hat{J}_{jk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk}, \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}.
 \end{equation}
-When regime separation is weak, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ numerically singular and amplifying collinear noise. OR-DML introduces the \textbf{Spectrally Regularized Estimator}:
+When regime separation is weak, the coupled Gram matrix satisfies $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned and amplifying collinear estimation noise. OR-DML introduces the \textbf{Spectrally Regularized Estimator}:
 \begin{equation}
 \label{eq:theta_spectral}
     \hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}},
 \end{equation}
-where $\lambda \ge 0$ is a shrinkage parameter tuned to trade off regularization bias against collinearity variance. The overall Average Treatment Effect is $\hat{\theta}_{\mathrm{ATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$.
+where $\lambda \ge 0$ is a shrinkage parameter tuned to trade off regularization bias against collinearity variance. The overall Sample Average Treatment Effect is $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$, while the Population Average Treatment Effect is $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\hat{\boldsymbol{\pi}}$ is the stationary vector of the Markov transition matrix.
 
 \subsection{Purged Block Cross-Fitting with Bartlett Embargo}
 To ensure validity under temporal dependence, we partition observations into $B$ contiguous blocks. To eliminate cross-fold leakage under $\alpha$-mixing, each test block $\mathcal{B}_b$ is surrounded by an embargo buffer of width $\tau^*$ (Algorithm~\ref{alg:purged_cv}). We determine $\tau^*$ from the data via the Bartlett significance threshold:
@@ -253,16 +256,17 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \label{alg:purged_cv}
 \begin{algorithmic}[1]
 \REQUIRE Series $\{Y_t, T_t, X_t, Z_t\}_{t=1}^N$, blocks $B$, embargo $\tau^*$, spectral penalty $\lambda \ge 0$.
-\STATE Infer posteriors $\boldsymbol{\gamma}_t = P(S_t \mid Z_{1:N})$ (or $P(S_t \mid Z_{1:t})$).
-\STATE Form regime treatment $\boldsymbol{D}_t = \boldsymbol{\gamma}_t T_t \in \R^K$.
+\STATE Infer posteriors $\boldsymbol{\gamma}_t = P(S_t \mid Z_{1:N})$ (or causal forward filter $P(S_t \mid Z_{1:t})$).
 \FOR{block $b = 1$ to $B$}
     \STATE Set test block $\mathcal{B}_b$; training set $\mathcal{T}_b = \{1..N\} \setminus (\mathcal{B}_b \pm \tau^*)$.
-    \STATE Fit nuisances $\hat{\mu}_Y^{(-b)}(X_t, \boldsymbol{\gamma}_t)$ and $\hat{\boldsymbol{\mu}}_D^{(-b)}(X_t, \boldsymbol{\gamma}_t)$ on $\mathcal{T}_b$.
-    \STATE On $\mathcal{B}_b$, form $\tilde{Y}_t = Y_t - \hat{\mu}_Y$, $\tilde{\boldsymbol{D}}_t = \boldsymbol{D}_t - \hat{\boldsymbol{\mu}}_D$.
+    \FOR{regime $k = 1$ to $K$}
+        \STATE Fit state-weighted nuisances $\hat{m}_k^{(-b)}(X)$ and $\hat{\mu}_k^{(-b)}(X)$ on $\mathcal{T}_b$ with weights $\gamma_{tk}$.
+        \STATE On $\mathcal{B}_b$, form residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$.
+    \ENDFOR
 \ENDFOR
-\STATE Compute Gram $\hat{\boldsymbol{J}} = \frac{1}{N}\sum_t \tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top$ and score $\hat{\boldsymbol{S}} = \frac{1}{N}\sum_t \tilde{\boldsymbol{D}}_t \tilde{Y}_t$.
-\STATE Compute $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ and $\hat{\theta}_{\mathrm{ATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$.
-\RETURN Estimates $\hat{\boldsymbol{\theta}}_\lambda, \hat{\theta}_{\mathrm{ATE}}$ and diagnostics $(\lambda_{\min}, \kappa, \bar{H})$.
+\STATE Compute Gram $\hat{J}_{jk} = \frac{1}{N}\sum_t \gamma_{tj}\gamma_{tk}\tilde{T}_{tj}\tilde{T}_{tk}$ and score $\hat{S}_k = \frac{1}{N}\sum_t \gamma_{tk}\tilde{T}_{tk}\tilde{Y}_{tk}$.
+\STATE Compute $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ and $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$, $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}^\top \hat{\boldsymbol{\theta}}_\lambda$.
+\RETURN Estimates $\hat{\boldsymbol{\theta}}_\lambda, \hat{\theta}_{\mathrm{SATE}}, \hat{\theta}_{\mathrm{PATE}}$ and diagnostics $(\lambda_{\min}, \kappa, \bar{H})$.
 \end{algorithmic}
 \end{algorithm}
 
@@ -319,15 +323,15 @@ We now present the theoretical foundation of OR-DML, formalizing the two distinc
 
 \begin{theorem}[Non-Identification Under Unconstrained Overlap]
 \label{thm:impossibility}
-Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. Then the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist observational models $P_1 \neq P_2$ with identical joint distributions over observables but strictly distinct causal effects $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
+Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. Then the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not point-identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist structural causal models $P_1$ and $P_2$ satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation} with identical joint observable laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$, yet possessing strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
 \end{theorem}
 
 Theorem~\ref{thm:impossibility} formally proves via an explicit constructive counterexample (Appendix~\ref{app:proof_thm1}) that predictive state inference alone cannot guarantee causal identification without explicit separation or proxy error bounds.
 
 \begin{theorem}[Graceful Degradation Error Bound]
 \label{thm:graceful}
-Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t \E[|\tilde{T}_t|^4 \mid X_t]^{1/4} \le M_T < \infty$, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
-If $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ satisfies:
+Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t \E[|\tilde{T}_{tk}|^4 \mid X_t]^{1/4} \le M_T < \infty$, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
+If $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ constructed from state-weighted nuisances satisfies:
 \begin{equation}
     \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
@@ -336,23 +340,23 @@ where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
 
 Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigorous bound connecting the two fundamental axes: \emph{posterior proxy error} $\varepsilon_\gamma$ and \emph{Jacobian conditioning} $\lambda_{\min}(\boldsymbol{J})$.
 
-\begin{theorem}[Spectral Regularization Bias-Variance Frontier]
+\begin{theorem}[Finite-Sample Risk Decomposition under Long-Run Covariance Approximation]
 \label{thm:spectral}
 Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ be the spectrally regularized OR-DML estimator, and let $\boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\boldsymbol{S}$. Under the conditions of Theorem~\ref{thm:graceful}, the regularized estimand satisfies the exact deterministic identity:
 \begin{equation}
 \label{eq:reg_identity}
     \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right),
 \end{equation}
-where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, the expected squared estimation error satisfies the non-asymptotic upper risk bound:
+where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, under the long-run score covariance approximation $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$, the expected squared estimation error satisfies the risk decomposition:
 \begin{equation}
-    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2},
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
 \end{equation}
-where $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$ is the long-run score covariance. When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), choosing $\lambda^* > 0$ strictly suppresses variance explosion while introducing bounded shrinkage bias, minimizing overall MSE.
+When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), choosing $\lambda > 0$ strictly suppresses variance explosion while introducing bounded shrinkage bias, minimizing overall empirical MSE near $\lambda \approx 0.20$ (with a 23-fold MSE reduction already achieved at $\lambda = 0.10$).
 \end{theorem}
 
 \begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
 \label{thm:asymptotics}
-Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, with embargo buffer $\tau^* \ge C \log N$, the regularized OR-DML estimator satisfies:
+Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, with embargo buffer $\tau^* \ge C \log N$, the regularized OR-DML estimator under retrospective smoothing or training-fitted forward filtering satisfies:
 \begin{equation}
     \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda) \right) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \boldsymbol{\Sigma}_\lambda\right),
 \end{equation}
@@ -361,18 +365,25 @@ where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.80\textwidth,height=5.8cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
-\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. Standard DML remains persistently biased across all regimes; OR-DML bias contracts smoothly as separation increases. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Observability frontier: spectral floor $\lambda_{\min}(\boldsymbol{J})$, condition number $\kappa(\boldsymbol{J})$, and posterior entropy $\bar{H}(\boldsymbol{\gamma})$.}
+\includegraphics[width=0.80\textwidth,height=3.3cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
+\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. In this benchmark DGP, Standard and Block DML exhibit approximately constant omitted-regime bias across $\Delta_Z$; OR-DML bias contracts smoothly as separation increases. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Factorial plane: Absolute bias $|\hat{\theta} - \theta^*|$ across the joint $(\bar{\varepsilon}_\gamma, \lambda_{\min}(\boldsymbol{J}))$ frontier, decoupling proxy difficulty from causal overlap.}
 \label{fig:difficulty_frontier}
 \end{figure*}
 
-\begin{proposition}[Sample vs.\ Population ATE Variance Decomposition]
+\begin{proposition}[Joint Asymptotic Distribution for Sample and Population ATE]
 \label{prop:variance}
-The conditional asymptotic variance of the sample ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}$ is $\sigma_{\mathrm{cond}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}}$. The total variance of the population estimand $\hat{\theta}_{\mathrm{PATE}} = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$ decomposes into:
+The sample ATE estimator $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$ has conditional asymptotic variance $\sigma_{\mathrm{SATE}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}}$. The population ATE estimator $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\hat{\boldsymbol{\pi}}$ is the estimated stationary distribution of the Markov transition matrix $\hat{\boldsymbol{\Pi}}$, satisfies the joint delta expansion:
 \begin{equation}
-    \Var(\hat{\theta}_{\mathrm{PATE}}) = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}} + \boldsymbol{\theta}^{*\top} \Var(\bar{\boldsymbol{\gamma}}) \boldsymbol{\theta}^*,
+\begin{aligned}
+    \sqrt{N}\left(\hat{\theta}_{\mathrm{PATE}} - \theta_{\mathrm{PATE}}^*\right) &= \boldsymbol{\pi}^{*\top} \sqrt{N}\left(\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\right) \\
+    &\quad + \boldsymbol{\theta}^{*\top} \sqrt{N}\left(\hat{\boldsymbol{\pi}} - \boldsymbol{\pi}^*\right) + o_P(1).
+\end{aligned}
 \end{equation}
-where for a two-state Markov chain with persistence $\rho$, $\Var(\bar{S}_N) = \frac{\pi_0^* \pi_1^*}{N}\frac{1+\rho}{1-\rho} + o(N^{-1})$. Under stagnation ($\rho \approx 0.88$), $\frac{1+\rho}{1-\rho} \approx 15.7\times$, dominating conditional estimation variance.
+Because score innovations have conditional mean zero given the state trajectory (Assumption~\ref{ass:innovation}), the cross-covariance vanishes, yielding asymptotic variance:
+\begin{equation}
+    \sigma_{\mathrm{PATE}}^2 = \boldsymbol{\pi}^{*\top} \boldsymbol{\Sigma}_\lambda \boldsymbol{\pi}^* + \boldsymbol{\theta}^{*\top} \boldsymbol{\Sigma}_\pi \boldsymbol{\theta}^*,
+\end{equation}
+where $\boldsymbol{\Sigma}_\pi = \mathbf{D}_\pi \mathbf{Z} + \mathbf{Z}^\top \mathbf{D}_\pi - \mathbf{D}_\pi - \boldsymbol{\pi}^* \boldsymbol{\pi}^{*\top}$ with fundamental matrix $\mathbf{Z} = (\mathbf{I} - \boldsymbol{\Pi} + \mathbf{1}\boldsymbol{\pi}^{*\top})^{-1}$. Under stagnation ($\rho \approx 0.88$), regime occupation variance dominates conditional estimation variance by $\frac{1+\rho}{1-\rho} \approx 15.7\times$.
 \end{proposition}
 
 \section{THE LATENT-CONFOUNDING DIFFICULTY FRONTIER}
@@ -388,9 +399,9 @@ The difficulty of latent regime recovery is governed continuously by the separat
 \subsection{Difficulty Frontier Findings}
 Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three key statistical phenomena:
 \begin{enumerate}
-    \item \textbf{Persistence of Naive Confounding:} Across all values of $\Delta_Z$, Standard DML and Block DML exhibit flat, unyielding bias ($+8.44$, RMSE $8.45$) and $0.0\%$ coverage. Partialling-out observed controls $X_t$ fails because latent state $S_t$ remains omitted.
+    \item \textbf{Persistence of Naive Confounding:} In our benchmark DGP, Standard and Block DML exhibit approximately constant omitted-regime bias ($+8.44$, RMSE $8.45$) and $0.0\%$ coverage across the entire $\Delta_Z$ grid, illustrating Theorem~\ref{thm:bias}. Partialling-out observed controls $X_t$ fails because the latent Markov state $S_t$ remains omitted.
     \item \textbf{Continuous Graceful Degradation:} In accordance with Theorem~\ref{thm:graceful}, OR-DML exhibits a continuous phase transition. At $\Delta_Z = 0.2$, posterior overlap is high ($\bar{H} = 0.434$), confirming Theorem~\ref{thm:impossibility}'s non-identification. As $\Delta_Z$ increases to $1.0$, $2.0$, and $4.0$, absolute bias shrinks by $97.4\%$ (from $8.59 \to 4.25 \to 0.50 \to 0.16$), and coverage rises to $93.0\%$.
-    \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across all separated regimes ($\Delta_Z \ge 2.0$, bias $0.2233$ vs $0.2233$), establishing that real-time sequential estimation incurs virtually zero efficiency loss once latent state dynamics are informed by past physical history.
+    \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across all separated regimes ($\Delta_Z \ge 2.0$, bias $0.2233$ vs $0.2233$), establishing that training-fitted forward filtering incurs virtually zero efficiency loss once latent state dynamics are informed by past physical history.
 \end{enumerate}
 
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
@@ -399,6 +410,7 @@ Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three 
 \begin{table*}[t]
 \centering
 \small
+\renewcommand{\arraystretch}{0.86}
 \caption{Empirical Treatment Elasticities on Clean Longitudinal Ground-Sensor Data across Four Major Indian Megacities (>14,000 Complete Hourly Observations, February 2025 -- June 2026). Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$.}
 \label{tab:empirical}
 \resizebox{\textwidth}{!}{%
@@ -408,8 +420,8 @@ Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three 
 \midrule
 Delhi ($N=4,640$) & Standard DML & Pooled & $+0.4696$ & $0.0443$ & $[+0.3828, +0.5564]$ & $<0.0001$ & $251.3$ [$1.0$] \\
 Delhi & Block DML & Pooled & $+0.5815$ & $0.0468$ & $[+0.4898, +0.6733]$ & $<0.0001$ & $274.5$ [$1.0$] \\
-Delhi & \textbf{Spectral OR-DML} & Regime 1 (Ventilated) & $+0.7038$ & $0.0513$ & $[+0.6032, +0.8044]$ & $<0.0001$ & $111.8$ [$1.58$] \\
-Delhi & \textbf{Spectral OR-DML} & Regime 2 (Stagnant) & $+0.1281$ & $0.0743$ & $[-0.0174, +0.2737]$ & $0.0845$ & $111.8$ [$1.58$] \\
+Delhi & \textbf{Spectral OR-DML} & Regime 1 & $+0.7038$ & $0.0513$ & $[+0.6032, +0.8044]$ & $<0.0001$ & $111.8$ [$1.58$] \\
+Delhi & \textbf{Spectral OR-DML} & Regime 2 & $+0.1281$ & $0.0743$ & $[-0.0174, +0.2737]$ & $0.0845$ & $111.8$ [$1.58$] \\
 Delhi & \textbf{Spectral OR-DML} & Overall ATE & $+0.3742$ & $0.0642$ & $[+0.2484, +0.5000]$ & $<0.0001$ & $111.8$ [$1.58$] \\
 Delhi & \textbf{Filtered OR-DML} & Overall ATE & $+0.3745$ & $0.0650$ & $[+0.2471, +0.5019]$ & $<0.0001$ & $116.3$ [$1.46$] \\
 \midrule
@@ -431,36 +443,64 @@ Kolkata ($N=1,209$) & Standard DML & Pooled & $+0.5969$ & $2.1183$ & $[-3.5550, 
 Kolkata & Block DML & Pooled & $-0.4728$ & $1.8772$ & $[-4.1522, +3.2066]$ & $0.8012$ & $0.006$ [$1.0$] \\
 Kolkata & \textbf{Spectral OR-DML} & Regime 1 & $+0.9158$ & $1.3513$ & $[-1.7328, +3.5643]$ & $0.4980$ & $0.002$ [$1.52$] \\
 Kolkata & \textbf{Spectral OR-DML} & Regime 2 & $-1.1816$ & $2.6672$ & $[-6.4094, +4.0462]$ & $0.6578$ & $0.002$ [$1.52$] \\
-Kolkata & \textbf{Spectral OR-DML} & Overall ATE & $+0.0753$ & $1.2872$ & $[-2.4408, +2.5982]$ & $0.9534$ & $0.002$ [$1.52$] \\
+Kolkata & \textbf{Spectral OR-DML} & Overall ATE & $+0.0753$ & $1.2872$ & $[-2.4477, +2.5982]$ & $0.9534$ & $0.002$ [$1.52$] \\
 Kolkata & \textbf{Filtered OR-DML} & Overall ATE & $+0.1453$ & $1.2056$ & $[-2.2176, +2.5082]$ & $0.9041$ & $0.002$ [$1.75$] \\
 \bottomrule
 \end{tabular}%
 }
 \end{table*}
 
+\begin{table}[t]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{0.82}
+\caption{Meteorological Regime Profiling across Four Indian Megacities from Ground-Sensor Observations.}
+\label{tab:regime_profiles}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llccccc}
+\toprule
+\textbf{City} & \textbf{Regime} & \textbf{Share} & \textbf{Persistence} & \textbf{Wind (m/s)} & \textbf{Temp ($^\circ$C)} & \textbf{RH (\%)} \\
+\midrule
+Delhi & Regime 1 & 42.7\% & 0.989 & 5.98 & 19.63 & 61.4\% \\
+Delhi & Regime 2 & 57.3\% & 0.992 & 7.52 & 30.93 & 56.3\% \\
+\midrule
+Mumbai & Regime 1 & 41.7\% & 0.789 & 11.49 & 26.69 & 83.2\% \\
+Mumbai & Regime 2 & 58.3\% & 0.857 & 16.48 & 28.39 & 77.9\% \\
+\midrule
+Bengaluru & Regime 1 & 52.2\% & 0.843 & 10.83 & 20.77 & 84.6\% \\
+Bengaluru & Regime 2 & 47.8\% & 0.828 & 11.22 & 27.67 & 45.3\% \\
+\midrule
+Kolkata & Regime 1 & 60.7\% & 0.871 & 7.32 & 26.73 & 85.3\% \\
+Kolkata & Regime 2 & 39.3\% & 0.810 & 7.89 & 32.65 & 51.2\% \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.80\textwidth,height=5.8cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
-\caption{Dynamic Causal Impulse-Response Functions $\hat{\theta}_h$ across Horizons $h \in [0, 24]$ Hours for Delhi, Mumbai, Bengaluru, and Kolkata. Shaded bands represent 95\% HAC confidence intervals. Latent regime stratification reveals substantial structural heterogeneity in dynamic pollutant accumulation over multi-hour horizons.}
+\includegraphics[width=0.80\textwidth,height=2.05cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
+\caption{Dynamic Exposure-Response Curves $\hat{\theta}_h$ across Horizons $h \in [0, 24]$ Hours for Delhi, Mumbai, Bengaluru, and Kolkata. Shaded bands represent 95\% HAC confidence intervals. Regime stratification reveals substantial structural heterogeneity in dynamic pollutant accumulation over multi-hour horizons.}
 \label{fig:dynamic_irf}
 \end{figure*}
 
-We evaluate OR-DML on our verified, non-negative, multi-season atmospheric dataset ($14,122$ complete hourly records across Delhi, Mumbai, Bengaluru, and Kolkata from February 2025 to June 2026). Results are reported in Table~\ref{tab:empirical}.
+We evaluate OR-DML on our verified multi-season dataset ($14,122$ complete hourly records across Delhi, Mumbai, Bengaluru, and Kolkata from February 2025 to June 2026, with provenance audited: $>84\text{--}100\%$ raw observed CPCB readings, $<0.7\%$ forward-fill). Results are in Table~\ref{tab:empirical} and physical regime characteristics in Table~\ref{tab:regime_profiles}.
 
 \textbf{Conditioning Diagnostics \& Physical Interpretation:}
-\begin{itemize}
-    \item \textbf{Delhi Basin ($\lambda_{\min} = 111.83$):} Delhi exhibits substantial residual treatment variation and clean meteorological separation. OR-DML decomposes the pooled elasticity ($+0.4696 \pm 0.0443$) into a high-dispersion response in ventilated Regime 1 ($+0.7038 \pm 0.0513$) and a heavily damped response in stagnant Regime 2 ($+0.1281 \pm 0.0743$), reflecting deep boundary-layer trapping and nocturnal stagnation.
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+    \item \textbf{Delhi Basin ($\lambda_{\min} = 111.83$):} Delhi exhibits substantial residual treatment variation and clean meteorological separation. OR-DML decomposes the pooled elasticity ($+0.4696 \pm 0.0443$) into Regime 1 ($+0.7038 \pm 0.0513$, cooler winter months: $19.6^\circ\text{C}$, $5.98\text{ m/s}$ wind) and Regime 2 ($+0.1281 \pm 0.0743$, warmer convective conditions: $30.9^\circ\text{C}$, $7.52\text{ m/s}$ wind).
     \item \textbf{Mumbai Coastal Airshed ($\lambda_{\min} = 0.2288$):} In Mumbai, marine breeze oscillations generate severe collinearity in residual treatments, dropping $\lambda_{\min}$ to $0.2288$. While Standard DML yields an unstable estimate ($+2.6397 \pm 4.4187$), OR-DML stabilizes the overall ATE to $-1.3075 \pm 3.7717$, capturing the divergence between marine convective clearance (Regime 1, $-13.39$) and land breeze stagnation (Regime 2, $+6.97$).
     \item \textbf{Bengaluru Plateau ($\lambda_{\min} = 4.2881$):} Standard DML estimates zero net effect ($-0.0011 \pm 0.0598$). OR-DML separates daytime convective dispersion ($+0.0875$) from nocturnal inversion ($-0.1528 \pm 0.0691$, $p=0.0271$).
     \item \textbf{Kolkata Coastal-Industrial Airshed ($\lambda_{\min} = 0.0024$):} Kolkata serves as the critical empirical demonstration of the distinction between \emph{posterior entropy} and \emph{causal conditioning}: despite modest posterior entropy ($\bar{H} = 0.0858$), residual treatments are severely collinear, yielding $\lambda_{\min} = 0.0024$. Unregularized DML exhibits variance instability, while spectral regularization controls estimation risk, yielding $+0.0753 \pm 1.2872$.
 \end{itemize}
 
-\subsection{Dynamic Causal Impulse Responses}
-Figure~\ref{fig:dynamic_irf} depicts dynamic causal local projections $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ for $h \in [0, 24]$ hours. In Delhi, precursor impact peaks rapidly at $h=1$ hour ($+0.72$) and persists across a 12-hour decay window. In Mumbai and Kolkata, dynamic responses exhibit diurnal cyclical oscillations corresponding to land-sea breeze reversals, demonstrating that static estimators collapse critical multi-hour causal lag dynamics.
+\subsection{Dynamic Exposure-Response Curves}
+Figure~\ref{fig:dynamic_irf} depicts dynamic exposure-response projections $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ for $h \in [0, 24]$ hours. In Delhi, precursor exposure impact peaks rapidly at $h=1$ hour ($+0.72$) and persists across a 12-hour decay window. In Mumbai and Kolkata, dynamic associations exhibit diurnal cyclical oscillations corresponding to land-sea breeze reversals, demonstrating that static estimators collapse critical multi-hour temporal lag dynamics.
 
+\vspace{-1mm}
 \section{CONCLUSION}
 \label{sec:conclusion}
-We introduced Overlap-Aware Regime Double Machine Learning (OR-DML), addressing the fundamental problem of latent, persistent confounding under imperfect state overlap. By combining an impossibility result, a graceful degradation bound, and spectral regularization with purged block cross-fitting, OR-DML replaces false claims of universal orthogonality with honest, diagnosable causal bounds. Empirical evaluations across 500 replications and four Indian megacities confirm that OR-DML reliably tracks latent atmospheric confounding across the difficulty frontier.
+We introduced Overlap-Aware Regime Double Machine Learning (OR-DML) for latent confounding under imperfect regime overlap. Combining an impossibility result, graceful degradation, and spectral regularization with purged block cross-fitting, OR-DML replaces false universal orthogonality claims with honest, diagnosable bounds. Replications and empirical tests confirm that OR-DML reliably tracks latent confounding.
 
 \clearpage
 
@@ -613,98 +653,109 @@ We have reviewed all AI-assisted work as follows: all mathematical proofs were v
 
 \section{Proof of Theorem 1: Non-Identification Under Unconstrained Overlap}
 \label{app:proof_thm1}
-To prove non-identification constructively, we exhibit two distinct data-generating distributions, $P_1$ and $P_2$, that are structurally well-formed under the SCM \eqref{eq:regime_scm}--\eqref{eq:outcome} with strictly distinct regime causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$, yet induce identical joint probability laws over all observable variables:
+To prove substantive causal non-identification, we constructively exhibit two data-generating distributions, $P_1$ and $P_2$, that are structurally well-formed under the SCM \eqref{eq:regime_scm}--\eqref{eq:outcome} and satisfy all Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation}, yet possess strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$ while inducing identically equal joint distributions over all observable variables:
 \begin{equation}
     P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \quad \forall N \ge 1.
 \end{equation}
 
-\textbf{Construction of Observational Equivalence:}
-Consider a two-state Markov chain ($K=2$) with symmetric transition probability $P_{01} = P_{10} = p \in (0, 0.5)$, giving equal stationary distribution $\pi_0^* = \pi_1^* = 0.5$.
-Let auxiliary proxies $Z_t \in \R$ satisfy complete overlap: $Z_t \mid S_t = 0 \sim \mathcal{N}(0, \sigma_Z^2)$ and $Z_t \mid S_t = 1 \sim \mathcal{N}(0, \sigma_Z^2)$ identically, so $Z_t \perp S_t$.
-Let continuous observed confounders $X_t \in \R$ have marginal density $f_X(x)$.
-Consider treatment assignment $T_t = m(X_t, S_t) + V_t$ where $V_t \sim \mathcal{N}(0, \sigma_V^2)$, and structural outcome $Y_t = \theta(S_t) T_t + g(X_t, S_t) + U_t$ where $U_t \sim \mathcal{N}(0, \sigma_U^2)$, with $U_t, V_t \perp S_t, X_t, Z_t$.
+\textbf{Construction of Substantive Observational Equivalence:}
+Consider a two-state Markov chain ($K=2$) with symmetric transition probability $P_{01} = P_{10} = p \in (0, 0.5)$, yielding stationary distribution $\pi_0^* = \pi_1^* = 0.5$.
+Let auxiliary meteorological proxies $Z_t \in \R$ satisfy complete overlap: $Z_t \mid S_t = 0 \sim \mathcal{N}(0, 1)$ and $Z_t \mid S_t = 1 \sim \mathcal{N}(0, 1)$ identically, so $Z_t \perp S_t$.
+Let continuous observed confounders $X_t \in \R$ have marginal density $f_X(x)$ independent of $S_t$.
+Let discrete binary treatment $T_t \in \{-1, +1\}$ have equal probability $P(T_t = 1) = P(T_t = -1) = 0.5$, independent of $(S_t, X_t, Z_t)$, so baseline treatment assignment satisfies $m(X_t, S_t) \equiv 0$ and $V_t = T_t$ with $\E[V_t \mid X_t, S_t] = 0$.
 
-Under Model $P_1$, specify parameters:
-\begin{align*}
-    m^{(1)}(X_t, S_t) &= \mu_0(X_t) \one(S_t=0) + \mu_1(X_t) \one(S_t=1), \\
-    g^{(1)}(X_t, S_t) &= g_0(X_t) \one(S_t=0) + g_1(X_t) \one(S_t=1), \\
-    \boldsymbol{\theta}^{(1)} &= (\theta_0^{(1)}, \theta_1^{(1)})^\top = (a, b)^\top \quad (a \neq b).
-\end{align*}
-Conditional on $(X_t, Z_t)$, the joint emission density of the observables $(T_t, Y_t)$ is a two-component bivariate Gaussian mixture:
-\begin{align}
-    f_{T, Y \mid X, Z}^{(1)}(t, y \mid x, z) &= \frac{1}{2} \mathcal{N}\left(t; \mu_0(x), \sigma_V^2\right) \mathcal{N}\left(y; a t + g_0(x), \sigma_U^2\right) \nonumber \\
-    &\quad + \frac{1}{2} \mathcal{N}\left(t; \mu_1(x), \sigma_V^2\right) \mathcal{N}\left(y; b t + g_1(x), \sigma_U^2\right).
-\end{align}
-Now construct Model $P_2$ by applying the regime label permutation $\sigma(0) = 1, \sigma(1) = 0$:
-\begin{align*}
-    m^{(2)}(X_t, S_t) &= \mu_1(X_t) \one(S_t=0) + \mu_0(X_t) \one(S_t=1), \\
-    g^{(2)}(X_t, S_t) &= g_1(X_t) \one(S_t=0) + g_0(X_t) \one(S_t=1), \\
-    \boldsymbol{\theta}^{(2)} &= (\theta_0^{(2)}, \theta_1^{(2)})^\top = (b, a)^\top.
-\end{align*}
-Because the transition matrix is symmetric ($P_{01} = P_{10}$), the latent Markov prior $P(S_{1:N})$ is strictly invariant under state permutation. Furthermore, because $f_Z(z \mid S_t=0) = f_Z(z \mid S_t=1)$, the auxiliary observables $Z_{1:N}$ contain zero mutual information about $S_t$.
-The joint observable density under Model $P_2$ is:
-\begin{align}
-    f_{T, Y \mid X, Z}^{(2)}(t, y \mid x, z) &= \frac{1}{2} \mathcal{N}\left(t; \mu_1(x), \sigma_V^2\right) \mathcal{N}\left(y; b t + g_1(x), \sigma_U^2\right) \nonumber \\
-    &\quad + \frac{1}{2} \mathcal{N}\left(t; \mu_0(x), \sigma_V^2\right) \mathcal{N}\left(y; a t + g_0(x), \sigma_U^2\right) \nonumber \\
-    &\equiv f_{T, Y \mid X, Z}^{(1)}(t, y \mid x, z) \quad \forall (t, y, x, z).
-\end{align}
-Because the observable marginal and conditional densities are identical across all $t$, the full joint likelihoods over all observables satisfy $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ identically for any sample size $N$.
+Now specify two distinct structural outcome models:
+\begin{enumerate}
+    \item \textbf{Model $P_1$ (Homogeneous Causal Effect):}
+    Set $\boldsymbol{\theta}^{(1)} = (\theta_0^{(1)}, \theta_1^{(1)})^\top = (1, 1)^\top$ (so the treatment effect is identical across regimes, $\theta_0^{(1)} - \theta_1^{(1)} = 0$), baseline function $g^{(1)}(X_t, S_t) \equiv 0$, and structural outcome innovation $U_t^{(1)} \in \{-1, +1\}$ with $P(U_t^{(1)} = 1) = P(U_t^{(1)} = -1) = 0.5$, distributed independently of $(T_t, X_t, S_t, Z_{1:N})$. Then $\E[U_t^{(1)} \mid X_t, S_t, T_t] = 0$.
+    Under Model $P_1$, the outcome is $Y_t = 1 \cdot T_t + U_t^{(1)}$. The conditional distribution of $Y_t$ given $T_t$ evaluates to:
+    \begin{align}
+        P_1(Y_t = 2 \mid T_t = 1) &= 0.5, \quad P_1(Y_t = 0 \mid T_t = 1) = 0.5, \\
+        P_1(Y_t = -2 \mid T_t = -1) &= 0.5, \quad P_1(Y_t = 0 \mid T_t = -1) = 0.5.
+    \end{align}
+    \item \textbf{Model $P_2$ (Heterogeneous Causal Effect):}
+    Set $\boldsymbol{\theta}^{(2)} = (\theta_0^{(2)}, \theta_1^{(2)})^\top = (2, 0)^\top$ (so the treatment effect is strongly heterogeneous, $\theta_0^{(2)} - \theta_1^{(2)} = 2$), baseline function $g^{(2)}(X_t, S_t) \equiv 0$, and structural error $U_t^{(2)} \equiv 0$ almost surely (trivially satisfying $\E[U_t^{(2)} \mid X_t, S_t, T_t] = 0$).
+    Under Model $P_2$, the outcome is $Y_t = \theta(S_t) T_t$:
+    \begin{itemize}
+        \item In Regime 0 ($S_t = 0$): $Y_t = 2 T_t$, so $Y_t = 2$ if $T_t = 1$ and $Y_t = -2$ if $T_t = -1$.
+        \item In Regime 1 ($S_t = 1$): $Y_t = 0 \cdot T_t = 0$ for all $T_t \in \{-1, +1\}$.
+    \end{itemize}
+    Marginalizing over the unobserved state $S_t$ with prior $\pi_0^* = \pi_1^* = 0.5$:
+    \begin{align}
+        P_2(Y_t = 2 \mid T_t = 1) &= \pi_0^*(1) + \pi_1^*(0) = 0.5, \quad P_2(Y_t = 0 \mid T_t = 1) = \pi_0^*(0) + \pi_1^*(1) = 0.5, \\
+        P_2(Y_t = -2 \mid T_t = -1) &= \pi_0^*(1) + \pi_1^*(0) = 0.5, \quad P_2(Y_t = 0 \mid T_t = -1) = \pi_0^*(0) + \pi_1^*(1) = 0.5.
+    \end{align}
+\end{enumerate}
+Comparing the conditional distributions:
+\begin{equation}
+    P_1(Y_t \mid T_t, X_t, Z_t) \equiv P_2(Y_t \mid T_t, X_t, Z_t) \quad \forall (y, t, x, z) \in \mathrm{supp}(Y, T, X, Z).
+\end{equation}
+Because the marginal distributions of $(T_t, X_t, Z_t)$ and the temporal Markov transition laws are identical in both models, the full joint likelihoods over all observables are strictly identical for any sample size $N$:
+\begin{equation}
+    P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}).
+\end{equation}
 
-However, the structural causal effects in Regime 0 satisfy:
+Yet the structural causal effects satisfy:
 \begin{equation}
-    \E_{P_1}[Y_t \mid \mathrm{do}(T_t = t), S_t = 0] - \E_{P_1}[Y_t \mid \mathrm{do}(T_t = 0), S_t = 0] = a \cdot t,
+    \boldsymbol{\theta}^{(1)} = \begin{pmatrix} 1 \\ 1 \end{pmatrix} \neq \begin{pmatrix} 2 \\ 0 \end{pmatrix} = \boldsymbol{\theta}^{(2)}.
 \end{equation}
-whereas under Model $P_2$:
-\begin{equation}
-    \E_{P_2}[Y_t \mid \mathrm{do}(T_t = t), S_t = 0] - \E_{P_2}[Y_t \mid \mathrm{do}(T_t = 0), S_t = 0] = b \cdot t.
-\end{equation}
-Since $a \neq b$, the true regime-specific causal parameter $\theta_0^*$ is non-identified. 
-Furthermore, consider the continuous family where $m(X_t, S_t) = m_0(X_t)$ (so $T_t \perp S_t \mid X_t$). Then $\E[Y_t \mid T_t, X_t, Z_t] = (\pi_0^* \theta_0^* + \pi_1^* \theta_1^*) T_t + \bar{g}(X_t)$. Any parameter pair satisfying $\pi_0^* \theta_0 + \pi_1^* \theta_1 = \theta_{\mathrm{ATE}}^*$ defines an underdetermined 1-dimensional affine subspace that is observationally indistinguishable from observables alone. Thus, predictive latent state estimation without separation cannot identify regime causal effects. $\blacksquare$
+Crucially, $\boldsymbol{\theta}^{(2)}$ is \emph{not} a permutation of $\boldsymbol{\theta}^{(1)}$. In Model $P_1$, the inter-regime causal contrast is $\theta_0^{(1)} - \theta_1^{(1)} = 0$, whereas in Model $P_2$, $\theta_0^{(2)} - \theta_1^{(2)} = 2$.
+No estimation procedure conditioning solely on observable data $(Y, T, X, Z)$ can distinguish whether the data-generating mechanism is homogeneous ($P_1$) or heterogeneous ($P_2$) without informative proxies $Z_t$ that bound the proxy error $\varepsilon_\gamma$. This establishes substantive non-identification. $\blacksquare$
 
 \section{Proof of Theorem 2: Graceful Degradation Error Bound}
 \label{app:proof_thm2}
-Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator vector, and let $\boldsymbol{D}_t^* \equiv \boldsymbol{H}_t T_t \in \R^K$.
-The oracle partially linear model is:
+Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator vector.
+Under the true SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the oracle regime nuisance functions are:
 \begin{equation}
-    Y_t = \boldsymbol{\theta}^{*\top} \boldsymbol{D}_t^* + g(X_t, S_t) + U_t, \quad \E[U_t \mid X_t, T_t, S_t, Z_{1:N}] = 0.
+    m_k^*(X_t) \equiv \E[T_t \mid X_t, S_t = k], \quad \mu_k^*(X_t) \equiv \E[Y_t \mid X_t, S_t = k] = \theta_k^* m_k^*(X_t) + g(X_t, k).
 \end{equation}
-Let $\boldsymbol{\mu}_D^*(X_t, S_t) = \E[\boldsymbol{D}_t^* \mid X_t, S_t] = \boldsymbol{H}_t m(X_t, S_t)$ and $\tilde{\boldsymbol{D}}_t^* = \boldsymbol{D}_t^* - \boldsymbol{\mu}_D^*(X_t, S_t) = \boldsymbol{H}_t \tilde{T}_t^*$, where $\tilde{T}_t^* = T_t - m(X_t, S_t)$.
-The plug-in estimator utilizes estimated soft posterior $\boldsymbol{\gamma}_t \in \Delta^K$, pseudo-treatment $\boldsymbol{D}_t = \boldsymbol{\gamma}_t T_t$, and centered residuals $\tilde{\boldsymbol{D}}_t = \boldsymbol{D}_t - \hat{\boldsymbol{\mu}}_D(X_t, \boldsymbol{\gamma}_t) = \boldsymbol{\gamma}_t \tilde{T}_t$.
-The population coupled Gram matrix is $\boldsymbol{J} \equiv \E[\tilde{\boldsymbol{D}}_t \tilde{\boldsymbol{D}}_t^\top]$ and score vector is $\boldsymbol{S} \equiv \E[\tilde{\boldsymbol{D}}_t \tilde{Y}_t]$.
-Substituting $Y_t = \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t^* + \boldsymbol{\theta}^{*\top} \boldsymbol{\mu}_D^*(X_t, S_t) + g(X_t, S_t) + U_t$:
+The oracle centered residuals are $\tilde{T}_{tk}^* \equiv T_t - m_k^*(X_t)$ and $\tilde{Y}_{tk}^* \equiv Y_t - \mu_k^*(X_t) = \theta_k^* \tilde{T}_{tk}^* + U_t$.
+The implemented OR-DML estimator fits state-weighted regressions with posterior weights $\gamma_{tk}$:
 \begin{equation}
-    \tilde{Y}_t = Y_t - \E[Y_t \mid X_t, \boldsymbol{\gamma}_t] = \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t + \boldsymbol{\theta}^{*\top} (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t) + \Delta g_t + U_t,
+    \hat{m}_k(X) = \arg\min_m \sum_{t \in \mathcal{T}_b} \gamma_{tk} (T_t - m(X_t))^2, \quad \hat{\mu}_k(X) = \arg\min_\mu \sum_{t \in \mathcal{T}_b} \gamma_{tk} (Y_t - \mu(X_t))^2,
 \end{equation}
-where $\Delta g_t \equiv g(X_t, S_t) - \sum_{k=1}^K \gamma_{tk} g(X_t, k)$.
-Under the regularity assumptions:
-(i) Bounded effect: $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$.
-(ii) Moment bounds: $\sup_t \E[|\tilde{T}_t|^4 \mid X_t]^{1/4} \le M_T < \infty$.
-(iii) Regime Lipschitz continuity: For all $x \in \mathcal{X}$, $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
+yielding out-of-fold residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$.
+The empirical coupled Gram matrix is $\hat{J}_{jk} = \frac{1}{N}\sum_t \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk}$ and the score vector is $\hat{S}_k = \frac{1}{N}\sum_t \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}$.
+The corresponding population objects are $\boldsymbol{J} \in \R^{K \times K}$ with $J_{jk} \equiv \E[\gamma_{tj}\gamma_{tk} \tilde{T}_{tj}^* \tilde{T}_{tk}^*]$ and $\boldsymbol{S} \in \R^K$ with $S_k \equiv \E[\gamma_{tk} \tilde{T}_{tk}^* \tilde{Y}_{tk}^*]$.
 
-Because $\sum_{k=1}^K (H_{tk} - \gamma_{tk}) = 0$, we have:
+\textbf{Neyman Orthogonality:}
+Consider the population score for regime $k$ as a functional of candidate nuisances $(m_k, \mu_k)$:
 \begin{equation}
-    \Delta g_t = \sum_{k=1}^K (H_{tk} - \gamma_{tk}) g(X_t, k) = \sum_{k=1}^K (H_{tk} - \gamma_{tk}) [g(X_t, k) - g(X_t, 1)].
+    \psi_k(W_t; \theta_k, m_k, \mu_k) = \gamma_{tk} (T_t - m_k(X_t)) \left( Y_t - \mu_k(X_t) \right).
 \end{equation}
-Therefore, $|\Delta g_t| \le \max_k |g(X_t, k) - g(X_t, 1)| \sum_{k=1}^K |H_{tk} - \gamma_{tk}| \le L_g \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_1$.
-Taking the Euclidean norm of $\E[\tilde{\boldsymbol{D}}_t \Delta g_t]$:
+Evaluating the Gateaux derivative with respect to $m_k$ in direction $\Delta m$:
 \begin{equation}
-    \|\E[\tilde{\boldsymbol{D}}_t \Delta g_t]\|_2 \le \E[\|\boldsymbol{\gamma}_t\|_2 |\tilde{T}_t| |\Delta g_t|] \le \E[1 \cdot |\tilde{T}_t| \cdot L_g \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_1] \le L_g M_T \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = L_g M_T \varepsilon_\gamma,
+    \partial_m \E[\psi_k(W_t; \theta_k^*, m_k^*, \mu_k^*)][\Delta m] = -\E[\gamma_{tk} \Delta m(X_t) (Y_t - \mu_k^*(X_t))] = -\E[\gamma_{tk} \Delta m(X_t) U_t] = 0,
 \end{equation}
-using $\|\boldsymbol{\gamma}_t\|_2 \le \|\boldsymbol{\gamma}_t\|_1 = 1$.
-Similarly, decomposing $\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t = (\boldsymbol{H}_t - \boldsymbol{\gamma}_t) \tilde{T}_t + \boldsymbol{H}_t [m(X_t, \boldsymbol{\gamma}_t) - m(X_t, S_t)]$:
+since $\E[U_t \mid X_t, S_t, Z_{1:N}] = 0$ by Assumption~\ref{ass:unconfoundedness}.
+Similarly, the Gateaux derivative with respect to $\mu_k$ in direction $\Delta \mu$ is:
+\begin{equation}
+    \partial_\mu \E[\psi_k(W_t; \theta_k^*, m_k^*, \mu_k^*)][\Delta \mu] = -\E[\gamma_{tk} (T_t - m_k^*(X_t)) \Delta \mu(X_t)] = -\E[\gamma_{tk} \E[\tilde{T}_{tk}^* \mid X_t, Z_{1:N}] \Delta \mu(X_t)] = 0.
+\end{equation}
+Thus, the state-weighted score satisfies Neyman orthogonality with respect to each regime nuisance pair $(m_k, \mu_k)$.
+
+\textbf{Score Expansion and Bias Bound:}
+Expanding $Y_t = \sum_{j=1}^K H_{tj} [\theta_j^* T_t + g(X_t, j)] + U_t$:
+\begin{equation}
+    \tilde{Y}_{tk}^* = Y_t - \mu_k^*(X_t) = \sum_{j=1}^K H_{tj} \theta_j^* \tilde{T}_{tj}^* + \sum_{j=1}^K H_{tj} [\theta_j^*(m_j^*(X_t) - m_k^*(X_t)) + g(X_t, j) - g(X_t, k)] + U_t.
+\end{equation}
+Substituting into the population score $S_k = \E[\gamma_{tk} \tilde{T}_{tk}^* \tilde{Y}_{tk}^*]$:
 \begin{align}
-    \left\| \E\left[ \tilde{\boldsymbol{D}}_t (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top \right] \boldsymbol{\theta}^* \right\|_2 &\le M_\theta \left( \E[\|\tilde{\boldsymbol{D}}_t\|_2 \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_2 |\tilde{T}_t|] + \E[\|\tilde{\boldsymbol{D}}_t\|_2 |m(X_t, \boldsymbol{\gamma}_t) - m(X_t, S_t)|] \right) \nonumber \\
-    &\le M_\theta \left( M_T^2 \varepsilon_\gamma + M_T L_m \varepsilon_\gamma \right) = (M_\theta M_T^2 + M_\theta M_T L_m) \varepsilon_\gamma.
+    S_k &= \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} H_{tj} \tilde{T}_{tk}^* \tilde{T}_{tj}^*] + \E[\gamma_{tk} \tilde{T}_{tk}^* \Delta g_{tk}] \nonumber \\
+    &= \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} \gamma_{tj} \tilde{T}_{tk}^* \tilde{T}_{tj}^*] + \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} (H_{tj} - \gamma_{tj}) \tilde{T}_{tk}^* \tilde{T}_{tj}^*] + \E[\gamma_{tk} \tilde{T}_{tk}^* \Delta g_{tk}] \nonumber \\
+    &= (\boldsymbol{J}\boldsymbol{\theta}^*)_k + b_{\gamma, k},
 \end{align}
-Combining both terms into $\boldsymbol{b}_\gamma \equiv \E[\tilde{\boldsymbol{D}}_t(\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top]\boldsymbol{\theta}^* + \E[\tilde{\boldsymbol{D}}_t \Delta g_t]$, we obtain:
+where $b_{\gamma, k} \equiv \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} (H_{tj} - \gamma_{tj}) \tilde{T}_{tk}^* \tilde{T}_{tj}^*] + \E[\gamma_{tk} \tilde{T}_{tk}^* \Delta g_{tk}]$.
+Because $|H_{tj} - \gamma_{tj}| \le \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_1$ and $\sum_k \gamma_{tk} = 1$:
 \begin{equation}
-    \|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma, \quad C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty.
+    \|\boldsymbol{b}_\gamma\|_2 \le \left( M_\theta M_T^2 + M_\theta M_T L_m + L_g M_T \right) \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = C \cdot \varepsilon_\gamma,
 \end{equation}
-Since $\boldsymbol{S} = \boldsymbol{J}\boldsymbol{\theta}^* + \boldsymbol{b}_\gamma$ and $\lambda_{\min}(\boldsymbol{J}) > 0$, multiplying by $\boldsymbol{J}^{-1}$ gives:
+where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
+Since $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized estimand satisfies:
 \begin{equation}
-    \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 = \|\boldsymbol{J}^{-1} \boldsymbol{b}_\gamma\|_2 \le \|\boldsymbol{J}^{-1}\|_{\mathrm{op}} \|\boldsymbol{b}_\gamma\|_2 = \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
+    \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 = \|\boldsymbol{J}^{-1}\boldsymbol{b}_\gamma\|_2 \le \|\boldsymbol{J}^{-1}\|_{\mathrm{op}} \|\boldsymbol{b}_\gamma\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
-Applying empirical process bounds for purged cross-fitting \citep{chernozhukov2018double}, $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}_\gamma\|_2 = \mathcal{O}_P(N^{-1/2})$, establishing the theorem. $\blacksquare$
+By Neyman orthogonality and Assumption~\ref{ass:rates}, purged cross-fitting nuisance estimation error is $\mathcal{O}_P(N^{-1/2})$, establishing $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$. $\blacksquare$
 
 \section{Proof of Theorem 3: Spectral Regularization Bias-Variance Frontier}
 \label{app:proof_thm3}
@@ -733,7 +784,7 @@ By Theorem~\ref{thm:asymptotics}, the score empirical process satisfies $\Var\le
 \begin{equation}
     \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 = \frac{1}{N} \mathrm{Tr}\left( (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \right) \le \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
 \end{equation}
-Summing the squared bias and variance yields the non-asymptotic upper risk bound:
+Summing the squared bias and variance yields the finite-sample risk decomposition under the long-run score covariance approximation:
 \begin{equation}
     \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
 \end{equation}
@@ -786,27 +837,36 @@ Applying Slutsky's theorem with $\hat{\boldsymbol{J}} \xrightarrow{p} \boldsymbo
 \begin{equation}
     \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda) \right) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \boldsymbol{\Sigma}_\lambda\right),
 \end{equation}
-where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$. When $\lambda = o(N^{-1/2})$, $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, completing the proof. $\blacksquare$
+where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$. When $\lambda = o(N^{-1/2})$, $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, completing the proof.
 
-\section{Proof of Proposition 6: Markov Occupation Variance Decomposition}
+\textit{Operational Modes of Forward Filtering.} In offline retrospective smoothing, $\gamma_{tk}^{\mathrm{smooth}} = P(S_t = k \mid Z_{1:N})$. In real-time decision making, three distinct forward modes exist: (1) \emph{Oracle Filter}: $P(S_t = k \mid Z_{1:t}, \boldsymbol{\phi}^*)$ using the true HMM parameters; (2) \emph{Training-Fitted Forward Filter}: $P(S_t = k \mid Z_{1:t}, \hat{\boldsymbol{\phi}})$ where parameters $\hat{\boldsymbol{\phi}}$ are fitted on a historical calibration window and state inference updates strictly forward on past-to-present observations $Z_{1:t}$; and (3) \emph{Expanding-Window Online Filter}: where both parameters $\hat{\boldsymbol{\phi}}_t$ and state updates proceed sequentially. Our implementations evaluate Mode 1 and Mode 2, where Mode 2 enforces causal forward state filtering without future observation leakage. $\blacksquare$
+
+\section{Proof of Proposition 6: Joint Delta-Method Inference for Population ATE}
 \label{app:proof_prop6}
-The sample Average Treatment Effect is $\hat{\theta}_{\mathrm{SATE}} = \sum_{k=1}^K \bar{\gamma}_k \hat{\theta}_k = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}$, where $\bar{\boldsymbol{\gamma}} = \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$. 
-Conditional on the realized regime trajectory $S_{1:N}$, the conditional asymptotic variance is $\sigma_{\mathrm{cond}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}}$, where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} / N$.
-The population estimand is $\theta_{\mathrm{PATE}}^* = \sum_{k=1}^K \pi_k^* \theta_k^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$. 
-By the law of total variance:
-\begin{align}
-    \Var(\hat{\theta}_{\mathrm{PATE}}) &= \E\left[ \Var(\hat{\theta}_{\mathrm{PATE}} \mid S_{1:N}) \right] + \Var\left( \E[\hat{\theta}_{\mathrm{PATE}} \mid S_{1:N}] \right) \nonumber \\
-    &= \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}} + \boldsymbol{\theta}^{*\top} \Var(\bar{\boldsymbol{\gamma}}) \boldsymbol{\theta}^*.
-\end{align}
-For an irreducible, aperiodic Markov chain with transition matrix $\boldsymbol{\Pi}$ and stationary distribution $\boldsymbol{\pi}^*$, the fundamental matrix \citep{kemeny1976finite} is $\mathbf{Z} = (\mathbf{I} - \boldsymbol{\Pi} + \mathbf{1}\boldsymbol{\pi}^{*\top})^{-1}$. The asymptotic covariance matrix of the sample occupation distribution $\bar{\boldsymbol{S}}_N$ satisfies:
+The sample Average Treatment Effect estimator is $\hat{\theta}_{\mathrm{SATE}} = \sum_{k=1}^K \bar{\gamma}_k \hat{\theta}_{\lambda, k} = \bar{\boldsymbol{\gamma}}^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\bar{\boldsymbol{\gamma}} = \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$. Conditional on the realized sample regime occupancy, its asymptotic variance is $\sigma_{\mathrm{SATE}}^2 = \bar{\boldsymbol{\gamma}}^\top \boldsymbol{\Sigma}_\lambda \bar{\boldsymbol{\gamma}}$.
+
+For the population estimand $\theta_{\mathrm{PATE}}^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$, the plug-in estimator is $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\hat{\boldsymbol{\pi}}$ is the stationary vector of the fitted Markov transition matrix $\hat{\boldsymbol{\Pi}}$. Expanding $\hat{\theta}_{\mathrm{PATE}}$ around $(\boldsymbol{\pi}^*, \boldsymbol{\theta}^*)$ via the delta method:
 \begin{equation}
-    \lim_{N \to \infty} N \Cov(\bar{\boldsymbol{S}}_N) = \mathbf{D}_{\pi} \mathbf{Z} + \mathbf{Z}^\top \mathbf{D}_{\pi} - \mathbf{D}_{\pi} - \boldsymbol{\pi}^* \boldsymbol{\pi}^{*\top},
+    \sqrt{N}\left( \hat{\theta}_{\mathrm{PATE}} - \theta_{\mathrm{PATE}}^* \right) = \boldsymbol{\pi}^{*\top} \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* \right) + \boldsymbol{\theta}^{*\top} \sqrt{N}\left( \hat{\boldsymbol{\pi}} - \boldsymbol{\pi}^* \right) + o_P(1).
+\end{equation}
+Under Assumption~\ref{ass:innovation} (Structural Innovation), the score innovations satisfy $\E[\boldsymbol{\Psi}_t \mid S_{1:N}] = \mathbf{0}$. Therefore, the score empirical process is conditionally mean-independent of the state occupancy trajectory, so the asymptotic cross-covariance vanishes:
+\begin{equation}
+    \lim_{N \to \infty} \Cov\left( \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* \right), \sqrt{N}\left( \hat{\boldsymbol{\pi}} - \boldsymbol{\pi}^* \right) \right) = \mathbf{0}.
+\end{equation}
+The asymptotic variance of $\hat{\theta}_{\mathrm{PATE}}$ therefore decouples into:
+\begin{equation}
+    \sigma_{\mathrm{PATE}}^2 = \lim_{N \to \infty} \Var\left( \sqrt{N}(\hat{\theta}_{\mathrm{PATE}} - \theta_{\mathrm{PATE}}^*) \right) = \boldsymbol{\pi}^{*\top} \boldsymbol{\Sigma}_\lambda \boldsymbol{\pi}^* + \boldsymbol{\theta}^{*\top} \boldsymbol{\Sigma}_\pi \boldsymbol{\theta}^*,
+\end{equation}
+where $\boldsymbol{\Sigma}_\pi \equiv \lim_{N \to \infty} N \Var(\hat{\boldsymbol{\pi}})$.
+For an irreducible, aperiodic Markov chain with transition matrix $\boldsymbol{\Pi}$ and stationary distribution $\boldsymbol{\pi}^*$, the fundamental matrix \citep{kemeny1976finite} is $\mathbf{Z} \equiv (\mathbf{I} - \boldsymbol{\Pi} + \mathbf{1}\boldsymbol{\pi}^{*\top})^{-1}$. The asymptotic covariance matrix of the sample occupation distribution $\bar{\boldsymbol{S}}_N$ satisfies:
+\begin{equation}
+    \boldsymbol{\Sigma}_\pi = \mathbf{D}_{\pi} \mathbf{Z} + \mathbf{Z}^\top \mathbf{D}_{\pi} - \mathbf{D}_{\pi} - \boldsymbol{\pi}^* \boldsymbol{\pi}^{*\top},
 \end{equation}
 where $\mathbf{D}_{\pi} = \mathrm{diag}(\boldsymbol{\pi}^*)$.
 For a two-state Markov chain ($K=2$) with persistence parameter $\rho = 1 - P_{01} - P_{10} = \lambda_2(\boldsymbol{\Pi})$:
 \begin{equation}
     \Var(\bar{S}_N) = \frac{\pi_0^* \pi_1^*}{N} \left( \frac{1 + \rho}{1 - \rho} \right) + o(N^{-1}).
 \end{equation}
-Since $\theta_{\mathrm{ATE}}(S) = \theta_0^* + (\theta_1^* - \theta_0^*) \bar{S}_N$, multiplying by $(\Delta \theta^*)^2 = (\theta_1^* - \theta_0^*)^2$ yields the total population variance $\sigma_{\mathrm{total}}^2 = \sigma_{\mathrm{cond}}^2 + \Var(\bar{S}_N) (\Delta \theta^*)^2$. $\blacksquare$
+Multiplying by $(\Delta \theta^*)^2 = (\theta_1^* - \theta_0^*)^2$ yields the total population variance $\sigma_{\mathrm{PATE}}^2 = \boldsymbol{\pi}^{*\top} \boldsymbol{\Sigma}_\lambda \boldsymbol{\pi}^* + \Var(\bar{S}_N) (\Delta \theta^*)^2$, which inflates the estimation variance by $\frac{1+\rho}{1-\rho} \approx 15.7\times$ under persistent stagnation ($\rho \approx 0.88$). $\blacksquare$
 
 \end{document}

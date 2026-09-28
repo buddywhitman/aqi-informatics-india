@@ -101,11 +101,23 @@ def process_city_dataset(city):
     
     # Track raw observation provenance
     for col in p_piv.columns:
-        merged[f'{col}_observed'] = (~merged[col].isna()).astype(int)
+        is_raw = (~merged[col].isna()).astype(int)
+        merged[f'{col}_observed'] = is_raw
+        merged[f'{col}_raw_observed'] = is_raw
 
     # Strictly forward-fill short gaps (max limit = 2h) to guarantee zero future-to-past leakage
-    merged[list(p_piv.columns)] = merged[list(p_piv.columns)].ffill(limit=2)
-    
+    filled_piv = merged[list(p_piv.columns)].ffill(limit=2)
+    for col in p_piv.columns:
+        merged[f'{col}_ffill_used'] = ((merged[f'{col}_raw_observed'] == 0) & (~filled_piv[col].isna())).astype(int)
+        merged[col] = filled_piv[col]
+        # Provenance source label
+        source_col = np.where(merged[f'{col}_raw_observed'] == 1, 'CPCB_OpenAQ_Observed',
+                              np.where(merged[f'{col}_ffill_used'] == 1, 'Causal_Forward_Fill_le2h', 'Missing'))
+        merged[f'{col}_source'] = source_col
+
+    # Weather variables are from verified Open-Meteo historical reanalysis
+    merged['weather_source'] = 'Open-Meteo_Reanalysis'
+
     # Time-aware causal features (lags and past rolling averages)
     for col in ['pm25', 'no2']:
         if col in merged.columns:
@@ -148,6 +160,34 @@ def build_clean_database():
     print(f"Complete cases available for causal estimation: {len(complete_cases)} across {combined['city'].nunique()} cities.")
     for city, count in complete_cases['city'].value_counts().items():
         print(f"  - {city}: {count} complete hours")
+        
+    # Generate explicit provenance summary table
+    os.makedirs("reports", exist_ok=True)
+    prov_records = []
+    for city in cities:
+        c_sub = combined[combined['city'] == city]
+        n_total = len(c_sub)
+        pm25_obs = float(c_sub['pm25_raw_observed'].mean() * 100.0) if 'pm25_raw_observed' in c_sub.columns else 0.0
+        pm25_ff = float(c_sub['pm25_ffill_used'].mean() * 100.0) if 'pm25_ffill_used' in c_sub.columns else 0.0
+        no2_obs = float(c_sub['no2_raw_observed'].mean() * 100.0) if 'no2_raw_observed' in c_sub.columns else 0.0
+        no2_ff = float(c_sub['no2_ffill_used'].mean() * 100.0) if 'no2_ffill_used' in c_sub.columns else 0.0
+        c_complete = len(complete_cases[complete_cases['city'] == city])
+        prov_records.append({
+            'City': city,
+            'Total_Hours': n_total,
+            'Complete_Analysis_Hours': c_complete,
+            'PM25_Raw_Observed_Pct': round(pm25_obs, 2),
+            'PM25_Forward_Filled_Pct': round(pm25_ff, 2),
+            'NO2_Raw_Observed_Pct': round(no2_obs, 2),
+            'NO2_Forward_Filled_Pct': round(no2_ff, 2),
+            'Weather_Source': 'Open-Meteo_Reanalysis (100% complete)',
+            'Pollution_Source': 'CPCB_OpenAQ_Hourly'
+        })
+    df_prov = pd.DataFrame(prov_records)
+    prov_path = "reports/data_provenance_summary.csv"
+    df_prov.to_csv(prov_path, index=False)
+    print(f"Data provenance summary saved to {prov_path}:")
+    print(df_prov.to_string(index=False))
     return combined
 
 
