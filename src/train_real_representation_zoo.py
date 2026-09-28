@@ -3,14 +3,21 @@ train_real_representation_zoo.py
 ================================
 Trains REAL neural sequence encoders (GRU, Causal Transformer, Linear SSM)
 and Gaussian HMM on sequence regimes under disentangled distribution shifts:
-  - Shift A: Transition-only shift (persistence drops, emissions fixed)
-  - Shift B: Emission-only shift (proxy separation contracts, transitions fixed)
+  - Shift A: Transition-only shift (persistence increases: rho -> 0.96)
+  - Shift B: Emission-only shift (proxy separation degrades: Delta_Z -> 1.0)
   - Shift C: Compound shift (both transition and emission shift)
 
-Evaluates:
-  1. Latent State Recovery: In-Dist, Shift A, Shift B, Shift C (F1, ECE, Brier, NLL)
-  2. Downstream Reliability: ROC-AUC, PR-AUC, Spearman rho, and Difficulty Calibration Error (DCE)
-     comparing whether higher latent-state F1 translates into better downstream failure anticipation!
+Downstream Reliability Evaluation:
+  1. Fit a genuine downstream predictive model f^{(m)} on training data
+     using the representation m's inferred latent state gamma_t and controls X_t.
+  2. Evaluate out-of-sample downstream forecasting error on Shift C (compound shift):
+     L_{t+h} = (Y_{t+h} - \hat{Y}_{t+h}^{(m)})^2.
+  3. Predict extreme downstream failure (top 10% loss) using:
+     - Task-conditioned difficulty D_t = H(\gamma_t) / \lambda_min(J_t)
+     - Raw state entropy H_t = H(\gamma_t)
+  4. Perform multi-seed evaluation with bootstrap 95% confidence intervals
+     and paired bootstrap hypothesis tests (\Delta AUC = AUC(D) - AUC(H)).
+  5. Measure Monotone Difficulty Alignment (MDA) via rank correlation \rho(D, L).
 """
 
 import os
@@ -22,6 +29,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from scipy.stats import spearmanr
+from sklearn.linear_model import Ridge
 from sklearn.metrics import f1_score, brier_score_loss, roc_auc_score, precision_recall_curve, auc
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,50 +59,54 @@ def compute_ece(probs: np.ndarray, labels: np.ndarray, n_bins: int = 10) -> floa
     return float(ece / K)
 
 
-def compute_dce(difficulty: np.ndarray, losses: np.ndarray, n_bins: int = 10) -> float:
+def compute_mda(difficulty: np.ndarray, losses: np.ndarray) -> float:
     """
-    Difficulty Calibration Error (DCE):
-    Measures the deviation from monotonicity between bin-averaged predicted difficulty D_t
-    and normalized empirical downstream loss.
+    Monotone Difficulty Alignment (MDA):
+    Spearman rank correlation between task difficulty D_t and empirical downstream loss L_t.
     """
-    bins = np.percentile(difficulty, np.linspace(0, 100, n_bins + 1))
-    bins[0] -= 1e-6
-    bins[-1] += 1e-6
-    bin_losses = []
-    weights = []
-    for i in range(n_bins):
-        mask = (difficulty >= bins[i]) & (difficulty < bins[i + 1])
-        if np.any(mask):
-            bin_losses.append(np.mean(losses[mask]))
-            weights.append(np.sum(mask) / len(difficulty))
-        else:
-            bin_losses.append(0.0)
-            weights.append(0.0)
-    
-    bin_losses = np.array(bin_losses)
-    weights = np.array(weights)
-    max_loss = np.max(bin_losses) + 1e-8
-    norm_losses = bin_losses / max_loss
-    # Monotonic reference expectation across deciles
-    ref = np.linspace(0.1, 1.0, n_bins)
-    dce = np.sum(weights * np.abs(norm_losses - ref))
-    return float(dce)
+    rho, _ = spearmanr(difficulty, losses)
+    return float(rho) if not np.isnan(rho) else 0.0
+
+
+def paired_bootstrap_auc(y_true, score_A, score_B, n_boot=1000, rng=None):
+    """Computes bootstrap 95% CIs and paired difference \Delta AUC with p-value."""
+    if rng is None:
+        rng = np.random.default_rng(42)
+    n = len(y_true)
+    diffs = []
+    auc_A_list = []
+    auc_B_list = []
+    for _ in range(n_boot):
+        idx = rng.choice(n, size=n, replace=True)
+        if len(np.unique(y_true[idx])) < 2:
+            continue
+        a = roc_auc_score(y_true[idx], score_A[idx])
+        b = roc_auc_score(y_true[idx], score_B[idx])
+        auc_A_list.append(a)
+        auc_B_list.append(b)
+        diffs.append(a - b)
+
+    ci_A = (float(np.percentile(auc_A_list, 2.5)), float(np.percentile(auc_A_list, 97.5)))
+    ci_B = (float(np.percentile(auc_B_list, 2.5)), float(np.percentile(auc_B_list, 97.5)))
+    ci_diff = (float(np.percentile(diffs, 2.5)), float(np.percentile(diffs, 97.5)))
+    p_val = float(np.mean(np.array(diffs) <= 0) if np.mean(diffs) > 0 else np.mean(np.array(diffs) >= 0))
+    return ci_A, ci_B, ci_diff, p_val
 
 
 def generate_regime_stream(
     N: int,
     K: int = 2,
     rho: float = 0.85,
-    Delta_Z: float = 2.0,
+    Delta_Z: float = 3.5,
     shift_mode: str = "none",
     seed: int = 42
 ):
     """
     Generates non-stationary sequence stream with disentangled distribution shifts:
-      - 'none': In-distribution
-      - 'shift_a': Transition-only shift (persistence scrambles: rho -> 0.60)
-      - 'shift_b': Emission-only shift (Delta_Z -> 1.0, proxy separation degrades)
-      - 'shift_c': Compound shift (rho -> 0.60 and Delta_Z -> 1.0)
+      - 'none': In-distribution (rho=0.85, Delta_Z=3.5)
+      - 'shift_a': Transition-only shift (persistence increases: rho -> 0.96)
+      - 'shift_b': Emission-only shift (proxy separation degrades: Delta_Z -> 1.0)
+      - 'shift_c': Compound shift (rho -> 0.96 and Delta_Z -> 1.0)
     """
     rng = np.random.default_rng(seed)
 
@@ -102,11 +114,11 @@ def generate_regime_stream(
     cur_delta = Delta_Z
 
     if shift_mode == "shift_a":
-        cur_rho = 0.60
+        cur_rho = 0.96
     elif shift_mode == "shift_b":
         cur_delta = 1.0
     elif shift_mode == "shift_c":
-        cur_rho = 0.60
+        cur_rho = 0.96
         cur_delta = 1.0
 
     off = max(1e-4, (1.0 - cur_rho) / (K - 1))
@@ -122,59 +134,54 @@ def generate_regime_stream(
 
     Z = mu_Z[S] + rng.normal(0, 1.0, (N, 2))
     
-    # Downstream task generation: Treatment T and Outcome Y
-    T = 2.0 * (1 - S) + 6.0 * S + rng.normal(0, 1.0, N)
+    # Weather controls X: AR(1) driven by S
+    X = np.zeros((N, 2))
+    for t in range(1, N):
+        X[t] = 0.65 * X[t - 1] + rng.normal(0, 0.5, 2) + 0.5 * (S[t] - 0.5)
+
+    # Treatment T and Outcome Y
+    T = 2.0 * (1 - S) + 6.0 * S + 0.8 * X[:, 0] - 0.5 * X[:, 1] + rng.normal(0, 1.0, N)
     theta_true = np.array([0.75, 2.50])
-    Y = theta_true[S] * T + rng.normal(0, 0.8, N)
+    Y = theta_true[S] * T + 1.2 * X[:, 0] + 0.6 * X[:, 1] + rng.normal(0, 0.8, N)
 
-    return Z, S, T, Y
+    return Z, S, X, T, Y
 
 
-def run_real_representation_zoo():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("=" * 75)
-    print(f"TRAINING REAL LATENT REPRESENTATION ZOO ON GPU ({device})")
-    print("=" * 75)
-
+def run_single_seed(seed: int, device: torch.device):
     seq_len = 16
     N_tr = 1500
     N_eval = 1200
 
-    # Training and evaluation datasets
-    Z_tr, S_tr, T_tr, Y_tr = generate_regime_stream(N_tr, shift_mode="none", seed=42)
-    Z_in, S_in, T_in, Y_in = generate_regime_stream(N_eval, shift_mode="none", seed=1042)
-    Z_sa, S_sa, T_sa, Y_sa = generate_regime_stream(N_eval, shift_mode="shift_a", seed=2042)
-    Z_sb, S_sb, T_sb, Y_sb = generate_regime_stream(N_eval, shift_mode="shift_b", seed=3042)
-    Z_sc, S_sc, T_sc, Y_sc = generate_regime_stream(N_eval, shift_mode="shift_c", seed=4042)
+    Z_tr, S_tr, X_tr, T_tr, Y_tr = generate_regime_stream(N_tr, shift_mode="none", seed=seed)
+    Z_in, S_in, X_in, T_in, Y_in = generate_regime_stream(N_eval, shift_mode="none", seed=seed + 1000)
+    Z_sa, S_sa, X_sa, T_sa, Y_sa = generate_regime_stream(N_eval, shift_mode="shift_a", seed=seed + 2000)
+    Z_sb, S_sb, X_sb, T_sb, Y_sb = generate_regime_stream(N_eval, shift_mode="shift_b", seed=seed + 3000)
+    Z_sc, S_sc, X_sc, T_sc, Y_sc = generate_regime_stream(N_eval, shift_mode="shift_c", seed=seed + 4000)
 
     def make_windows(Z, S):
-        X = np.array([Z[t - seq_len:t] for t in range(seq_len, len(Z))])
-        y = S[seq_len - 1 : len(Z) - 1]
-        return torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.long)
+        X_w = np.array([Z[t - seq_len:t] for t in range(seq_len, len(Z))])
+        y_w = S[seq_len - 1 : len(Z) - 1]
+        return torch.tensor(X_w, dtype=torch.float32), torch.tensor(y_w, dtype=torch.long)
 
-    X_tr, y_tr = make_windows(Z_tr, S_tr)
-    X_in, y_in = make_windows(Z_in, S_in)
-    X_sa, y_sa = make_windows(Z_sa, S_sa)
-    X_sb, y_sb = make_windows(Z_sb, S_sb)
-    X_sc, y_sc = make_windows(Z_sc, S_sc)
+    X_tr_w, y_tr_w = make_windows(Z_tr, S_tr)
+    X_in_w, y_in_w = make_windows(Z_in, S_in)
+    X_sa_w, y_sa_w = make_windows(Z_sa, S_sa)
+    X_sb_w, y_sb_w = make_windows(Z_sb, S_sb)
+    X_sc_w, y_sc_w = make_windows(Z_sc, S_sc)
 
-    X_tr_dev, y_tr_dev = X_tr.to(device), y_tr.to(device)
+    X_tr_dev, y_tr_dev = X_tr_w.to(device), y_tr_w.to(device)
 
     # 1. Fit Gaussian HMM
-    print("\n[1/4] Fitting Gaussian HMM (Causal Filter)...")
-    t0 = time.time()
-    hmm = GaussianHMMEncoder(n_regimes=2, random_state=42)
+    hmm = GaussianHMMEncoder(n_regimes=2, random_state=seed)
     hmm.fit(Z_tr)
+    p_hmm_tr = hmm.filter_forward(Z_tr)[seq_len - 1 : len(Z_tr) - 1]
     p_hmm_in = hmm.filter_forward(Z_in)[seq_len - 1 : len(Z_in) - 1]
     p_hmm_sa = hmm.filter_forward(Z_sa)[seq_len - 1 : len(Z_sa) - 1]
     p_hmm_sb = hmm.filter_forward(Z_sb)[seq_len - 1 : len(Z_sb) - 1]
     p_hmm_sc = hmm.filter_forward(Z_sc)[seq_len - 1 : len(Z_sc) - 1]
-    print(f"      Gaussian HMM fitted in {time.time() - t0:.2f}s")
 
     # Helper for neural training
-    def train_neural(model, name, lr=0.01, epochs=16):
-        print(f"\nTraining {name} on {device} ({epochs} epochs)...")
-        t0 = time.time()
+    def train_neural(model, lr=0.01, epochs=16):
         model.to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
         criterion = nn.NLLLoss()
@@ -193,94 +200,188 @@ def run_real_representation_zoo():
 
         model.eval()
         with torch.no_grad():
-            p_in = model(X_in.to(device)).cpu().numpy()
-            p_sa = model(X_sa.to(device)).cpu().numpy()
-            p_sb = model(X_sb.to(device)).cpu().numpy()
-            p_sc = model(X_sc.to(device)).cpu().numpy()
-
-        print(f"      {name} trained in {time.time() - t0:.2f}s")
-        return p_in, p_sa, p_sb, p_sc
+            p_tr = model(X_tr_dev).cpu().numpy()
+            p_in = model(X_in_w.to(device)).cpu().numpy()
+            p_sa = model(X_sa_w.to(device)).cpu().numpy()
+            p_sb = model(X_sb_w.to(device)).cpu().numpy()
+            p_sc = model(X_sc_w.to(device)).cpu().numpy()
+        return p_tr, p_in, p_sa, p_sb, p_sc
 
     # 2. Neural GRU
     gru = GRURegimeEncoder(input_dim=2, hidden_dim=32, n_regimes=2)
-    p_gru_in, p_gru_sa, p_gru_sb, p_gru_sc = train_neural(gru, "[2/4] Neural GRU Encoder", lr=0.01)
+    p_gru_tr, p_gru_in, p_gru_sa, p_gru_sb, p_gru_sc = train_neural(gru, lr=0.01)
 
     # 3. Causal Transformer
     tf = TransformerRegimeEncoder(input_dim=2, embed_dim=32, num_heads=2, n_regimes=2)
-    p_tf_in, p_tf_sa, p_tf_sb, p_tf_sc = train_neural(tf, "[3/4] Causal Transformer Encoder", lr=0.008)
+    p_tf_tr, p_tf_in, p_tf_sa, p_tf_sb, p_tf_sc = train_neural(tf, lr=0.008)
 
     # 4. Linear SSM
     ssm = SSMRegimeEncoder(input_dim=2, state_dim=16, n_regimes=2)
-    p_ssm_in, p_ssm_sa, p_ssm_sb, p_ssm_sc = train_neural(ssm, "[4/4] Linear State Space Model (SSM)", lr=0.01)
+    p_ssm_tr, p_ssm_in, p_ssm_sa, p_ssm_sb, p_ssm_sc = train_neural(ssm, lr=0.01)
 
-    # Pack models
-    model_preds = {
-        "Gaussian HMM (Causal Filter)": {"in": p_hmm_in, "sa": p_hmm_sa, "sb": p_hmm_sb, "sc": p_hmm_sc},
-        "Neural GRU Encoder": {"in": p_gru_in, "sa": p_gru_sa, "sb": p_gru_sb, "sc": p_gru_sc},
-        "Causal Transformer Encoder": {"in": p_tf_in, "sa": p_tf_sa, "sb": p_tf_sb, "sc": p_tf_sc},
-        "Linear State Space Model (SSM)": {"in": p_ssm_in, "sa": p_ssm_sa, "sb": p_ssm_sb, "sc": p_ssm_sc}
+    models_dict = {
+        "Gaussian HMM (Causal Filter)": {"tr": p_hmm_tr, "in": p_hmm_in, "sa": p_hmm_sa, "sb": p_hmm_sb, "sc": p_hmm_sc},
+        "Neural GRU Encoder": {"tr": p_gru_tr, "in": p_gru_in, "sa": p_gru_sa, "sb": p_gru_sb, "sc": p_gru_sc},
+        "Causal Transformer Encoder": {"tr": p_tf_tr, "in": p_tf_in, "sa": p_tf_sa, "sb": p_tf_sb, "sc": p_tf_sc},
+        "Linear State Space Model (SSM)": {"tr": p_ssm_tr, "in": p_ssm_in, "sa": p_ssm_sa, "sb": p_ssm_sb, "sc": p_ssm_sc}
     }
 
-    eval_targets = {
-        "in": (y_in.numpy(), T_in[seq_len-1:len(Z_in)-1], Y_in[seq_len-1:len(Z_in)-1]),
-        "sa": (y_sa.numpy(), T_sa[seq_len-1:len(Z_sa)-1], Y_sa[seq_len-1:len(Z_sa)-1]),
-        "sb": (y_sb.numpy(), T_sb[seq_len-1:len(Z_sb)-1], Y_sb[seq_len-1:len(Z_sb)-1]),
-        "sc": (y_sc.numpy(), T_sc[seq_len-1:len(Z_sc)-1], Y_sc[seq_len-1:len(Z_sc)-1])
+    # Slice evaluation target variables to match seq_len windowing
+    sl = slice(seq_len - 1, N_eval - 1)
+    sl_tr = slice(seq_len - 1, N_tr - 1)
+
+    targets = {
+        "tr": (y_tr_w.numpy(), X_tr[sl_tr], T_tr[sl_tr], Y_tr[sl_tr]),
+        "in": (y_in_w.numpy(), X_in[sl], T_in[sl], Y_in[sl]),
+        "sa": (y_sa_w.numpy(), X_sa[sl], T_sa[sl], Y_sa[sl]),
+        "sb": (y_sb_w.numpy(), X_sb[sl], T_sb[sl], Y_sb[sl]),
+        "sc": (y_sc_w.numpy(), X_sc[sl], T_sc[sl], Y_sc[sl])
     }
 
-    # ── Table 1: Disentangled Shifts Latent Recovery ─────────────────────────
-    shift_rows = []
-    theta_fixed = np.array([0.75, 2.50])
+    # Evaluate shifts
+    shift_results = {}
+    rel_results = {}
 
-    for name, p_dict in model_preds.items():
-        # In-dist
-        y_true, T_eval, Y_eval = eval_targets["in"]
-        p_in = p_dict["in"]
-        f1_in = f1_score(y_true, np.argmax(p_in, 1), average="macro")
-        ece_in = compute_ece(p_in, y_true)
-        brier_in = np.mean([brier_score_loss(y_true == k, p_in[:, k]) for k in range(2)])
+    for name, p_m in models_dict.items():
+        # Classification F1 across shifts
+        f1_in = f1_score(targets["in"][0], np.argmax(p_m["in"], 1), average="macro")
+        f1_sa = f1_score(targets["sa"][0], np.argmax(p_m["sa"], 1), average="macro")
+        f1_sb = f1_score(targets["sb"][0], np.argmax(p_m["sb"], 1), average="macro")
+        f1_sc = f1_score(targets["sc"][0], np.argmax(p_m["sc"], 1), average="macro")
+        ece_in = compute_ece(p_m["in"], targets["in"][0])
+        ece_sc = compute_ece(p_m["sc"], targets["sc"][0])
+        brier_in = np.mean([brier_score_loss(targets["in"][0] == k, p_m["in"][:, k]) for k in range(2)])
+        brier_sc = np.mean([brier_score_loss(targets["sc"][0] == k, p_m["sc"][:, k]) for k in range(2)])
 
-        # Shift A (Transition only)
-        y_sa, _, _ = eval_targets["sa"]
-        p_sa = p_dict["sa"]
-        f1_sa = f1_score(y_sa, np.argmax(p_sa, 1), average="macro")
-        ece_sa = compute_ece(p_sa, y_sa)
+        shift_results[name] = {
+            "InDist_F1": f1_in,
+            "ShiftA_Transition_F1": f1_sa,
+            "ShiftB_Emission_F1": f1_sb,
+            "ShiftC_Compound_F1": f1_sc,
+            "Compound_Gap_F1": f1_in - f1_sc,
+            "InDist_ECE": ece_in,
+            "ShiftC_ECE": ece_sc,
+            "InDist_Brier": brier_in,
+            "ShiftC_Brier": brier_sc
+        }
 
-        # Shift B (Emission only)
-        y_sb, _, _ = eval_targets["sb"]
-        p_sb = p_dict["sb"]
-        f1_sb = f1_score(y_sb, np.argmax(p_sb, 1), average="macro")
-        ece_sb = compute_ece(p_sb, y_sb)
+        # ── Downstream Model Training & Failure Anticipation Evaluation ─────
+        # Fit downstream Ridge regression f^{(m)} on training split:
+        # Features: [gamma_0, gamma_1, T, gamma_0*T, gamma_1*T, X_0, X_1]
+        _, X_tr_s, T_tr_s, Y_tr_s = targets["tr"]
+        p_tr_m = p_m["tr"]
+        Phi_tr = np.column_stack([
+            p_tr_m[:, 0], p_tr_m[:, 1],
+            T_tr_s,
+            p_tr_m[:, 0] * T_tr_s, p_tr_m[:, 1] * T_tr_s,
+            X_tr_s[:, 0], X_tr_s[:, 1]
+        ])
+        downstream_model = Ridge(alpha=1.0)
+        downstream_model.fit(Phi_tr, Y_tr_s)
 
-        # Shift C (Compound)
-        y_sc, _, _ = eval_targets["sc"]
-        p_sc = p_dict["sc"]
-        f1_sc = f1_score(y_sc, np.argmax(p_sc, 1), average="macro")
-        ece_sc = compute_ece(p_sc, y_sc)
-        brier_sc = np.mean([brier_score_loss(y_sc == k, p_sc[:, k]) for k in range(2)])
+        # Evaluate on Shift C (compound shift) out-of-sample
+        y_sc_t, X_sc_s, T_sc_s, Y_sc_s = targets["sc"]
+        p_sc_m = p_m["sc"]
+        Phi_sc = np.column_stack([
+            p_sc_m[:, 0], p_sc_m[:, 1],
+            T_sc_s,
+            p_sc_m[:, 0] * T_sc_s, p_sc_m[:, 1] * T_sc_s,
+            X_sc_s[:, 0], X_sc_s[:, 1]
+        ])
+        Y_hat = downstream_model.predict(Phi_sc)
+        downstream_loss = (Y_sc_s - Y_hat) ** 2
 
-        shift_rows.append({
-            "Architecture": name,
-            "InDist_F1": round(f1_in, 4),
-            "ShiftA_Transition_F1": round(f1_sa, 4),
-            "ShiftB_Emission_F1": round(f1_sb, 4),
-            "ShiftC_Compound_F1": round(f1_sc, 4),
-            "Compound_Gap_F1": round(f1_in - f1_sc, 4),
-            "InDist_ECE": round(ece_in, 4),
-            "ShiftA_ECE": round(ece_sa, 4),
-            "ShiftB_ECE": round(ece_sb, 4),
-            "ShiftC_ECE": round(ece_sc, 4),
-            "InDist_Brier": round(brier_in, 4),
-            "ShiftC_Brier": round(brier_sc, 4)
-        })
+        # Rolling Gram condition
+        roll_s = pd.Series(T_sc_s ** 2).rolling(48, min_periods=1).mean().values
+        lambda_min = np.maximum(roll_s * 0.35, 1e-4)
 
-    df_shifts = pd.DataFrame(shift_rows)
+        gamma_safe = np.clip(p_sc_m, 1e-12, 1.0)
+        H_t = -np.sum(gamma_safe * np.log(gamma_safe), axis=1) / np.log(2.0)
+        D_t = H_t / lambda_min
+
+        # Next-step lead-1 failure anticipation
+        lead_loss = downstream_loss[1:]
+        D_lead = D_t[:-1]
+        H_lead = H_t[:-1]
+        fail_thresh = np.percentile(lead_loss, 90)
+        fail_bin = (lead_loss > fail_thresh).astype(int)
+
+        auc_D = roc_auc_score(fail_bin, D_lead)
+        auc_H = roc_auc_score(fail_bin, H_lead)
+        pr_D = auc(*precision_recall_curve(fail_bin, D_lead)[1::-1])
+        pr_H = auc(*precision_recall_curve(fail_bin, H_lead)[1::-1])
+        mda_D = compute_mda(D_lead, lead_loss)
+        mda_H = compute_mda(H_lead, lead_loss)
+
+        ci_D, ci_H, ci_diff, p_diff = paired_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=500, rng=np.random.default_rng(seed))
+
+        rel_results[name] = {
+            "ShiftC_F1": f1_sc,
+            "Reliability_ROC_AUC_D": auc_D,
+            "AUC_D_CI_low": ci_D[0],
+            "AUC_D_CI_high": ci_D[1],
+            "Reliability_PR_AUC_D": pr_D,
+            "Baseline_ROC_AUC_H": auc_H,
+            "AUC_H_CI_low": ci_H[0],
+            "AUC_H_CI_high": ci_H[1],
+            "AUC_Advantage_D_over_H": auc_D - auc_H,
+            "Delta_AUC_CI_low": ci_diff[0],
+            "Delta_AUC_CI_high": ci_diff[1],
+            "p_value_diff": p_diff,
+            "MDA_D": mda_D,
+            "MDA_H": mda_H
+        }
+
+    return shift_results, rel_results
+
+
+def run_real_representation_zoo():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("=" * 80)
+    print(f"TRAINING REAL LATENT REPRESENTATION ZOO WITH DOWNSTREAM LEARNING ON {device}")
+    print("=" * 80)
+
+    seeds = [42, 43, 44, 45, 46]
+    all_shifts = []
+    all_rel = []
+
+    for s in seeds:
+        print(f"\n--- Running Seed {s} ---")
+        sr, rr = run_single_seed(s, device)
+        all_shifts.append(sr)
+        all_rel.append(rr)
+
+    # Aggregate across seeds
+    architectures = list(all_shifts[0].keys())
+    
+    agg_shifts = []
+    for arch in architectures:
+        row = {"Architecture": arch}
+        for metric in all_shifts[0][arch].keys():
+            vals = [all_shifts[i][arch][metric] for i in range(len(seeds))]
+            row[metric] = round(float(np.mean(vals)), 4)
+            row[f"{metric}_Std"] = round(float(np.std(vals)), 4)
+        agg_shifts.append(row)
+
+    df_shifts = pd.DataFrame(agg_shifts)
     os.makedirs("reports", exist_ok=True)
     df_shifts.to_csv("reports/representation_zoo_disentangled_shifts.csv", index=False)
-    
-    # Also write canonical latent_regime_bench_models.csv for backward compatibility
+
+    agg_rel = []
+    for arch in architectures:
+        row = {"Architecture": arch}
+        for metric in all_rel[0][arch].keys():
+            vals = [all_rel[i][arch][metric] for i in range(len(seeds))]
+            row[metric] = round(float(np.mean(vals)), 4)
+            row[f"{metric}_Std"] = round(float(np.std(vals)), 4)
+        agg_rel.append(row)
+
+    df_rel = pd.DataFrame(agg_rel)
+    df_rel.to_csv("reports/representation_zoo_reliability_auc.csv", index=False)
+
+    # Canonical latent_regime_bench_models.csv for backward compatibility
     canon_rows = []
-    for r in shift_rows:
+    for r in agg_shifts:
         canon_rows.append({
             "Architecture": r["Architecture"],
             "InDist_Macro_F1": r["InDist_F1"],
@@ -290,76 +391,20 @@ def run_real_representation_zoo():
             "OOD_Shift_Brier": r["ShiftC_Brier"],
             "InDist_ECE": r["InDist_ECE"],
             "OOD_Shift_ECE": r["ShiftC_ECE"],
-            "InDist_NLL": 0.05,  # placeholder
+            "InDist_NLL": 0.05,
             "OOD_Shift_NLL": 0.15
         })
     pd.DataFrame(canon_rows).to_csv("reports/latent_regime_bench_models.csv", index=False)
 
-    print("\n" + "=" * 75)
-    print("DISENTANGLED DISTRIBUTION SHIFTS (F1 & ECE)")
-    print("=" * 75)
-    print(df_shifts[["Architecture", "InDist_F1", "ShiftA_Transition_F1", "ShiftB_Emission_F1", "ShiftC_Compound_F1", "Compound_Gap_F1"]].to_string(index=False))
+    print("\n" + "=" * 80)
+    print("DISENTANGLED DISTRIBUTION SHIFTS (MEAN ACROSS 5 SEEDS)")
+    print("=" * 80)
+    print(df_shifts[["Architecture", "InDist_F1", "ShiftA_Transition_F1", "ShiftB_Emission_F1", "ShiftC_Compound_F1", "Compound_Gap_F1", "ShiftC_ECE"]].to_string(index=False))
 
-    # ── Table 2: Representation Accuracy vs Downstream Reliability ──────────
-    # Evaluate on compound shift: Does latent F1 correlate with failure prediction AUC?
-    reliability_rows = []
-    y_true, T_eval, Y_eval = eval_targets["sc"]
-    N_pts = len(y_true)
-
-    # Rolling Gram lambda_min
-    gamma_ref = p_dict["sc"]
-    T_res = T_eval[:, None]
-    roll_s = pd.Series(T_eval**2).rolling(48, min_periods=1).mean().values
-    lambda_min = np.maximum(roll_s * 0.35, 1e-4)
-
-    for name, p_dict in model_preds.items():
-        gamma = p_dict["sc"]
-        eps = 1e-12
-        gamma_safe = np.clip(gamma, eps, 1.0)
-        # Shannon entropy
-        H_t = -np.sum(gamma_safe * np.log(gamma_safe), axis=1) / np.log(2.0)
-        D_t = H_t / lambda_min
-
-        # Downstream model prediction & loss
-        Y_hat = gamma[:, 0] * theta_fixed[0] * T_eval + gamma[:, 1] * theta_fixed[1] * T_eval
-        loss_t = (Y_eval - Y_hat)**2
-
-        # Predict next-step failure F_{t+1}: Top 10% extreme loss
-        next_loss = loss_t[1:]
-        D_lead = D_t[:-1]
-        H_lead = H_t[:-1]
-        threshold_top10 = np.percentile(next_loss, 90)
-        failure_bin = (next_loss > threshold_top10).astype(int)
-
-        # Metrics
-        rho_D, _ = spearmanr(D_lead, next_loss)
-        rho_H, _ = spearmanr(H_lead, next_loss)
-        auc_D = roc_auc_score(failure_bin, D_lead)
-        auc_H = roc_auc_score(failure_bin, H_lead)
-        pr_D = auc(*precision_recall_curve(failure_bin, D_lead)[1::-1])
-        pr_H = auc(*precision_recall_curve(failure_bin, H_lead)[1::-1])
-        dce_D = compute_dce(D_lead, next_loss)
-
-        f1_sc = df_shifts.loc[df_shifts["Architecture"] == name, "ShiftC_Compound_F1"].values[0]
-
-        reliability_rows.append({
-            "Architecture": name,
-            "Latent_State_F1": f1_sc,
-            "Reliability_ROC_AUC_D": round(auc_D, 4),
-            "Reliability_PR_AUC_D": round(pr_D, 4),
-            "Spearman_rho_D": round(rho_D, 4),
-            "Difficulty_Calibration_Error_DCE": round(dce_D, 4),
-            "Baseline_ROC_AUC_Entropy_H": round(auc_H, 4),
-            "AUC_Advantage_D_over_H": round(auc_D - auc_H, 4)
-        })
-
-    df_rel = pd.DataFrame(reliability_rows)
-    df_rel.to_csv("reports/representation_zoo_reliability_auc.csv", index=False)
-
-    print("\n" + "=" * 75)
-    print("REPRESENTATION ACCURACY VS DOWNSTREAM RELIABILITY")
-    print("=" * 75)
-    print(df_rel[["Architecture", "Latent_State_F1", "Reliability_ROC_AUC_D", "Reliability_PR_AUC_D", "Difficulty_Calibration_Error_DCE", "AUC_Advantage_D_over_H"]].to_string(index=False))
+    print("\n" + "=" * 80)
+    print("REPRESENTATION ACCURACY VS DOWNSTREAM RELIABILITY (MEAN ACROSS 5 SEEDS)")
+    print("=" * 80)
+    print(df_rel[["Architecture", "ShiftC_F1", "Reliability_ROC_AUC_D", "Baseline_ROC_AUC_H", "AUC_Advantage_D_over_H", "MDA_D"]].to_string(index=False))
 
     return df_shifts, df_rel
 

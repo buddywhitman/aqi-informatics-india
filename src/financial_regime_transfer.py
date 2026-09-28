@@ -170,25 +170,56 @@ def evaluate_financial_transfer() -> Dict[str, pd.DataFrame]:
         })
     df_quartiles = pd.DataFrame(quartile_metrics)
 
-    # 6. Evaluate Three-Way Decision Regret Benchmark
-    thresholds = [1.5, 2.0, 2.5, 3.0, 4.0]
+    # 6. Evaluate Three-Way Decision Regret Benchmark on Held-Out Test Split
+    # Strict temporal train/calibration (first 60%, N=900) vs held-out test (remaining 40%, N=600)
+    n_cal = 900
+    df_cal = df.iloc[:n_cal].copy()
+    df_test = df.iloc[n_cal:].copy()
+
+    Y_cal = df_cal["Asset_Return_Y"].values
+    Y_test = df_test["Asset_Return_Y"].values
+    y_pred_cal = y_pred_regime[:n_cal]
+    y_pred_test = y_pred_regime[n_cal:]
+    R_cal = R_t[:n_cal]
+    R_test = R_t[n_cal:]
+
+    y_fallback_cal = np.full_like(Y_cal, np.mean(Y_cal))
+    y_fallback_test = np.full_like(Y_test, np.mean(Y_cal)) # baseline mean estimated from cal only
+
+    oracle_min_cal = np.minimum((Y_cal - y_pred_cal)**2, (Y_cal - y_fallback_cal)**2)
+    active_regret_cal = float(np.mean((Y_cal - y_pred_cal)**2 - oracle_min_cal))
+
+    oracle_min_test = np.minimum((Y_test - y_pred_test)**2, (Y_test - y_fallback_test)**2)
+    active_regret_test = float(np.mean((Y_test - y_pred_test)**2 - oracle_min_test))
+
+    # Grid search for optimal threshold tau* strictly on calibration split
+    thresholds = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0]
+    cal_regrets = {}
+    for tau in thresholds:
+        r_c = engine.evaluate_decision_policy(
+            y_true=Y_cal, y_pred_point=y_pred_cal, difficulty=R_cal, tau=tau, y_fallback=y_fallback_cal
+        )
+        cal_regrets[tau] = r_c["policy_regret"]
+    tau_star = min(cal_regrets, key=cal_regrets.get)
+    print(f"Calibration Optimal Threshold selected: tau* = {tau_star} (Cal Regret: {cal_regrets[tau_star]:.4f})")
+
+    # Evaluate all thresholds on the strictly held-out test split
     abstention_results = []
-    y_fallback = np.full_like(Y, np.mean(Y))
-    oracle_min = np.minimum((Y - y_pred_regime)**2, (Y - y_fallback)**2)
-    active_regret = float(np.mean((Y - y_pred_regime)**2 - oracle_min))
+    fallback_mse_test = float(np.mean((Y_test - y_fallback_test)**2))
 
     for tau in thresholds:
         res = engine.evaluate_decision_policy(
-            y_true=Y, y_pred_point=y_pred_regime,
-            difficulty=R_t, tau=tau, y_fallback=y_fallback
+            y_true=Y_test, y_pred_point=y_pred_test,
+            difficulty=R_test, tau=tau, y_fallback=y_fallback_test
         )
-        regret_reduction = (active_regret - res["policy_regret"]) / max(active_regret, 1e-6) * 100.0
+        regret_reduction = (active_regret_test - res["policy_regret"]) / max(active_regret_test, 1e-6) * 100.0
         abstention_results.append({
             "Abstain_Threshold_Tau": tau,
+            "Is_Cal_Selected_Tau": (tau == tau_star),
             "Coverage_Pct": round(res["coverage_rate"] * 100.0, 1),
             "Abstain_Pct": round(res["abstain_rate"] * 100.0, 1),
             "Active_MSE": round(res["full_mse"], 4),
-            "Fallback_MSE": round(float(np.mean((Y - y_fallback)**2)), 4),
+            "Fallback_MSE": round(fallback_mse_test, 4),
             "Policy_MSE": round(res["policy_mse"], 4),
             "Accepted_MSE": round(res["accepted_mse"], 4),
             "Avoided_Catastrophe_MSE": round(res["avoided_mse"], 4),
@@ -197,7 +228,7 @@ def evaluate_financial_transfer() -> Dict[str, pd.DataFrame]:
             "Policy_Tail95": round(res["policy_tail_95_mse"], 4),
             "Tail_95_Accepted_MSE": round(res["accepted_tail_95_mse"], 4),
             "Policy_Regret": round(res["policy_regret"], 4),
-            "Active_Regret": round(active_regret, 4),
+            "Active_Regret": round(active_regret_test, 4),
             "Regret_Reduction_Pct": round(regret_reduction, 2)
         })
     df_abstain = pd.DataFrame(abstention_results)
@@ -210,6 +241,8 @@ def evaluate_financial_transfer() -> Dict[str, pd.DataFrame]:
 
     # Generate Publication Figure
     generate_financial_transfer_figure(df, df_quartiles, df_abstain)
+    import shutil
+    shutil.copy("plots/fig5_financial_transfer.png", "paper/plots/fig5_financial_transfer.png")
 
     return {"quartiles": df_quartiles, "abstention": df_abstain}
 
