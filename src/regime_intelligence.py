@@ -274,6 +274,20 @@ class RegimeIntelligenceEngine:
         self.hmm = GaussianHMMEncoder(n_regimes=n_regimes, random_state=random_state)
         self.fitted = False
 
+    def fit_latent_regimes(self, Z: np.ndarray):
+        """Fits underlying latent Markov model on observation sequence Z."""
+        self.hmm.fit(Z)
+        self.fitted = True
+        return self
+
+    def infer_regimes(self, Z: np.ndarray, mode: str = "filter") -> np.ndarray:
+        """Infers posterior regime probabilities under forward filtering or retrospective smoothing."""
+        if not self.fitted:
+            self.fit_latent_regimes(Z)
+        if mode == "smooth":
+            return self.hmm.smooth_retrospective(Z)
+        return self.hmm.filter_forward(Z)
+
     def compute_regime_entropy(self, gamma: np.ndarray) -> np.ndarray:
         """Normalized Shannon entropy: H(gamma_t) in [0, 1]."""
         eps = 1e-12

@@ -1,0 +1,5 @@
+Architecture,InDist_F1,ShiftA_Transition_F1,ShiftB_Emission_F1,ShiftC_Compound_F1,Compound_Gap_F1,InDist_ECE,ShiftA_ECE,ShiftB_ECE,ShiftC_ECE,InDist_Brier,ShiftC_Brier
+Gaussian HMM (Causal Filter),0.9829,0.9543,0.8876,0.802,0.1809,0.0178,0.0272,0.0173,0.0717,0.0147,0.1385
+Neural GRU Encoder,0.9821,0.9679,0.8643,0.8342,0.1479,0.0116,0.0221,0.1079,0.1267,0.0135,0.1407
+Causal Transformer Encoder,0.9717,0.9653,0.846,0.8262,0.1455,0.0176,0.0198,0.0954,0.1129,0.0206,0.1361
+Linear State Space Model (SSM),0.9855,0.9729,0.8664,0.8344,0.151,0.0082,0.0129,0.0807,0.0965,0.0122,0.1251

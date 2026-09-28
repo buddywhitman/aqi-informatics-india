@@ -170,22 +170,35 @@ def evaluate_financial_transfer() -> Dict[str, pd.DataFrame]:
         })
     df_quartiles = pd.DataFrame(quartile_metrics)
 
-    # 6. Evaluate Abstention Policy
+    # 6. Evaluate Three-Way Decision Regret Benchmark
     thresholds = [1.5, 2.0, 2.5, 3.0, 4.0]
     abstention_results = []
+    y_fallback = np.full_like(Y, np.mean(Y))
+    oracle_min = np.minimum((Y - y_pred_regime)**2, (Y - y_fallback)**2)
+    active_regret = float(np.mean((Y - y_pred_regime)**2 - oracle_min))
+
     for tau in thresholds:
         res = engine.evaluate_decision_policy(
             y_true=Y, y_pred_point=y_pred_regime,
-            difficulty=R_t, tau=tau
+            difficulty=R_t, tau=tau, y_fallback=y_fallback
         )
+        regret_reduction = (active_regret - res["policy_regret"]) / max(active_regret, 1e-6) * 100.0
         abstention_results.append({
             "Abstain_Threshold_Tau": tau,
             "Coverage_Pct": round(res["coverage_rate"] * 100.0, 1),
             "Abstain_Pct": round(res["abstain_rate"] * 100.0, 1),
+            "Active_MSE": round(res["full_mse"], 4),
+            "Fallback_MSE": round(float(np.mean((Y - y_fallback)**2)), 4),
+            "Policy_MSE": round(res["policy_mse"], 4),
             "Accepted_MSE": round(res["accepted_mse"], 4),
             "Avoided_Catastrophe_MSE": round(res["avoided_mse"], 4),
             "MSE_Reduction_Pct": round(res["mse_reduction_pct"], 2),
-            "Tail_95_Accepted_MSE": round(res["accepted_tail_95_mse"], 4)
+            "Active_Tail95": round(res["full_tail_95_mse"], 4),
+            "Policy_Tail95": round(res["policy_tail_95_mse"], 4),
+            "Tail_95_Accepted_MSE": round(res["accepted_tail_95_mse"], 4),
+            "Policy_Regret": round(res["policy_regret"], 4),
+            "Active_Regret": round(active_regret, 4),
+            "Regret_Reduction_Pct": round(regret_reduction, 2)
         })
     df_abstain = pd.DataFrame(abstention_results)
 
