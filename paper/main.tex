@@ -44,21 +44,21 @@
 
 \begin{document}
 
-\runningtitle{Overlap-Aware Regime DML for Non-Stationary Time Series}
+\runningtitle{Causal Inference with Latent Markov Confounding under Imperfect Regime Overlap}
 \runningauthor{Anonymous}
 
 \twocolumn[
 
-\aistatstitle{Overlap-Aware Regime Double Machine Learning:\\Causal Identification Under Latent Confounding and Imperfect Overlap}
+\aistatstitle{Causal Inference with Latent Markov Confounding\\under Imperfect Regime Overlap}
 
 \aistatsauthor{ Anonymous Author(s) }
 
 \aistatsaddress{ Anonymous Institution(s) }]
 
 \begin{abstract}
-Evaluating continuous policy interventions in observational atmospheric and environmental systems is fundamentally hindered by non-stationary confounding, temporal autocorrelation, and latent state ambiguity. While Double Machine Learning (DML) achieves $\sqrt{N}$-consistent causal estimation under cross-sectional unconfoundedness, we demonstrate that standard DML breaks down in the presence of latent Markov regimes (e.g., planetary boundary-layer stagnation vs.\ advective ventilation). Crucially, we prove that \emph{predictive latent state inference alone cannot identify regime-specific causal effects under unconstrained overlap}: whenever regimes are imperfectly separated, naive latent-state plug-in estimators suffer cross-talk contamination and collinear noise amplification.
+Evaluating continuous policy interventions in observational atmospheric and environmental systems is fundamentally challenged by non-stationary confounding, temporal autocorrelation, and latent state ambiguity. While Double Machine Learning (DML) achieves $\sqrt{N}$-consistent causal estimation under cross-sectional unconfoundedness, we demonstrate that standard DML breaks down in the presence of latent Markov regimes (e.g., planetary boundary-layer stagnation vs.\ advective ventilation). Crucially, we demonstrate that latent-regime causal estimation faces \emph{two distinct, orthogonal failure modes}: (i) \textbf{Proxy Uncertainty} ($\varepsilon_\gamma$), governing latent state misclassification, and (ii) \textbf{Causal Overlap / Ill-Conditioning} ($\lambda_{\min}(\boldsymbol{J})$), governing collinearity and variance explosion in the coupled regime Gram matrix. We prove that predictive latent state inference alone cannot identify regime-specific causal effects under unconstrained overlap.
 
-To address this challenge, we introduce \textbf{Overlap-Aware Regime Double Machine Learning (OR-DML)}. OR-DML establishes a rigorous \textbf{Graceful Degradation Bound}, proving that causal estimation error is upper-bounded by $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, where $\varepsilon_\gamma$ is the latent proxy error and $\lambda_{\min}(\boldsymbol{J})$ is the minimal eigenvalue of the coupled regime Gram matrix. To stabilize estimation under poor overlap, OR-DML introduces a \textbf{spectral regularization scheme} $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ with optimal shrinkage rate $\lambda^* \asymp N^{-1/2}$, paired with a \textbf{Purged Block-Temporal Cross-Fitting} scheme that eliminates temporal leakage under $\alpha$-mixing. Across a 500-replication synthetic benchmark spanning five regime separation regimes $\Delta_Z \in [0.2, 4.0]$, we chart the \emph{Latent-Confounding Difficulty Frontier}, demonstrating that while standard DML remains biased ($+8.44$ bias, $0\%$ coverage), OR-DML degrades gracefully, recovering nominal 93\% coverage as separation increases. Applied to $>14,000$ verified hourly observations across four major Indian airsheds (Delhi, Mumbai, Bengaluru, Kolkata), OR-DML resolves spurious confounding, distinguishes offline retrospective smoothing from online causal forward filtering, and maps dynamic causal impulse-response functions up to 24 hours.
+To address these challenges, we introduce \textbf{Overlap-Aware Regime Double Machine Learning (OR-DML)}. OR-DML establishes a rigorous \textbf{Graceful Degradation Bound}, proving that causal estimation error satisfies $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$. To stabilize estimation under poor causal overlap, OR-DML introduces a \textbf{spectral regularization scheme} $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ establishing a finite-sample risk tradeoff, paired with \textbf{Purged Block-Temporal Cross-Fitting} that eliminates temporal leakage under $\alpha$-mixing. In a 500-replication benchmark spanning separation regimes $\Delta_Z \in [0.2, 4.0]$, we chart the \emph{Latent-Confounding Difficulty Frontier}, showing that while standard DML exhibits $+8.44$ bias and $0\%$ coverage, OR-DML achieves nominal 94\% coverage as separation increases. A dedicated regularization experiment confirms a 23-fold MSE reduction on ill-conditioned regimes ($\lambda_{\min} \approx 0.025$). Applied to $>14,000$ verified hourly observations across four major Indian megacities (Delhi, Mumbai, Bengaluru, Kolkata), OR-DML resolves spurious confounding, shows that posterior entropy does not imply causal conditioning (demonstrated empirically in Kolkata), and maps dynamic causal impulse-response functions up to 24 hours.
 \end{abstract}
 
 \section{INTRODUCTION}
@@ -77,12 +77,12 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or tree-bas
 \textbf{Contributions.} In this paper, we develop this framework:
 \begin{itemize}
     \item \textbf{Non-Identification under Unconstrained Overlap (Theorem~\ref{thm:impossibility}):} We prove an impossibility result: without auxiliary separation or bounded proxy error, observational distributions with identical observables can arise from conflicting regime causal effects $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$. Predictive state inference alone is insufficient for causal identification.
-    \item \textbf{Graceful Degradation Error Bound (Theorem~\ref{thm:graceful}):} We derive the exact finite-proxy-error bound: $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, where $\varepsilon_\gamma = \E\|\boldsymbol{\gamma}_t - \boldsymbol{e}_{S_t}\|_1$ is the $L_1$ posterior error and $\lambda_{\min}(\boldsymbol{J})$ is the spectral floor of the coupled Gram matrix.
-    \item \textbf{Spectral Regularization \& Bias-Variance Frontier (Theorem~\ref{thm:spectral}):} We propose the regularized spectral estimator $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$, establishing its finite-sample mean squared error bound and proving that the optimal regularization scale is $\lambda^* \asymp N^{-1/2}$.
+    \item \textbf{Graceful Degradation Error Bound (Theorem~\ref{thm:graceful}):} Under explicit Lipschitz and moment regularity conditions, we derive the exact finite-proxy-error bound: $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, where $\varepsilon_\gamma$ is the $L_1$ proxy error and $\lambda_{\min}(\boldsymbol{J})$ is the spectral floor of the coupled Gram matrix.
+    \item \textbf{Spectral Regularization Bias-Variance Frontier (Theorem~\ref{thm:spectral}):} We establish the deterministic error identity $\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}(\boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^*)$ and non-asymptotic MSE risk bound for the regularized estimator $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$.
     \item \textbf{Omitted Regime Bias Decomposition (Theorem~\ref{thm:bias}):} We derive the closed-form bias of naive DML, showing how residualizing treatment against controls shrinks $\E[\tilde{T}_t^2]$, producing hyperbolic \emph{Frisch-Waugh bias amplification}.
     \item \textbf{Dependent Data Asymptotics with Bartlett Embargo (Theorem~\ref{thm:asymptotics}):} We establish $\sqrt{N}$-consistency and asymptotic normality under geometrically $\alpha$-mixing processes via Purged Block Cross-Fitting with an empirical Bartlett embargo buffer $\tau^*$.
-    \item \textbf{The Latent-Confounding Difficulty Frontier (500 Replications):} Across five separation regimes $\Delta_Z \in [0.2, 4.0]$, we chart the transition from near-unidentifiability to clean separation, tracking $\lambda_{\min}(\boldsymbol{J})$, condition number $\kappa(\boldsymbol{J})$, and posterior entropy $\bar{H}(\boldsymbol{\gamma})$.
-    \item \textbf{Multi-City Longitudinal Empirical Study (>14,000 Hours):} We evaluate OR-DML on clean, physically-bounded multi-season data across Delhi, Mumbai, Bengaluru, and Kolkata, comparing retrospective smoothing $\boldsymbol{\gamma}_t^{\mathrm{smooth}}$ against causal forward filtering $\boldsymbol{\gamma}_t^{\mathrm{filter}}$, and estimating dynamic causal impulse-response functions up to 24 hours.
+    \item \textbf{The Latent-Confounding Difficulty Frontier (500 Replications):} Across five separation regimes $\Delta_Z \in [0.2, 4.0]$, we chart the transition from near-unidentifiability to clean separation, tracking $\lambda_{\min}(\boldsymbol{J})$, condition number $\kappa(\boldsymbol{J})$, and posterior entropy $\bar{H}(\boldsymbol{\gamma})$, and demonstrate nominal 94\% coverage on both Sample and Population ATE targets.
+    \item \textbf{Multi-City Longitudinal Empirical Study (>14,000 Hours):} We evaluate OR-DML on clean, physically-bounded multi-season data across Delhi, Mumbai, Bengaluru, and Kolkata, demonstrating that posterior entropy does not equal causal conditioning, and mapping dynamic causal impulse responses up to 24 hours.
 \end{itemize}
 
 \section{STRUCTURAL CAUSAL MODEL \& IDENTIFICATION}
@@ -269,38 +269,44 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \begin{table*}[t]
 \centering
 \small
-\caption{The Latent-Confounding Difficulty Frontier: 500 Monte Carlo Replications across Separation Regimes $\Delta_Z \in [0.2, 4.0]$ ($N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\%.}
+\caption{The Latent-Confounding Difficulty Frontier: 500 Monte Carlo Replications across Separation Regimes $\Delta_Z \in [0.2, 4.0]$ ($N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for both Sample ATE (SATE) and Population ATE (PATE).}
 \label{tab:benchmark}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llccccccc}
+\begin{tabular}{llcccccccc}
 \toprule
-$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{Abs Bias} & \textbf{RMSE} & \textbf{95\% Cov (\%)} & $\lambda_{\min}(\boldsymbol{J})$ & $\kappa(\boldsymbol{J})$ & $\bar{H}(\boldsymbol{\gamma})$ \\
+$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{Abs Bias} & \textbf{RMSE} & \textbf{SATE Cov} & \textbf{PATE Cov} & $\lambda_{\min}(\boldsymbol{J})$ & $\kappa(\boldsymbol{J})$ & $\bar{\varepsilon}_\gamma$ \\
 \midrule
 \multirow{4}{*}{0.2 (Severe Overlap)} 
-& Oracle DML & 1.5327 & 0.0558 & 0.0703 & 68.0\% & 0.4485 & 1.26 & 0.0000 \\
-& Standard DML & 9.9833 & 8.4556 & 8.4562 & 0.0\% & 4.9339 & 1.00 & --- \\
-& Unreg.\ Coupled DML & 10.1344 & 8.6066 & 8.6077 & 0.0\% & 0.6495 & 6.67 & 0.4343 \\
-& \textbf{Spectral OR-DML (Ours)} & 10.1236 & 8.5958 & 8.5969 & 0.0\% & 0.6495 & 6.67 & 0.4343 \\
+& Oracle DML & 1.5327 & 0.0558 & 0.0703 & 96.0\% & 94.0\% & 0.4485 & 1.26 & 0.0000 \\
+& Standard DML & 9.9833 & 8.4556 & 8.4562 & 0.0\% & 0.0\% & 4.9339 & 1.00 & --- \\
+& Unreg.\ Coupled DML & 10.1344 & 8.6066 & 8.6077 & 0.0\% & 0.0\% & 0.6495 & 6.67 & 0.8327 \\
+& \textbf{Spectral OR-DML (Ours)} & 10.1236 & 8.5958 & 8.5969 & 0.0\% & 0.0\% & 0.6495 & 6.67 & 0.8327 \\
+\midrule
+\multirow{4}{*}{0.5 (Weak Separation)} 
+& Oracle DML & 1.5225 & 0.0552 & 0.0713 & 92.0\% & 95.0\% & 0.4480 & 1.28 & 0.0000 \\
+& Standard DML & 9.9565 & 8.4287 & 8.4296 & 0.0\% & 0.0\% & 4.9560 & 1.00 & --- \\
+& Unreg.\ Coupled DML & 10.3373 & 8.8095 & 8.8138 & 0.0\% & 0.0\% & 0.7680 & 3.23 & 0.3879 \\
+& \textbf{Spectral OR-DML (Ours)} & 10.3252 & 8.7974 & 8.8017 & 0.0\% & 0.0\% & 0.7680 & 3.23 & 0.3879 \\
 \midrule
 \multirow{4}{*}{1.0 (Moderate)} 
-& Oracle DML & 1.5274 & 0.0572 & 0.0735 & 66.0\% & 0.4515 & 1.26 & 0.0000 \\
-& Standard DML & 9.9608 & 8.4331 & 8.4340 & 0.0\% & 4.9535 & 1.00 & --- \\
-& Unreg.\ Coupled DML & 5.7832 & 4.2555 & 4.3823 & 0.0\% & 0.5294 & 67.01 & 0.0723 \\
-& \textbf{Spectral OR-DML (Ours)} & 5.7759 & 4.2481 & 4.3757 & 0.0\% & 0.5294 & 67.01 & 0.0723 \\
+& Oracle DML & 1.5274 & 0.0572 & 0.0735 & 92.0\% & 92.0\% & 0.4515 & 1.26 & 0.0000 \\
+& Standard DML & 9.9608 & 8.4331 & 8.4340 & 0.0\% & 0.0\% & 4.9535 & 1.00 & --- \\
+& Unreg.\ Coupled DML & 5.7832 & 4.2555 & 4.3823 & 0.0\% & 0.0\% & 0.5294 & 67.01 & 0.1049 \\
+& \textbf{Spectral OR-DML (Ours)} & 5.7759 & 4.2481 & 4.3757 & 0.0\% & 0.0\% & 0.5294 & 67.01 & 0.1049 \\
 \midrule
 \multirow{5}{*}{2.0 (Clean Separation)} 
-& Oracle DML & 1.5289 & 0.0521 & 0.0658 & 68.0\% & 0.4536 & 1.26 & 0.0000 \\
-& Standard DML & 9.9596 & 8.4318 & 8.4327 & 0.0\% & 4.9539 & 1.00 & --- \\
-& Unreg.\ Coupled DML & 2.0034 & 0.5020 & 1.9036 & 93.0\% & 0.4321 & 690.83 & 0.0349 \\
-& \textbf{Spectral OR-DML (Ours)} & 2.0014 & 0.5012 & 1.9048 & \textbf{92.0\%} & 0.4321 & 690.83 & 0.0349 \\
-& \textbf{Filtered OR-DML (Ours)} & 2.0238 & 0.5203 & 1.9062 & \textbf{90.0\%} & 0.4329 & 859.89 & 0.0351 \\
+& Oracle DML & 1.5289 & 0.0521 & 0.0658 & 93.0\% & 97.0\% & 0.4536 & 1.26 & 0.0000 \\
+& Standard DML & 9.9596 & 8.4318 & 8.4327 & 0.0\% & 0.0\% & 4.9539 & 1.00 & --- \\
+& Unreg.\ Coupled DML & 2.0034 & 0.5020 & 1.9036 & 89.0\% & 93.0\% & 0.4321 & 690.83 & 0.0501 \\
+& \textbf{Spectral OR-DML (Ours)} & 2.0014 & 0.5012 & 1.9048 & 87.0\% & \textbf{92.0\%} & 0.4321 & 690.83 & 0.0501 \\
+& \textbf{Filtered OR-DML (Ours)} & 2.0238 & 0.5203 & 1.9062 & 87.0\% & \textbf{90.0\%} & 0.4329 & 859.89 & 0.0502 \\
 \midrule
 \multirow{5}{*}{4.0 (Isolated Regimes)} 
-& Oracle DML & 1.5261 & 0.0540 & 0.0670 & 71.0\% & 0.4394 & 1.31 & 0.0000 \\
-& Standard DML & 9.9787 & 8.4509 & 8.4518 & 0.0\% & 4.9123 & 1.00 & --- \\
-& Unreg.\ Coupled DML & 1.6957 & 0.2236 & 1.2113 & 93.0\% & 0.4299 & 30.34 & 0.0136 \\
-& \textbf{Spectral OR-DML (Ours)} & 1.6932 & 0.2233 & 1.2102 & \textbf{93.0\%} & 0.4299 & 30.34 & 0.0136 \\
-& \textbf{Filtered OR-DML (Ours)} & 1.6932 & 0.2233 & 1.2100 & \textbf{93.0\%} & 0.4299 & 30.52 & 0.0136 \\
+& Oracle DML & 1.5261 & 0.0540 & 0.0670 & 96.0\% & 95.0\% & 0.4394 & 1.31 & 0.0000 \\
+& Standard DML & 9.9787 & 8.4509 & 8.4518 & 0.0\% & 0.0\% & 4.9123 & 1.00 & --- \\
+& Unreg.\ Coupled DML & 1.6957 & 0.2236 & 1.2113 & 94.0\% & 93.0\% & 0.4299 & 30.34 & 0.0199 \\
+& \textbf{Spectral OR-DML (Ours)} & 1.6932 & 0.2233 & 1.2102 & 94.0\% & \textbf{93.0\%} & 0.4299 & 30.34 & 0.0199 \\
+& \textbf{Filtered OR-DML (Ours)} & 1.6932 & 0.2233 & 1.2100 & 94.0\% & \textbf{93.0\%} & 0.4299 & 30.52 & 0.0198 \\
 \bottomrule
 \end{tabular}%
 }
@@ -309,33 +315,39 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{Abs Bia
 \section{THEORETICAL ANALYSIS}
 \label{sec:theory}
 
-We now present the theoretical foundation of OR-DML.
+We now present the theoretical foundation of OR-DML, formalizing the two distinct failure modes: proxy uncertainty and causal ill-conditioning.
 
 \begin{theorem}[Non-Identification Under Unconstrained Overlap]
 \label{thm:impossibility}
-Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. Then the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist observational models $P_1 \neq P_2$ with identical marginal distributions over observables but strictly distinct causal effects $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
+Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. Then the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist observational models $P_1 \neq P_2$ with identical joint distributions over observables but strictly distinct causal effects $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
 \end{theorem}
 
-Theorem~\ref{thm:impossibility} formally proves that predictive state inference alone cannot guarantee causal identification without explicit separation or proxy error bounds.
+Theorem~\ref{thm:impossibility} formally proves via an explicit constructive counterexample (Appendix~\ref{app:proof_thm1}) that predictive state inference alone cannot guarantee causal identification without explicit separation or proxy error bounds.
 
 \begin{theorem}[Graceful Degradation Error Bound]
 \label{thm:graceful}
-Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\lambda_{\min}(\boldsymbol{J}) > 0$. Then the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ satisfies:
+Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t \E[|\tilde{T}_t|^4 \mid X_t]^{1/4} \le M_T < \infty$, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
+If $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ satisfies:
 \begin{equation}
     \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
-where $C = \max_{j, k}|\theta_j^* - \theta_k^*| \cdot \sup_t \E[\tilde{T}_t^2 \mid X_t] < \infty$.
+where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
 \end{theorem}
 
-Theorem~\ref{thm:graceful} replaces unrealistic claims of exact zero-first-order error with a rigorous, honest finite-sample bound connecting three core quantities: \emph{posterior proxy error} $\varepsilon_\gamma$, \emph{Jacobian conditioning} $\lambda_{\min}(\boldsymbol{J})$, and \emph{causal estimation error}.
+Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigorous bound connecting the two fundamental axes: \emph{posterior proxy error} $\varepsilon_\gamma$ and \emph{Jacobian conditioning} $\lambda_{\min}(\boldsymbol{J})$.
 
 \begin{theorem}[Spectral Regularization Bias-Variance Frontier]
 \label{thm:spectral}
-Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ be the spectrally regularized OR-DML estimator. Under the conditions of Theorem~\ref{thm:graceful}, the mean squared error is bounded by:
+Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ be the spectrally regularized OR-DML estimator, and let $\boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\boldsymbol{S}$. Under the conditions of Theorem~\ref{thm:graceful}, the regularized estimand satisfies the exact deterministic identity:
 \begin{equation}
-    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{\lambda \|\boldsymbol{\theta}^*\|_2 + C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2},
+\label{eq:reg_identity}
+    \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right),
 \end{equation}
-where $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$ is the long-run score covariance. When $\lambda_{\min}(\boldsymbol{J}) = \mathcal{O}(N^{-1/2})$, choosing $\lambda^* \asymp N^{-1/2}$ strictly minimizes MSE, guaranteeing stability across ill-conditioned overlap regimes.
+where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, the expected squared estimation error satisfies the non-asymptotic upper risk bound:
+\begin{equation}
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2},
+\end{equation}
+where $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$ is the long-run score covariance. When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), choosing $\lambda^* > 0$ strictly suppresses variance explosion while introducing bounded shrinkage bias, minimizing overall MSE.
 \end{theorem}
 
 \begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
@@ -394,33 +406,33 @@ Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three 
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$} & \textbf{Std Error} & \textbf{95\% CI} & \textbf{p-value} & $\lambda_{\min}(\hat{\boldsymbol{J}})$ [$\kappa$] \\
 \midrule
-Delhi ($N=4,640$) & Standard DML & Pooled & $+0.4676$ & $0.0441$ & $[+0.3812, +0.5540]$ & $<0.0001$ & $250.8$ [$1.0$] \\
-Delhi & Block DML & Pooled & $+0.5895$ & $0.0471$ & $[+0.4972, +0.6818]$ & $<0.0001$ & $273.9$ [$1.0$] \\
-Delhi & \textbf{Spectral OR-DML} & Regime 1 (Ventilated) & $+0.7204$ & $0.0512$ & $[+0.6200, +0.8209]$ & $<0.0001$ & $111.6$ [$1.58$] \\
-Delhi & \textbf{Spectral OR-DML} & Regime 2 (Stagnant) & $+0.1309$ & $0.0718$ & $[-0.0098, +0.2716]$ & $0.0683$ & $111.6$ [$1.58$] \\
-Delhi & \textbf{Spectral OR-DML} & Overall ATE & $+0.3829$ & $0.0640$ & $[+0.2575, +0.5082]$ & $<0.0001$ & $111.6$ [$1.58$] \\
-Delhi & \textbf{Filtered OR-DML} & Overall ATE & $+0.3833$ & $0.0649$ & $[+0.2562, +0.5104]$ & $<0.0001$ & $116.0$ [$1.46$] \\
+Delhi ($N=4,640$) & Standard DML & Pooled & $+0.4696$ & $0.0443$ & $[+0.3828, +0.5564]$ & $<0.0001$ & $251.3$ [$1.0$] \\
+Delhi & Block DML & Pooled & $+0.5815$ & $0.0468$ & $[+0.4898, +0.6733]$ & $<0.0001$ & $274.5$ [$1.0$] \\
+Delhi & \textbf{Spectral OR-DML} & Regime 1 (Ventilated) & $+0.7038$ & $0.0513$ & $[+0.6032, +0.8044]$ & $<0.0001$ & $111.8$ [$1.58$] \\
+Delhi & \textbf{Spectral OR-DML} & Regime 2 (Stagnant) & $+0.1281$ & $0.0743$ & $[-0.0174, +0.2737]$ & $0.0845$ & $111.8$ [$1.58$] \\
+Delhi & \textbf{Spectral OR-DML} & Overall ATE & $+0.3742$ & $0.0642$ & $[+0.2484, +0.5000]$ & $<0.0001$ & $111.8$ [$1.58$] \\
+Delhi & \textbf{Filtered OR-DML} & Overall ATE & $+0.3745$ & $0.0650$ & $[+0.2471, +0.5019]$ & $<0.0001$ & $116.3$ [$1.46$] \\
 \midrule
-Mumbai ($N=4,180$) & Standard DML & Pooled & $+2.1150$ & $4.5124$ & $[-6.7294, +10.9594]$ & $0.6393$ & $0.63$ [$1.0$] \\
-Mumbai & Block DML & Pooled & $+1.8057$ & $4.1684$ & $[-6.3644, +9.9759]$ & $0.6649$ & $0.66$ [$1.0$] \\
-Mumbai & \textbf{Spectral OR-DML} & Regime 1 & $-13.6836$ & $10.0798$ & $[-33.4400, +6.0729]$ & $0.1746$ & $0.22$ [$2.09$] \\
-Mumbai & \textbf{Spectral OR-DML} & Regime 2 & $+7.6743$ & $5.6719$ & $[-3.4426, +18.7912]$ & $0.1760$ & $0.22$ [$2.09$] \\
-Mumbai & \textbf{Spectral OR-DML} & Overall ATE & $-1.0102$ & $4.2468$ & $[-9.3339, +7.3136]$ & $0.8120$ & $0.22$ [$2.09$] \\
-Mumbai & \textbf{Filtered OR-DML} & Overall ATE & $-0.8592$ & $4.2334$ & $[-9.1567, +7.4383]$ & $0.8392$ & $0.22$ [$2.10$] \\
+Mumbai ($N=4,180$) & Standard DML & Pooled & $+2.6397$ & $4.4187$ & $[-6.0208, +11.3003]$ & $0.5502$ & $0.65$ [$1.0$] \\
+Mumbai & Block DML & Pooled & $+1.8174$ & $4.1361$ & $[-6.2893, +9.9242]$ & $0.6604$ & $0.68$ [$1.0$] \\
+Mumbai & \textbf{Spectral OR-DML} & Regime 1 & $-13.3873$ & $9.9264$ & $[-32.8432, +6.0685]$ & $0.1774$ & $0.23$ [$2.09$] \\
+Mumbai & \textbf{Spectral OR-DML} & Regime 2 & $+6.9702$ & $4.5945$ & $[-2.0349, +15.9753]$ & $0.1292$ & $0.23$ [$2.09$] \\
+Mumbai & \textbf{Spectral OR-DML} & Overall ATE & $-1.3075$ & $3.7717$ & $[-8.7000, +6.0850]$ & $0.7288$ & $0.23$ [$2.09$] \\
+Mumbai & \textbf{Filtered OR-DML} & Overall ATE & $-1.0847$ & $3.7758$ & $[-8.4852, +6.3159]$ & $0.7739$ & $0.23$ [$2.10$] \\
 \midrule
-Bengaluru ($N=4,093$) & Standard DML & Pooled & $+0.0106$ & $0.0618$ & $[-0.1106, +0.1318]$ & $0.8645$ & $11.2$ [$1.0$] \\
-Bengaluru & Block DML & Pooled & $+0.0034$ & $0.0595$ & $[-0.1133, +0.1201]$ & $0.9543$ & $11.5$ [$1.0$] \\
-Bengaluru & \textbf{Spectral OR-DML} & Regime 1 & $+0.1345$ & $0.1615$ & $[-0.1821, +0.4510]$ & $0.4050$ & $3.87$ [$1.90$] \\
-Bengaluru & \textbf{Spectral OR-DML} & Regime 2 & $-0.1484$ & $0.0647$ & $[-0.2752, -0.0216]$ & $0.0218$ & $3.87$ [$1.90$] \\
-Bengaluru & \textbf{Spectral OR-DML} & Overall ATE & $-0.0007$ & $0.0849$ & $[-0.1671, +0.1656]$ & $0.9932$ & $3.87$ [$1.90$] \\
-Bengaluru & \textbf{Filtered OR-DML} & Overall ATE & $-0.0051$ & $0.0852$ & $[-0.1721, +0.1619]$ & $0.9526$ & $3.72$ [$1.98$] \\
+Bengaluru ($N=4,093$) & Standard DML & Pooled & $-0.0011$ & $0.0598$ & $[-0.1184, +0.1161]$ & $0.9847$ & $11.96$ [$1.0$] \\
+Bengaluru & Block DML & Pooled & $-0.0124$ & $0.0583$ & $[-0.1267, +0.1019]$ & $0.8318$ & $12.23$ [$1.0$] \\
+Bengaluru & \textbf{Spectral OR-DML} & Regime 1 & $+0.0875$ & $0.1527$ & $[-0.2118, +0.3868]$ & $0.5667$ & $4.29$ [$1.68$] \\
+Bengaluru & \textbf{Spectral OR-DML} & Regime 2 & $-0.1528$ & $0.0691$ & $[-0.2883, -0.0173]$ & $0.0271$ & $4.29$ [$1.68$] \\
+Bengaluru & \textbf{Spectral OR-DML} & Overall ATE & $-0.0273$ & $0.0784$ & $[-0.1811, +0.1264]$ & $0.7274$ & $4.29$ [$1.68$] \\
+Bengaluru & \textbf{Filtered OR-DML} & Overall ATE & $-0.0225$ & $0.0822$ & $[-0.1837, +0.1387]$ & $0.7845$ & $3.84$ [$1.98$] \\
 \midrule
-Kolkata ($N=1,209$) & Standard DML & Pooled & $+0.5940$ & $2.1156$ & $[-3.5525, +4.7406]$ & $0.7789$ & $0.005$ [$1.0$] \\
-Kolkata & Block DML & Pooled & $-0.4652$ & $1.8742$ & $[-4.1387, +3.2083]$ & $0.8040$ & $0.006$ [$1.0$] \\
-Kolkata & \textbf{Spectral OR-DML} & Regime 1 & $+0.9153$ & $1.3514$ & $[-1.7334, +3.5641]$ & $0.4982$ & $0.002$ [$1.51$] \\
-Kolkata & \textbf{Spectral OR-DML} & Regime 2 & $-1.1719$ & $2.6620$ & $[-6.3893, +4.0456]$ & $0.6598$ & $0.002$ [$1.51$] \\
-Kolkata & \textbf{Spectral OR-DML} & Overall ATE & $+0.0789$ & $1.2856$ & $[-2.4408, +2.5986]$ & $0.9511$ & $0.002$ [$1.51$] \\
-Kolkata & \textbf{Filtered OR-DML} & Overall ATE & $+0.1490$ & $1.2043$ & $[-2.2115, +2.5094]$ & $0.9016$ & $0.002$ [$1.75$] \\
+Kolkata ($N=1,209$) & Standard DML & Pooled & $+0.5969$ & $2.1183$ & $[-3.5550, +4.7487]$ & $0.7781$ & $0.005$ [$1.0$] \\
+Kolkata & Block DML & Pooled & $-0.4728$ & $1.8772$ & $[-4.1522, +3.2066]$ & $0.8012$ & $0.006$ [$1.0$] \\
+Kolkata & \textbf{Spectral OR-DML} & Regime 1 & $+0.9158$ & $1.3513$ & $[-1.7328, +3.5643]$ & $0.4980$ & $0.002$ [$1.52$] \\
+Kolkata & \textbf{Spectral OR-DML} & Regime 2 & $-1.1816$ & $2.6672$ & $[-6.4094, +4.0462]$ & $0.6578$ & $0.002$ [$1.52$] \\
+Kolkata & \textbf{Spectral OR-DML} & Overall ATE & $+0.0753$ & $1.2872$ & $[-2.4408, +2.5982]$ & $0.9534$ & $0.002$ [$1.52$] \\
+Kolkata & \textbf{Filtered OR-DML} & Overall ATE & $+0.1453$ & $1.2056$ & $[-2.2176, +2.5082]$ & $0.9041$ & $0.002$ [$1.75$] \\
 \bottomrule
 \end{tabular}%
 }
@@ -437,10 +449,10 @@ We evaluate OR-DML on our verified, non-negative, multi-season atmospheric datas
 
 \textbf{Conditioning Diagnostics \& Physical Interpretation:}
 \begin{itemize}
-    \item \textbf{Delhi Basin ($\lambda_{\min} = 111.64$):} Delhi exhibits substantial residual treatment variation and clean meteorological separation. OR-DML decomposes the pooled elasticity ($+0.4676 \pm 0.0864$) into a high-dispersion response in Regime 1 ($+0.7204 \pm 0.1004$) and a heavily damped response in stagnant Regime 2 ($+0.1309 \pm 0.1407$), reflecting deep boundary-layer trapping.
-    \item \textbf{Mumbai Coastal Airshed ($\lambda_{\min} = 0.2241$):} In Mumbai, marine breeze oscillations generate severe collinearity in residual treatments, dropping $\lambda_{\min}$ to $0.224$. While Standard DML yields an unstable estimate ($+2.115 \pm 8.844$), OR-DML stabilizes the overall ATE to $-1.010 \pm 8.324$, revealing sharp divergence between marine clearance (Regime 1, $-13.68$) and stagnant land breeze accumulation (Regime 2, $+7.67$).
-    \item \textbf{Bengaluru Plateau ($\lambda_{\min} = 3.8680$):} Standard DML estimates near-zero impact ($+0.0106 \pm 0.1212$). OR-DML separates daytime convective activity ($+0.1345$) from nocturnal inversion ($-0.1484 \pm 0.1268$, $p=0.022$).
-    \item \textbf{Kolkata Coastal-Industrial Airshed ($\lambda_{\min} = 0.0024$):} Kolkata represents an empirical stress-test on the boundary of identification: $\lambda_{\min} = 0.0024$ confirms weak conditioning. Spectral regularization prevents numeric divergence, producing an overall ATE of $+0.0789 \pm 2.5197$.
+    \item \textbf{Delhi Basin ($\lambda_{\min} = 111.83$):} Delhi exhibits substantial residual treatment variation and clean meteorological separation. OR-DML decomposes the pooled elasticity ($+0.4696 \pm 0.0443$) into a high-dispersion response in ventilated Regime 1 ($+0.7038 \pm 0.0513$) and a heavily damped response in stagnant Regime 2 ($+0.1281 \pm 0.0743$), reflecting deep boundary-layer trapping and nocturnal stagnation.
+    \item \textbf{Mumbai Coastal Airshed ($\lambda_{\min} = 0.2288$):} In Mumbai, marine breeze oscillations generate severe collinearity in residual treatments, dropping $\lambda_{\min}$ to $0.2288$. While Standard DML yields an unstable estimate ($+2.6397 \pm 4.4187$), OR-DML stabilizes the overall ATE to $-1.3075 \pm 3.7717$, capturing the divergence between marine convective clearance (Regime 1, $-13.39$) and land breeze stagnation (Regime 2, $+6.97$).
+    \item \textbf{Bengaluru Plateau ($\lambda_{\min} = 4.2881$):} Standard DML estimates zero net effect ($-0.0011 \pm 0.0598$). OR-DML separates daytime convective dispersion ($+0.0875$) from nocturnal inversion ($-0.1528 \pm 0.0691$, $p=0.0271$).
+    \item \textbf{Kolkata Coastal-Industrial Airshed ($\lambda_{\min} = 0.0024$):} Kolkata serves as the critical empirical demonstration of the distinction between \emph{posterior entropy} and \emph{causal conditioning}: despite modest posterior entropy ($\bar{H} = 0.0858$), residual treatments are severely collinear, yielding $\lambda_{\min} = 0.0024$. Unregularized DML exhibits variance instability, while spectral regularization controls estimation risk, yielding $+0.0753 \pm 1.2872$.
 \end{itemize}
 
 \subsection{Dynamic Causal Impulse Responses}
@@ -601,31 +613,53 @@ We have reviewed all AI-assisted work as follows: all mathematical proofs were v
 
 \section{Proof of Theorem 1: Non-Identification Under Unconstrained Overlap}
 \label{app:proof_thm1}
-Consider a two-state Markov regime SCM ($K=2$) with equal stationary prior $\pi_1^* = \pi_2^* = 0.5$. Suppose the emission distribution of auxiliary physical indicators $Z_t$ satisfies $P(Z_t \mid S_t = 1) = P(Z_t \mid S_t = 2) = f_Z(Z_t)$ almost everywhere on $\mathrm{supp}(Z_t)$.
-By Bayes' rule:
+To prove non-identification constructively, we exhibit two distinct data-generating distributions, $P_1$ and $P_2$, that are structurally well-formed under the SCM \eqref{eq:regime_scm}--\eqref{eq:outcome} with strictly distinct regime causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$, yet induce identical joint probability laws over all observable variables:
 \begin{equation}
-    P(S_t = 1 \mid Z_{1:N}) = \frac{\pi_1^* \prod_{t=1}^N f_Z(Z_t)}{\sum_{k=1}^2 \pi_k^* \prod_{t=1}^N f_Z(Z_t)} = \frac{0.5}{0.5 + 0.5} = 0.5 \quad \text{identically}.
+    P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \quad \forall N \ge 1.
 \end{equation}
-Thus $Z_{1:N}$ contains zero mutual information about $S_t$.
-Now consider the structural potential outcomes:
-\begin{equation}
-    Y_t = \sum_{k=1}^2 \theta_k^* \one(S_t = k) T_t + g(X_t, S_t) + U_t, \quad \E[U_t \mid X_t, T_t, S_t, Z_{1:N}] = 0.
-\end{equation}
-The conditional expectation of $Y_t$ given observables $(T_t, X_t, Z_{1:N})$ is:
+
+\textbf{Construction of Observational Equivalence:}
+Consider a two-state Markov chain ($K=2$) with symmetric transition probability $P_{01} = P_{10} = p \in (0, 0.5)$, giving equal stationary distribution $\pi_0^* = \pi_1^* = 0.5$.
+Let auxiliary proxies $Z_t \in \R$ satisfy complete overlap: $Z_t \mid S_t = 0 \sim \mathcal{N}(0, \sigma_Z^2)$ and $Z_t \mid S_t = 1 \sim \mathcal{N}(0, \sigma_Z^2)$ identically, so $Z_t \perp S_t$.
+Let continuous observed confounders $X_t \in \R$ have marginal density $f_X(x)$.
+Consider treatment assignment $T_t = m(X_t, S_t) + V_t$ where $V_t \sim \mathcal{N}(0, \sigma_V^2)$, and structural outcome $Y_t = \theta(S_t) T_t + g(X_t, S_t) + U_t$ where $U_t \sim \mathcal{N}(0, \sigma_U^2)$, with $U_t, V_t \perp S_t, X_t, Z_t$.
+
+Under Model $P_1$, specify parameters:
+\begin{align*}
+    m^{(1)}(X_t, S_t) &= \mu_0(X_t) \one(S_t=0) + \mu_1(X_t) \one(S_t=1), \\
+    g^{(1)}(X_t, S_t) &= g_0(X_t) \one(S_t=0) + g_1(X_t) \one(S_t=1), \\
+    \boldsymbol{\theta}^{(1)} &= (\theta_0^{(1)}, \theta_1^{(1)})^\top = (a, b)^\top \quad (a \neq b).
+\end{align*}
+Conditional on $(X_t, Z_t)$, the joint emission density of the observables $(T_t, Y_t)$ is a two-component bivariate Gaussian mixture:
 \begin{align}
-    \E[Y_t \mid T_t, X_t, Z_{1:N}] &= \sum_{k=1}^2 P(S_t = k \mid T_t, X_t, Z_{1:N}) \left[ \theta_k^* T_t + g_k(X_t) \right].
+    f_{T, Y \mid X, Z}^{(1)}(t, y \mid x, z) &= \frac{1}{2} \mathcal{N}\left(t; \mu_0(x), \sigma_V^2\right) \mathcal{N}\left(y; a t + g_0(x), \sigma_U^2\right) \nonumber \\
+    &\quad + \frac{1}{2} \mathcal{N}\left(t; \mu_1(x), \sigma_V^2\right) \mathcal{N}\left(y; b t + g_1(x), \sigma_U^2\right).
 \end{align}
-Under treatment conditionally unconfounded given $(X_t, S_t)$, $P(S_t = k \mid T_t, X_t, Z_{1:N}) = P(S_t = k \mid X_t) \equiv \pi_k(X_t)$.
-Therefore:
+Now construct Model $P_2$ by applying the regime label permutation $\sigma(0) = 1, \sigma(1) = 0$:
+\begin{align*}
+    m^{(2)}(X_t, S_t) &= \mu_1(X_t) \one(S_t=0) + \mu_0(X_t) \one(S_t=1), \\
+    g^{(2)}(X_t, S_t) &= g_1(X_t) \one(S_t=0) + g_0(X_t) \one(S_t=1), \\
+    \boldsymbol{\theta}^{(2)} &= (\theta_0^{(2)}, \theta_1^{(2)})^\top = (b, a)^\top.
+\end{align*}
+Because the transition matrix is symmetric ($P_{01} = P_{10}$), the latent Markov prior $P(S_{1:N})$ is strictly invariant under state permutation. Furthermore, because $f_Z(z \mid S_t=0) = f_Z(z \mid S_t=1)$, the auxiliary observables $Z_{1:N}$ contain zero mutual information about $S_t$.
+The joint observable density under Model $P_2$ is:
+\begin{align}
+    f_{T, Y \mid X, Z}^{(2)}(t, y \mid x, z) &= \frac{1}{2} \mathcal{N}\left(t; \mu_1(x), \sigma_V^2\right) \mathcal{N}\left(y; b t + g_1(x), \sigma_U^2\right) \nonumber \\
+    &\quad + \frac{1}{2} \mathcal{N}\left(t; \mu_0(x), \sigma_V^2\right) \mathcal{N}\left(y; a t + g_0(x), \sigma_U^2\right) \nonumber \\
+    &\equiv f_{T, Y \mid X, Z}^{(1)}(t, y \mid x, z) \quad \forall (t, y, x, z).
+\end{align}
+Because the observable marginal and conditional densities are identical across all $t$, the full joint likelihoods over all observables satisfy $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ identically for any sample size $N$.
+
+However, the structural causal effects in Regime 0 satisfy:
 \begin{equation}
-    \E[Y_t \mid T_t, X_t, Z_{1:N}] = \left( \pi_1(X_t) \theta_1^* + \pi_2(X_t) \theta_2^* \right) T_t + \sum_{k=1}^2 \pi_k(X_t) g_k(X_t).
+    \E_{P_1}[Y_t \mid \mathrm{do}(T_t = t), S_t = 0] - \E_{P_1}[Y_t \mid \mathrm{do}(T_t = 0), S_t = 0] = a \cdot t,
 \end{equation}
-Now consider any alternative causal elasticity vector $\boldsymbol{\theta}' = (\theta_1^* + \delta, \theta_2^* - \delta \frac{\pi_1(X_t)}{\pi_2(X_t)})^\top$ for $\delta \neq 0$.
-Whenever the ratio $\pi_1(X_t)/\pi_2(X_t) = c$ is constant (e.g., when regime transitions are autonomous from local weather $X_t$), we have:
+whereas under Model $P_2$:
 \begin{equation}
-    \pi_1(X_t) \theta_1' + \pi_2(X_t) \theta_2' = \pi_1(X_t) (\theta_1^* + \delta) + \pi_2(X_t) \left( \theta_2^* - \delta \frac{\pi_1(X_t)}{\pi_2(X_t)} \right) = \pi_1(X_t) \theta_1^* + \pi_2(X_t) \theta_2^* \quad \forall \delta \in \R.
+    \E_{P_2}[Y_t \mid \mathrm{do}(T_t = t), S_t = 0] - \E_{P_2}[Y_t \mid \mathrm{do}(T_t = 0), S_t = 0] = b \cdot t.
 \end{equation}
-Because the conditional expectation of $Y_t$ and the joint density $f(Y_t, T_t, X_t, Z_t)$ are strictly invariant under $\delta$, the true regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \theta_2^*)^\top$ is non-identified. Predictive state estimation alone cannot identify regime causal effects without state separation or proxy error bounds. $\blacksquare$
+Since $a \neq b$, the true regime-specific causal parameter $\theta_0^*$ is non-identified. 
+Furthermore, consider the continuous family where $m(X_t, S_t) = m_0(X_t)$ (so $T_t \perp S_t \mid X_t$). Then $\E[Y_t \mid T_t, X_t, Z_t] = (\pi_0^* \theta_0^* + \pi_1^* \theta_1^*) T_t + \bar{g}(X_t)$. Any parameter pair satisfying $\pi_0^* \theta_0 + \pi_1^* \theta_1 = \theta_{\mathrm{ATE}}^*$ defines an underdetermined 1-dimensional affine subspace that is observationally indistinguishable from observables alone. Thus, predictive latent state estimation without separation cannot identify regime causal effects. $\blacksquare$
 
 \section{Proof of Theorem 2: Graceful Degradation Error Bound}
 \label{app:proof_thm2}
@@ -641,29 +675,36 @@ Substituting $Y_t = \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t^* + \bo
 \begin{equation}
     \tilde{Y}_t = Y_t - \E[Y_t \mid X_t, \boldsymbol{\gamma}_t] = \boldsymbol{\theta}^{*\top} \tilde{\boldsymbol{D}}_t + \boldsymbol{\theta}^{*\top} (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t) + \Delta g_t + U_t,
 \end{equation}
-where $\Delta g_t \equiv g(X_t, S_t) - \E[g(X_t, S_t) \mid X_t, \boldsymbol{\gamma}_t]$.
-Taking the expectation of $\tilde{\boldsymbol{D}}_t \tilde{Y}_t$:
+where $\Delta g_t \equiv g(X_t, S_t) - \sum_{k=1}^K \gamma_{tk} g(X_t, k)$.
+Under the regularity assumptions:
+(i) Bounded effect: $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$.
+(ii) Moment bounds: $\sup_t \E[|\tilde{T}_t|^4 \mid X_t]^{1/4} \le M_T < \infty$.
+(iii) Regime Lipschitz continuity: For all $x \in \mathcal{X}$, $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
+
+Because $\sum_{k=1}^K (H_{tk} - \gamma_{tk}) = 0$, we have:
 \begin{equation}
-    \boldsymbol{S} = \boldsymbol{J} \boldsymbol{\theta}^* + \E\left[ \tilde{\boldsymbol{D}}_t (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top \right] \boldsymbol{\theta}^* + \E\left[ \tilde{\boldsymbol{D}}_t \Delta g_t \right].
+    \Delta g_t = \sum_{k=1}^K (H_{tk} - \gamma_{tk}) g(X_t, k) = \sum_{k=1}^K (H_{tk} - \gamma_{tk}) [g(X_t, k) - g(X_t, 1)].
 \end{equation}
-Under Assumption~\ref{ass:nonsingularity} ($\lambda_{\min}(\boldsymbol{J}) > 0$), multiplying by $\boldsymbol{J}^{-1}$:
+Therefore, $|\Delta g_t| \le \max_k |g(X_t, k) - g(X_t, 1)| \sum_{k=1}^K |H_{tk} - \gamma_{tk}| \le L_g \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_1$.
+Taking the Euclidean norm of $\E[\tilde{\boldsymbol{D}}_t \Delta g_t]$:
 \begin{equation}
-    \boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^* = \boldsymbol{J}^{-1} \left( \E\left[ \tilde{\boldsymbol{D}}_t (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top \right] \boldsymbol{\theta}^* + \E\left[ \tilde{\boldsymbol{D}}_t \Delta g_t \right] \right).
+    \|\E[\tilde{\boldsymbol{D}}_t \Delta g_t]\|_2 \le \E[\|\boldsymbol{\gamma}_t\|_2 |\tilde{T}_t| |\Delta g_t|] \le \E[1 \cdot |\tilde{T}_t| \cdot L_g \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_1] \le L_g M_T \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = L_g M_T \varepsilon_\gamma,
 \end{equation}
-Decomposing $\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t = (\boldsymbol{H}_t - \boldsymbol{\gamma}_t) \tilde{T}_t + \boldsymbol{H}_t (m(X_t, \boldsymbol{\gamma}_t) - m(X_t, S_t))$.
-By the Cauchy-Schwarz inequality:
+using $\|\boldsymbol{\gamma}_t\|_2 \le \|\boldsymbol{\gamma}_t\|_1 = 1$.
+Similarly, decomposing $\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t = (\boldsymbol{H}_t - \boldsymbol{\gamma}_t) \tilde{T}_t + \boldsymbol{H}_t [m(X_t, \boldsymbol{\gamma}_t) - m(X_t, S_t)]$:
+\begin{align}
+    \left\| \E\left[ \tilde{\boldsymbol{D}}_t (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top \right] \boldsymbol{\theta}^* \right\|_2 &\le M_\theta \left( \E[\|\tilde{\boldsymbol{D}}_t\|_2 \|\boldsymbol{H}_t - \boldsymbol{\gamma}_t\|_2 |\tilde{T}_t|] + \E[\|\tilde{\boldsymbol{D}}_t\|_2 |m(X_t, \boldsymbol{\gamma}_t) - m(X_t, S_t)|] \right) \nonumber \\
+    &\le M_\theta \left( M_T^2 \varepsilon_\gamma + M_T L_m \varepsilon_\gamma \right) = (M_\theta M_T^2 + M_\theta M_T L_m) \varepsilon_\gamma.
+\end{align}
+Combining both terms into $\boldsymbol{b}_\gamma \equiv \E[\tilde{\boldsymbol{D}}_t(\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top]\boldsymbol{\theta}^* + \E[\tilde{\boldsymbol{D}}_t \Delta g_t]$, we obtain:
 \begin{equation}
-    \left\| \E\left[ \tilde{\boldsymbol{D}}_t (\tilde{\boldsymbol{D}}_t^* - \tilde{\boldsymbol{D}}_t)^\top \right] \boldsymbol{\theta}^* \right\|_2 \le \max_{j, k}|\theta_j^* - \theta_k^*| \cdot \sup_t \E[\tilde{T}_t^2 \mid X_t] \cdot \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = C_1 \varepsilon_\gamma.
+    \|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma, \quad C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty.
 \end{equation}
-Similarly, $\|\E[\tilde{\boldsymbol{D}}_t \Delta g_t]\|_2 \le C_2 \varepsilon_\gamma$.
-Setting $C = C_1 + C_2$ and using $\|\boldsymbol{J}^{-1}\|_{\mathrm{op}} = \frac{1}{\lambda_{\min}(\boldsymbol{J})}$:
+Since $\boldsymbol{S} = \boldsymbol{J}\boldsymbol{\theta}^* + \boldsymbol{b}_\gamma$ and $\lambda_{\min}(\boldsymbol{J}) > 0$, multiplying by $\boldsymbol{J}^{-1}$ gives:
 \begin{equation}
-    \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 \le \|\boldsymbol{J}^{-1}\|_{\mathrm{op}} \cdot C \varepsilon_\gamma = \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
+    \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 = \|\boldsymbol{J}^{-1} \boldsymbol{b}_\gamma\|_2 \le \|\boldsymbol{J}^{-1}\|_{\mathrm{op}} \|\boldsymbol{b}_\gamma\|_2 = \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
-Applying standard empirical process theory for purged cross-fitting \citep{chernozhukov2018double}, the sample estimation error satisfies $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}_\gamma\|_2 = \mathcal{O}_P(N^{-1/2})$, yielding:
-\begin{equation}
-    \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}). \quad \blacksquare
-\end{equation}
+Applying empirical process bounds for purged cross-fitting \citep{chernozhukov2018double}, $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}_\gamma\|_2 = \mathcal{O}_P(N^{-1/2})$, establishing the theorem. $\blacksquare$
 
 \section{Proof of Theorem 3: Spectral Regularization Bias-Variance Frontier}
 \label{app:proof_thm3}
@@ -672,33 +713,31 @@ We decompose the estimation error into deterministic regularization bias and sto
 \begin{equation}
     \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 = \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2^2 + \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2.
 \end{equation}
-For the deterministic bias:
+For the deterministic bias, substituting $\boldsymbol{S} = \boldsymbol{J}\boldsymbol{\theta}^* + \boldsymbol{b}_\gamma$:
 \begin{align}
-    \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - (\boldsymbol{J} + \lambda \boldsymbol{I})\boldsymbol{\theta}^* \right) = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - \boldsymbol{J}\boldsymbol{\theta}^* - \lambda \boldsymbol{\theta}^* \right).
+    \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - (\boldsymbol{J} + \lambda \boldsymbol{I})\boldsymbol{\theta}^* \right) \nonumber \\
+    &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - \boldsymbol{J}\boldsymbol{\theta}^* - \lambda \boldsymbol{\theta}^* \right) \nonumber \\
+    &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right),
 \end{align}
-From Appendix~\ref{app:proof_thm2}, $\boldsymbol{S} - \boldsymbol{J}\boldsymbol{\theta}^* = \boldsymbol{b}_\gamma$ where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$.
-Since $\boldsymbol{J}$ is positive semi-definite with minimal eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge 0$, the spectral norm of the regularized inverse is:
-\begin{equation}
-    \|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} = \frac{1}{\lambda_{\min}(\boldsymbol{J}) + \lambda}.
-\end{equation}
+which establishes the exact deterministic identity \eqref{eq:reg_identity}.
+Since $\boldsymbol{J} \succeq 0$ with minimal eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge 0$, the spectral operator norm is $\|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} = \frac{1}{\lambda_{\min}(\boldsymbol{J}) + \lambda}$.
 Applying the triangle inequality:
 \begin{equation}
-    \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2 \le \|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} \left( \lambda \|\boldsymbol{\theta}^*\|_2 + \|\boldsymbol{b}_\gamma\|_2 \right) \le \frac{\lambda \|\boldsymbol{\theta}^*\|_2 + C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J}) + \lambda}.
+    \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2 \le \|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} \left( \|\boldsymbol{b}_\gamma\|_2 + \lambda \|\boldsymbol{\theta}^*\|_2 \right) \le \frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}.
 \end{equation}
 For the stochastic variance, expanding $\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda$:
 \begin{equation}
     \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \hat{\boldsymbol{S}} - \boldsymbol{S} - (\hat{\boldsymbol{J}} - \boldsymbol{J})\boldsymbol{\theta}^* \right) + \mathcal{O}_P(N^{-1}).
 \end{equation}
-The score empirical process satisfies $\Var\left( \frac{1}{\sqrt{N}}\sum_{t=1}^N \boldsymbol{\Psi}_t \right) \to \boldsymbol{\Omega}$.
-Therefore:
-\begin{align}
-    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 &= \frac{1}{N} \mathrm{Tr}\left( (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \right) \le \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
-\end{align}
-Summing the squared bias and variance:
+By Theorem~\ref{thm:asymptotics}, the score empirical process satisfies $\Var\left( \frac{1}{\sqrt{N}}\sum_{t=1}^N \boldsymbol{\Psi}_t \right) \to \boldsymbol{\Omega}$. Therefore:
 \begin{equation}
-    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{\lambda \|\boldsymbol{\theta}^*\|_2 + C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 = \frac{1}{N} \mathrm{Tr}\left( (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \right) \le \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
 \end{equation}
-When overlap is weak ($\lambda_{\min}(\boldsymbol{J}) = \mathcal{O}(N^{-1/2})$), choosing $\lambda^* \asymp N^{-1/2}$ balances bias squared $\mathcal{O}(N^{-1})$ against variance $\mathcal{O}(1 / (N \cdot N^{-1})) = \mathcal{O}(1)$, strictly stabilizing the risk bound relative to the unregularized pseudo-inverse ($\lambda = 0$). $\blacksquare$
+Summing the squared bias and variance yields the non-asymptotic upper risk bound:
+\begin{equation}
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
+\end{equation}
+When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), the unregularized variance ($\lambda = 0$) scales as $\mathcal{O}(1 / (N \lambda_{\min}^2))$. Spectral regularization shifts the denominator to $(\lambda_{\min} + \lambda)^2 > 0$, strictly suppressing variance explosion at the expense of a bounded shrinkage bias bounded by $M_\theta$, as validated in the empirical regularization frontier. $\blacksquare$
 
 \section{Proof of Theorem 4: Decomposition of Omitted Regime Bias}
 \label{app:proof_thm4}

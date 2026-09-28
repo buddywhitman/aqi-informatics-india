@@ -380,10 +380,12 @@ class OverlapAwareRegimeDML:
             
         # 7. Aggregate ATE Inference (with Markov state occupation covariance)
         pi = self.regime_weights_
+        self.Sigma_ = Sigma
         self.ate_ = float(pi @ theta_vec)
         var_sate = float(pi @ Sigma @ pi)
+        self.sate_se_ = float(np.sqrt(max(var_sate, 1e-12)))
         
-        # Proposition 4 Markov regime occupation variance
+        # Proposition 6 Markov regime occupation variance
         try:
             Pi = self.hmm_.A
             ones = np.ones((K, 1))
@@ -395,6 +397,7 @@ class OverlapAwareRegimeDML:
             var_occ = 0.0
             
         self.ate_se_ = float(np.sqrt(max(var_sate + var_occ, 1e-12)))
+        self.pate_se_ = self.ate_se_
         ate_z = abs(self.ate_ / self.ate_se_) if self.ate_se_ > 0 else 0.0
         self.ate_p_ = float(2.0 * norm.sf(ate_z))
         

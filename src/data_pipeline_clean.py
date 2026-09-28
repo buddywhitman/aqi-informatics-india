@@ -99,8 +99,12 @@ def process_city_dataset(city):
     merged.sort_index(inplace=True)
     merged['city'] = city
     
-    # Short-gap forward interpolation (max limit = 2h) to avoid future leakage
-    merged[list(p_piv.columns)] = merged[list(p_piv.columns)].interpolate(method='linear', limit=2)
+    # Track raw observation provenance
+    for col in p_piv.columns:
+        merged[f'{col}_observed'] = (~merged[col].isna()).astype(int)
+
+    # Strictly forward-fill short gaps (max limit = 2h) to guarantee zero future-to-past leakage
+    merged[list(p_piv.columns)] = merged[list(p_piv.columns)].ffill(limit=2)
     
     # Time-aware causal features (lags and past rolling averages)
     for col in ['pm25', 'no2']:
