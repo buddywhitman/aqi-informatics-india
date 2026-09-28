@@ -44,6 +44,12 @@ from src.regime_intelligence import (
 )
 
 
+def compute_nll(probs: np.ndarray, labels: np.ndarray, eps: float = 1e-12) -> float:
+    """Categorical Negative Log-Likelihood (Cross-Entropy)."""
+    p_clipped = np.clip(probs, eps, 1.0)
+    return float(-np.mean(np.log(p_clipped[np.arange(len(labels)), labels])))
+
+
 def compute_ece(probs: np.ndarray, labels: np.ndarray, n_bins: int = 10) -> float:
     """Expected Calibration Error."""
     K = probs.shape[1]
@@ -252,6 +258,8 @@ def run_single_seed(seed: int, device: torch.device):
         ece_sc = compute_ece(p_m["sc"], targets["sc"][0])
         brier_in = np.mean([brier_score_loss(targets["in"][0] == k, p_m["in"][:, k]) for k in range(2)])
         brier_sc = np.mean([brier_score_loss(targets["sc"][0] == k, p_m["sc"][:, k]) for k in range(2)])
+        nll_in = compute_nll(p_m["in"], targets["in"][0])
+        nll_sc = compute_nll(p_m["sc"], targets["sc"][0])
 
         shift_results[name] = {
             "InDist_F1": f1_in,
@@ -262,11 +270,13 @@ def run_single_seed(seed: int, device: torch.device):
             "InDist_ECE": ece_in,
             "ShiftC_ECE": ece_sc,
             "InDist_Brier": brier_in,
-            "ShiftC_Brier": brier_sc
+            "ShiftC_Brier": brier_sc,
+            "InDist_NLL": nll_in,
+            "ShiftC_NLL": nll_sc
         }
 
         # ── Downstream Model Training & Failure Anticipation Evaluation ─────
-        # Fit downstream Ridge regression f^{(m)} on training split:
+        # Fit downstream Ridge regression f^{(m)} strictly on training split:
         # Features: [gamma_0, gamma_1, T, gamma_0*T, gamma_1*T, X_0, X_1]
         _, X_tr_s, T_tr_s, Y_tr_s = targets["tr"]
         p_tr_m = p_m["tr"]
@@ -291,29 +301,64 @@ def run_single_seed(seed: int, device: torch.device):
         Y_hat = downstream_model.predict(Phi_sc)
         downstream_loss = (Y_sc_s - Y_hat) ** 2
 
-        # Rolling Gram condition
-        roll_s = pd.Series(T_sc_s ** 2).rolling(48, min_periods=1).mean().values
-        lambda_min = np.maximum(roll_s * 0.35, 1e-4)
+        # ── Exact Coupled Regime Gram Matrix J_t (Theorem 4 & Algorithm 1) ──
+        # Estimate regime treatment nuisances m_k(X) = E[T | X, S=k] on training split
+        reg_m0 = Ridge(alpha=1.0)
+        w0 = np.clip(p_tr_m[:, 0], 1e-4, 1.0)
+        reg_m0.fit(X_tr_s, T_tr_s, sample_weight=w0)
+
+        reg_m1 = Ridge(alpha=1.0)
+        w1 = np.clip(p_tr_m[:, 1], 1e-4, 1.0)
+        reg_m1.fit(X_tr_s, T_tr_s, sample_weight=w1)
+
+        # Form exact residualized treatments \tilde{T}_{tk} on Shift C split
+        T_res0 = T_sc_s - reg_m0.predict(X_sc_s)
+        T_res1 = T_sc_s - reg_m1.predict(X_sc_s)
+
+        # Rolling Gram entries over window w=48:
+        # J_t[j, k] = (1/w) * sum_{s=t-w+1}^t gamma_{sj} * gamma_{sk} * \tilde{T}_{sj} * \tilde{T}_{sk}
+        w = 48
+        s00 = pd.Series(p_sc_m[:, 0]**2 * T_res0**2).rolling(w, min_periods=1).mean().values
+        s11 = pd.Series(p_sc_m[:, 1]**2 * T_res1**2).rolling(w, min_periods=1).mean().values
+        s01 = pd.Series(p_sc_m[:, 0] * p_sc_m[:, 1] * T_res0 * T_res1).rolling(w, min_periods=1).mean().values
+
+        trace = s00 + s11
+        disc = np.sqrt(np.maximum((s00 - s11)**2 + 4.0 * (s01**2), 0.0))
+        lambda_min_t = np.maximum(0.5 * (trace - disc), 1e-4)
 
         gamma_safe = np.clip(p_sc_m, 1e-12, 1.0)
         H_t = -np.sum(gamma_safe * np.log(gamma_safe), axis=1) / np.log(2.0)
-        D_t = H_t / lambda_min
+        TaskCond_t = 1.0 / lambda_min_t
+        D_t = H_t / lambda_min_t
 
-        # Next-step lead-1 failure anticipation
+        # Next-step lead-1 failure anticipation (predict loss at t+1 from state at t)
         lead_loss = downstream_loss[1:]
         D_lead = D_t[:-1]
         H_lead = H_t[:-1]
+        Cond_lead = TaskCond_t[:-1]
+
         fail_thresh = np.percentile(lead_loss, 90)
         fail_bin = (lead_loss > fail_thresh).astype(int)
 
         auc_D = roc_auc_score(fail_bin, D_lead)
         auc_H = roc_auc_score(fail_bin, H_lead)
+        auc_Cond = roc_auc_score(fail_bin, Cond_lead)
+
         pr_D = auc(*precision_recall_curve(fail_bin, D_lead)[1::-1])
         pr_H = auc(*precision_recall_curve(fail_bin, H_lead)[1::-1])
+        pr_Cond = auc(*precision_recall_curve(fail_bin, Cond_lead)[1::-1])
+
         mda_D = compute_mda(D_lead, lead_loss)
         mda_H = compute_mda(H_lead, lead_loss)
+        mda_Cond = compute_mda(Cond_lead, lead_loss)
 
-        ci_D, ci_H, ci_diff, p_diff = paired_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=500, rng=np.random.default_rng(seed))
+        # Nested linear regressions of downstream loss
+        var_tot = float(np.var(lead_loss)) + 1e-12
+        r2_H = float(np.corrcoef(H_lead, lead_loss)[0, 1]**2) if np.std(H_lead) > 1e-6 else 0.0
+        r2_Cond = float(np.corrcoef(Cond_lead, lead_loss)[0, 1]**2) if np.std(Cond_lead) > 1e-6 else 0.0
+        r2_D = float(np.corrcoef(D_lead, lead_loss)[0, 1]**2) if np.std(D_lead) > 1e-6 else 0.0
+
+        ci_D, ci_H, ci_diff, p_diff = paired_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=1000, rng=np.random.default_rng(seed))
 
         rel_results[name] = {
             "ShiftC_F1": f1_sc,
@@ -324,12 +369,17 @@ def run_single_seed(seed: int, device: torch.device):
             "Baseline_ROC_AUC_H": auc_H,
             "AUC_H_CI_low": ci_H[0],
             "AUC_H_CI_high": ci_H[1],
+            "Conditioning_ROC_AUC": auc_Cond,
             "AUC_Advantage_D_over_H": auc_D - auc_H,
             "Delta_AUC_CI_low": ci_diff[0],
             "Delta_AUC_CI_high": ci_diff[1],
             "p_value_diff": p_diff,
             "MDA_D": mda_D,
-            "MDA_H": mda_H
+            "MDA_H": mda_H,
+            "MDA_Cond": mda_Cond,
+            "R2_Loss_H": r2_H,
+            "R2_Loss_Cond": r2_Cond,
+            "R2_Loss_D": r2_D
         }
 
     return shift_results, rel_results
@@ -391,8 +441,8 @@ def run_real_representation_zoo():
             "OOD_Shift_Brier": r["ShiftC_Brier"],
             "InDist_ECE": r["InDist_ECE"],
             "OOD_Shift_ECE": r["ShiftC_ECE"],
-            "InDist_NLL": 0.05,
-            "OOD_Shift_NLL": 0.15
+            "InDist_NLL": r["InDist_NLL"],
+            "OOD_Shift_NLL": r["ShiftC_NLL"]
         })
     pd.DataFrame(canon_rows).to_csv("reports/latent_regime_bench_models.csv", index=False)
 
