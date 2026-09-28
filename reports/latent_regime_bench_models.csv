@@ -1,5 +1,5 @@
-Architecture,InDist_Macro_F1,OOD_Shift_F1,F1_Generalization_Gap,InDist_Brier,OOD_Shift_Brier,InDist_ECE,OOD_Shift_ECE
-Gaussian HMM (Causal Filter),0.972,0.9765,-0.0044,0.0219,0.0159,0.0083,0.0076
-Neural GRU Encoder,0.9695,0.975,-0.0055,0.0223,0.022,0.0172,0.041
-Causal Transformer Encoder,0.9708,0.9775,-0.0067,0.0229,0.0236,0.0236,0.0435
-Linear State Space Model (SSM),0.972,0.9755,-0.0035,0.024,0.0295,0.0236,0.0531
+Architecture,InDist_Macro_F1,OOD_Shift_F1,F1_Generalization_Gap,InDist_Brier,OOD_Shift_Brier,InDist_ECE,OOD_Shift_ECE,InDist_NLL,OOD_Shift_NLL
+Gaussian HMM (Causal Filter),0.9845,0.9032,0.0812,0.0142,0.0675,0.0213,0.016,0.0571,0.2179
+Neural GRU Encoder,0.9818,0.9453,0.0365,0.0132,0.0426,0.0167,0.0287,0.0427,0.1601
+Causal Transformer Encoder,0.9753,0.9575,0.0179,0.0155,0.0352,0.0116,0.0239,0.0511,0.1477
+Linear State Space Model (SSM),0.9805,0.9487,0.0319,0.0116,0.0387,0.0135,0.0202,0.0353,0.1342

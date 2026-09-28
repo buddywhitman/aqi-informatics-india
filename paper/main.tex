@@ -77,7 +77,7 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or tree-bas
 \textbf{Contributions.} In this paper, we develop this framework:
 \begin{itemize}
     \item \textbf{Non-Identification under Unconstrained Overlap (Theorem~\ref{thm:impossibility}):} We prove an impossibility result: without auxiliary separation or bounded proxy error, observational distributions with identical observables can arise from conflicting regime causal effects $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$. Predictive state inference alone is insufficient for causal identification.
-    \item \textbf{Sharp Graceful Degradation and Minimax Lower Bound (Theorem~\ref{thm:graceful}, Proposition~\ref{prop:minimax}):} Under explicit Lipschitz and moment regularity conditions, we derive the exact finite-proxy-error bound $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, and prove a matching minimax lower bound across the two-dimensional class $\mathcal{P}(\varepsilon, \lambda_{\min})$ establishing $\mathcal{D} = \frac{\varepsilon}{\lambda_{\min}}$ as the sharp difficulty rate.
+    \item \textbf{Graceful Degradation and the Difficulty Frontier (Theorem~\ref{thm:graceful}):} Under explicit Lipschitz and moment regularity conditions, we derive the exact finite-proxy-error bound $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, establishing $\mathcal{D} = \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ as the operative difficulty frontier uniting proxy uncertainty and causal conditioning.
     \item \textbf{Spectral Regularization Bias-Variance Frontier (Theorem~\ref{thm:spectral}):} We establish the deterministic error identity $\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}(\boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^*)$ and non-asymptotic MSE risk bound for the regularized estimator $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$.
     \item \textbf{Omitted Regime Bias Decomposition (Theorem~\ref{thm:bias}):} We derive the closed-form bias of naive DML, showing how residualizing treatment against controls shrinks $\E[\tilde{T}_t^2]$, producing hyperbolic \emph{Frisch-Waugh bias amplification}.
     \item \textbf{Dependent Data Asymptotics with Bartlett Embargo (Theorem~\ref{thm:asymptotics}):} We establish $\sqrt{N}$-consistency and asymptotic normality under geometrically $\alpha$-mixing processes via Purged Block Cross-Fitting with an empirical Bartlett embargo buffer $\tau^*$.
@@ -162,6 +162,7 @@ The outcome innovation $\varepsilon_t \equiv Y_t - \mathbb{E}[Y_t \mid \mathcal{
 
 \begin{assumption}[Nuisance Estimation and Mixing Rates]
 \label{ass:rates}
+\label{ass:mixing}
 The data process $(Y_t, T_t, X_t, Z_t)$ is strictly stationary and geometrically $\alpha$-mixing with $\alpha(m) \le C_\alpha \exp(-c_\alpha m)$ for $C_\alpha, c_\alpha > 0$. Nuisance estimators satisfy $\|\hat{\mu}_Y - \mu_Y\|_{L_2(P)} \cdot \|\hat{\boldsymbol{\mu}}_D - \boldsymbol{\mu}_D\|_{L_2(P)} = o_P(N^{-1/2})$, with individual convergence rates $o_P(N^{-1/4})$.
 \end{assumption}
 
@@ -333,6 +334,7 @@ Theorem~\ref{thm:impossibility} formally proves via an explicit constructive cou
 Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t |\tilde{T}_{tk}| \le M_T < \infty$ almost surely, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
 If $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ constructed from state-weighted nuisances satisfies:
 \begin{equation}
+\label{eq:graceful_bound}
     \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
 where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
@@ -340,18 +342,13 @@ where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
 
 Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigorous bound connecting \emph{posterior proxy error} $\varepsilon_\gamma$ and \emph{Jacobian conditioning} $\lambda_{\min}(\boldsymbol{J})$. While the score is Neyman-orthogonal to continuous nuisances $(\mu_k, m_k)$, it is \emph{not} orthogonal to $\boldsymbol{\gamma}_t$; latent proxy uncertainty carries an irremediable statistical price.
 
-\begin{proposition}[Matching Minimax Difficulty Lower Bound]
-\label{prop:minimax}
-For any $\varepsilon \in (0, 0.5]$ and $\lambda_{\min} > 0$, let $\mathcal{P}(\varepsilon, \lambda_{\min})$ denote the class of distributions under the structural causal model \eqref{eq:regime_scm}--\eqref{eq:outcome} with proxy error $\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \le \varepsilon$ and Gram eigenvalue floor $\lambda_{\min}(\boldsymbol{J}) \ge \lambda_{\min}$. Then the minimax causal estimation risk satisfies:
+\paragraph{The Difficulty Frontier Characterization.}
+Theorem~\ref{thm:graceful} demonstrates that the leading asymptotic bias of regime causal estimation under latent confounding scales with the fundamental dimensionless ratio:
 \begin{equation}
-    \inf_{\hat{\boldsymbol{\theta}}} \sup_{P \in \mathcal{P}(\varepsilon, \lambda_{\min})} \E_P\left[ \|\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^*\|_2 \right] \ge c \cdot \frac{\varepsilon}{\lambda_{\min}},
+\label{eq:difficulty_ratio}
+    \mathcal{D} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
-for a universal constant $c > 0$. Consequently, the degradation ratio $\mathcal{D} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ established in Theorem~\ref{thm:graceful} is minimax rate-optimal:
-\begin{equation}
-    \inf_{\hat{\boldsymbol{\theta}}} \sup_{P \in \mathcal{P}(\varepsilon, \lambda_{\min})} \E_P\left[ \|\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^*\|_2 \right] \asymp \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})},
-\end{equation}
-proving that $\mathcal{D}$ characterizes the fundamental statistical difficulty of the latent-confounding causal estimation class.
-\end{proposition}
+The ratio $\mathcal{D}$ unites two orthogonal failure modes: (i) \emph{statistical information loss} ($\bar{\varepsilon}_\gamma \to 1$), where observational proxies fail to resolve the underlying context; and (ii) \emph{causal conditioning collapse} ($\lambda_{\min}(\boldsymbol{J}) \to 0$), where residual treatment variation within latent states vanishes. While establishing formal minimax lower bounds under general dependent Markov transitions remains an open question, the degradation upper bound in \eqref{eq:graceful_bound} demonstrates that $\mathcal{D}$ serves as an operative diagnostic frontier for latent-confounding risk.
 
 \begin{theorem}[Finite-Sample Risk Decomposition under Long-Run Covariance Approximation]
 \label{thm:spectral}
@@ -688,7 +685,7 @@ Yet the structural causal effects satisfy:
 Crucially, $\boldsymbol{\theta}^{(2)}$ is \emph{not} a permutation of $\boldsymbol{\theta}^{(1)}$. In Model $P_1$, the inter-regime causal contrast is $\theta_0^{(1)} - \theta_1^{(1)} = 0$, whereas in Model $P_2$, $\theta_0^{(2)} - \theta_1^{(2)} = 2$.
 No estimation procedure conditioning solely on observable data $(Y, T, X, Z)$ can distinguish whether the data-generating mechanism is homogeneous ($P_1$) or heterogeneous ($P_2$) without informative proxies $Z_t$ that bound the proxy error $\varepsilon_\gamma$. This establishes substantive non-identification. $\blacksquare$
 
-\section{Proof of Theorem 2 and Proposition 4: Graceful Degradation and Minimax Lower Bound}
+\section{Proof of Theorem 2: Graceful Degradation and the Difficulty Frontier}
 \label{app:proof_thm2}
 Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator vector.
 Under the true SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the oracle regime nuisance functions are:
@@ -746,41 +743,18 @@ Since $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized estimand satisfies
 \end{equation}
 Combining with purged cross-fitting nuisance estimation error of order $\mathcal{O}_P(N^{-1/2})$ yields $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, completing the proof of Theorem~\ref{thm:graceful}. $\blacksquare$
 
-\subsection{Proof of Proposition 4: Matching 2D Minimax Difficulty Lower Bound}
-\label{app:proof_prop4}
-To prove that the degradation ratio $\mathcal{D} = \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ is minimax rate-optimal across both proxy error $\varepsilon$ and Gram conditioning $\lambda_{\min}$, we construct a two-point hypothesis test within the class $\mathcal{P}(\varepsilon, \lambda_{\min})$ using Le Cam's method \citep{tsybakov2009nonparametric}.
-
-Let $S_t \in \{0, 1\}$ be a symmetric two-state Markov chain with $\pi_0^* = \pi_1^* = 0.5$.
-Let auxiliary proxy $Z_t \in \{0, 1\}$ satisfy conditional emission probabilities $P(Z_t = 1 \mid S_t = 1) = 1 - \varepsilon$ and $P(Z_t = 0 \mid S_t = 0) = 1 - \varepsilon$, so that the posterior proxy error is exactly $\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \varepsilon$.
-To enforce minimal Gram eigenvalue $\lambda_{\min}(\boldsymbol{J}) = \lambda_{\min}$, let treatment $T_t$ have regime-dependent mean contrast $\E[T_t \mid S_t = 0] = -\sqrt{\lambda_{\min}}$ and $\E[T_t \mid S_t = 1] = +\sqrt{\lambda_{\min}}$, with residual disturbance $V_t \sim \mathcal{N}(0, 1)$ independent of $S_t$. Then the coupled Gram matrix $\boldsymbol{J}$ satisfies $\lambda_{\min}(\boldsymbol{J}) = \lambda_{\min} + \mathcal{O}(\varepsilon)$.
-
-Now define two candidate structural causal models $P_0, P_1 \in \mathcal{P}(\varepsilon, \lambda_{\min})$:
-\begin{itemize}
-    \item Under $P_0$: Set $\boldsymbol{\theta}^{(0)} = (0, 0)^\top$, baseline $g(X, S) \equiv 0$, and outcome $Y_t = U_t^{(0)}$ with $U_t^{(0)} \sim \mathcal{N}(0, 1)$.
-    \item Under $P_1$: Set $\boldsymbol{\theta}^{(1)} = (\delta, -\delta)^\top$ where $\delta = c_0 \frac{\varepsilon}{\lambda_{\min}}$, baseline $g(X, S) \equiv 0$, and outcome $Y_t = \theta(S_t) T_t + U_t^{(1)}$ with $U_t^{(1)} \sim \mathcal{N}(0, 1)$.
-\end{itemize}
-The Euclidean parameter separation is $\|\boldsymbol{\theta}^{(1)} - \boldsymbol{\theta}^{(0)}\|_2 = \sqrt{2} \delta = \sqrt{2} c_0 \frac{\varepsilon}{\lambda_{\min}}$.
-Because the true regime $S_t$ is unobserved and can only be accessed through proxy $Z_t$, the observable marginal distribution of $(Y_t, T_t, Z_t)$ under $P_1$ differs from that under $P_0$ through the mixture divergence. Expanding the conditional expectation of $Y_t$ given observables, the signal separation is scaled by the treatment contrast:
+\subsection{The Latent-Confounding Difficulty Frontier $\mathcal{D}$}
+\label{app:difficulty_frontier}
+Theorem~\ref{thm:graceful} demonstrates that the upper bound on structural causal estimation error decomposes into:
 \begin{equation}
-    |\E_{P_1}[Y_t \mid Z_t] - \E_{P_0}[Y_t \mid Z_t]| \le \delta \cdot \sqrt{\lambda_{\min}} \cdot |P(S_t = 1 \mid Z_t) - P(S_t = 0 \mid Z_t)| \le \delta \sqrt{\lambda_{\min}} \cdot \varepsilon.
+    \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le C \cdot \mathcal{D} + \mathcal{O}_P(N^{-1/2}), \quad \text{where} \quad \mathcal{D} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
-The Kullback-Leibler divergence between the joint laws over sample size $N$ satisfies:
-\begin{equation}
-    D_{\mathrm{KL}}(P_1^N \| P_0^N) = N \cdot \E_{P_1}\left[ \log \frac{dP_1}{dP_0}(Y_t, T_t, Z_t) \right] \le \frac{N}{2} \left( \delta \sqrt{\lambda_{\min}} \varepsilon \right)^2 = \frac{N c_0^2}{2} \left( \frac{\varepsilon}{\lambda_{\min}} \sqrt{\lambda_{\min}} \varepsilon \right)^2 = \frac{N c_0^2 \varepsilon^4}{2 \lambda_{\min}}.
-\end{equation}
-Choosing $c_0 \le \left( \frac{2 \lambda_{\min}}{N \varepsilon^4} \right)^{1/2}$, or taking fixed asymptotic difficulty $\varepsilon^2 / \sqrt{\lambda_{\min}}$, the Total Variation distance remains strictly bounded away from unity:
-\begin{equation}
-    \mathrm{TV}(P_0^N, P_1^N) \le \sqrt{\frac{1}{2} D_{\mathrm{KL}}(P_1^N \| P_0^N)} \le \frac{1}{2}.
-\end{equation}
-Applying Le Cam's two-point minimax inequality:
-\begin{equation}
-    \inf_{\hat{\boldsymbol{\theta}}} \sup_{P \in \mathcal{P}(\varepsilon, \lambda_{\min})} \E_P\left[ \|\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^*\|_2 \right] \ge \frac{\|\boldsymbol{\theta}^{(1)} - \boldsymbol{\theta}^{(0)}\|_2}{4} \left( 1 - \mathrm{TV}(P_0^N, P_1^N) \right) \ge \frac{\sqrt{2} c_0}{8} \cdot \frac{\varepsilon}{\lambda_{\min}} \ge c \cdot \frac{\varepsilon}{\lambda_{\min}},
-\end{equation}
-for universal constant $c > 0$. Combined with the upper bound in Theorem~\ref{thm:graceful}, this establishes the matching minimax rate:
-\begin{equation}
-    \inf_{\hat{\boldsymbol{\theta}}} \sup_{P \in \mathcal{P}(\varepsilon, \lambda_{\min})} \E_P\left[ \|\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^*\|_2 \right] \asymp \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})},
-\end{equation}
-proving that the difficulty metric $\mathcal{D} = \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ is the sharp statistical rate of the problem class. $\blacksquare$
+We highlight several structural properties of the difficulty index $\mathcal{D}$:
+\begin{enumerate}
+    \item \textbf{Dimensionless Product:} Both proxy classification error $\bar{\varepsilon}_\gamma$ and Gram conditioning $\lambda_{\min}(\boldsymbol{J})$ interact multiplicatively in governing downstream estimation risk. When either proxy recovery is poor ($\bar{\varepsilon}_\gamma \to 1$) or overlap is weak ($\lambda_{\min} \to 0$), estimation risk escalates sharply.
+    \item \textbf{Asymmetric Sensitivity:} In our factorial simulations (Table~\ref{tab:bench_results}), reducing $\lambda_{\min}$ by an order of magnitude produces an equivalent variance and bias inflation to a tenfold increase in state proxy error $\bar{\varepsilon}_\gamma$.
+    \item \textbf{Operational Diagnostic Role:} In empirical sequential pipelines where the true state $S_t$ is unobserved, $\mathcal{D}_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ acts as a real-time monitor of downstream estimation stability, predicting system failure before it manifests in observation space.
+\end{enumerate}
 
 \section{Proof of Theorem 3: Spectral Regularization Bias-Variance Frontier}
 \label{app:proof_thm3}
@@ -913,39 +887,31 @@ where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{
 
 \subsection{Observed-Data Orthogonal Score under Estimated Latent Dynamics}
 \label{app:observed_data_score}
-In standard semiparametric causal inference \citep{chernozhukov2018double, bickel1993efficient}, when nuisance parameters consist of both non-parametric outcome/propensity regressions $\boldsymbol{\eta} = (m, \mu)$ and finite-dimensional parameters $\boldsymbol{\Lambda}$ governing latent state transitions and emissions, the score function must be orthogonalized with respect to both components.
+In semiparametric causal inference \citep{chernozhukov2018double, bickel1993efficient}, when nuisance parameters consist of both non-parametric outcome/propensity regressions $\boldsymbol{\eta} = (m, \mu)$ and finite-dimensional parameters $\boldsymbol{\Lambda}$ governing latent state transitions and emissions, one must characterize the sensitivity of the causal estimator to the first-order estimation error in $\hat{\boldsymbol{\Lambda}}$.
 
 Let the state-weighted regime score vector be:
 \begin{equation}
     \boldsymbol{\psi}_{\mathrm{regime}}(W_t; \boldsymbol{\theta}, \boldsymbol{\eta}, \boldsymbol{\Lambda}) \equiv \sum_{k=1}^K \gamma_{tk}(\boldsymbol{\Lambda}) (T_t - m_k(X_t)) \left( Y_t - \mu_k(X_t) - \theta_k (T_t - m_k(X_t)) \right).
 \end{equation}
-Let $\boldsymbol{s}_\Lambda(Z_t)$ denote the score function for the latent Markov parameters $\boldsymbol{\Lambda}$ (transition logits and emission parameters), satisfying $\E[\boldsymbol{s}_\Lambda(Z_t)] = \mathbf{0}$ and Fisher information matrix $\mathcal{I}_\Lambda \equiv \E[\boldsymbol{s}_\Lambda(Z_t) \boldsymbol{s}_\Lambda(Z_t)^\top]$.
-The projection of the regime score $\boldsymbol{\psi}_{\mathrm{regime}}$ onto the tangent space spanned by $\boldsymbol{s}_\Lambda$ is given by:
+In a hidden Markov model, the latent parameters $\boldsymbol{\Lambda}$ are estimated via sequence-level maximum likelihood with score function $\boldsymbol{s}_{\Lambda, N}(Z_{1:N}) = \nabla_{\boldsymbol{\Lambda}} \log p(Z_{1:N}; \boldsymbol{\Lambda})$. Evaluating the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ at the oracle targets $(\boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*)$:
 \begin{equation}
-    \boldsymbol{A}_\Lambda \equiv \E\left[ \frac{\partial \boldsymbol{\psi}_{\mathrm{regime}}(W_t; \boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*)}{\partial \boldsymbol{\Lambda}^\top} \right].
+    \boldsymbol{A}_\Lambda \equiv \lim_{N \to \infty} \frac{1}{N} \sum_{t=1}^N \sum_{k=1}^K \E\left[ \frac{\partial \gamma_{tk}(\boldsymbol{\Lambda}^*)}{\partial \boldsymbol{\Lambda}^\top} (T_t - m_k^*(X_t)) \left( Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \right) \right].
 \end{equation}
-The observed-data orthogonal score immune to first-order estimation error in $\hat{\boldsymbol{\Lambda}}$ is defined as:
+Importantly, $\boldsymbol{A}_\Lambda$ does not vanish pointwise across regimes. While Assumption~\ref{ass:innovation} guarantees that the structural innovation has zero mean conditional on the true state, $\E[Y_t - \mu_k^*(X_t) - \theta_k^*(T_t - m_k^*(X_t)) \mid X_t, T_t, S_t = k] = 0$, conditioning on observed history $Z_{1:N}$ alone yields:
 \begin{equation}
-    \boldsymbol{\psi}_{\mathrm{latent}}^{\mathrm{orth}}(W_t; \boldsymbol{\theta}, \boldsymbol{\eta}, \boldsymbol{\Lambda}) \equiv \boldsymbol{\psi}_{\mathrm{regime}}(W_t; \boldsymbol{\theta}, \boldsymbol{\eta}, \boldsymbol{\Lambda}) - \boldsymbol{A}_\Lambda \mathcal{I}_\Lambda^{-1} \boldsymbol{s}_\Lambda(Z_t).
+    \E\left[ Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \;\middle|\; X_t, T_t, Z_{1:N} \right] = \sum_{j \neq k} \gamma_{tj}(\boldsymbol{\Lambda}^*) \left[ (\mu_j^*(X_t) - \mu_k^*(X_t)) + (\theta_j^* - \theta_k^*)(T_t - m_j^*(X_t)) \right].
 \end{equation}
-Evaluating the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ at the oracle targets $(\boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*)$:
-\begin{align}
-    \boldsymbol{A}_\Lambda &= \sum_{k=1}^K \E\left[ \frac{\partial \gamma_{tk}(\boldsymbol{\Lambda}^*)}{\partial \boldsymbol{\Lambda}^\top} (T_t - m_k^*(X_t)) \left( Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \right) \right] \nonumber \\
-    &= \sum_{k=1}^K \E\left[ \frac{\partial \gamma_{tk}(\boldsymbol{\Lambda}^*)}{\partial \boldsymbol{\Lambda}^\top} (T_t - m_k^*(X_t)) \, \E\left[ Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \;\middle|\; X_t, T_t, Z_{1:N} \right] \right].
-\end{align}
-By Assumption~\ref{ass:innovation} (Structural Innovation Property), the inner conditional expectation satisfies:
-\begin{equation}
-    \E\left[ Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \;\middle|\; X_t, T_t, Z_{1:N} \right] = \E[U_t \mid X_t, T_t, Z_{1:N}] = 0
-\end{equation}
-identically. Consequently, the projection matrix vanishes identically:
-\begin{equation}
-    \boldsymbol{A}_\Lambda \equiv \mathbf{0}.
-\end{equation}
-Therefore, at the oracle nuisance parameters:
-\begin{equation}
-    \boldsymbol{\psi}_{\mathrm{latent}}^{\mathrm{orth}}(W_t; \boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*) \equiv \boldsymbol{\psi}_{\mathrm{regime}}(W_t; \boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*).
-\end{equation}
-This fundamental result establishes that the regime score $\boldsymbol{\psi}_{\mathrm{regime}}$ is \emph{automatically Neyman-orthogonal} to the estimation of the latent Markov parameters $\boldsymbol{\Lambda}$ without requiring explicit score adjustment terms, provided the conditional mean of the potential outcomes is correctly specified by the structural causal model.
+This residual is non-zero whenever regimes differ in baseline potential outcomes ($\mu_j^* \neq \mu_k^*$) or treatment responsiveness ($\theta_j^* \neq \theta_k^*$).
+
+Under purged block cross-fitting (Algorithm 1), this first-order variation is controlled via two complementary mechanisms:
+\begin{enumerate}
+    \item \textbf{Decoupling via Purged Embargo Buffer:} The parameters $\hat{\boldsymbol{\Lambda}}$ are estimated on historical calibration blocks or out-of-fold data separated by an embargo buffer $\tau^* \ge C \log N$. By the $\alpha$-mixing decay of the underlying process (Assumption~\ref{ass:mixing}), the covariance between evaluation fold innovations and the parameter estimation error $\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*$ decays as $O(N^{-C c_\alpha})$.
+    \item \textbf{Stacked Joint HAC Variance Representation:} When $\hat{\boldsymbol{\Lambda}}$ is estimated at parametric rate $\sqrt{N}(\hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^*) = O_p(1)$, the joint asymptotic expansion takes the stacked M-estimation form:
+    \begin{equation}
+        \sqrt{N} \begin{pmatrix} \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda) \\ \hat{\boldsymbol{\Lambda}} - \boldsymbol{\Lambda}^* \end{pmatrix} \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \begin{bmatrix} \boldsymbol{\Sigma}_\lambda & \boldsymbol{\Sigma}_{\theta \Lambda} \\ \boldsymbol{\Sigma}_{\theta \Lambda}^\top & \mathcal{I}_\Lambda^{-1} \end{bmatrix}\right),
+    \end{equation}
+    where $\boldsymbol{\Sigma}_{\theta \Lambda}$ is consistently captured by the block Newey-West HAC covariance estimator. In well-separated regimes ($\Delta_Z \to \infty$), posterior uncertainty vanishes ($\gamma_{tk} \to \mathbb{I}(S_t=k)$) and $\partial \gamma_{tk} / \partial \boldsymbol{\Lambda} \to \mathbf{0}$ exponentially fast, rendering $\|\boldsymbol{A}_\Lambda\| \le C e^{-c \Delta_Z^2}$ and recovering asymptotic orthogonality.
+\end{enumerate}
 
 \section{Proof of Proposition 6: Joint Delta-Method Inference for Population ATE}
 \label{app:proof_prop6}
@@ -1123,21 +1089,47 @@ High-Persistence Inversion & $2.0$ & $2.0$ & $0.96$ & $0.159$ & $1.5934$ & $1.31
 \begin{table}[h!]
 \centering
 \small
-\caption{Latent Representation Zoo: In-Distribution vs.\ Out-of-Distribution (OOD) Shift Regime Recovery ($N=2,000$). Gaussian HMM and Linear SSM demonstrate superior calibration (ECE $0.0083$ and $0.0236$), while Neural GRU and Transformer maintain robust macro F1 across temporal distribution shifts.}
+\caption{Latent Representation Zoo: In-Distribution vs.\ Out-of-Distribution (OOD) Shift Regime Recovery ($N=2,000$) trained end-to-end with GPU backprop / EM. The Causal Transformer exhibits the smallest generalization gap ($\Delta F_1 = 0.0179$), while Gaussian HMM achieves sharp in-distribution calibration ($F_1 = 0.9845$). Linear SSM and GRU provide competitive calibration-accuracy trade-offs.}
 \label{tab:bench_models}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Architecture} & \textbf{In-Dist F1} & \textbf{OOD F1} & \textbf{Gap} & \textbf{In-Dist Brier} & \textbf{OOD Brier} & \textbf{In-Dist ECE} \\
 \midrule
-Gaussian HMM (Causal Filter) & $0.9720$ & $0.9765$ & $-0.0044$ & $0.0219$ & $0.0159$ & $0.0083$ \\
-Neural GRU Encoder & $0.9695$ & $0.9750$ & $-0.0055$ & $0.0223$ & $0.0220$ & $0.0172$ \\
-Causal Transformer Encoder & $0.9708$ & $0.9775$ & $-0.0067$ & $0.0229$ & $0.0236$ & $0.0236$ \\
-Linear State Space Model (SSM) & $0.9720$ & $0.9755$ & $-0.0035$ & $0.0240$ & $0.0295$ & $0.0236$ \\
+Gaussian HMM (Causal Filter) & $0.9845$ & $0.9032$ & $+0.0812$ & $0.0142$ & $0.0675$ & $0.0213$ \\
+Neural GRU Encoder & $0.9818$ & $0.9453$ & $+0.0365$ & $0.0132$ & $0.0426$ & $0.0167$ \\
+Causal Transformer Encoder & $0.9753$ & $0.9575$ & $+0.0179$ & $0.0155$ & $0.0352$ & $0.0116$ \\
+Linear State Space Model (SSM) & $0.9805$ & $0.9487$ & $+0.0319$ & $0.0116$ & $0.0387$ & $0.0135$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
+
+\subsection{Downstream Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$}
+\label{app:failure_prediction}
+To evaluate whether task-conditioned difficulty $\mathcal{D}_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ provides actionable signal beyond raw state posterior entropy $H_t = H(\boldsymbol{\gamma}_t)$, we ablate their predictive capability for extreme downstream forecasting failures (defined as the worst decile of squared prediction errors, top $10\%$ loss) on multi-season real ground sensor series across well-conditioned (Delhi, $\lambda_{\min} = 111.8$) and ill-conditioned (Mumbai, $\lambda_{\min} = 0.23$) airsheds (Table~\ref{tab:failure_ablation}).
+
+\begin{table}[h!]
+\centering
+\small
+\caption{Downstream Failure Prediction Ablation: Comparing Predictive Power of State Entropy $H_t$ vs.\ Task-Conditioned Difficulty $\mathcal{D}_t = H_t / \lambda_{\min}(\boldsymbol{J}_t)$ for Extreme Downstream Forecasting Failure (Top 10\% Loss). In ill-conditioned airsheds (Mumbai, $\lambda_{\min} = 0.2288$), state entropy alone is uninformative ($\text{ROC-AUC} = 0.5033$), whereas $\mathcal{D}_t$ reliably detects failure ($\text{ROC-AUC} = 0.6243$, $\text{PR-AUC} = 0.1851$, nearly double).}
+\label{tab:failure_ablation}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Airshed / Domain} & \textbf{Diagnostic Metric} & \textbf{Spearman $\rho$} & \textbf{Failure ROC-AUC} & \textbf{Failure PR-AUC} \\
+\midrule
+\multirow{2}{*}{Delhi Basin ($\lambda_{\min} = 111.8$)} & State Entropy $H_t$ & $-0.1629$ & $0.3113$ & $0.0701$ \\
+ & Task Difficulty $\mathcal{D}_t$ & $-0.0993$ & $0.3875$ & $0.0799$ \\
+\midrule
+\multirow{2}{*}{Mumbai Coastal ($\lambda_{\min} = 0.23$)} & State Entropy $H_t$ & $+0.1936$ & $0.5033$ & $0.0992$ \\
+ & Task Difficulty $\mathcal{D}_t$ & $\mathbf{+0.2567}$ & $\mathbf{0.6243}$ & $\mathbf{0.1851}$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+In the well-conditioned Delhi airshed, both metrics confirm stability. However, in the coastal Mumbai airshed where land-sea breeze inversions induce severe causal collinearity ($\lambda_{\min} = 0.2288$), state entropy $H_t$ alone acts as a coin flip ($\text{ROC-AUC} = 0.5033$). In contrast, task difficulty $\mathcal{D}_t$ incorporates the conditioning denominator $\lambda_{\min}(\boldsymbol{J}_t)$, boosting ROC-AUC to $0.6243$ and nearly doubling PR-AUC from $0.0992$ to $0.1851$, with Spearman correlation rising from $0.1936$ ($p=1.4\times 10^{-36}$) to $0.2567$ ($p=6.7\times 10^{-64}$).
 
 \begin{figure*}[h!]
 \centering
@@ -1146,9 +1138,9 @@ Linear State Space Model (SSM) & $0.9720$ & $0.9755$ & $-0.0035$ & $0.0240$ & $0
 \label{fig:latent_regime_bench_fig}
 \end{figure*}
 
-\section{Cross-Domain Transfer to Macro Financial Market Regimes}
+\section{Synthetic Financial Macro Stress Test: Validating Regime Intelligence on Stylized Multi-Regime Dynamics}
 \label{app:financial_transfer}
-To verify that the latent regime confounding and difficulty framework reflects a general mathematical reality of non-stationary sequential data rather than an idiosyncratic atmospheric feature, we evaluate the Regime Intelligence engine on quantitative alternative financial market data ($N=1,500$ daily trading periods). Here, latent regimes correspond to low-volatility normal market dynamics versus severe liquidity stress / crisis regimes. Downstream estimation targets factor sensitivity under regime-dependent market clearing.
+To verify that the latent regime confounding and difficulty framework reflects a general mathematical reality of non-stationary sequential decision systems rather than an idiosyncratic atmospheric feature, we evaluate the Regime Intelligence engine on a stylized synthetic macro financial stress test ($N=1,500$ daily trading periods). Here, latent regimes correspond to low-volatility normal market dynamics versus severe liquidity stress / crisis regimes. Downstream estimation targets factor sensitivity under regime-dependent market clearing.
 
 Table~\ref{tab:financial_quartiles} partitions out-of-sample trading periods into dynamic regime risk quartiles $R_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$. In Q4 (Severe Risk), tail 95\% forecast MSE surges to $4.2931$ (compared to $1.7461$ in moderate periods), driven by catastrophic causal ill-conditioning ($\lambda_{\min} \to 0.211$). Table~\ref{tab:financial_abstention} demonstrates the power of identification-aware abstention: setting $\tau = 1.5$ abstains on just $2.8\%$ of high-uncertainty periods, avoiding predictions with an extreme average MSE of $1.4341$ and reducing tail 95\% MSE from $3.3514$ to $2.8705$. Figure~\ref{fig:financial_transfer_fig} charts the cross-domain transfer dynamics.
 

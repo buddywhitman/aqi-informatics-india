@@ -341,41 +341,44 @@ class RegimeIntelligenceEngine:
         lambda_min: float,
         N: int,
         M_theta: float = 1.0,
-        sigma_score: float = 1.0
+        tr_omega: float = 1.0,
+        C_proxy: float = 1.0
     ) -> float:
         """
         Data-driven optimal spectral regularization parameter lambda* derived
-        from the theoretical bias-variance upper bound (Theorem 3).
-        Balances squared deterministic bias (shrinkage + proxy) against asymptotic score variance.
+        from the theoretical risk surrogate upper bound (Theorem 3).
+        Directly minimizes the empirical risk surrogate over lambda in [0, 2.0].
         """
-        # Theoretical minimizer: lambda* asymp (sigma^2 / (N * M_theta^2))^{1/3} in collinear regime
-        variance_scale = sigma_score / np.sqrt(N)
-        if lambda_min < 0.05:
-            # Collinear / weakly identified regime: variance dominates
-            lam_star = np.clip(np.sqrt(variance_scale) * 0.5, 0.05, 0.50)
-        else:
-            # Well-identified regime: slight stabilization
-            lam_star = np.clip(variance_scale / (lambda_min + 1e-4), 0.001, 0.10)
-        return float(lam_star)
+        from scipy.optimize import minimize_scalar
+
+        def surrogate_risk(lam):
+            numerator = (C_proxy * eps_gamma + lam * M_theta) ** 2 + (tr_omega / max(N, 1))
+            denominator = max(lambda_min + lam, 1e-6) ** 2
+            return numerator / denominator
+
+        res = minimize_scalar(surrogate_risk, bounds=(0.0, 2.0), method='bounded')
+        return float(res.x)
 
     def evaluate_decision_policy(
         self,
         y_true: np.ndarray,
         y_pred_point: np.ndarray,
         difficulty: np.ndarray,
-        tau: Optional[float] = None
+        tau: Optional[float] = None,
+        y_fallback: Optional[np.ndarray] = None
     ) -> Dict[str, float]:
         """
         Evaluates the identification-aware abstention policy vs standard point estimation:
-        When D_t > tau, system abstains or escalates to robust fallback.
+        When D_t <= tau: execute active model prediction.
+        When D_t > tau: abstain and execute robust fallback (e.g. conservative shrinkage or zero-exposure).
         """
         if tau is None:
             tau = self.abstain_threshold
 
         abstain_mask = difficulty > tau
-        coverage_rate = 1.0 - np.mean(abstain_mask)
+        coverage_rate = 1.0 - float(np.mean(abstain_mask))
         
-        # Unconditional point loss
+        # Unconditional active model loss
         full_mse = float(np.mean((y_true - y_pred_point) ** 2))
         full_tail_loss = float(np.percentile((y_true - y_pred_point) ** 2, 95))
 
@@ -387,22 +390,34 @@ class RegimeIntelligenceEngine:
             accepted_mse = full_mse
             accepted_tail_loss = full_tail_loss
 
-        # Loss on abstained cases (demonstrating avoided catastrophe)
+        # Loss on abstained cases (demonstrating avoided high-risk cases)
         if np.any(abstain_mask):
             avoided_mse = float(np.mean((y_true[abstain_mask] - y_pred_point[abstain_mask]) ** 2))
         else:
             avoided_mse = 0.0
 
-        mse_reduction = (full_mse - accepted_mse) / (full_mse + 1e-8)
+        # Deploy real fallback action under the policy
+        if y_fallback is None:
+            # Conservative sample mean fallback
+            y_fallback = np.full_like(y_true, np.mean(y_true))
+        
+        y_policy = np.where(~abstain_mask, y_pred_point, y_fallback)
+        policy_mse = float(np.mean((y_true - y_policy) ** 2))
+        policy_tail_loss = float(np.percentile((y_true - y_policy) ** 2, 95))
+        policy_regret = float(np.mean(np.maximum((y_true - y_policy)**2 - (y_true - y_pred_point)**2, 0.0)))
+        mse_reduction = (full_mse - policy_mse) / (full_mse + 1e-8)
 
         return {
             "tau_threshold": tau,
             "coverage_rate": coverage_rate,
             "abstain_rate": float(np.mean(abstain_mask)),
             "full_mse": full_mse,
+            "policy_mse": policy_mse,
             "accepted_mse": accepted_mse,
             "avoided_mse": avoided_mse,
             "full_tail_95_mse": full_tail_loss,
             "accepted_tail_95_mse": accepted_tail_loss,
+            "policy_tail_95_mse": policy_tail_loss,
+            "policy_regret": policy_regret,
             "mse_reduction_pct": float(mse_reduction * 100.0)
         }

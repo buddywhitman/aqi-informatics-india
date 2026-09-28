@@ -199,57 +199,14 @@ def run_fast_benchmark(n_reps=30):
     df_bench = pd.DataFrame(rows)
 
     # ── Representation Zoo ────────────────────────────────────────────────────
-    print("\n-> Representation Zoo (OOD shift gap)...")
-    rng = np.random.default_rng(42)
-    base_data  = generate_dgp(N=2000, K=2, rho=0.85, Delta_Z=2.0, Delta_T=2.5, seed=42)
-    shift_data = generate_dgp(N=2000, K=2, rho=0.85, Delta_Z=2.0, Delta_T=2.5, seed=43)
+    print("\n-> Loading Genuine Representation Zoo (trained models on CUDA/PyTorch)...")
+    if os.path.exists("reports/latent_regime_bench_models.csv"):
+        df_models = pd.read_csv("reports/latent_regime_bench_models.csv")
+    else:
+        from src.train_real_representation_zoo import run_real_representation_zoo
+        df_models = run_real_representation_zoo()
 
-    Z_all  = base_data["Z"]
-    Z_ood  = shift_data["Z"]
-    S_test = base_data["S"][1200:]
-    S_ood  = shift_data["S"]
-
-    # Analytic posterior as HMM proxy
-    p_base = analytic_posterior(Z_all, n_regimes=2, seed=42)
-    p_shft = analytic_posterior(Z_ood, n_regimes=2, seed=42)
-    p_te   = p_base[1200:]
-    p_ood  = p_shft
-
-    def perturb(p, sigma, rng):
-        q = p + rng.normal(0, sigma, p.shape)
-        q = np.clip(q, 0, 1); q /= q.sum(1, keepdims=True)
-        return q
-
-    archs = [
-        ("Gaussian HMM (Causal Filter)",    p_te,                          p_ood),
-        ("Neural GRU Encoder",              perturb(p_te, 0.04, rng),      perturb(p_ood, 0.12, rng)),
-        ("Causal Transformer Encoder",      perturb(p_te, 0.05, rng),      perturb(p_ood, 0.14, rng)),
-        ("Linear State Space Model (SSM)",  perturb(p_te, 0.07, rng),      perturb(p_ood, 0.18, rng)),
-    ]
-
-    zoo_rows = []
-    for name, pt, po in archs:
-        St = S_test[:len(pt)]
-        So = S_ood[:len(po)]
-        f1i = f1_score(St, np.argmax(pt, 1), average="macro")
-        f1o = f1_score(So, np.argmax(po, 1), average="macro")
-        bi  = np.mean([brier_score_loss(St == k, pt[:, k]) for k in range(2)])
-        bo  = np.mean([brier_score_loss(So == k, po[:, k]) for k in range(2)])
-        ei  = compute_ece(pt, St)
-        eo  = compute_ece(po, So)
-        zoo_rows.append({
-            "Architecture":          name,
-            "InDist_Macro_F1":       round(f1i, 4),
-            "OOD_Shift_F1":          round(f1o, 4),
-            "F1_Generalization_Gap": round(f1i - f1o, 4),
-            "InDist_Brier":          round(bi, 4),
-            "OOD_Shift_Brier":       round(bo, 4),
-            "InDist_ECE":            round(ei, 4),
-            "OOD_Shift_ECE":         round(eo, 4),
-        })
-        print(f"   {name:<38}  F1_in={f1i:.3f}  F1_ood={f1o:.3f}  gap={f1i-f1o:.3f}")
-
-    df_models = pd.DataFrame(zoo_rows)
+    print(df_models[["Architecture", "InDist_Macro_F1", "OOD_Shift_F1", "F1_Generalization_Gap"]].to_string(index=False))
 
     # ── Save CSV artifacts ────────────────────────────────────────────────────
     os.makedirs("reports", exist_ok=True)
