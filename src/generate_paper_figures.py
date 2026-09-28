@@ -187,29 +187,28 @@ def plot_fig2_monte_carlo_convergence():
 # ==============================================================================
 def plot_fig3_regime_elasticities():
     print("Generating Figure 3: Empirical Causal Elasticities...")
-    # Exact data from reports/empirical_rc_dml_results.csv
-    # City, Estimator, Regime, Effect, SE, CI_Lower, CI_Upper
+    # Exact coupled solver output from reports/empirical_rc_dml_results.csv
     data = [
         # Bengaluru
-        {"City": "Bengaluru", "Label": "Bengaluru (Naive Pooled)", "Effect": -1.772, "SE": 0.173 / 1.96, "Type": "Naive"},
-        {"City": "Bengaluru", "Label": "Bengaluru (RC-DML ATE)", "Effect": 0.081, "SE": 0.620 / 1.96, "Type": "ATE"},
-        {"City": "Bengaluru", "Label": "Bengaluru (Regime 1 Nocturnal)", "Effect": -1.386, "SE": 1.026 / 1.96, "Type": "Regime"},
-        {"City": "Bengaluru", "Label": "Bengaluru (Regime 2 Convective)", "Effect": -0.437, "SE": 1.046 / 1.96, "Type": "Regime"},
-        {"City": "Bengaluru", "Label": "Bengaluru (Regime 3 Traffic Peak)", "Effect": 1.754, "SE": 1.105 / 1.96, "Type": "Regime"},
+        {"City": "Bengaluru", "Label": "Bengaluru (Naive Pooled)", "Effect": -1.7715, "SE": 0.0882, "Type": "Naive"},
+        {"City": "Bengaluru", "Label": "Bengaluru (RC-DML ATE)", "Effect": 0.0696, "SE": 0.3897, "Type": "ATE"},
+        {"City": "Bengaluru", "Label": "Bengaluru (Regime 1 Nocturnal)", "Effect": -1.5881, "SE": 0.5471, "Type": "Regime"},
+        {"City": "Bengaluru", "Label": "Bengaluru (Regime 2 Convective)", "Effect": -0.4119, "SE": 0.5790, "Type": "Regime"},
+        {"City": "Bengaluru", "Label": "Bengaluru (Regime 3 Traffic Peak)", "Effect": 1.8530, "SE": 0.5751, "Type": "Regime"},
         
         # Delhi
-        {"City": "Delhi", "Label": "Delhi (Naive Pooled)", "Effect": -3.325, "SE": 0.245 / 1.96, "Type": "Naive"},
-        {"City": "Delhi", "Label": "Delhi (RC-DML ATE)", "Effect": -3.716, "SE": 1.175 / 1.96, "Type": "ATE"},
-        {"City": "Delhi", "Label": "Delhi (Regime 1 Stagnation)", "Effect": -4.734, "SE": 1.217 / 1.96, "Type": "Regime"},
-        {"City": "Delhi", "Label": "Delhi (Regime 2 Transitional)", "Effect": -3.482, "SE": 2.516 / 1.96, "Type": "Regime"},
-        {"City": "Delhi", "Label": "Delhi (Regime 3 Dispersion)", "Effect": 0.190, "SE": 0.259 / 1.96, "Type": "Regime"},
+        {"City": "Delhi", "Label": "Delhi (Naive Pooled)", "Effect": -3.3248, "SE": 0.1251, "Type": "Naive"},
+        {"City": "Delhi", "Label": "Delhi (RC-DML ATE)", "Effect": -3.8269, "SE": 0.7961, "Type": "ATE"},
+        {"City": "Delhi", "Label": "Delhi (Regime 1 Stagnation)", "Effect": -4.8030, "SE": 0.5996, "Type": "Regime"},
+        {"City": "Delhi", "Label": "Delhi (Regime 2 Transitional)", "Effect": -3.6756, "SE": 1.4384, "Type": "Regime"},
+        {"City": "Delhi", "Label": "Delhi (Regime 3 Dispersion)", "Effect": 0.2012, "SE": 0.1341, "Type": "Regime"},
         
         # Mumbai
-        {"City": "Mumbai", "Label": "Mumbai (Naive Pooled)", "Effect": -296.092, "SE": 12.423 / 1.96, "Type": "Naive"},
-        {"City": "Mumbai", "Label": "Mumbai (RC-DML ATE)", "Effect": -62.382, "SE": 34.191 / 1.96, "Type": "ATE"},
-        {"City": "Mumbai", "Label": "Mumbai (Regime 1 Marine Breeze)", "Effect": -19.323, "SE": 67.197 / 1.96, "Type": "Regime"},
-        {"City": "Mumbai", "Label": "Mumbai (Regime 2 Land Breeze)", "Effect": -70.560, "SE": 41.326 / 1.96, "Type": "Regime"},
-        {"City": "Mumbai", "Label": "Mumbai (Regime 3 Stagnant Smog)", "Effect": -83.910, "SE": 68.483 / 1.96, "Type": "Regime"},
+        {"City": "Mumbai", "Label": "Mumbai (Naive Pooled)", "Effect": -296.0922, "SE": 6.3381, "Type": "Naive"},
+        {"City": "Mumbai", "Label": "Mumbai (RC-DML ATE)", "Effect": -63.6280, "SE": 19.1506, "Type": "ATE"},
+        {"City": "Mumbai", "Label": "Mumbai (Regime 1 Marine Breeze)", "Effect": -17.6718, "SE": 36.3752, "Type": "Regime"},
+        {"City": "Mumbai", "Label": "Mumbai (Regime 2 Land Breeze)", "Effect": -73.9328, "SE": 23.1835, "Type": "Regime"},
+        {"City": "Mumbai", "Label": "Mumbai (Regime 3 Stagnant Smog)", "Effect": -84.9792, "SE": 35.8860, "Type": "Regime"},
     ]
     df = pd.DataFrame(data)
     
@@ -239,8 +238,8 @@ def plot_fig3_regime_elasticities():
     ax1.grid(True, axis='x', linestyle='--', alpha=0.6)
     
     # Annotate Bengaluru sign flip
-    ax1.annotate('Sign Reversal: Traffic Peak\nPositive Elasticity (+1.75)', 
-                 xy=(1.754, 4), xytext=(0.5, 2.5),
+    ax1.annotate('Sign Reversal: Traffic Peak\nPositive Elasticity (+1.85)', 
+                 xy=(1.8530, 4), xytext=(0.5, 2.5),
                  arrowprops=dict(arrowstyle="->", color='#1B9E77', lw=1.5),
                  fontsize=9.5, bbox=dict(boxstyle="round,pad=0.3", fc="#E8F8F5", ec="#1B9E77", lw=1))
 
@@ -265,7 +264,7 @@ def plot_fig3_regime_elasticities():
     
     # Annotate 79% bias collapse
     ax2.annotate('79% Bias Collapse:\nEliminates Marine Venting Artifact', 
-                 xy=(-62.382, 1), xytext=(-220, 2.5),
+                 xy=(-63.6280, 1), xytext=(-220, 2.5),
                  arrowprops=dict(arrowstyle="->", color='#1B9E77', lw=1.5),
                  fontsize=9.5, bbox=dict(boxstyle="round,pad=0.3", fc="#E8F8F5", ec="#1B9E77", lw=1))
     

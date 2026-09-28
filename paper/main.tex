@@ -45,7 +45,7 @@
 \begin{abstract}
 Evaluating continuous policy interventions in observational environmental and atmospheric systems is fundamentally hindered by non-stationary confounding and temporal autocorrelation. While Double Machine Learning (DML) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, we demonstrate both theoretically and empirically that standard DML breaks down in the presence of latent thermodynamic regimes (e.g., atmospheric stagnation vs.\ advective boundary layer clearance). Under such regimes, naive DML incurs an asymptotic \emph{Omitted Regime Bias} that can flip the sign of estimated treatment effects, rendering policy simulations severely flawed.
 
-To resolve this challenge, we introduce \textbf{Regime-Conditional Double Machine Learning (RC-DML)}. RC-DML integrates latent Markov regime smoothing into Neyman-orthogonal score equations, combined with a \textbf{Purged Block-Temporal Cross-Fitting} scheme that establishes an embargo buffer $\tau$ to prevent temporal dependency leakage under $\alpha$-mixing. We prove that RC-DML is $\sqrt{N}$-consistent and asymptotically normal, achieving the semiparametric efficiency bound under mild regularity conditions. In controlled semi-synthetic benchmarks across diverse persistence regimes, RC-DML reduces absolute bias by over $99.8\%$ (from $7.7221$ to $0.0132$) relative to standard DML, and achieves 88.9\% population coverage once Markov regime occupation variance is explicitly integrated via our Proposition 6 decomposition. When applied to high-frequency ground-sensor networks across complex Indian airsheds, RC-DML resolves empirical sign inversion in peninsular plateau airsheds (Bengaluru: $-1.772 \to +0.081$) and collapses spurious confounding artifacts by 79\% in coastal megacities (Mumbai: $-296.092 \to -62.382$), recovering structurally coherent, regime-stratified policy elasticities.
+To resolve this challenge, we introduce \textbf{Regime-Conditional Double Machine Learning (RC-DML)}. RC-DML integrates latent Markov regime smoothing into Neyman-orthogonal score equations, combined with a \textbf{Purged Block-Temporal Cross-Fitting} scheme that establishes an embargo buffer $\tau$ to prevent temporal dependency leakage under $\alpha$-mixing. We prove that RC-DML is $\sqrt{N}$-consistent and asymptotically normal, achieving the semiparametric efficiency bound under mild regularity conditions. In controlled semi-synthetic benchmarks across diverse persistence regimes, RC-DML reduces absolute bias by over $99.8\%$ (from $7.7221$ to $0.0132$) relative to standard DML, and achieves 88.9\% population coverage once Markov regime occupation variance is explicitly integrated via our Proposition 6 decomposition. When applied to high-frequency ground-sensor networks across complex Indian airsheds, RC-DML resolves empirical sign inversion in peninsular plateau airsheds (Bengaluru: $-1.772 \to +0.070$) and collapses spurious confounding artifacts by 79\% in coastal megacities (Mumbai: $-296.092 \to -63.628$), recovering structurally coherent, regime-stratified policy elasticities.
 \end{abstract}
 
 
@@ -81,7 +81,7 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or Causal F
 
     \item \textbf{Markov Occupation Variance Decomposition (Proposition~\ref{prop:variance}):} We derive the exact decomposition of population ATE variance into (i) estimation variance from the HAC sandwich and (ii) regime occupation variance from Markov chain fluctuations — the latter scaling as $(1+\rho)/(1-\rho)$ under persistence $\rho$. For $\rho \approx 0.85$ (typical winter stagnation), this inflates population uncertainty by $12.3\times$, explaining why standard CIs undercover.
 
-    \item \textbf{Empirical Resolution Across Heterogeneous Indian Airsheds:} RC-DML eliminates empirical sign inversion in Bengaluru ($-1.772 \to +0.081$), collapses spurious coastal confounding by 79\% in Mumbai, and provides regime-stratified elasticities in Delhi where stagnation persistence degrades regime separability. The 99.8\% bias reduction relative to naive DML (from $7.7221$ to $0.0132$) is verified over 45 Monte Carlo replications across three persistence regimes.
+    \item \textbf{Empirical Resolution Across Heterogeneous Indian Airsheds:} RC-DML eliminates empirical sign inversion in Bengaluru ($-1.772 \to +0.070$), collapses spurious coastal confounding by 79\% in Mumbai ($-296.092 \to -63.628$), and provides regime-stratified elasticities in Delhi where stagnation persistence degrades regime separability. The 99.8\% bias reduction relative to naive DML (from $7.7221$ to $0.0132$) is verified over 45 Monte Carlo replications across three persistence regimes.
 \end{itemize}
 
 \section{STRUCTURAL CAUSAL MODEL \& IDENTIFICATION}
@@ -402,22 +402,22 @@ As reported in Table~\ref{tab:benchmark} and Figure~\ref{fig:convergence}:
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$ [$\pm 1.96\mathrm{SE}$]} \\
 \midrule
 Delhi & Naive DML & Pooled & $-3.325 \pm 0.245$ \\
-Delhi & RC-DML & Overall ATE & $-3.716 \pm 1.175$ \\
-Delhi & RC-DML & Regime 1 (Stagnation) & $-4.734 \pm 1.217$ \\
-Delhi & RC-DML & Regime 2 (Transitional) & $-3.482 \pm 2.516$ \\
-Delhi & RC-DML & Regime 3 (Dispersion) & $+0.190 \pm 0.259$ \\
+Delhi & RC-DML & Overall ATE & $-3.827 \pm 1.560$ \\
+Delhi & RC-DML & Regime 1 (Stagnation) & $-4.803 \pm 1.175$ \\
+Delhi & RC-DML & Regime 2 (Transitional) & $-3.676 \pm 2.819$ \\
+Delhi & RC-DML & Regime 3 (Dispersion) & $+0.201 \pm 0.263$ \\
 \midrule
 Mumbai & Naive DML & Pooled & $-296.092 \pm 12.423$ \\
-Mumbai & RC-DML & Overall ATE & $-62.382 \pm 34.191$ \\
-Mumbai & RC-DML & Regime 1 (Marine Breeze) & $-19.323 \pm 67.197$ \\
-Mumbai & RC-DML & Regime 2 (Land Breeze) & $-70.560 \pm 41.326$ \\
-Mumbai & RC-DML & Regime 3 (Stagnant Smog) & $-83.910 \pm 68.483$ \\
+Mumbai & RC-DML & Overall ATE & $-63.628 \pm 37.535$ \\
+Mumbai & RC-DML & Regime 1 (Marine Breeze) & $-17.672 \pm 71.295$ \\
+Mumbai & RC-DML & Regime 2 (Land Breeze) & $-73.933 \pm 45.440$ \\
+Mumbai & RC-DML & Regime 3 (Stagnant Smog) & $-84.979 \pm 70.337$ \\
 \midrule
 Bengaluru & Naive DML & Pooled & $-1.772 \pm 0.173$ \\
-Bengaluru & RC-DML & Overall ATE & $+0.081 \pm 0.620$ \\
-Bengaluru & RC-DML & Regime 1 (Nocturnal) & $-1.386 \pm 1.026$ \\
-Bengaluru & RC-DML & Regime 2 (Convective) & $-0.437 \pm 1.046$ \\
-Bengaluru & RC-DML & Regime 3 (Traffic Peak) & $+1.754 \pm 1.105$ \\
+Bengaluru & RC-DML & Overall ATE & $+0.070 \pm 0.764$ \\
+Bengaluru & RC-DML & Regime 1 (Nocturnal) & $-1.588 \pm 1.072$ \\
+Bengaluru & RC-DML & Regime 2 (Convective) & $-0.412 \pm 1.135$ \\
+Bengaluru & RC-DML & Regime 3 (Traffic Peak) & $+1.853 \pm 1.127$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -427,16 +427,16 @@ We evaluate RC-DML on high-frequency hourly observations (2024--2026) across Del
 
 \textbf{Empirical Regime Stratification \& Physical Dynamics.} Rather than claiming universal sign reversals across heterogeneous thermodynamic environments, Table~\ref{tab:empirical} demonstrates that conditioning on latent physical regimes isolates the distinct boundary-layer mechanisms operating in each airshed:
 \begin{itemize}
-    \item \emph{Bengaluru (Peninsular Plateau):} Naive pooled DML estimates a statistically significant negative elasticity ($\hat{\theta}_{\mathrm{naive}} = -1.772 \pm 0.173$), an artifact of conflating nighttime boundary layer collapse with daytime traffic emissions. RC-DML eliminates this sign inversion, yielding an overall positive ATE of $+0.081 \pm 0.620$. Stratification reveals that high-traffic Regime 3 exhibits a strong, positive, and statistically significant causal elasticity ($\hat{\theta}_3 = +1.754 \pm 1.105$, $p < 0.002$), while convective mixing in Regime 2 is neutral ($\hat{\theta}_2 = -0.437 \pm 1.046$).
-    \item \emph{Mumbai (Coastal Airshed):} Naive DML produces an absurdly inflated negative estimate ($\hat{\theta}_{\mathrm{naive}} = -296.092 \pm 12.423$) induced by diurnal marine-land breeze oscillations where strong marine ventilation clears particulates while precursor levels fluctuate. RC-DML collapses this spurious artifact by 79\% to $\hat{\theta}_{\mathrm{ATE}} = -62.382 \pm 34.191$. Under marine breeze clearance (Regime 1), the elasticity collapses toward zero and is statistically indistinguishable from zero ($\hat{\theta}_1 = -19.323 \pm 67.197$, 95\% CI $[-86.520, +47.874]$).
-    \item \emph{Delhi (Continental Basin):} In Delhi, naive pooled DML ($\hat{\theta}_{\mathrm{naive}} = -3.325 \pm 0.245$) and RC-DML Overall ATE ($\hat{\theta}_{\mathrm{ATE}} = -3.716 \pm 1.175$) both remain negative. Rather than forcing a uniform sign reversal across heterogeneous geography, regime stratification reveals crucial physical distinctions: under advective dispersion (Regime 3), the elasticity becomes positive ($\hat{\theta}_3 = +0.190 \pm 0.259$), confirming that precursor reductions successfully lower particulate levels when ventilation is active. Conversely, during transitional and stagnant conditions (Regimes 1 and 2), elasticities remain negative with wide standard errors (Regime 2 SE $\pm 2.516$, the widest across all cities). This reflects the fact that Delhi's landlocked continental basin suffers from deep, persistent winter temperature inversions where auxiliary physical separation is weaker ($\Delta_Z = O(1)$), consistent with the finite-overlap covariance inversion in Theorem~\ref{thm:duality}.
+    \item \emph{Bengaluru (Peninsular Plateau):} Naive pooled DML estimates a statistically significant negative elasticity ($\hat{\theta}_{\mathrm{naive}} = -1.772 \pm 0.173$), an artifact of conflating nighttime boundary layer collapse with daytime traffic emissions. RC-DML eliminates this sign inversion, yielding an overall positive ATE of $+0.070 \pm 0.764$. Stratification reveals that high-traffic Regime 3 exhibits a strong, positive, and statistically significant causal elasticity ($\hat{\theta}_3 = +1.853 \pm 1.127$, $p < 0.002$), while convective mixing in Regime 2 is neutral ($\hat{\theta}_2 = -0.412 \pm 1.135$).
+    \item \emph{Mumbai (Coastal Airshed):} Naive DML produces an absurdly inflated negative estimate ($\hat{\theta}_{\mathrm{naive}} = -296.092 \pm 12.423$) induced by diurnal marine-land breeze oscillations where strong marine ventilation clears particulates while precursor levels fluctuate. RC-DML collapses this spurious artifact by 79\% to $\hat{\theta}_{\mathrm{ATE}} = -63.628 \pm 37.535$. Under marine breeze clearance (Regime 1), the elasticity collapses toward zero and is statistically indistinguishable from zero ($\hat{\theta}_1 = -17.672 \pm 71.295$, 95\% CI $[-88.967, +53.624]$).
+    \item \emph{Delhi (Continental Basin):} In Delhi, naive pooled DML ($\hat{\theta}_{\mathrm{naive}} = -3.325 \pm 0.245$) and RC-DML Overall ATE ($\hat{\theta}_{\mathrm{ATE}} = -3.827 \pm 1.560$) both remain negative. Rather than forcing a uniform sign reversal across heterogeneous geography, regime stratification reveals crucial physical distinctions: under advective dispersion (Regime 3), the elasticity becomes positive ($\hat{\theta}_3 = +0.201 \pm 0.263$), confirming that precursor reductions successfully lower particulate levels when ventilation is active. Conversely, during transitional and stagnant conditions (Regimes 1 and 2), elasticities remain negative with wide standard errors (Regime 2 SE $\pm 2.819$, the widest across all cities). This reflects the fact that Delhi's landlocked continental basin suffers from deep, persistent winter temperature inversions where auxiliary physical separation is weaker ($\Delta_Z = O(1)$), consistent with the finite-overlap covariance inversion in Theorem~\ref{thm:duality}.
 \end{itemize}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{plots/fig3_regime_elasticities.png}
 \vspace{0.4em}
-\caption{Empirical Regime-Stratified Causal Elasticities across Contrasting Metropolises (Delhi, Mumbai, Bengaluru). Reporting point estimates and 95\% HAC confidence intervals. (a) In Bengaluru, RC-DML resolves the empirical sign inversion (isolating positive elasticity $+1.754$ during traffic peaks). In Delhi, it isolates positive elasticity during advective clearance ($+0.190$) from stagnation inversion. (b) In Mumbai, RC-DML collapses spurious negative confounding by 79\% and demonstrates that marine ventilation produces near-zero marginal elasticity.}
+\caption{Empirical Regime-Stratified Causal Elasticities across Contrasting Metropolises (Delhi, Mumbai, Bengaluru). Reporting point estimates and 95\% HAC confidence intervals. (a) In Bengaluru, RC-DML resolves the empirical sign inversion (isolating positive elasticity $+1.853$ during traffic peaks). In Delhi, it isolates positive elasticity during advective clearance ($+0.201$) from stagnation inversion. (b) In Mumbai, RC-DML collapses spurious negative confounding by 79\% and demonstrates that marine ventilation produces near-zero marginal elasticity.}
 \label{fig:elasticities}
 \end{figure*}
 
