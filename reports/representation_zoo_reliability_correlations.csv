@@ -1,0 +1,4 @@
+Metric,Spearman_rho_vs_Reliability_AUC,p_value
+Classification F1,0.4211,0.0645
+Calibration ECE,-0.5353,0.015
+Log-Loss NLL,-0.582,0.0071

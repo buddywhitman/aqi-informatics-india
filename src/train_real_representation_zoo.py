@@ -74,23 +74,36 @@ def compute_mda(difficulty: np.ndarray, losses: np.ndarray) -> float:
     return float(rho) if not np.isnan(rho) else 0.0
 
 
-def paired_bootstrap_auc(y_true, score_A, score_B, n_boot=1000, rng=None):
-    """Computes bootstrap 95% CIs and paired difference \Delta AUC with p-value."""
+def moving_block_bootstrap_auc(y_true, score_A, score_B, n_boot=1000, block_length=24, rng=None):
+    """
+    Moving-Block Bootstrap (MBB) for temporally dependent time series.
+    Preserves Markov/temporal autocorrelation by resampling contiguous blocks of length L=24.
+    Computes 95% CIs for AUC(A), AUC(B), and paired difference \Delta AUC with empirical p-value.
+    """
     if rng is None:
         rng = np.random.default_rng(42)
     n = len(y_true)
+    L = min(max(4, int(block_length)), n // 2)
+    n_blocks = int(np.ceil(n / L))
+    max_start = n - L + 1
+
     diffs = []
     auc_A_list = []
     auc_B_list = []
     for _ in range(n_boot):
-        idx = rng.choice(n, size=n, replace=True)
-        if len(np.unique(y_true[idx])) < 2:
+        starts = rng.integers(0, max_start, size=n_blocks)
+        idx = np.concatenate([np.arange(s, s + L) for s in starts])[:n]
+        y_b = y_true[idx]
+        if len(np.unique(y_b)) < 2:
             continue
-        a = roc_auc_score(y_true[idx], score_A[idx])
-        b = roc_auc_score(y_true[idx], score_B[idx])
+        a = roc_auc_score(y_b, score_A[idx])
+        b = roc_auc_score(y_b, score_B[idx])
         auc_A_list.append(a)
         auc_B_list.append(b)
         diffs.append(a - b)
+
+    if len(auc_A_list) < 10:
+        return (0.5, 0.5), (0.5, 0.5), (0.0, 0.0), 1.0
 
     ci_A = (float(np.percentile(auc_A_list, 2.5)), float(np.percentile(auc_A_list, 97.5)))
     ci_B = (float(np.percentile(auc_B_list, 2.5)), float(np.percentile(auc_B_list, 97.5)))
@@ -358,11 +371,18 @@ def run_single_seed(seed: int, device: torch.device):
         r2_Cond = float(np.corrcoef(Cond_lead, lead_loss)[0, 1]**2) if np.std(Cond_lead) > 1e-6 else 0.0
         r2_D = float(np.corrcoef(D_lead, lead_loss)[0, 1]**2) if np.std(D_lead) > 1e-6 else 0.0
 
-        ci_D, ci_H, ci_diff, p_diff = paired_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=1000, rng=np.random.default_rng(seed))
+        floor_sens = {}
+        for ef in [1e-6, 1e-5, 1e-4, 1e-3]:
+            lmin_f = np.maximum(0.5 * (trace - disc), ef)
+            d_f = (H_t / lmin_f)[:-1]
+            floor_sens[f"Floor_{ef:.0e}"] = roc_auc_score(fail_bin, d_f)
+
+        ci_D, ci_H, ci_diff, p_diff = moving_block_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=1000, block_length=24, rng=np.random.default_rng(seed))
 
         rel_results[name] = {
             "ShiftC_F1": f1_sc,
             "Reliability_ROC_AUC_D": auc_D,
+            **floor_sens,
             "AUC_D_CI_low": ci_D[0],
             "AUC_D_CI_high": ci_D[1],
             "Reliability_PR_AUC_D": pr_D,
@@ -428,6 +448,39 @@ def run_real_representation_zoo():
 
     df_rel = pd.DataFrame(agg_rel)
     df_rel.to_csv("reports/representation_zoo_reliability_auc.csv", index=False)
+
+    # Floor sensitivity report across numerical thresholds
+    floor_rows = []
+    for arch in architectures:
+        f_row = {"Architecture": arch}
+        for ef in ["Floor_1e-06", "Floor_1e-05", "Floor_1e-04", "Floor_1e-03"]:
+            vals = [all_rel[i][arch][ef] for i in range(len(seeds))]
+            f_row[f"{ef}_Mean"] = round(float(np.mean(vals)), 4)
+            f_row[f"{ef}_Std"] = round(float(np.std(vals)), 4)
+        floor_rows.append(f_row)
+    pd.DataFrame(floor_rows).to_csv("reports/representation_zoo_floor_sensitivity.csv", index=False)
+
+    # Correlation test for the Reliability Triangle: F1 vs ECE vs NLL predicting Reliability AUC
+    corrs_data = []
+    for i, s in enumerate(seeds):
+        for arch in architectures:
+            corrs_data.append({
+                "Seed": s, "Architecture": arch,
+                "F1": all_shifts[i][arch]["ShiftC_Compound_F1"],
+                "ECE": all_shifts[i][arch]["ShiftC_ECE"],
+                "NLL": all_shifts[i][arch]["ShiftC_NLL"],
+                "Reliability_AUC": all_rel[i][arch]["Reliability_ROC_AUC_D"]
+            })
+    df_corrs_raw = pd.DataFrame(corrs_data)
+    rho_f1, p_f1 = spearmanr(df_corrs_raw["F1"], df_corrs_raw["Reliability_AUC"])
+    rho_ece, p_ece = spearmanr(df_corrs_raw["ECE"], df_corrs_raw["Reliability_AUC"])
+    rho_nll, p_nll = spearmanr(df_corrs_raw["NLL"], df_corrs_raw["Reliability_AUC"])
+    df_corrs = pd.DataFrame([
+        {"Metric": "Classification F1", "Spearman_rho_vs_Reliability_AUC": round(float(rho_f1), 4), "p_value": round(float(p_f1), 4)},
+        {"Metric": "Calibration ECE", "Spearman_rho_vs_Reliability_AUC": round(float(rho_ece), 4), "p_value": round(float(p_ece), 4)},
+        {"Metric": "Log-Loss NLL", "Spearman_rho_vs_Reliability_AUC": round(float(rho_nll), 4), "p_value": round(float(p_nll), 4)},
+    ])
+    df_corrs.to_csv("reports/representation_zoo_reliability_correlations.csv", index=False)
 
     # Canonical latent_regime_bench_models.csv for backward compatibility
     canon_rows = []

@@ -1,0 +1,5 @@
+Architecture,Floor_1e-06_Mean,Floor_1e-06_Std,Floor_1e-05_Mean,Floor_1e-05_Std,Floor_1e-04_Mean,Floor_1e-04_Std,Floor_1e-03_Mean,Floor_1e-03_Std
+Gaussian HMM (Causal Filter),0.6029,0.0188,0.6029,0.0188,0.6029,0.0188,0.6029,0.0188
+Neural GRU Encoder,0.5358,0.0161,0.5358,0.0161,0.5358,0.0161,0.5358,0.0161
+Causal Transformer Encoder,0.5199,0.0359,0.5199,0.0359,0.5199,0.0359,0.5199,0.0359
+Linear State Space Model (SSM),0.5377,0.0211,0.5377,0.0211,0.5377,0.0211,0.5377,0.0211

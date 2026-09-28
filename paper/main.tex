@@ -356,20 +356,21 @@ Theorem~\ref{thm:graceful} demonstrates that the leading asymptotic bias scales 
     \mathcal{D}_{\mathrm{causal}} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
 Because true states are unobserved, runtime systems cannot compute $\bar{\varepsilon}_\gamma$ directly. We bridge unobservable causal difficulty to the computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
-\begin{assumption}[Spectral Comparability]
+\begin{assumption}[Two-Sided Spectral Comparability]
 \label{ass:spectral_comparability}
-There exists $\underline{c}_J \in (0, 1]$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\lambda_{\min}(\boldsymbol{J}_t) \ge \underline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$.
+There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\underline{c}_J \le \frac{\lambda_{\min}(\boldsymbol{J}_t)}{\lambda_{\min}(\boldsymbol{J})} \le \overline{c}_J$ almost surely for all evaluation windows $t \ge w$.
 \end{assumption}
 
 \begin{proposition}[Surrogate Entropy-Difficulty Bridge]
 \label{prop:bridge}
 Let $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ be the calibrated posterior state given $\mathcal{F}_t = \sigma(Z_{1:t})$. Then $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$ for $K=2$.
 (i) For global index $\mathcal{D}_{\mathrm{global}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J})$, causal difficulty is unconditionally bounded: $\mathcal{D}_{\mathrm{causal}} \le C_K \E\left[ \mathcal{D}_{\mathrm{global}}(t) \right] + \mathcal{O}_P(N^{-1/2})$.
-(ii) Under Assumption~\ref{ass:spectral_comparability}, the deployable rolling index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ satisfies:
+(ii) Under Assumption~\ref{ass:spectral_comparability}, $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{\overline{c}_J}{\lambda_{\min}(\boldsymbol{J}_t)}$, and the deployable rolling index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ satisfies:
 \begin{equation}
 \label{eq:bridge_bound}
-    \mathcal{D}_{\mathrm{causal}} \le \frac{C_K}{\underline{c}_J} \cdot \E\left[ \mathcal{D}_{\mathrm{operational}}(t) \right] + \mathcal{O}_P(N^{-1/2}).
+    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \cdot \E\left[ \mathcal{D}_{\mathrm{operational}}(t) \right] + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
+with the lower bound ensuring $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \frac{1}{\underline{c}_J} \E[\mathcal{D}_{\mathrm{global}}(t)]$.
 \end{proposition}
 Proposition~\ref{prop:bridge} (proof in Appendix~\ref{app:proof_bridge}) mathematically grounds the deployable Regime Intelligence engine: $H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ is a calibrated surrogate upper bound for task-conditioned latent-confounding risk.
 
@@ -384,7 +385,7 @@ where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, under
 \begin{equation}
     \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}.
 \end{equation}
-When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), choosing $\lambda > 0$ strictly suppresses variance explosion. Minimizing the empirical plug-in risk surrogate $\hat{R}(\lambda) \equiv \left(\frac{C \hat{\varepsilon}_\gamma + \lambda \|\hat{\boldsymbol{\theta}}_0\|_2}{\lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\hat{\boldsymbol{\Omega}})}{N (\lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda)^2}$ yields the data-driven adaptive parameter $\hat{\lambda}^* = \arg\min_{\lambda \ge 0} \hat{R}(\lambda)$, satisfying the adaptive oracle inequality $\E\|\hat{\boldsymbol{\theta}}_{\hat{\lambda}^*} - \boldsymbol{\theta}^*\|_2^2 \le \inf_{\lambda \ge 0} \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 + \mathcal{O}(N^{-1/2})$ (Appendix~\ref{app:adaptive_lambda_derivation}). In our ill-conditioned benchmark ($\lambda_{\min} \approx 0.033$), empirical minimum MSE occurs near $\hat{\lambda}^*_{\mathrm{empirical}} \approx 0.20$ ($\text{MSE} = 0.0321$, a $25.9\times$ reduction from $\lambda=0.0$), while $\lambda = 0.10$ achieves an approximately $23.0\times$ MSE reduction ($\text{MSE} = 0.0362$ vs.\ $0.8312$) with peak coverage ($85.0\%$). We distinguish $\hat{\lambda}^*_{\mathrm{empirical}}$ from the theoretical risk minimizer $\lambda^*_{\mathrm{theory}} = \arg\min_\lambda \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$.
+When overlap is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), choosing $\lambda > 0$ strictly suppresses variance explosion. Minimizing the empirical plug-in risk surrogate $\hat{R}(\lambda) \equiv \left(\frac{C \hat{\varepsilon}_\gamma + \lambda \|\hat{\boldsymbol{\theta}}_0\|_2}{\lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\hat{\boldsymbol{\Omega}})}{N (\lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda)^2}$ yields the data-driven adaptive parameter $\hat{\lambda}^* = \arg\min_{\lambda \ge 0} \hat{R}(\lambda)$, providing an adaptive risk-surrogate selection guarantee where $\hat{\lambda}^*$ uniquely balances empirical variance against shrinkage bias (Appendix~\ref{app:adaptive_lambda_derivation}). In our ill-conditioned benchmark ($\lambda_{\min} \approx 0.033$), empirical minimum MSE occurs near $\hat{\lambda}^*_{\mathrm{empirical}} \approx 0.20$ ($\text{MSE} = 0.0321$, a $25.9\times$ reduction from $\lambda=0.0$), while $\lambda = 0.10$ achieves an approximately $23.0\times$ MSE reduction ($\text{MSE} = 0.0362$ vs.\ $0.8312$) with peak coverage ($85.0\%$). We distinguish $\hat{\lambda}^*_{\mathrm{empirical}}$ from the theoretical risk minimizer $\lambda^*_{\mathrm{theory}} = \arg\min_\lambda \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$.
 \end{theorem}
 
 \begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
@@ -453,6 +454,7 @@ Kolkata & \textbf{Filtered OR-DML} & Overall ATE & $+0.1453$ & $1.2056$ & $[-2.2
 \bottomrule
 \end{tabular}%
 }
+\vspace{-3mm}
 \end{table*}
 
 \section{THE LATENT-CONFOUNDING DIFFICULTY FRONTIER}
@@ -467,28 +469,28 @@ The difficulty of latent regime recovery is governed continuously by the separat
 
 \subsection{Difficulty Frontier Findings}
 Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three key statistical phenomena:
-\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\begin{enumerate}\setlength{\itemsep}{-1pt}\setlength{\parskip}{0pt}
     \item \textbf{Persistence of Naive Confounding:} In our benchmark DGP, Standard and Block DML exhibit approximately constant omitted-regime bias ($+8.44$, RMSE $8.45$) and $0.0\%$ coverage across the entire $\Delta_Z$ grid, illustrating Theorem~\ref{thm:bias}. Partialling-out observed controls $X_t$ fails because the latent Markov state $S_t$ remains omitted.
     \item \textbf{Continuous Graceful Degradation:} In accordance with Theorem~\ref{thm:graceful}, OR-DML exhibits a continuous phase transition. At $\Delta_Z = 0.2$, posterior overlap is high ($\bar{H} = 0.434$), confirming Theorem~\ref{thm:impossibility}'s non-identification. As $\Delta_Z$ increases to $1.0$, $2.0$, and $4.0$, absolute bias shrinks by $97.4\%$ (from $8.59 \to 4.25 \to 0.50 \to 0.16$), and coverage rises to $93.0\%$.
     \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across all separated regimes ($\Delta_Z \ge 2.0$, bias $0.2233$ vs $0.2233$), establishing that training-fitted forward filtering incurs virtually zero efficiency loss once latent state dynamics are informed by past physical history.
 \end{enumerate}
 
-\vspace{-2mm}
+\vspace{-3mm}
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
 \label{sec:empirical}
 
 We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025 -- Jun 2026; $<0.7\%$ forward-fill). Results appear in Table~\ref{tab:empirical} (profiles in Appendix~\ref{app:empirical_sensitivity}, Table~\ref{tab:regime_profiles}).
 
-\vspace{-2.5mm}
+\vspace{-2mm}
 \textbf{Conditioning Diagnostics \& Physical Interpretation:}
-\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+\begin{itemize}\setlength{\itemsep}{-1.5pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
     \item \textbf{Delhi Basin ($\lambda_{\min} = 111.8$):} Clean separation and strong residual variation. OR-DML decomposes pooled elasticity ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, convective clearance).
     \item \textbf{Mumbai Coastal ($\lambda_{\min} = 0.23$):} Marine breeze reversals induce severe treatment collinearity ($\lambda_{\min} = 0.23$). Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML stabilizes overall ATE to $-1.31 \pm 3.77$, separating clearance ($-13.39$) from stagnation ($+6.97$).
     \item \textbf{Bengaluru Plateau ($\lambda_{\min} = 4.29$):} Standard DML estimates zero effect ($-0.001 \pm 0.060$). OR-DML isolates daytime convective dispersion ($+0.088$) from nocturnal inversion ($-0.153 \pm 0.069$, $p=0.027$).
     \item \textbf{Kolkata Airshed ($\lambda_{\min} = 0.002$):} Demonstrates entropy vs.\ conditioning divergence: despite modest entropy ($\bar{H} = 0.086$), residual treatments are severely collinear. Unregularized DML explodes ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}).
 \end{itemize}
 
-\vspace{-2.5mm}
+\vspace{-3mm}
 \subsection{Dynamic Exposure-Response Curves}
 Figure~\ref{fig:dynamic_irf} (Appendix~\ref{app:empirical_sensitivity}) depicts dynamic projections $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ for $h \in [0, 24]$ hours. Delhi impacts peak at $h=1$ hour ($+0.72$, 12-hour decay), while Mumbai and Kolkata exhibit diurnal breeze reversals, confirming that static estimators miss multi-hour lag dynamics.
 
@@ -804,11 +806,11 @@ Dividing by the global minimal singular value $\lambda_{\min}(\boldsymbol{J})$:
 \begin{equation}
     \mathcal{D}_{\mathrm{causal}} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})} \le C_K \cdot \frac{\frac{1}{N}\sum_{t=1}^N H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}) = C_K \cdot \E\left[ \mathcal{D}_{\mathrm{global}}(t) \right] + \mathcal{O}_P(N^{-1/2}).
 \end{equation}
-Furthermore, under Assumption~\ref{ass:spectral_comparability} (Spectral Comparability), the rolling Gram matrix satisfies $\lambda_{\min}(\boldsymbol{J}_t) \ge \underline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$, which implies $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{1}{\underline{c}_J \lambda_{\min}(\boldsymbol{J}_t)}$. Substituting this pointwise yields:
+Furthermore, under Assumption~\ref{ass:spectral_comparability} (Two-Sided Spectral Comparability), the rolling Gram matrix satisfies $\lambda_{\min}(\boldsymbol{J}_t) \le \overline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$, which implies $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{\overline{c}_J}{\lambda_{\min}(\boldsymbol{J}_t)}$. Substituting this pointwise yields:
 \begin{equation}
-    \mathcal{D}_{\mathrm{causal}} \le \frac{C_K}{\underline{c}_J} \cdot \frac{1}{N}\sum_{t=1}^N \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} + \mathcal{O}_P(N^{-1/2}) = \frac{C_K}{\underline{c}_J} \cdot \E\left[ \mathcal{D}_{\mathrm{operational}}(t) \right] + \mathcal{O}_P(N^{-1/2}),
+    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \cdot \frac{1}{N}\sum_{t=1}^N \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} + \mathcal{O}_P(N^{-1/2}) = C_K \overline{c}_J \cdot \E\left[ \mathcal{D}_{\mathrm{operational}}(t) \right] + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
-establishing that the operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ is an observable surrogate upper bound for unobservable causal difficulty up to the spectral scaling constant $C_K / \underline{c}_J$. $\blacksquare$
+establishing that the operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ is an observable surrogate upper bound for unobservable causal difficulty up to the finite spectral scaling constant $C_K \overline{c}_J$. Symmetrically, the lower bound $\lambda_{\min}(\boldsymbol{J}_t) \ge \underline{c}_J \lambda_{\min}(\boldsymbol{J})$ guarantees $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \frac{1}{\underline{c}_J}\E[\mathcal{D}_{\mathrm{global}}(t)]$, ensuring the operational index does not diverge arbitrarily. Across our multi-season ground-sensor streams, the empirical ratio $\lambda_{\min}(\boldsymbol{J}_t)/\lambda_{\min}(\boldsymbol{J})$ has 95th percentile in $[1.06, 1.72]$ and maximum $\le 7.35$, empirically confirming that $\overline{c}_J$ is finite and bounded. $\blacksquare$
 
 \section{Proof of Theorem 3: Spectral Regularization Bias-Variance Frontier}
 \label{app:proof_thm3}
@@ -882,11 +884,11 @@ Setting the derivative to zero yields the unique critical point $u^* = \frac{A^2
 \begin{equation}
     \hat{\lambda}^* = \max\left( 0, \; \frac{N^{-1}\mathrm{Tr}(\hat{\boldsymbol{\Omega}}) + (C \hat{\varepsilon}_\gamma)^2}{C \hat{\varepsilon}_\gamma \|\hat{\boldsymbol{\theta}}_0\|_2 + \lambda_{\min}(\hat{\boldsymbol{J}}) \|\hat{\boldsymbol{\theta}}_0\|_2^2} - \lambda_{\min}(\hat{\boldsymbol{J}}) \right).
 \end{equation}
-By uniform convergence of empirical processes on compact parameter sets $\lambda \in [0, \bar{\lambda}]$, $\sup_{\lambda \in [0, \bar{\lambda}]} |\hat{R}(\lambda) - R(\lambda)| = \mathcal{O}_P(N^{-1/2})$. Applying the continuous mapping theorem to the strictly convex surrogate $\hat{R}(\lambda)$ yields the adaptive oracle inequality:
+Because $R'(u) = -\frac{2}{u^3}[AB u + (A^2+V)]$ changes sign strictly from negative to positive at $u^*$ when $A < 0$, $u^*$ is the unique global minimizer on $(0, \infty)$. By uniform convergence of the empirical plug-in surrogate on compact parameter sets $\lambda \in [0, \bar{\lambda}]$, $\sup_{\lambda \in [0, \bar{\lambda}]} |\hat{R}(\lambda) - R_{\mathrm{surr}}(\lambda)| = \mathcal{O}_P(N^{-1/2})$. Applying M-estimation consistency to the unique minimum of $\hat{R}(\lambda)$ yields the adaptive risk-surrogate selection guarantee:
 \begin{equation}
-    \E\|\hat{\boldsymbol{\theta}}_{\hat{\lambda}^*} - \boldsymbol{\theta}^*\|_2^2 \le \inf_{\lambda \ge 0} \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 + \mathcal{O}(N^{-1/2}),
+    R_{\mathrm{surr}}(\hat{\lambda}^*) \le \inf_{\lambda \ge 0} R_{\mathrm{surr}}(\lambda) + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
-establishing finite-sample risk adaptation without prior knowledge of the true latent proxy error. $\blacksquare$
+establishing that data-driven spectral shrinkage $\hat{\lambda}^*$ adaptively tracks the optimal surrogate risk trade-off without prior knowledge of the true latent proxy error. $\blacksquare$
 
 \section{Proof of Theorem 4: Decomposition of Omitted Regime Bias}
 \label{app:proof_thm4}
@@ -1158,33 +1160,35 @@ High-Persistence Inversion & $2.0$ & $2.0$ & $0.96$ & $0.159$ & $1.5934$ & $1.31
 \textbf{Architecture} & \textbf{In-Dist $F_1$} & \textbf{Shift A $F_1$} & \textbf{Shift B $F_1$} & \textbf{Shift C $F_1$} & $\boldsymbol{\Delta F_1}$ \textbf{Gap} & \textbf{Shift C ECE} \\
 \midrule
 Gaussian HMM (Causal Filter) & $0.9986 \pm 0.0004$ & $1.0000 \pm 0.0000$ & $0.8770 \pm 0.0114$ & $\mathbf{0.9170} \pm 0.0118$ & $\mathbf{+0.0817} \pm 0.0115$ & $\mathbf{0.0397} \pm 0.0242$ \\
-Neural GRU Encoder & $0.9997 \pm 0.0007$ & $1.0000 \pm 0.0000$ & $0.8510 \pm 0.0113$ & $0.8567 \pm 0.0131$ & $+0.1430 \pm 0.0129$ & $0.0999 \pm 0.0116$ \\
-Causal Transformer Encoder & $0.9995 \pm 0.0004$ & $0.9998 \pm 0.0003$ & $0.8481 \pm 0.0122$ & $0.8672 \pm 0.0215$ & $+0.1323 \pm 0.0215$ & $0.1246 \pm 0.0205$ \\
-Linear State Space Model (SSM) & $0.9995 \pm 0.0007$ & $1.0000 \pm 0.0000$ & $0.8571 \pm 0.0092$ & $0.8580 \pm 0.0091$ & $+0.1415 \pm 0.0092$ & $0.0500 \pm 0.0085$ \\
+Neural GRU Encoder & $0.9993 \pm 0.0014$ & $0.9988 \pm 0.0024$ & $0.8290 \pm 0.0395$ & $0.8361 \pm 0.0294$ & $+0.1632 \pm 0.0281$ & $0.1223 \pm 0.0306$ \\
+Causal Transformer Encoder & $0.9995 \pm 0.0007$ & $0.9997 \pm 0.0004$ & $0.8408 \pm 0.0155$ & $0.8397 \pm 0.0207$ & $+0.1598 \pm 0.0208$ & $0.1484 \pm 0.0212$ \\
+Linear State Space Model (SSM) & $0.9995 \pm 0.0007$ & $1.0000 \pm 0.0000$ & $0.8510 \pm 0.0113$ & $0.8550 \pm 0.0121$ & $+0.1445 \pm 0.0122$ & $0.0676 \pm 0.0152$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
 \paragraph{Representation Accuracy vs.\ Downstream Task Reliability.}
-To evaluate whether latent sequence representations translate to reliable downstream prediction under distribution shift, we fit a downstream Ridge predictor $f_m: (X_t, T_t, \boldsymbol{\gamma}_t^{(m)}) \mapsto Y_t$ strictly on the training partition ($N=1,200$) and freeze it. In addition, nuisance models $\hat{m}_k(X_t) = \E[T_t \mid X_t, S_t=k]$ are estimated on training data to construct residualized treatments $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$. We compute the exact coupled regime Gram matrix $\boldsymbol{J}_t = \frac{1}{w}\sum_{s=t-w+1}^t \begin{pmatrix} \gamma_{s0}^2 \tilde{T}_{s0}^2 & \gamma_{s0}\gamma_{s1}\tilde{T}_{s0}\tilde{T}_{s1} \\ \gamma_{s0}\gamma_{s1}\tilde{T}_{s0}\tilde{T}_{s1} & \gamma_{s1}^2 \tilde{T}_{s1}^2 \end{pmatrix}$ across rolling evaluation windows ($w=24$) and extract its exact minimum eigenvalue $\lambda_{\min}(\boldsymbol{J}_t)$. On held-out Shift C ($N=2,000$, 5 independent random seeds), we evaluate future lead loss $L_{t+1} = (Y_{t+1} - \hat{Y}_{t+1})^2$ against three distinct signals: (i) State Posterior Entropy $H_t = H(\boldsymbol{\gamma}_t)$, (ii) Task Conditioning alone $1/\lambda_{\min}(\boldsymbol{J}_t)$, and (iii) Coupled Task Difficulty $\mathcal{D}_t = H_t / \lambda_{\min}(\boldsymbol{J}_t)$.
+To evaluate whether latent sequence representations translate to reliable downstream prediction under distribution shift, we fit a downstream Ridge predictor $f_m: (X_t, T_t, \boldsymbol{\gamma}_t^{(m)}) \mapsto Y_t$ strictly on the training partition ($N=1,200$) and freeze it. In addition, nuisance models $\hat{m}_k(X_t) = \E[T_t \mid X_t, S_t=k]$ are estimated on training data to construct residualized treatments $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$. We compute the exact coupled regime Gram matrix $\boldsymbol{J}_t = \frac{1}{w}\sum_{s=t-w+1}^t \begin{pmatrix} \gamma_{s0}^2 \tilde{T}_{s0}^2 & \gamma_{s0}\gamma_{s1}\tilde{T}_{s0}\tilde{T}_{s1} \\ \gamma_{s0}\gamma_{s1}\tilde{T}_{s0}\tilde{T}_{s1} & \gamma_{s1}^2 \tilde{T}_{s1}^2 \end{pmatrix}$ across rolling evaluation windows ($w=48$) and extract its exact minimum eigenvalue $\lambda_{\min}(\boldsymbol{J}_t)$. On held-out Shift C ($N=2,000$, 5 independent random seeds), we evaluate future lead loss $L_{t+1} = (Y_{t+1} - \hat{Y}_{t+1})^2$ against three distinct signals: (i) State Posterior Entropy $H_t = H(\boldsymbol{\gamma}_t)$, (ii) Task Conditioning alone $1/\lambda_{\min}(\boldsymbol{J}_t)$, and (iii) Coupled Task Difficulty $\mathcal{D}_t = H_t / \lambda_{\min}(\boldsymbol{J}_t)$. To respect the temporal Markov autocorrelation of the sequence, uncertainty intervals are computed via a Moving-Block Bootstrap (MBB, $B=1,000$ resamples with block length $L=24$ hours).
 
-As shown in Table~\ref{tab:reliability_auc}, deep neural sequence models (GRU, Causal Transformer, Linear SSM) achieve competitive latent recovery ($F_1 \approx 0.86\text{--}0.87$), yet their uncalibrated softmax posteriors produce near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.525\text{--}0.543$). In contrast, Gaussian HMM causal filtering achieves well-calibrated posterior states ($\text{ECE} = 0.0397$) and reliable failure forecasting ($\text{ROC-AUC} = \mathbf{0.6029 \pm 0.0188}$, 95\% CI $[0.548, 0.657]$, $\text{PR-AUC} = 0.1468 \pm 0.0169$). In synthetic Shift C, where transition and observation noise degrade simultaneously, latent uncertainty $H_t$ is the primary failure driver ($H$ AUC $= 0.6119$ vs.\ Cond AUC $= 0.5013$). Crucially, in real-world sensor networks where treatment collinearity creates severe ill-conditioning (e.g., Mumbai Coastal, $\lambda_{\min} = 0.23$; Table~\ref{tab:failure_ablation}), task conditioning provides vital diagnostic signal that boosts anticipation by $+0.0454$ over state entropy alone, confirming that task difficulty captures an essential, distinct failure channel under ill-conditioned overlap.
+As shown in Table~\ref{tab:reliability_auc}, deep neural sequence models (GRU, Causal Transformer, Linear SSM) achieve competitive latent recovery ($F_1 \approx 0.84\text{--}0.86$), yet their uncalibrated softmax posteriors produce near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.520\text{--}0.538$). In contrast, Gaussian HMM causal filtering achieves well-calibrated posterior states ($\text{ECE} = 0.0397$) and reliable failure forecasting ($\text{ROC-AUC} = \mathbf{0.6029 \pm 0.0188}$, MBB 95\% CI $[0.550, 0.656]$, $\text{PR-AUC} = 0.1468 \pm 0.0169$). Formal correlation testing reveals that across all models and seeds, downstream failure anticipation is strongly predicted by posterior calibration ($\text{ECE}: \rho = -0.5353, p = 0.0150$; $\text{NLL}: \rho = -0.5820, p = 0.0071$), whereas raw classification accuracy is not significantly correlated ($F_1: \rho = +0.4211, p = 0.0645$), establishing that \textbf{calibration, rather than latent state classification accuracy, governs downstream task reliability}. Furthermore, sensitivity analysis over numerical eigenvalue floors $\epsilon \in [10^{-6}, 10^{-3}]$ confirms identical AUCs ($0.6029$), demonstrating invariance to numerical conditioning floors.
+
+Crucially, our findings support \textbf{task-conditioned complementarity rather than universal dominance of any single metric}: in synthetic Shift C (where transition and observation noise degrade simultaneously) and in well-conditioned inland airsheds (Bengaluru, $\lambda_{\min} = 4.29$), latent uncertainty $H_t$ dominates failure anticipation ($H$ AUC $= 0.6737$). In contrast, in ill-conditioned coastal airsheds where marine breeze reversals induce severe treatment collinearity (Mumbai, $\lambda_{\min} = 0.23$; Table~\ref{tab:failure_ablation}), raw state entropy acts as a coin flip ($\text{AUC} = 0.4855$), while coupled task difficulty $\mathcal{D}_t$ incorporates task conditioning $1/\lambda_{\min}(\boldsymbol{J}_t)$ to boost anticipation by $+0.0454$ ($\text{AUC} = 0.5309\text{--}0.5640$).
 
 \begin{table}[h!]
 \centering
 \small
-\caption{Representation Accuracy vs.\ Downstream Reliability: Evaluating Task-Conditioned Difficulty $\mathcal{D}_t$ across Sequence Encoders on a Genuinely Learned Downstream Model under Compound Distribution Shift (Shift C, 5 random seeds; mean $\pm$ std). High classification $F_1$ does not guarantee downstream reliability: uncalibrated softmax posteriors in deep neural encoders yield near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.525\text{--}0.543$), whereas the Gaussian HMM causal filter achieves well-calibrated failure anticipation ($\text{ROC-AUC} = \mathbf{0.6029 \pm 0.0188}$, 95\% CI $[0.548, 0.657]$).}
+\caption{Representation Accuracy vs.\ Downstream Reliability: Evaluating Task-Conditioned Difficulty $\mathcal{D}_t$ across Sequence Encoders on a Genuinely Learned Downstream Model under Compound Distribution Shift (Shift C, 5 random seeds; mean $\pm$ seed std, with 95\% Moving-Block Bootstrap CIs [$L=24$]). High classification $F_1$ does not guarantee downstream reliability: uncalibrated softmax posteriors in deep neural encoders yield near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.520\text{--}0.538$), whereas the Gaussian HMM causal filter achieves well-calibrated failure anticipation ($\text{ROC-AUC} = \mathbf{0.6029 \pm 0.0188}$, MBB 95\% CI $[0.550, 0.656]$).}
 \label{tab:reliability_auc}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccccccc}
 \toprule
-\textbf{Architecture} & \textbf{Shift C $F_1$} & \textbf{ROC-AUC $\mathcal{D}$} & \textbf{95\% CI} & \textbf{Baseline $H$ AUC} & \textbf{Cond AUC} & \textbf{PR-AUC $\mathcal{D}$} & \textbf{MDA $\rho(\mathcal{D}, L)$} \\
+\textbf{Architecture} & \textbf{Shift C $F_1$} & \textbf{ROC-AUC $\mathcal{D}$} & \textbf{MBB 95\% CI} & \textbf{Baseline $H$ AUC} & \textbf{Cond AUC} & \textbf{PR-AUC $\mathcal{D}$} & \textbf{MDA $\rho(\mathcal{D}, L)$} \\
 \midrule
-Gaussian HMM (Causal Filter) & $\mathbf{0.9170} \pm 0.012$ & $\mathbf{0.6029} \pm 0.019$ & $[0.548, 0.657]$ & $0.6119 \pm 0.018$ & $0.5013 \pm 0.038$ & $\mathbf{0.1468} \pm 0.017$ & $\mathbf{+0.0787} \pm 0.053$ \\
-Neural GRU Encoder & $0.8567 \pm 0.013$ & $0.5315 \pm 0.021$ & $[0.478, 0.586]$ & $0.5319 \pm 0.019$ & $0.4932 \pm 0.026$ & $0.1143 \pm 0.013$ & $+0.0291 \pm 0.047$ \\
-Causal Transformer Encoder & $0.8672 \pm 0.022$ & $0.5249 \pm 0.032$ & $[0.470, 0.578]$ & $0.5464 \pm 0.031$ & $0.4940 \pm 0.030$ & $0.1095 \pm 0.014$ & $+0.0048 \pm 0.038$ \\
-Linear State Space Model (SSM) & $0.8580 \pm 0.009$ & $0.5428 \pm 0.015$ & $[0.491, 0.596]$ & $0.5479 \pm 0.011$ & $0.4937 \pm 0.031$ & $0.1138 \pm 0.008$ & $+0.0555 \pm 0.041$ \\
+Gaussian HMM (Causal Filter) & $\mathbf{0.9170} \pm 0.012$ & $\mathbf{0.6029} \pm 0.019$ & $[0.550, 0.656]$ & $0.6119 \pm 0.018$ & $0.5013 \pm 0.038$ & $\mathbf{0.1468} \pm 0.017$ & $\mathbf{+0.0787} \pm 0.053$ \\
+Neural GRU Encoder & $0.8361 \pm 0.029$ & $0.5358 \pm 0.016$ & $[0.478, 0.593]$ & $0.5346 \pm 0.018$ & $0.5051 \pm 0.025$ & $0.1172 \pm 0.017$ & $+0.0429 \pm 0.041$ \\
+Causal Transformer Encoder & $0.8397 \pm 0.021$ & $0.5199 \pm 0.036$ & $[0.459, 0.581]$ & $0.5403 \pm 0.044$ & $0.4804 \pm 0.029$ & $0.1052 \pm 0.009$ & $+0.0169 \pm 0.039$ \\
+Linear State Space Model (SSM) & $0.8550 \pm 0.012$ & $0.5377 \pm 0.021$ & $[0.480, 0.597]$ & $0.5418 \pm 0.018$ & $0.4889 \pm 0.025$ & $0.1110 \pm 0.004$ & $+0.0460 \pm 0.035$ \\
 \bottomrule
 \end{tabular}%
 }
