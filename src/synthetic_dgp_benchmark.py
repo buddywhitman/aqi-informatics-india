@@ -554,27 +554,50 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     ax_c.set_ylim(-5, 105)
     ax_c.legend(frameon=True, fontsize=9)
     
-    # Panel (d): Factorial Frontier - Bias vs (Proxy Error, Causal Overlap)
+    # Panel (d): Factorial Calibration - Bias vs Theoretical Degradation Index (eps_gamma / lambda_min)
     ax_d = axes[1, 1]
-    dt_styles = {
-        1.0: ('#e377c2', 'o--', r'Low $\Delta_T=1$ ($\lambda_{\min}\approx 0.07-0.41$)'),
-        4.0: ('#1f77b4', 's-',  r'Med $\Delta_T=4$ ($\lambda_{\min}\approx 0.24-0.83$)'),
-        8.0: ('#2ca02c', '^-.', r'High $\Delta_T=8$ ($\lambda_{\min}\approx 0.78-2.24$)')
-    }
-    or_fact = df_fact[df_fact['Method'] == 'Spectral OR-DML (Ours)']
-    for dt, (col, st, lab) in dt_styles.items():
-        sub_dt = or_fact[or_fact['Delta_T'] == dt].sort_values('Mean_Proxy_Error', ascending=False)
-        ax_d.plot(sub_dt['Mean_Proxy_Error'], sub_dt['Abs_Bias'], st, color=col, lw=2.2, ms=7, label=f'OR-DML: {lab}')
-        
-    # Baseline Standard DML for comparison
-    std_fact = df_fact[(df_fact['Method'] == 'Standard DML') & (df_fact['Delta_T'] == 4.0)].sort_values('Delta_Z')
-    # Standard DML has constant proxy error ~ 0.83-0.02
-    ax_d.axhline(float(std_fact['Abs_Bias'].mean()), color='#d62728', linestyle=':', lw=2.0, label='Standard DML (Omitted Regime Baseline)')
+    or_fact = df_fact[df_fact['Method'] == 'Spectral OR-DML (Ours)'].copy()
+    or_fact['Degradation_Index'] = or_fact['Mean_Proxy_Error'] / or_fact['Mean_Lambda_Min']
     
-    ax_d.set_xlabel(r'Latent Proxy Error $\bar{\varepsilon}_\gamma = \mathbb{E}\|\boldsymbol{\gamma}_t - \boldsymbol{e}_{S_t}\|_1$')
+    dt_colors = {1.0: '#e377c2', 4.0: '#1f77b4', 8.0: '#2ca02c'}
+    dt_markers = {1.0: 'o', 4.0: 's', 8.0: '^'}
+    dt_labels = {
+        1.0: r'Weak Overlap ($\Delta_T=1.0, \lambda_{\min}\approx 0.19-0.43$)',
+        4.0: r'Moderate Overlap ($\Delta_T=4.0, \lambda_{\min}\approx 0.66-0.80$)',
+        8.0: r'Strong Overlap ($\Delta_T=8.0, \lambda_{\min}\approx 2.13-2.22$)'
+    }
+    
+    for dt in [1.0, 4.0, 8.0]:
+        sub = or_fact[or_fact['Delta_T'] == dt].sort_values('Degradation_Index')
+        ax_d.plot(sub['Degradation_Index'], sub['Abs_Bias'], 
+                  marker=dt_markers[dt], color=dt_colors[dt], lw=2.0, ms=7,
+                  label=dt_labels[dt])
+                  
+    # Baseline Standard DML for comparison
+    std_fact = df_fact[(df_fact['Method'] == 'Standard DML') & (df_fact['Delta_T'] == 4.0)]
+    ax_d.axhline(float(std_fact['Abs_Bias'].mean()), color='#d62728', linestyle=':', lw=2.0, label='Standard DML Baseline (+8.44)')
+    
+    # Annotate the two adversarial extremes confirming orthogonal failure modes
+    # Adversarial Corner A: High proxy error, healthy overlap (Delta_Z=0.2, Delta_T=8.0)
+    pt_a = or_fact[(or_fact['Delta_Z'] == 0.2) & (or_fact['Delta_T'] == 8.0)].iloc[0]
+    ax_d.annotate(r'Adversarial A: High $\bar{\varepsilon}_\gamma$, High $\lambda_{\min}$' + '\n' + r'($\bar{\varepsilon}_\gamma=0.81, \lambda_{\min}=2.22$)',
+                  xy=(pt_a['Degradation_Index'], pt_a['Abs_Bias']),
+                  xytext=(pt_a['Degradation_Index'] + 0.2, pt_a['Abs_Bias'] - 1.8),
+                  arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.2),
+                  fontsize=8.0, backgroundcolor='#ffffff')
+                  
+    # Adversarial Corner B: Low proxy error, weak overlap (Delta_Z=4.0, Delta_T=1.0)
+    pt_b = or_fact[(or_fact['Delta_Z'] == 4.0) & (or_fact['Delta_T'] == 1.0)].iloc[0]
+    ax_d.annotate(r'Adversarial B: Low $\bar{\varepsilon}_\gamma$, Low $\lambda_{\min}$' + '\n' + r'($\bar{\varepsilon}_\gamma=0.05, \lambda_{\min}=0.43$)',
+                  xy=(pt_b['Degradation_Index'], pt_b['Abs_Bias']),
+                  xytext=(pt_b['Degradation_Index'] + 0.4, pt_b['Abs_Bias'] + 1.8),
+                  arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.2),
+                  fontsize=8.0, backgroundcolor='#ffffff')
+
+    ax_d.set_xlabel(r'Theoretical Degradation Ratio $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$ (Theorem 2)')
     ax_d.set_ylabel(r'Mean Absolute Causal Bias $|\hat{\theta} - \theta^*|$')
-    ax_d.set_title(r'(d) Factorial Plane: Bias vs. $(\bar{\varepsilon}_\gamma, \lambda_{\min}(\boldsymbol{J}))$', fontweight='bold')
-    ax_d.legend(frameon=True, fontsize=8.5, loc='upper left')
+    ax_d.set_title(r'(d) Calibration: Bias vs. $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$', fontweight='bold')
+    ax_d.legend(frameon=True, fontsize=8.0, loc='upper left')
     
     plt.tight_layout()
     fig_path = "plots/fig2_difficulty_frontier.png"
