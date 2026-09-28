@@ -1,193 +1,290 @@
 """
-Empirical Evaluation of RC-DML on Real-World Atmospheric Sensor Networks
-========================================================================
-Applies Regime-Conditional Double Machine Learning (RC-DML) to real
-hourly observations from Delhi, Mumbai, and Bengaluru.
+empirical_evaluation.py
+=======================
+Empirical Evaluation of Overlap-Aware Regime Double Machine Learning (OR-DML)
+on clean, multi-season atmospheric monitoring datasets across 4 Indian megacities:
+Delhi, Mumbai, Bengaluru, and Kolkata.
 
-Compares:
-1. Naive DML (Standard Cross-Sectional DML, unmodeled regimes).
-2. RC-DML (Ours: Regime-Conditional DML with Purged Block Cross-Fitting).
-
-Saves results to reports/empirical_rc_dml_results.csv.
+Methodological Improvements:
+1. Rejects corrupted sensor columns and unphysical values (uses clean Open-Meteo & CPCB).
+2. Spans the complete multi-season observation window (>14,000 complete hours, no 2,500-hour truncation).
+3. Evaluates Standard DML, Block DML, Retrospective OR-DML (Ours), and Forward Filtered OR-DML (Ours).
+4. Tracks spectral diagnostics: lambda_min(J), condition number kappa(J), and posterior entropy H_bar.
+5. Estimates dynamic causal impulse-response functions theta_h(S_t) for horizons h = 0, ..., 24 hours.
+6. Saves detailed empirical tables to reports/empirical_or_dml_results.csv and IRF to reports/empirical_irf_results.csv.
 """
 
+import os
+import sys
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingRegressor
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
-from src.rc_dml import RegimeConditionalDML, PurgedBlockKFold
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath('.'))
+
+from src.or_dml import OverlapAwareRegimeDML, PurgedBlockKFold
 
 
-DATA_PATH = "data/processed_hourly/combined_hourly_with_regimes.csv"
-OUTPUT_PATH = "reports/empirical_rc_dml_results.csv"
+DATA_PATH = "data/processed_clean/combined_hourly_clean.csv"
+REPORTS_DIR = "reports"
+PLOTS_DIR = "plots"
+os.makedirs(REPORTS_DIR, exist_ok=True)
+os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
-def run_empirical_evaluation():
-    print(f"Loading empirical dataset from {DATA_PATH}...")
+def compute_hac_se(residuals_y: np.ndarray, residuals_t: np.ndarray, theta: float, hac_lag: int = 12) -> float:
+    """Compute Newey-West HAC standard error for scalar residualized DML."""
+    N = len(residuals_y)
+    psi = residuals_t * (residuals_y - theta * residuals_t)
+    denom = np.mean(residuals_t ** 2)
+    if denom <= 1e-12:
+        return 1.0
+    omega = np.mean(psi ** 2)
+    for lag in range(1, min(hac_lag + 1, N - 1)):
+        weight = 1.0 - (lag / (hac_lag + 1.0))
+        gamma_l = np.mean(psi[lag:] * psi[:-lag])
+        omega += 2.0 * weight * gamma_l
+    var_theta = (omega / (denom ** 2)) / N
+    return float(np.sqrt(max(var_theta, 1e-12)))
+
+
+def run_empirical_study():
+    print(f"Loading clean empirical dataset from {DATA_PATH}...")
     df = pd.read_csv(DATA_PATH)
     
-    controls = ['temperature_x', 'humidity', 'pressure', 'pm25_lag_1h', 'no2_lag_1h']
-    regime_features = ['wind_speed_y', 'temperature_y', 'relativehumidity']
     treatment_col = 'no2'
     outcome_col = 'pm25'
     
-    all_results = []
+    # Exogenous physical weather features for latent regime discovery (strictly pre-treatment)
+    regime_features = ['temperature', 'wind_speed', 'humidity', 'pressure', 'hour_sin', 'hour_cos']
     
-    cities = ['Delhi', 'Mumbai', 'Bengaluru']
+    # Observed control confounders (autocorrelation lags and local meteorological controls)
+    controls = ['pm25_lag_1h', 'no2_lag_1h', 'pm25_roll_3h', 'no2_roll_3h',
+                'temperature', 'humidity', 'wind_speed', 'pressure']
+                
+    required_cols = [treatment_col, outcome_col] + regime_features + controls
+    cities = ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata']
+    
+    all_summary_records = []
+    all_irf_records = []
+    
+    print("\n==================================================================")
+    print("Executing Multi-City Empirical Evaluation (Clean Longitudinal Data)")
+    print("==================================================================")
     
     for city in cities:
-        print(f"\n--- Running Empirical Causal Analysis for {city} ---")
-        city_df = df[df['city'] == city].dropna(subset=controls + regime_features + [treatment_col, outcome_col]).copy()
-        
-        # Subsample to 2000 contiguous hours for clean demonstration
-        if len(city_df) > 2500:
-            city_df = city_df.iloc[:2500]
-            
+        city_df = df[df['city'] == city].dropna(subset=required_cols).copy()
         N = len(city_df)
-        print(f"Sample size: {N} hourly observations")
-        
+        if N < 500:
+            print(f"Skipping {city}: insufficient observations ({N}).")
+            continue
+            
+        print(f"\n--- Analyzing {city}: {N} complete hourly observations ---")
         Y = city_df[outcome_col].values
         T = city_df[treatment_col].values
         X = city_df[controls].values
         Z = city_df[regime_features].values
         
-        # 1. Naive OLS (Pooled OLS regression Y ~ T + X)
-        from sklearn.linear_model import LinearRegression
-        ols = LinearRegression()
-        ols.fit(np.hstack([T.reshape(-1, 1), X]), Y)
-        theta_ols = ols.coef_[0]
-        res_ols = Y - ols.predict(np.hstack([T.reshape(-1, 1), X]))
-        se_ols = np.sqrt(np.mean(res_ols**2) / np.sum((T - np.mean(T))**2))
+        # 1. Naive OLS (Pooled with HAC SE)
+        X_design = np.column_stack([T, X])
+        ols = Ridge(alpha=1e-5).fit(X_design, Y)
+        theta_ols = float(ols.coef_[0])
+        res_y_ols = Y - ols.predict(X_design)
+        res_t_ols = T - np.mean(T)
+        se_ols = compute_hac_se(res_y_ols, res_t_ols, theta_ols, hac_lag=12)
         
-        # 2. Random Forest Plug-in
-        from sklearn.ensemble import RandomForestRegressor
-        rf_y = RandomForestRegressor(n_estimators=50, max_depth=10, random_state=42)
-        rf_y.fit(np.hstack([T.reshape(-1, 1), X]), Y)
-        # Numerical partial derivative dT
-        eps = 1e-4
-        pred_plus = rf_y.predict(np.hstack([(T + eps).reshape(-1, 1), X]))
-        pred_minus = rf_y.predict(np.hstack([(T - eps).reshape(-1, 1), X]))
-        theta_rf = np.mean((pred_plus - pred_minus) / (2 * eps))
-        se_rf = np.std((pred_plus - pred_minus) / (2 * eps)) / np.sqrt(N)
+        all_summary_records.append({
+            'City': city, 'N_Obs': N, 'Method': 'Pooled OLS',
+            'Regime': 'Pooled', 'Effect_Theta': round(theta_ols, 4),
+            'Std_Error': round(se_ols, 4),
+            'CI_95_Lower': round(theta_ols - 1.96 * se_ols, 4),
+            'CI_95_Upper': round(theta_ols + 1.96 * se_ols, 4),
+            'p_value': f"{2 * (1 - 0.9999):.4f}" if abs(theta_ols/se_ols) > 4 else round(float(2 * (1 - pd.Series([abs(theta_ols/se_ols)]).apply(lambda z: 0.5 * (1 + np.math.erf(z / np.sqrt(2)))).values[0])), 4),
+            'Lambda_Min': np.nan, 'Kappa': np.nan, 'Entropy': np.nan
+        })
         
-        # 3. Naive Standard DML (Random 5-fold CV, ignoring regimes)
+        # 2. Standard DML (Random 5-fold CV, ignores regimes, with HAC SE)
         kf = KFold(n_splits=5, shuffle=True, random_state=42)
-        tilde_Y_naive = np.zeros(N)
-        tilde_T_naive = np.zeros(N)
-        for train_idx, test_idx in kf.split(X):
-            m_y = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
-            m_y.fit(X[train_idx], Y[train_idx])
-            tilde_Y_naive[test_idx] = Y[test_idx] - m_y.predict(X[test_idx])
-            
-            m_t = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
-            m_t.fit(X[train_idx], T[train_idx])
-            tilde_T_naive[test_idx] = T[test_idx] - m_t.predict(X[test_idx])
-            
-        theta_naive = np.sum(tilde_T_naive * tilde_Y_naive) / np.sum(tilde_T_naive ** 2)
-        res_naive = tilde_Y_naive - theta_naive * tilde_T_naive
-        se_naive = np.sqrt(np.mean(res_naive ** 2) / (np.sum(tilde_T_naive ** 2)))
+        tilde_Y_std = np.zeros(N)
+        tilde_T_std = np.zeros(N)
+        for tr, te in kf.split(X):
+            m_y = Ridge(alpha=1.0).fit(X[tr], Y[tr])
+            tilde_Y_std[te] = Y[te] - m_y.predict(X[te])
+            m_t = Ridge(alpha=1.0).fit(X[tr], T[tr])
+            tilde_T_std[te] = T[te] - m_t.predict(X[te])
+        theta_std = float(np.mean(tilde_T_std * tilde_Y_std) / max(np.mean(tilde_T_std ** 2), 1e-12))
+        se_std = compute_hac_se(tilde_Y_std, tilde_T_std, theta_std, hac_lag=12)
         
-        # 4. Block DML (Purged CV, no regimes)
-        purged_cv = PurgedBlockKFold(n_splits=5, embargo_tau=24)
-        tilde_Y_block = np.zeros(N)
-        tilde_T_block = np.zeros(N)
-        for train_idx, test_idx in purged_cv.split(N):
-            m_y = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
-            m_y.fit(X[train_idx], Y[train_idx])
-            tilde_Y_block[test_idx] = Y[test_idx] - m_y.predict(X[test_idx])
-            
-            m_t = HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20, random_state=42)
-            m_t.fit(X[train_idx], T[train_idx])
-            tilde_T_block[test_idx] = T[test_idx] - m_t.predict(X[test_idx])
-            
-        theta_block = np.sum(tilde_T_block * tilde_Y_block) / np.sum(tilde_T_block ** 2)
-        res_block = tilde_Y_block - theta_block * tilde_T_block
-        se_block = np.sqrt(np.mean(res_block ** 2) / (np.sum(tilde_T_block ** 2)))
-        
-        # 2. RC-DML (Ours: Latent Regimes + Purged Block Cross-Fitting)
-        rc_model = RegimeConditionalDML(n_regimes=3, n_splits=5, embargo_tau=24)
-        rc_model.fit(Y, T, X, Z)
-        
-        print(f"RC-DML Overall ATE: {rc_model.ate_:.4f} +/- {1.96*rc_model.ate_se_:.4f}")
-        for k in range(3):
-            th = rc_model.theta_regimes_[k]
-            se = rc_model.se_regimes_[k]
-            print(f"  Regime {k+1} Effect: {th:.4f} +/- {1.96*se:.4f}")
-            
-        all_results.append({
-            'City': city,
-            'Estimator': 'Naive_OLS',
-            'Regime': 'Pooled_CrossSectional',
-            'Effect_Theta': round(float(theta_ols), 4),
-            'Std_Error': round(float(se_ols), 4),
-            'CI_95_Lower': round(float(theta_ols - 1.96 * se_ols), 4),
-            'CI_95_Upper': round(float(theta_ols + 1.96 * se_ols), 4),
-            'Notes': 'Linear cross-sectional baseline'
-        })
-
-        all_results.append({
-            'City': city,
-            'Estimator': 'Random_Forest',
-            'Regime': 'Pooled_CrossSectional',
-            'Effect_Theta': round(float(theta_rf), 4),
-            'Std_Error': round(float(se_rf), 4),
-            'CI_95_Lower': round(float(theta_rf - 1.96 * se_rf), 4),
-            'CI_95_Upper': round(float(theta_rf + 1.96 * se_rf), 4),
-            'Notes': 'Non-linear plug-in estimator'
-        })
-
-        all_results.append({
-            'City': city,
-            'Estimator': 'Naive_DML',
-            'Regime': 'Pooled_CrossSectional',
-            'Effect_Theta': round(float(theta_naive), 4),
-            'Std_Error': round(float(se_naive), 4),
-            'CI_95_Lower': round(float(theta_naive - 1.96 * se_naive), 4),
-            'CI_95_Upper': round(float(theta_naive + 1.96 * se_naive), 4),
-            'Notes': 'Suffers from omitted regime bias & temporal leakage'
-        })
-
-        all_results.append({
-            'City': city,
-            'Estimator': 'Block_DML',
-            'Regime': 'Pooled_CrossSectional',
-            'Effect_Theta': round(float(theta_block), 4),
-            'Std_Error': round(float(se_block), 4),
-            'CI_95_Lower': round(float(theta_block - 1.96 * se_block), 4),
-            'CI_95_Upper': round(float(theta_block + 1.96 * se_block), 4),
-            'Notes': 'Purged CV without regime conditioning'
+        all_summary_records.append({
+            'City': city, 'N_Obs': N, 'Method': 'Standard DML',
+            'Regime': 'Pooled', 'Effect_Theta': round(theta_std, 4),
+            'Std_Error': round(se_std, 4),
+            'CI_95_Lower': round(theta_std - 1.96 * se_std, 4),
+            'CI_95_Upper': round(theta_std + 1.96 * se_std, 4),
+            'p_value': round(float(2.0 * (1.0 - 0.5 * (1.0 + np.math.erf(abs(theta_std/se_std) / np.sqrt(2))))), 4),
+            'Lambda_Min': float(np.mean(tilde_T_std ** 2)), 'Kappa': 1.0, 'Entropy': np.nan
         })
         
-        all_results.append({
-            'City': city,
-            'Estimator': 'RC_DML_Ours',
-            'Regime': 'Overall_Weighted_ATE',
-            'Effect_Theta': round(float(rc_model.ate_), 4),
-            'Std_Error': round(float(rc_model.ate_se_), 4),
-            'CI_95_Lower': round(float(rc_model.ate_ - 1.96 * rc_model.ate_se_), 4),
-            'CI_95_Upper': round(float(rc_model.ate_ + 1.96 * rc_model.ate_se_), 4),
-            'Notes': 'Consistent under latent atmospheric regimes'
+        # 3. Block DML (Purged Block CV, ignores regimes, with HAC SE)
+        pb = PurgedBlockKFold(n_splits=5, embargo_tau=24)
+        tilde_Y_blk = np.zeros(N)
+        tilde_T_blk = np.zeros(N)
+        for tr, te in pb.split(N):
+            m_y = Ridge(alpha=1.0).fit(X[tr], Y[tr])
+            tilde_Y_blk[te] = Y[te] - m_y.predict(X[te])
+            m_t = Ridge(alpha=1.0).fit(X[tr], T[tr])
+            tilde_T_blk[te] = T[te] - m_t.predict(X[te])
+        theta_blk = float(np.mean(tilde_T_blk * tilde_Y_blk) / max(np.mean(tilde_T_blk ** 2), 1e-12))
+        se_blk = compute_hac_se(tilde_Y_blk, tilde_T_blk, theta_blk, hac_lag=12)
+        
+        all_summary_records.append({
+            'City': city, 'N_Obs': N, 'Method': 'Block DML',
+            'Regime': 'Pooled', 'Effect_Theta': round(theta_blk, 4),
+            'Std_Error': round(se_blk, 4),
+            'CI_95_Lower': round(theta_blk - 1.96 * se_blk, 4),
+            'CI_95_Upper': round(theta_blk + 1.96 * se_blk, 4),
+            'p_value': round(float(2.0 * (1.0 - 0.5 * (1.0 + np.math.erf(abs(theta_blk/se_blk) / np.sqrt(2))))), 4),
+            'Lambda_Min': float(np.mean(tilde_T_blk ** 2)), 'Kappa': 1.0, 'Entropy': np.nan
         })
         
-        for k in range(3):
-            th = rc_model.theta_regimes_[k]
-            se = rc_model.se_regimes_[k]
-            all_results.append({
-                'City': city,
-                'Estimator': 'RC_DML_Ours',
-                'Regime': f'Regime_{k+1}',
-                'Effect_Theta': round(float(th), 4),
-                'Std_Error': round(float(se), 4),
-                'CI_95_Lower': round(float(th - 1.96 * se), 4),
-                'CI_95_Upper': round(float(th + 1.96 * se), 4),
-                'Notes': 'Regime-specific elasticity'
+        # 4. Spectral OR-DML (Ours, Retrospective Smoothing, K=2 regimes: Ventilated vs Stagnant)
+        or_model = OverlapAwareRegimeDML(
+            n_regimes=2, n_splits=5, embargo_tau=24,
+            reg_alpha=0.05, posterior_mode='smooth',
+            nuisance_model=Ridge(alpha=1.0),
+            random_state=42
+        )
+        or_model.fit(Y, T, X, Z)
+        
+        for k in range(2):
+            th_k = or_model.theta_regimes_[k]
+            se_k = or_model.se_regimes_[k]
+            p_k = or_model.p_regimes_[k]
+            all_summary_records.append({
+                'City': city, 'N_Obs': N, 'Method': 'Spectral OR-DML (Ours)',
+                'Regime': f'Regime {k+1}', 'Effect_Theta': round(th_k, 4),
+                'Std_Error': round(se_k, 4),
+                'CI_95_Lower': round(th_k - 1.96 * se_k, 4),
+                'CI_95_Upper': round(th_k + 1.96 * se_k, 4),
+                'p_value': round(p_k, 4),
+                'Lambda_Min': round(or_model.lambda_min_, 4),
+                'Kappa': round(or_model.kappa_, 2),
+                'Entropy': round(or_model.mean_entropy_, 4)
             })
             
-    df_out = pd.DataFrame(all_results)
-    df_out.to_csv(OUTPUT_PATH, index=False)
-    print(f"\nEmpirical results saved to {OUTPUT_PATH}")
-    return df_out
+        all_summary_records.append({
+            'City': city, 'N_Obs': N, 'Method': 'Spectral OR-DML (Ours)',
+            'Regime': 'Overall ATE', 'Effect_Theta': round(or_model.ate_, 4),
+            'Std_Error': round(or_model.ate_se_, 4),
+            'CI_95_Lower': round(or_model.ate_ - 1.96 * or_model.ate_se_, 4),
+            'CI_95_Upper': round(or_model.ate_ + 1.96 * or_model.ate_se_, 4),
+            'p_value': round(or_model.ate_p_, 4),
+            'Lambda_Min': round(or_model.lambda_min_, 4),
+            'Kappa': round(or_model.kappa_, 2),
+            'Entropy': round(or_model.mean_entropy_, 4)
+        })
+        
+        # 5. Filtered OR-DML (Ours, Forward Filtering)
+        filt_model = OverlapAwareRegimeDML(
+            n_regimes=2, n_splits=5, embargo_tau=24,
+            reg_alpha=0.05, posterior_mode='filter',
+            nuisance_model=Ridge(alpha=1.0),
+            random_state=42
+        )
+        filt_model.fit(Y, T, X, Z)
+        all_summary_records.append({
+            'City': city, 'N_Obs': N, 'Method': 'Filtered OR-DML (Ours)',
+            'Regime': 'Overall ATE', 'Effect_Theta': round(filt_model.ate_, 4),
+            'Std_Error': round(filt_model.ate_se_, 4),
+            'CI_95_Lower': round(filt_model.ate_ - 1.96 * filt_model.ate_se_, 4),
+            'CI_95_Upper': round(filt_model.ate_ + 1.96 * filt_model.ate_se_, 4),
+            'p_value': round(filt_model.ate_p_, 4),
+            'Lambda_Min': round(filt_model.lambda_min_, 4),
+            'Kappa': round(filt_model.kappa_, 2),
+            'Entropy': round(filt_model.mean_entropy_, 4)
+        })
+        
+        print(f"  Standard DML ATE: {theta_std:.4f} +/- {1.96*se_std:.4f}")
+        print(f"  OR-DML Overall ATE: {or_model.ate_:.4f} +/- {1.96*or_model.ate_se_:.4f}")
+        print(f"  Regime 1: {or_model.theta_regimes_[0]:.4f} +/- {1.96*or_model.se_regimes_[0]:.4f} | Regime 2: {or_model.theta_regimes_[1]:.4f} +/- {1.96*or_model.se_regimes_[1]:.4f}")
+        print(f"  Diagnostics: lambda_min={or_model.lambda_min_:.4f}, kappa={or_model.kappa_:.2f}, entropy={or_model.mean_entropy_:.4f}")
+        
+        # 6. Dynamic Causal Impulse-Response Function (Horizons 0 to 24 hours)
+        horizons = [0, 1, 2, 3, 6, 12, 18, 24]
+        irfs = or_model.fit_dynamic_irf(Y, T, X, Z, horizons=horizons)
+        for h_idx, h in enumerate(horizons):
+            all_irf_records.append({
+                'City': city, 'Horizon': h,
+                'Regime_1_Effect': irfs[0]['effects'][h_idx], 'Regime_1_SE': irfs[0]['ses'][h_idx],
+                'Regime_2_Effect': irfs[1]['effects'][h_idx], 'Regime_2_SE': irfs[1]['ses'][h_idx],
+                'ATE_Effect': irfs['ate']['effects'][h_idx], 'ATE_SE': irfs['ate']['ses'][h_idx]
+            })
+
+    # Save summary table
+    df_results = pd.DataFrame(all_summary_records)
+    out_csv = os.path.join(REPORTS_DIR, "empirical_or_dml_results.csv")
+    df_results.to_csv(out_csv, index=False)
+    print(f"\nEmpirical causal results saved to {out_csv}.")
+    
+    # Save IRF table
+    df_irf = pd.DataFrame(all_irf_records)
+    irf_csv = os.path.join(REPORTS_DIR, "empirical_irf_results.csv")
+    df_irf.to_csv(irf_csv, index=False)
+    print(f"Dynamic impulse-response results saved to {irf_csv}.")
+    
+    # -------------------------------------------------------------
+    # Plotting: Figure 3 Dynamic Causal Impulse Responses
+    # -------------------------------------------------------------
+    sns.set_theme(style="whitegrid", font_scale=1.1)
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharex=True)
+    axes = axes.flatten()
+    
+    for idx, city in enumerate(cities):
+        ax = axes[idx]
+        sub = df_irf[df_irf['City'] == city]
+        if len(sub) == 0:
+            continue
+            
+        h = sub['Horizon'].values
+        # Regime 1
+        r1 = sub['Regime_1_Effect'].values
+        r1_se = sub['Regime_1_SE'].values
+        ax.plot(h, r1, 'b-o', lw=2.2, label='Regime 1 (Ventilated / Advective)')
+        ax.fill_between(h, r1 - 1.96 * r1_se, r1 + 1.96 * r1_se, color='b', alpha=0.15)
+        
+        # Regime 2
+        r2 = sub['Regime_2_Effect'].values
+        r2_se = sub['Regime_2_SE'].values
+        ax.plot(h, r2, 'r-s', lw=2.2, label='Regime 2 (Stagnant / Inversion)')
+        ax.fill_between(h, r2 - 1.96 * r2_se, r2 + 1.96 * r2_se, color='r', alpha=0.15)
+        
+        # Overall ATE
+        ate = sub['ATE_Effect'].values
+        ate_se = sub['ATE_SE'].values
+        ax.plot(h, ate, 'k--', lw=1.8, label='Overall ATE')
+        
+        ax.axhline(0.0, color='gray', linestyle=':', lw=1.0)
+        ax.set_title(f"Dynamic Causal Response: {city}", fontweight='bold')
+        ax.set_ylabel(r'Causal Impact $\hat{\theta}_h$ ($\mu g/m^3$ per unit NO$_2$)')
+        if idx >= 2:
+            ax.set_xlabel('Impulse Horizon $h$ (Hours ahead)')
+        if idx == 0:
+            ax.legend(frameon=True, fontsize=9)
+            
+    plt.tight_layout()
+    irf_plot_path = os.path.join(PLOTS_DIR, "fig3_dynamic_irf.png")
+    plt.savefig(irf_plot_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Saved dynamic impulse-response figure to {irf_plot_path}.")
+    
+    print("\n=== EMPIRICAL RESULTS SUMMARY (TABLE 2 IN PAPER) ===")
+    print(df_results.to_string(index=False))
+    return df_results
 
 
-if __name__ == "__main__":
-    run_empirical_evaluation()
+if __name__ == '__main__':
+    run_empirical_study()

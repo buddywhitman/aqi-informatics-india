@@ -1,14 +1,19 @@
-# Regime-Conditional Double Machine Learning (RC-DML) for Non-Stationary Time Series
+# Overlap-Aware Regime Double Machine Learning (OR-DML) for Non-Stationary Time Series
 
 ## 🌟 Overview & Core Contribution
-This repository implements **Regime-Conditional Double Machine Learning (RC-DML)**, a causal inference framework designed for continuous treatments in non-stationary, autocorrelated observational time series. 
+This repository implements **Overlap-Aware Regime Double Machine Learning (OR-DML)**, a causal inference framework designed for continuous treatments in non-stationary, autocorrelated observational time series subject to latent, persistent confounding.
 
-While Double Machine Learning (DML; Chernozhukov et al., 2018) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, it fails catastrophically when latent thermodynamic or environmental regimes (e.g., atmospheric stagnation vs. advective clearance) act as time-varying confounders. RC-DML solves this by integrating latent Markov-switching regime inference into Neyman-orthogonal score equations, combined with **Purged Block-Temporal Cross-Fitting** with embargo buffers.
+While Double Machine Learning (DML; Chernozhukov et al., 2018) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, it fails catastrophically when latent thermodynamic or environmental regimes (e.g., atmospheric stagnation vs. advective clearance) act as time-varying confounders. OR-DML addresses this foundational challenge through:
+1. **Impossibility & Graceful Degradation (Theorems 1 & 2)**: Proves causal non-identification under unconstrained overlap and establishes an honest error bound $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$ connecting posterior proxy error $\varepsilon_\gamma$ and Jacobian conditioning $\lambda_{\min}(\boldsymbol{J})$.
+2. **Spectral Regularization Bias-Variance Frontier (Theorem 3)**: Introduces $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ with automated trace shrinkage $\lambda^* \asymp N^{-1/2}$, guaranteeing stability across ill-conditioned overlap regimes.
+3. **Omitted Regime Bias & Frisch-Waugh Singularity (Theorem 4)**: Decomposes the exact failure mode of standard DML into heterogeneity attenuation and confounding bias amplification.
+4. **Purged Block Temporal Cross-Fitting (Theorem 5)**: Eliminates dependence leakage under $\alpha$-mixing via automated Bartlett embargo buffers $\tau^*$.
+5. **Markov Occupation Variance Decomposition (Proposition 6)**: Quantifies the $15.7\times$ inflation between sample and population ATE under persistent regimes ($\rho \approx 0.88$).
 
 ## 📄 Primary Deliverables
-* **AISTATS 2027 Submission**: [`paper/main.tex`](./paper/main.tex) — Strict 8-page manuscript formatted for the 30th International Conference on Artificial Intelligence and Statistics (AISTATS 2027).
-* **Strategic & Methodological Pivot Guide**: [`docs/AISTATS_2027_PIVOT_EXPLANATION.md`](./docs/AISTATS_2027_PIVOT_EXPLANATION.md) — Comprehensive explanation of the audit, flaw remediation, and new ML contributions.
-* **Architectural Decisions**: [`docs/adr/`](./docs/adr/) — Formal ADRs documenting the methodological pivot ([ADR-0001](./docs/adr/0001-aistats-methodological-pivot.md)) and mathematical formulation ([ADR-0002](./docs/adr/0002-rc-dml-mathematical-formulation.md)).
+* **AISTATS 2027 Submission**: [`paper/main.tex`](./paper/main.tex) — Strict 8-page main text manuscript (14 pages total including references, reproducibility checklist, and complete proofs in Appendices A–F).
+* **Strategic Pivot Documentation**: [`docs/pivot.md`](./docs/pivot.md) and [`docs/critique.md`](./docs/critique.md).
+* **Clean Longitudinal Dataset**: [`data/processed_clean/combined_hourly_clean.csv`](./data/processed_clean/combined_hourly_clean.csv) — 14,122 verified, non-negative hourly observations across Delhi, Mumbai, Bengaluru, and Kolkata.
 
 ---
 
@@ -132,16 +137,12 @@ python -m pip install --upgrade pip
 python -m pip install -r src/requirements.txt
 ```
 
-### 2. Core Methodological Reproduction
-To reproduce the AISTATS 2027 paper results, figures, and benchmark tables from scratch:
-1. `python src/synthetic_dgp_benchmark.py` — Runs the 45-replication Monte Carlo benchmark across high, moderate, and rapid persistence regimes; generates `reports/rc_dml_benchmarks.csv` and `reports/rc_dml_sensitivity_by_config.csv` (Table 1).
-2. `python src/empirical_evaluation.py` — Fits Naive DML vs RC-DML across Delhi, Mumbai, and Bengaluru sensor networks; generates `reports/empirical_rc_dml_results.csv` (Table 2).
-3. `python src/generate_paper_figures.py` — Generates publication-quality 300 DPI figures:
-   - `plots/fig1_bias_amplification.png` (The Frisch-Waugh Singularity)
-   - `plots/fig2_monte_carlo_convergence.png` (Empirical $O(N^{-1/2})$ Semiparametric Convergence Rate)
-   - `plots/fig3_regime_elasticities.png` (Real-World Sensor Causal Elasticities with 95% CIs)
-4. `python src/policy_simulation_exhaustive.py` — Runs the grounded WHO 2021 concentration-response policy simulation; outputs `reports/exhaustive_policy_scenarios.csv`.
-5. `pdflatex paper/main.tex` — Compiles the complete 17-page submission with 8-page main text, references, and complete Mathematical Appendix A–F (`paper/main.pdf`).
+### 2. Exact Methodological Reproduction
+To reproduce the AISTATS 2027 paper results, figures, and benchmark tables byte-for-byte from scratch:
+1. `python src/data_pipeline_clean.py` — Cleans raw ground-station and reanalysis archives into [`data/processed_clean/combined_hourly_clean.csv`](./data/processed_clean/combined_hourly_clean.csv) ($14,122$ complete cases across Delhi, Mumbai, Bengaluru, and Kolkata; verified $0$ negative values, non-negative PM10/PM2.5, physically bounded meteorology).
+2. `python src/synthetic_dgp_benchmark.py` — Runs the 500-replication Monte Carlo difficulty frontier benchmark across $\Delta_Z \in [0.2, 4.0]$ ($N=1,200$); generates [`reports/or_dml_difficulty_frontier.csv`](./reports/or_dml_difficulty_frontier.csv), [`reports/or_dml_benchmark_summary.csv`](./reports/or_dml_benchmark_summary.csv) (**Table 1** in paper), and [`plots/fig2_difficulty_frontier.png`](./plots/fig2_difficulty_frontier.png) (**Figure 3** in paper).
+3. `python src/empirical_evaluation.py` — Fits Standard DML, Block DML, Spectral OR-DML, and Filtered OR-DML across all four megacities; computes dynamic causal impulse-response functions up to $h=24$ hours; generates [`reports/empirical_or_dml_results.csv`](./reports/empirical_or_dml_results.csv) (**Table 2** in paper), [`reports/empirical_irf_results.csv`](./reports/empirical_irf_results.csv), and [`plots/fig3_dynamic_irf.png`](./plots/fig3_dynamic_irf.png) (**Figure 4** in paper).
+4. `cd paper && pdflatex -interaction=nonstopmode main.tex` — Compiles [`paper/main.pdf`](./paper/main.pdf) adhering strictly to the $\le 8$ pages main text limit (14 pages total including references, AI use disclosure, reproducibility checklist, and complete proofs in Appendices A–F).
 
 ---
 
