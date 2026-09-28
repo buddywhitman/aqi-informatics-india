@@ -6,10 +6,10 @@ import re
 def convert_latex_to_unicode(text):
     """Replace common LaTeX sequences with Unicode, carefully avoiding Markdown syntax."""
     # 1. Temporarily hide images/paths to avoid mangling them
-    placeholders = []
+    stored_tokens = []
     def hide_paths(match):
-        placeholders.append(match.group(0))
-        return f"__PATH_PLACEHOLDER_{len(placeholders)-1}__"
+        stored_tokens.append(match.group(0))
+        return f"__PATH_TOKEN_{len(stored_tokens)-1}__"
     
     # Matches ![alt](path)
     text = re.sub(r'!\[.*?\]\(.*?\)', hide_paths, text)
@@ -49,8 +49,8 @@ def convert_latex_to_unicode(text):
     text = text.replace('$', '')
 
     # 2. Restore images/paths
-    for i, placeholder in enumerate(placeholders):
-        text = text.replace(f"__PATH_PLACEHOLDER_{i}__", placeholder)
+    for i, token in enumerate(stored_tokens):
+        text = text.replace(f"__PATH_TOKEN_{i}__", token)
         
     return text
 

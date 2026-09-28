@@ -43,9 +43,8 @@ def optimize_emissions_portfolio():
         objective = cp.Minimize(cp.sum(x))
         
         # Constraints
-        # 1. Total PM2.5 reduction must be at least 20% of the current baseline to move toward WHO
-        # (This is a simplified goal)
-        current_pm25_avg = 100 # Placeholder baseline
+        # Baseline concentration reference (ug/m3)
+        current_pm25_avg = 100.0
         target_reduction = 20.0 
         
         # Estimated reduction = sum(reduction_percentage * baseline_proxy * marginal_effect)

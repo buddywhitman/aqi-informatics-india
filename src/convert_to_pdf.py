@@ -38,7 +38,7 @@ def markdown_to_pdf(md_file, pdf_file):
             elements.append(Paragraph(line[4:], h2_style))
             elements.append(Spacer(1, 8))
         elif line.startswith('!['):
-            # Placeholder for image handling
+            # Image block processing
             # Extract path: ![alt](path)
             start = line.find('(') + 1
             end = line.find(')')

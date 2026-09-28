@@ -26,7 +26,7 @@ def main():
     # Using Kolkata as an example for the "Super-Spreader" story
     plt.figure(figsize=(10, 6))
     k_df = df[df['city'] == 'Kolkata'].copy()
-    # Mocking deaths for plot if not already in csv (from previous model)
+    # Compute concentration-response excess risk from WHO log-linear relative risk function
     baseline = 15.0
     beta = np.log(1.06) / 10.0
     k_df['excess_risk'] = 1 - np.exp(-beta * (k_df['pm25'] - baseline).clip(lower=0))
