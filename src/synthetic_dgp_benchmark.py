@@ -500,8 +500,17 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     # -------------------------------------------------------------
     # Plotting: Figure 2 Difficulty Frontier (with Factorial Panel d)
     # -------------------------------------------------------------
-    sns.set_theme(style="whitegrid", font_scale=1.1)
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    sns.set_theme(style="whitegrid", font_scale=1.05)
+    plt.rcParams.update({
+        'font.family': 'sans-serif',
+        'mathtext.fontset': 'cm',
+        'figure.dpi': 300,
+        'axes.labelsize': 11,
+        'axes.titlesize': 11.5,
+        'xtick.labelsize': 9.5,
+        'ytick.labelsize': 9.5
+    })
+    fig, axes = plt.subplots(1, 4, figsize=(18, 4.3))
     palette = {
         'Oracle DML': '#2ca02c',
         'Standard DML': '#d62728',
@@ -520,90 +529,93 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     }
     
     # Panel (a): Absolute Bias vs Delta_Z
-    ax_a = axes[0, 0]
+    ax_a = axes[0]
     for m in methods:
         sub = df_summary[df_summary['Method'] == m]
-        ax_a.plot(sub['Delta_Z'], sub['Abs_Bias'], marker=markers[m], label=m, color=palette[m], lw=2.2, ms=7)
+        ax_a.plot(sub['Delta_Z'], sub['Abs_Bias'], marker=markers[m], label=m, color=palette[m], lw=2.2, ms=6)
     ax_a.set_xscale('log')
-    ax_a.set_xlabel(r'Regime Separation $\Delta_Z$ (Weak Overlap $\leftarrow \rightarrow$ Clean Separation)')
-    ax_a.set_ylabel(r'Mean Absolute Causal Bias $|\hat{\theta} - \theta^*|$')
-    ax_a.set_title(r'(a) Causal Bias vs. Latent Regime Separation $\Delta_Z$', fontweight='bold')
-    ax_a.legend(frameon=True, fontsize=9)
+    ax_a.set_xlabel(r'Separation $\Delta_Z$')
+    ax_a.set_ylabel(r'Mean Absolute Bias $|\hat{\theta} - \theta^*|$')
+    ax_a.set_title(r'(a) Bias vs. Separation $\Delta_Z$', fontweight='bold')
     
     # Panel (b): Empirical RMSE vs Delta_Z
-    ax_b = axes[0, 1]
+    ax_b = axes[1]
     for m in methods:
         sub = df_summary[df_summary['Method'] == m]
-        ax_b.plot(sub['Delta_Z'], sub['RMSE'], marker=markers[m], label=m, color=palette[m], lw=2.2, ms=7)
+        ax_b.plot(sub['Delta_Z'], sub['RMSE'], marker=markers[m], label=m, color=palette[m], lw=2.2, ms=6)
     ax_b.set_xscale('log')
-    ax_b.set_xlabel(r'Regime Separation $\Delta_Z$')
+    ax_b.set_xlabel(r'Separation $\Delta_Z$')
     ax_b.set_ylabel(r'Empirical RMSE')
-    ax_b.set_title(r'(b) Root Mean Squared Error across 500 Replications', fontweight='bold')
-    ax_b.legend(frameon=True, fontsize=9)
+    ax_b.set_title(r'(b) Empirical RMSE', fontweight='bold')
     
     # Panel (c): 95% Coverage vs Delta_Z
-    ax_c = axes[1, 0]
+    ax_c = axes[2]
     for m in methods:
         sub = df_summary[df_summary['Method'] == m]
-        ax_c.plot(sub['Delta_Z'], sub['Coverage_SATE_95_Pct'], marker=markers[m], label=f'{m} (SATE)', color=palette[m], lw=2.2, ms=7)
-    ax_c.axhline(95.0, color='black', linestyle='--', lw=1.5, label='Nominal 95% Target')
+        ax_c.plot(sub['Delta_Z'], sub['Coverage_SATE_95_Pct'], marker=markers[m], label=m, color=palette[m], lw=2.2, ms=6)
+    ax_c.axhline(95.0, color='black', linestyle='--', lw=1.5, label='Nominal 95%')
     ax_c.set_xscale('log')
-    ax_c.set_xlabel(r'Regime Separation $\Delta_Z$')
-    ax_c.set_ylabel(r'Empirical 95% CI Coverage (%)')
-    ax_c.set_title(r'(c) Empirical CI Coverage vs. Nominal 95% Rate', fontweight='bold')
+    ax_c.set_xlabel(r'Separation $\Delta_Z$')
+    ax_c.set_ylabel(r'Empirical 95% Coverage (%)')
+    ax_c.set_title(r'(c) 95% CI Coverage', fontweight='bold')
     ax_c.set_ylim(-5, 105)
-    ax_c.legend(frameon=True, fontsize=9)
+    
+    # Shared legend for panels a-c above the subplots
+    handles_methods = [plt.Line2D([0], [0], marker=markers[m], color=palette[m], label=m, lw=2.0, ms=6) for m in methods]
+    handles_methods.append(plt.Line2D([0], [0], color='black', linestyle='--', lw=1.5, label='Nominal 95%'))
     
     # Panel (d): Factorial Calibration - Bias vs Theoretical Degradation Index (eps_gamma / lambda_min)
-    ax_d = axes[1, 1]
+    ax_d = axes[3]
     or_fact = df_fact[df_fact['Method'] == 'Spectral OR-DML (Ours)'].copy()
     or_fact['Degradation_Index'] = or_fact['Mean_Proxy_Error'] / or_fact['Mean_Lambda_Min']
     
     dt_colors = {1.0: '#e377c2', 4.0: '#1f77b4', 8.0: '#2ca02c'}
     dt_markers = {1.0: 'o', 4.0: 's', 8.0: '^'}
     dt_labels = {
-        1.0: r'Weak Overlap ($\Delta_T=1.0, \lambda_{\min}\approx 0.19-0.43$)',
-        4.0: r'Moderate Overlap ($\Delta_T=4.0, \lambda_{\min}\approx 0.66-0.80$)',
-        8.0: r'Strong Overlap ($\Delta_T=8.0, \lambda_{\min}\approx 2.13-2.22$)'
+        1.0: r'Weak Overlap ($\lambda_{\min}\approx 0.19\text{--}0.43$)',
+        4.0: r'Mod. Overlap ($\lambda_{\min}\approx 0.66\text{--}0.80$)',
+        8.0: r'Strong Overlap ($\lambda_{\min}\approx 2.13\text{--}2.22$)'
     }
     
     for dt in [1.0, 4.0, 8.0]:
         sub = or_fact[or_fact['Delta_T'] == dt].sort_values('Degradation_Index')
         ax_d.plot(sub['Degradation_Index'], sub['Abs_Bias'], 
-                  marker=dt_markers[dt], color=dt_colors[dt], lw=2.0, ms=7,
+                  marker=dt_markers[dt], color=dt_colors[dt], lw=2.0, ms=6,
                   label=dt_labels[dt])
                   
     # Baseline Standard DML for comparison
     std_fact = df_fact[(df_fact['Method'] == 'Standard DML') & (df_fact['Delta_T'] == 4.0)]
-    ax_d.axhline(float(std_fact['Abs_Bias'].mean()), color='#d62728', linestyle=':', lw=2.0, label='Standard DML Baseline (+8.44)')
+    ax_d.axhline(float(std_fact['Abs_Bias'].mean()), color='#d62728', linestyle=':', lw=2.0, label='Standard DML (+8.44)')
     
     # Annotate the two adversarial extremes confirming orthogonal failure modes
-    # Adversarial Corner A: High proxy error, healthy overlap (Delta_Z=0.2, Delta_T=8.0)
     pt_a = or_fact[(or_fact['Delta_Z'] == 0.2) & (or_fact['Delta_T'] == 8.0)].iloc[0]
-    ax_d.annotate(r'Adversarial A: High $\bar{\varepsilon}_\gamma$, High $\lambda_{\min}$' + '\n' + r'($\bar{\varepsilon}_\gamma=0.81, \lambda_{\min}=2.22$)',
+    ax_d.annotate('Adv. A: High $\\bar{\\varepsilon}_\\gamma$, High $\\lambda_{\\min}$\n($\\bar{\\varepsilon}_\\gamma=0.81, \\lambda_{\\min}=2.22$)',
                   xy=(pt_a['Degradation_Index'], pt_a['Abs_Bias']),
-                  xytext=(pt_a['Degradation_Index'] + 0.2, pt_a['Abs_Bias'] - 1.8),
+                  xytext=(pt_a['Degradation_Index'] + 0.15, pt_a['Abs_Bias'] - 1.8),
                   arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.2),
-                  fontsize=8.0, backgroundcolor='#ffffff')
+                  fontsize=7.5, backgroundcolor='#ffffff')
                   
-    # Adversarial Corner B: Low proxy error, weak overlap (Delta_Z=4.0, Delta_T=1.0)
     pt_b = or_fact[(or_fact['Delta_Z'] == 4.0) & (or_fact['Delta_T'] == 1.0)].iloc[0]
-    ax_d.annotate(r'Adversarial B: Low $\bar{\varepsilon}_\gamma$, Low $\lambda_{\min}$' + '\n' + r'($\bar{\varepsilon}_\gamma=0.05, \lambda_{\min}=0.43$)',
+    ax_d.annotate('Adv. B: Low $\\bar{\\varepsilon}_\\gamma$, Low $\\lambda_{\\min}$\n($\\bar{\\varepsilon}_\\gamma=0.05, \\lambda_{\\min}=0.43$)',
                   xy=(pt_b['Degradation_Index'], pt_b['Abs_Bias']),
-                  xytext=(pt_b['Degradation_Index'] + 0.4, pt_b['Abs_Bias'] + 1.8),
+                  xytext=(pt_b['Degradation_Index'] + 0.25, pt_b['Abs_Bias'] + 1.8),
                   arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.2),
-                  fontsize=8.0, backgroundcolor='#ffffff')
+                  fontsize=7.5, backgroundcolor='#ffffff')
 
-    ax_d.set_xlabel(r'Theoretical Degradation Ratio $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$ (Theorem 2)')
-    ax_d.set_ylabel(r'Mean Absolute Causal Bias $|\hat{\theta} - \theta^*|$')
-    ax_d.set_title(r'(d) Calibration: Bias vs. $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$', fontweight='bold')
-    ax_d.legend(frameon=True, fontsize=8.0, loc='upper left')
+    ax_d.set_xlabel(r'Degradation Ratio $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$')
+    ax_d.set_ylabel(r'Mean Absolute Bias $|\hat{\theta} - \theta^*|$')
+    ax_d.set_title(r'(d) Calibration vs. $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$', fontweight='bold')
+    ax_d.legend(frameon=True, fontsize=7.5, loc='upper left')
     
-    plt.tight_layout()
+    fig.legend(handles=handles_methods, loc='upper center', bbox_to_anchor=(0.38, 1.02), ncol=7, framealpha=0.95, fontsize=8.5)
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
     fig_path = "plots/fig2_difficulty_frontier.png"
     plt.savefig(fig_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"Saved publication-grade signature figure to {fig_path}.")
+    import shutil
+    shutil.copyfile(fig_path, "paper/plots/fig2_difficulty_frontier.png")
+    print(f"Saved publication-grade signature figure to {fig_path} and synced to paper/plots/fig2_difficulty_frontier.png.")
     
     # -------------------------------------------------------------
     # Dedicated Plot: Figure 4 Spectral Regularization Frontier

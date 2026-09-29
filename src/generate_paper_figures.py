@@ -55,7 +55,7 @@ def plot_fig1_bias_amplification():
     ax1.plot(var_tilde_T, bias_naive, color='#D95F02', linewidth=2.5, 
              label=r'Standard DML: $\mathcal{B}_{\mathrm{conf}} = \frac{\Delta m \Delta g}{\mathrm{E}[\tilde{T}^2]}$')
     ax1.axhline(0.0, color='#1B9E77', linewidth=2.5, linestyle='-', 
-                label=r'RC-DML (Ours): $\mathcal{B}_{\mathrm{regime}} \equiv 0$')
+                label=r'OR-DML (Oracle Regimes, $\varepsilon_\gamma = 0$): $\mathcal{B} = 0$')
     
     # Annotate singularity point
     ax1.axvline(0.0, color='gray', linestyle=':', alpha=0.7)
@@ -88,7 +88,7 @@ def plot_fig1_bias_amplification():
     ax2.plot(r2_vals, ols_bias, 's--', color='#7570B3', linewidth=2.0, markersize=7, 
              label='Naive OLS (Empirical)')
     ax2.plot(r2_vals, rc_dml_bias, 'D-', color='#1B9E77', linewidth=2.2, markersize=7, 
-             label='RC-DML Ours (Empirical)')
+             label='Spectral OR-DML (Ours)')
     
     ax2.set_xlabel(r'Treatment Nuisance Fit $R^2(T \mid X)$')
     ax2.set_ylabel(r'Observed Empirical Bias $|\hat{\theta} - \theta^*|$')
