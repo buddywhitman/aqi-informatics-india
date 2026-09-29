@@ -39,7 +39,9 @@ def run_verification():
         "reports/kolkata_lambda_sensitivity.csv",
         "reports/data_imputation_sensitivity.csv",
         "reports/or_dml_benchmark_summary.csv",
-        "reports/or_dml_regularization_frontier.csv"
+        "reports/or_dml_regularization_frontier.csv",
+        "reports/representation_zoo_hierarchical_regression.csv",
+        "reports/representation_zoo_world_evaluations.csv"
     ]
     for r in required_csvs:
         if not os.path.exists(r) or os.path.getsize(r) == 0:
@@ -122,6 +124,22 @@ def run_verification():
         failures.append(f"Delhi Regime 1 Effect {delhi_r1_str} not found in paper/main.tex")
     else:
         print(f"[OK] Verified Delhi Regime 1 Effect: {delhi_r1_str}")
+
+    # Check Hierarchical Multi-World Regression values
+    df_hier = pd.read_csv("reports/representation_zoo_hierarchical_regression.csv")
+    m1_f1 = df_hier[(df_hier["Model"].str.contains("Model 1")) & (df_hier["Predictor"].str.contains("F1"))].iloc[0]
+    m1_f1_coef = f"{m1_f1['Coefficient']:.4f}"
+    if m1_f1_coef not in tex_content:
+        failures.append(f"Hierarchical Model 1 F1 coefficient {m1_f1_coef} not found in paper/main.tex")
+    else:
+        print(f"[OK] Verified Hierarchical Model 1 F1 coefficient: {m1_f1_coef}")
+
+    m3_nll = df_hier[(df_hier["Model"].str.contains("Model 3")) & (df_hier["Predictor"].str.contains("NLL"))].iloc[0]
+    m3_nll_coef = f"{m3_nll['Coefficient']:.4f}"
+    if m3_nll_coef not in tex_content:
+        failures.append(f"Hierarchical Model 3 NLL coefficient {m3_nll_coef} not found in paper/main.tex")
+    else:
+        print(f"[OK] Verified Hierarchical Model 3 NLL coefficient: {m3_nll_coef}")
 
     # 5. Statistical Protocol Verification
     # (a) MBB block-length sensitivity invariance
