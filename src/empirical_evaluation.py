@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
+from scipy.stats import norm
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath('.'))
@@ -103,7 +104,7 @@ def run_empirical_study():
             'Std_Error': round(se_ols, 4),
             'CI_95_Lower': round(theta_ols - 1.96 * se_ols, 4),
             'CI_95_Upper': round(theta_ols + 1.96 * se_ols, 4),
-            'p_value': f"{2 * (1 - 0.9999):.4f}" if abs(theta_ols/se_ols) > 4 else round(float(2 * (1 - pd.Series([abs(theta_ols/se_ols)]).apply(lambda z: 0.5 * (1 + np.math.erf(z / np.sqrt(2)))).values[0])), 4),
+            'p_value': round(float(2.0 * norm.sf(abs(theta_ols / se_ols))), 4) if se_ols > 0 else 1.0,
             'Lambda_Min': np.nan, 'Kappa': np.nan, 'Entropy': np.nan
         })
         
@@ -125,7 +126,7 @@ def run_empirical_study():
             'Std_Error': round(se_std, 4),
             'CI_95_Lower': round(theta_std - 1.96 * se_std, 4),
             'CI_95_Upper': round(theta_std + 1.96 * se_std, 4),
-            'p_value': round(float(2.0 * (1.0 - 0.5 * (1.0 + np.math.erf(abs(theta_std/se_std) / np.sqrt(2))))), 4),
+            'p_value': round(float(2.0 * norm.sf(abs(theta_std / se_std))), 4) if se_std > 0 else 1.0,
             'Lambda_Min': float(np.mean(tilde_T_std ** 2)), 'Kappa': 1.0, 'Entropy': np.nan
         })
         
@@ -147,7 +148,7 @@ def run_empirical_study():
             'Std_Error': round(se_blk, 4),
             'CI_95_Lower': round(theta_blk - 1.96 * se_blk, 4),
             'CI_95_Upper': round(theta_blk + 1.96 * se_blk, 4),
-            'p_value': round(float(2.0 * (1.0 - 0.5 * (1.0 + np.math.erf(abs(theta_blk/se_blk) / np.sqrt(2))))), 4),
+            'p_value': round(float(2.0 * norm.sf(abs(theta_blk / se_blk))), 4) if se_blk > 0 else 1.0,
             'Lambda_Min': float(np.mean(tilde_T_blk ** 2)), 'Kappa': 1.0, 'Entropy': np.nan
         })
         
@@ -208,9 +209,9 @@ def run_empirical_study():
             'Entropy': round(filt_model.mean_entropy_, 4)
         })
         
-        print(f"  Standard DML ATE: {theta_std:.4f} +/- {1.96*se_std:.4f}")
-        print(f"  OR-DML Overall ATE: {or_model.ate_:.4f} +/- {1.96*or_model.ate_se_:.4f}")
-        print(f"  Regime 1: {or_model.theta_regimes_[0]:.4f} +/- {1.96*or_model.se_regimes_[0]:.4f} | Regime 2: {or_model.theta_regimes_[1]:.4f} +/- {1.96*or_model.se_regimes_[1]:.4f}")
+        print(f"  Standard DML ATE: {theta_std:.4f} (SE: {se_std:.4f}, 95% CI: [{theta_std - 1.96*se_std:.4f}, {theta_std + 1.96*se_std:.4f}])")
+        print(f"  OR-DML Overall ATE: {or_model.ate_:.4f} (SE: {or_model.ate_se_:.4f}, 95% CI: [{or_model.ate_ - 1.96*or_model.ate_se_:.4f}, {or_model.ate_ + 1.96*or_model.ate_se_:.4f}])")
+        print(f"  Regime 1: {or_model.theta_regimes_[0]:.4f} (SE: {or_model.se_regimes_[0]:.4f}) | Regime 2: {or_model.theta_regimes_[1]:.4f} (SE: {or_model.se_regimes_[1]:.4f})")
         print(f"  Diagnostics: lambda_min={or_model.lambda_min_:.4f}, kappa={or_model.kappa_:.2f}, entropy={or_model.mean_entropy_:.4f}")
         
         # 6. Dynamic Causal Impulse-Response Function (Horizons 0 to 24 hours)
