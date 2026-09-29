@@ -37,6 +37,12 @@ Following an in-depth editorial audit comparing the manuscript to AISTATS award-
 3. **Artifact and Benchmark Integrity**:
    - All verified numbers (`0.6153`, `0.8481`, `0.0025`, `0.7038`, `0.9817`, `-0.0653`) preserved byte-for-byte in the text.
    - All 25 checks in `python verify_artifacts.py` pass with 0 errors.
+4. **Final Bestpaper Editorial Polish**:
+   - Replaced draft watermark with official anonymous conference header `Manuscript under review by AISTATS \@conferenceyear.` in `paper/aistats2027.sty`.
+   - Reframed Section 4 (`THEORETICAL ANALYSIS`) around the 3 conceptual pillars (Non-Identification, Graceful Degradation, Observable Difficulty & Regularization).
+   - Structured Section 5 experimental protocol with explicit inline subheadings (`DGPs & Baselines`, `Representations & Shifts`, `Reliability Target`, `Real-World Test`).
+   - Delineated the 5 formal proof steps in Appendix B (Steps 1–5) for Theorem 2.
+   - Preserved exact 24-page budget with 0 warnings.
 
 ## Consequences
 - The manuscript satisfies every AISTATS 2027 formatting mandate and editorial excellence standard.

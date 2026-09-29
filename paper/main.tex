@@ -80,7 +80,7 @@ When standard Double Machine Learning \citep{chernozhukov2018double} or tree-bas
     \item \textbf{Weak Overlap, Calibration \& Selective Reliability:} Overlap violations \citep{damour2021overlap,shalit2017estimating,crump2009dealing} and predictive calibration / selective prediction \citep{guo2017calibration,geifman2017selective,hendrickx2021machine,sankararaman2023selective} address covariate shifts and abstention, but do not connect latent-state posterior uncertainty to the algebraic conditioning of a coupled downstream task.
 \end{enumerate}
 
-\textbf{Contributions.} We formulate the bridge between latent uncertainty, task conditioning, and sequential reliability:
+\textbf{Contributions.} We separate latent-state uncertainty from task conditioning and show how their interaction controls downstream degradation:
 \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
     \item \textbf{Decoupling Context Uncertainty from Task Conditioning:} We prove that downstream estimation suffers two distinct degradation mechanisms: imperfect latent recovery ($\varepsilon_\gamma$) and weak task conditioning ($\lambda_{\min}(\boldsymbol{J})$), showing that predictive state confidence does not imply downstream task reliability (Theorems~\ref{thm:impossibility}--\ref{thm:graceful}).
     \item \textbf{Principled Difficulty Measure \& Observable Bridge:} We formulate causal difficulty $\mathcal{D}_{\mathrm{causal}} = \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ and establish rolling entropy $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$ as an observable multiplicative surrogate under two-sided spectral comparability (Proposition~\ref{prop:bridge}).
@@ -312,7 +312,7 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Abs Bias} & \textbf{RMSE} & \textbf{95
 \section{THEORETICAL ANALYSIS}
 \label{sec:theory}
 
-We now present the theoretical foundation of OR-DML, formalizing the two distinct failure modes: proxy uncertainty and causal ill-conditioning.
+We formalize three central results: (1)~\textbf{Non-Identification:} latent context can induce unidentifiability; (2)~\textbf{Graceful Degradation:} proxy error scales as $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol{J})$; and (3)~\textbf{Observable Difficulty \& Regularization:} task conditioning yields an observable surrogate for risk control.
 
 \textbf{Intuition.} If auxiliary proxies $Z_t$ contain zero information distinguishing latent regimes, different underlying causal structures generate observationally indistinguishable joint distributions, rendering point identification impossible regardless of sample size.
 
@@ -430,7 +430,7 @@ Kolkata ($N=1,209$) & \textbf{Spectral OR-DML} & Overall ATE & $-0.0012$ & $1.29
 
 To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{thm:spectral}, we conduct a comprehensive Monte Carlo evaluation across 500 replications, charting the causal estimation error across the \textbf{Latent-Confounding Difficulty Frontier}.
 
-\textbf{Experimental Design.} We simulate dynamic atmospheric series ($N=1,200$) with a two-state Markov chain $S_t \in \{0, 1\}$ ($\rho = 0.88$) and AR(1) meteorological controls $X_t \in \R^3$ ($\rho=0.65$). Confounded treatment is $T_t = 2.0(1 - S_t) + 6.0 S_t + 0.8 X_{t1} - 0.5 X_{t2} + V_t$ with true effects $\theta_0^* = 0.75, \theta_1^* = 2.50$ ($\theta_{\mathrm{ATE}}^* = 1.5278$). Separation parameter $\Delta_Z \in \{0.2, 0.5, 1.0, 2.0, 4.0\}$ in exogenous observations $Z_t \sim \mathcal{N}(\pm \Delta_Z \boldsymbol{\mu}, \boldsymbol{\Sigma})$ spans severe overlap ($\Delta_Z = 0.2, \bar{H} = 0.434$) to clean separation ($\Delta_Z = 4.0, \bar{H} = 0.014$) across 100 draws per cell (500 total).
+\textbf{Experimental Protocol.} \emph{DGPs \& Baselines:} 500 Monte Carlo draws across $\Delta_Z \in \{0.2, \dots, 4.0\}$ ($N=1,200$, $\theta_{\mathrm{ATE}}^* = 1.5278$) comparing Oracle, Standard, and OR-DML. \emph{Representations \& Shifts:} HMM, GRU, Transformer, and SSM under clean and compound shifts. \emph{Reliability Target:} Predicting downstream squared loss via difficulty $\mathcal{D}_t$ across 5 seeds with MBB. \emph{Real-World Test:} $>14,000$ hourly observations across four megacities.
 
 \textbf{Difficulty Frontier Findings.} Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three phenomena:
 \begin{enumerate}\setlength{\itemsep}{-3pt}\setlength{\parskip}{0pt}
@@ -471,7 +471,7 @@ We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records
 \vspace{-4.5mm}
 \section{DISCUSSION, LIMITATIONS \& CONCLUSION}
 \label{sec:conclusion}
-We showed that latent-context uncertainty interacts with task geometry to govern sequential reliability: systems must evaluate state uncertainty jointly with task conditioning rather than relying on confidence alone. \textbf{Limitations:} (1)~\emph{Surrogate Bounds:} Proposition~\ref{prop:bridge} provides an observable surrogate bound under Bayesian calibration and spectral comparability; under severe miscalibration, entropy can diverge from proxy error. (2)~\emph{Observational vs.\ Policy Interventions:} Megacity estimates identify observational exposure effects; emissions abatement requires structural atmospheric transport models. (3)~\emph{Synthetic Stress Testing:} Financial transfer illustrates out-of-sample risk abstention on synthetic regimes, serving as a stress test rather than proof of live-trading alpha.
+We showed that latent-context uncertainty interacts with task geometry to govern sequential reliability: systems must evaluate state uncertainty jointly with task conditioning rather than relying on confidence alone. \textbf{Limitations:} (1)~\emph{Surrogate Bounds:} Proposition~\ref{prop:bridge} requires Bayesian calibration and spectral comparability; severe miscalibration degrades bounds. (2)~\emph{Observational Effects:} Estimates identify observational exposure effects; policy abatement requires transport models. (3)~\emph{Synthetic Stress Testing:} Financial transfer is a synthetic stress test, not proof of live-trading alpha.
 
 \clearpage
 
@@ -750,6 +750,7 @@ Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the oracle regime nuisance 
 \begin{equation}
     m_k^*(X_t) \equiv \E[T_t \mid X_t, S_t = k], \quad \mu_k^*(X_t) \equiv \E[Y_t \mid X_t, S_t = k] = \theta_k^* m_k^*(X_t) + g(X_t, k).
 \end{equation}
+\textbf{Step 1: Define proxy-weighted targets and population estimand.}
 The empirical cross-fitted learners $\hat{m}_k$ and $\hat{\mu}_k$ minimize the posterior-weighted empirical risk targeting the proxy-weighted conditional expectations:
 \begin{equation}
     m_k^\gamma(X_t) \equiv \frac{\E[\gamma_{tk} T_t \mid X_t]}{\E[\gamma_{tk} \mid X_t]}, \quad \mu_k^\gamma(X_t) \equiv \frac{\E[\gamma_{tk} Y_t \mid X_t]}{\E[\gamma_{tk} \mid X_t]}.
@@ -765,7 +766,7 @@ and their oracle counterparts $\boldsymbol{J}^*, \boldsymbol{S}^*$ are defined b
 \end{equation}
 where $H_{tj} H_{tk} = \delta_{jk} H_{tk}$ because latent regimes are mutually exclusive.
 
-\paragraph{Step A: Neyman Orthogonality at Implemented Targets.}
+\textbf{Step 2: Establish Neyman nuisance orthogonality.}
 Consider the state-weighted score for regime $k$ as a functional of candidate nuisances $(m_k, \mu_k)$:
 \begin{equation}
     \psi_k(W_t; \theta_k, m_k, \mu_k) = \gamma_{tk} (T_t - m_k(X_t)) \left( Y_t - \mu_k(X_t) \right).
@@ -783,7 +784,7 @@ since $\E[\gamma_{tk} (Y_t - \mu_k^\gamma(X_t)) \mid X_t] \equiv 0$ identically 
 Therefore, Neyman orthogonality eliminates first-order sensitivity of the score to nuisance estimation errors $(\hat{m}_k - m_k^\gamma, \hat{\mu}_k - \mu_k^\gamma)$, contributing a second-order error $\mathcal{O}_P(\|\hat{m}_k - m_k^\gamma\|_{L_2} \|\hat{\mu}_k - \mu_k^\gamma\|_{L_2}) = \mathcal{O}_P(N^{-1/2})$ under Assumption~\ref{ass:rates}.
 We emphasize that DML Neyman orthogonality protects against non-parametric nuisance estimation error, \emph{not} against latent proxy misspecification ($\boldsymbol{H}_t \neq \boldsymbol{\gamma}_t$).
 
-\paragraph{Step B: Oracle Score Identity and Proxy Misspecification Bound.}
+\textbf{Step 3: Isolate proxy-induced bias via oracle score identity.}
 Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, on the event $S_t = k$ ($H_{tk} = 1$), the oracle outcome residual is $\tilde{Y}_{tk}^* = Y_t - \mu_k^*(X_t) = \theta_k^* \tilde{T}_{tk}^* + U_t$.
 Substituting into $S_k^*$:
 \begin{equation}
@@ -797,6 +798,8 @@ Now consider the proxy score discrepancy $\boldsymbol{b}_\gamma \equiv \boldsymb
 \begin{equation}
     \boldsymbol{b}_\gamma = (\boldsymbol{S} - \boldsymbol{S}^*) - (\boldsymbol{J} - \boldsymbol{J}^*) \boldsymbol{\theta}^*.
 \end{equation}
+
+\textbf{Step 4: Bound score and Gram proxy discrepancies.}
 We bound each component via telescoping expansions in $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$.
 First, under positivity (Assumption~\ref{ass:overlap}), $\pi_k(x) \equiv \E[H_{tk} \mid X_t=x] \ge c_0 > 0$ and $\pi_k^\gamma(x) \equiv \E[\gamma_{tk} \mid X_t=x] \ge c_0 > 0$. For any bounded variable $V_t$ with $|V_t| \le M_V$ almost surely:
 \begin{align}
@@ -820,6 +823,8 @@ Combining bounds yields:
 \begin{equation}
     \|\boldsymbol{b}_\gamma\|_2 \le \|\boldsymbol{S} - \boldsymbol{S}^*\|_2 + \|\boldsymbol{J} - \boldsymbol{J}^*\|_{\mathrm{op}} \|\boldsymbol{\theta}^*\|_2 \le (C_S + C_J M_\theta) \varepsilon_\gamma \equiv C \cdot \varepsilon_\gamma.
 \end{equation}
+
+\textbf{Step 5: Apply spectral conditioning and conclude.}
 Since $\boldsymbol{S} = \boldsymbol{J}\boldsymbol{\theta}^* + \boldsymbol{b}_\gamma$ and $\boldsymbol{\theta}_\gamma \equiv \boldsymbol{J}^{-1}\boldsymbol{S}$, we have $\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^* = \boldsymbol{J}^{-1}\boldsymbol{b}_\gamma$. Therefore:
 \begin{equation}
     \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 \le \|\boldsymbol{J}^{-1}\|_{\mathrm{op}} \|\boldsymbol{b}_\gamma\|_2 = \frac{\|\boldsymbol{b}_\gamma\|_2}{\lambda_{\min}(\boldsymbol{J})} \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
