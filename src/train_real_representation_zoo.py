@@ -1,4 +1,4 @@
-"""
+r"""
 train_real_representation_zoo.py
 ================================
 Trains REAL neural sequence encoders (GRU, Causal Transformer, Linear SSM)
@@ -75,7 +75,7 @@ def compute_mda(difficulty: np.ndarray, losses: np.ndarray) -> float:
 
 
 def moving_block_bootstrap_auc(y_true, score_A, score_B, n_boot=1000, block_length=24, rng=None):
-    """
+    r"""
     Moving-Block Bootstrap (MBB) for temporally dependent time series.
     Preserves Markov/temporal autocorrelation by resampling contiguous blocks of length L=24.
     Computes 95% CIs for AUC(A), AUC(B), and paired difference \Delta AUC with empirical p-value.
@@ -344,14 +344,20 @@ def run_single_seed(seed: int, device: torch.device):
         TaskCond_t = 1.0 / lambda_min_t
         D_t = H_t / lambda_min_t
 
-        # Next-step lead-1 failure anticipation (predict loss at t+1 from state at t)
-        lead_loss = downstream_loss[1:]
-        D_lead = D_t[:-1]
-        H_lead = H_t[:-1]
-        Cond_lead = TaskCond_t[:-1]
+        # Next-step lead-1 failure anticipation with FROZEN CALIBRATION THRESHOLD
+        # Calibration partition: first 400 steps (35% of evaluation stream)
+        # Test partition: steps 400 to end (frozen out-of-sample evaluation)
+        cal_len = 400
+        cal_loss = downstream_loss[:cal_len]
+        fail_thresh = float(np.percentile(cal_loss, 90))
 
-        fail_thresh = np.percentile(lead_loss, 90)
-        fail_bin = (lead_loss > fail_thresh).astype(int)
+        test_loss = downstream_loss[cal_len:]
+        test_lead_loss = test_loss[1:]
+        fail_bin = (test_lead_loss > fail_thresh).astype(int)
+
+        D_lead = D_t[cal_len:-1]
+        H_lead = H_t[cal_len:-1]
+        Cond_lead = TaskCond_t[cal_len:-1]
 
         auc_D = roc_auc_score(fail_bin, D_lead)
         auc_H = roc_auc_score(fail_bin, H_lead)
@@ -361,28 +367,39 @@ def run_single_seed(seed: int, device: torch.device):
         pr_H = auc(*precision_recall_curve(fail_bin, H_lead)[1::-1])
         pr_Cond = auc(*precision_recall_curve(fail_bin, Cond_lead)[1::-1])
 
-        mda_D = compute_mda(D_lead, lead_loss)
-        mda_H = compute_mda(H_lead, lead_loss)
-        mda_Cond = compute_mda(Cond_lead, lead_loss)
+        mda_D = compute_mda(D_lead, test_lead_loss)
+        mda_H = compute_mda(H_lead, test_lead_loss)
+        mda_Cond = compute_mda(Cond_lead, test_lead_loss)
 
         # Nested linear regressions of downstream loss
-        var_tot = float(np.var(lead_loss)) + 1e-12
-        r2_H = float(np.corrcoef(H_lead, lead_loss)[0, 1]**2) if np.std(H_lead) > 1e-6 else 0.0
-        r2_Cond = float(np.corrcoef(Cond_lead, lead_loss)[0, 1]**2) if np.std(Cond_lead) > 1e-6 else 0.0
-        r2_D = float(np.corrcoef(D_lead, lead_loss)[0, 1]**2) if np.std(D_lead) > 1e-6 else 0.0
+        var_tot = float(np.var(test_lead_loss)) + 1e-12
+        r2_H = float(np.corrcoef(H_lead, test_lead_loss)[0, 1]**2) if np.std(H_lead) > 1e-6 else 0.0
+        r2_Cond = float(np.corrcoef(Cond_lead, test_lead_loss)[0, 1]**2) if np.std(Cond_lead) > 1e-6 else 0.0
+        r2_D = float(np.corrcoef(D_lead, test_lead_loss)[0, 1]**2) if np.std(D_lead) > 1e-6 else 0.0
 
         floor_sens = {}
         for ef in [1e-6, 1e-5, 1e-4, 1e-3]:
             lmin_f = np.maximum(0.5 * (trace - disc), ef)
-            d_f = (H_t / lmin_f)[:-1]
+            d_f = (H_t / lmin_f)[cal_len:-1]
             floor_sens[f"Floor_{ef:.0e}"] = roc_auc_score(fail_bin, d_f)
 
-        ci_D, ci_H, ci_diff, p_diff = moving_block_bootstrap_auc(fail_bin, D_lead, H_lead, n_boot=1000, block_length=24, rng=np.random.default_rng(seed))
+        mbb_sens = {}
+        for block_l in [12, 24, 48, 72]:
+            ci_D_l, _, _, _ = moving_block_bootstrap_auc(
+                fail_bin, D_lead, H_lead, n_boot=1000, block_length=block_l, rng=np.random.default_rng(seed)
+            )
+            mbb_sens[f"MBB_L{block_l}_low"] = ci_D_l[0]
+            mbb_sens[f"MBB_L{block_l}_high"] = ci_D_l[1]
+
+        ci_D, ci_H, ci_diff, p_diff = moving_block_bootstrap_auc(
+            fail_bin, D_lead, H_lead, n_boot=1000, block_length=24, rng=np.random.default_rng(seed)
+        )
 
         rel_results[name] = {
             "ShiftC_F1": f1_sc,
             "Reliability_ROC_AUC_D": auc_D,
             **floor_sens,
+            **mbb_sens,
             "AUC_D_CI_low": ci_D[0],
             "AUC_D_CI_high": ci_D[1],
             "Reliability_PR_AUC_D": pr_D,
@@ -460,25 +477,104 @@ def run_real_representation_zoo():
         floor_rows.append(f_row)
     pd.DataFrame(floor_rows).to_csv("reports/representation_zoo_floor_sensitivity.csv", index=False)
 
-    # Correlation test for the Reliability Triangle: F1 vs ECE vs NLL predicting Reliability AUC
-    corrs_data = []
+    # MBB block-length sensitivity report across L in {12, 24, 48, 72}
+    mbb_rows = []
+    for arch in architectures:
+        m_row = {"Architecture": arch}
+        for bl in [12, 24, 48, 72]:
+            lows = [all_rel[i][arch][f"MBB_L{bl}_low"] for i in range(len(seeds))]
+            highs = [all_rel[i][arch][f"MBB_L{bl}_high"] for i in range(len(seeds))]
+            m_row[f"L{bl}_95CI_low"] = round(float(np.mean(lows)), 4)
+            m_row[f"L{bl}_95CI_high"] = round(float(np.mean(highs)), 4)
+            m_row[f"L{bl}_CI_width"] = round(float(np.mean(highs) - np.mean(lows)), 4)
+        mbb_rows.append(m_row)
+    pd.DataFrame(mbb_rows).to_csv("reports/representation_zoo_mbb_sensitivity.csv", index=False)
+
+    # Hierarchical seed-level correlation analysis: seeds as independent replication units
+    # Evaluates within-seed rank correlations and tests via cluster permutations and seed bootstrap
+    rhos_f1, rhos_ece, rhos_nll = [], [], []
     for i, s in enumerate(seeds):
-        for arch in architectures:
-            corrs_data.append({
-                "Seed": s, "Architecture": arch,
-                "F1": all_shifts[i][arch]["ShiftC_Compound_F1"],
-                "ECE": all_shifts[i][arch]["ShiftC_ECE"],
-                "NLL": all_shifts[i][arch]["ShiftC_NLL"],
-                "Reliability_AUC": all_rel[i][arch]["Reliability_ROC_AUC_D"]
-            })
-    df_corrs_raw = pd.DataFrame(corrs_data)
-    rho_f1, p_f1 = spearmanr(df_corrs_raw["F1"], df_corrs_raw["Reliability_AUC"])
-    rho_ece, p_ece = spearmanr(df_corrs_raw["ECE"], df_corrs_raw["Reliability_AUC"])
-    rho_nll, p_nll = spearmanr(df_corrs_raw["NLL"], df_corrs_raw["Reliability_AUC"])
+        f1_s = [all_shifts[i][arch]["ShiftC_Compound_F1"] for arch in architectures]
+        ece_s = [all_shifts[i][arch]["ShiftC_ECE"] for arch in architectures]
+        nll_s = [all_shifts[i][arch]["ShiftC_NLL"] for arch in architectures]
+        auc_s = [all_rel[i][arch]["Reliability_ROC_AUC_D"] for arch in architectures]
+
+        r_f1, _ = spearmanr(f1_s, auc_s)
+        r_ece, _ = spearmanr(ece_s, auc_s)
+        r_nll, _ = spearmanr(nll_s, auc_s)
+        rhos_f1.append(float(r_f1))
+        rhos_ece.append(float(r_ece))
+        rhos_nll.append(float(r_nll))
+
+    mean_rho_f1 = float(np.mean(rhos_f1))
+    mean_rho_ece = float(np.mean(rhos_ece))
+    mean_rho_nll = float(np.mean(rhos_nll))
+
+    se_f1 = float(np.std(rhos_f1) / np.sqrt(len(seeds)))
+    se_ece = float(np.std(rhos_ece) / np.sqrt(len(seeds)))
+    se_nll = float(np.std(rhos_nll) / np.sqrt(len(seeds)))
+
+    # Cluster-preserving permutation test across independent seed units (10,000 permutations)
+    rng_perm = np.random.default_rng(42)
+    B_perm = 10000
+    perm_f1, perm_ece, perm_nll = [], [], []
+    for _ in range(B_perm):
+        pf_list, pe_list, pn_list = [], [], []
+        for i in range(len(seeds)):
+            perm_idx = rng_perm.permutation(len(architectures))
+            f1_s = np.array([all_shifts[i][arch]["ShiftC_Compound_F1"] for arch in architectures])[perm_idx]
+            ece_s = np.array([all_shifts[i][arch]["ShiftC_ECE"] for arch in architectures])[perm_idx]
+            nll_s = np.array([all_shifts[i][arch]["ShiftC_NLL"] for arch in architectures])[perm_idx]
+            auc_s = np.array([all_rel[i][arch]["Reliability_ROC_AUC_D"] for arch in architectures])
+
+            pf_list.append(spearmanr(f1_s, auc_s)[0])
+            pe_list.append(spearmanr(ece_s, auc_s)[0])
+            pn_list.append(spearmanr(nll_s, auc_s)[0])
+        perm_f1.append(np.mean(pf_list))
+        perm_ece.append(np.mean(pe_list))
+        perm_nll.append(np.mean(pn_list))
+
+    p_val_f1 = float(np.mean(np.abs(perm_f1) >= np.abs(mean_rho_f1)))
+    p_val_ece = float(np.mean(np.array(perm_ece) <= mean_rho_ece))
+    p_val_nll = float(np.mean(np.array(perm_nll) <= mean_rho_nll))
+
+    # Seed-level cluster bootstrap 95% CIs (10,000 resamples of seed units)
+    boot_f1, boot_ece, boot_nll = [], [], []
+    for _ in range(10000):
+        b_idx = rng_perm.integers(0, len(seeds), size=len(seeds))
+        boot_f1.append(np.mean([rhos_f1[b] for b in b_idx]))
+        boot_ece.append(np.mean([rhos_ece[b] for b in b_idx]))
+        boot_nll.append(np.mean([rhos_nll[b] for b in b_idx]))
+
+    ci_f1 = (float(np.percentile(boot_f1, 2.5)), float(np.percentile(boot_f1, 97.5)))
+    ci_ece = (float(np.percentile(boot_ece, 2.5)), float(np.percentile(boot_ece, 97.5)))
+    ci_nll = (float(np.percentile(boot_nll, 2.5)), float(np.percentile(boot_nll, 97.5)))
+
     df_corrs = pd.DataFrame([
-        {"Metric": "Classification F1", "Spearman_rho_vs_Reliability_AUC": round(float(rho_f1), 4), "p_value": round(float(p_f1), 4)},
-        {"Metric": "Calibration ECE", "Spearman_rho_vs_Reliability_AUC": round(float(rho_ece), 4), "p_value": round(float(p_ece), 4)},
-        {"Metric": "Log-Loss NLL", "Spearman_rho_vs_Reliability_AUC": round(float(rho_nll), 4), "p_value": round(float(p_nll), 4)},
+        {
+            "Metric": "Classification F1",
+            "Mean_Within_Seed_Spearman_rho": round(mean_rho_f1, 4),
+            "Clustered_SE": round(se_f1, 4),
+            "Seed_Bootstrap_95CI_low": round(ci_f1[0], 4),
+            "Seed_Bootstrap_95CI_high": round(ci_f1[1], 4),
+            "Cluster_Permutation_p_value": round(p_val_f1, 4)
+        },
+        {
+            "Metric": "Calibration ECE",
+            "Mean_Within_Seed_Spearman_rho": round(mean_rho_ece, 4),
+            "Clustered_SE": round(se_ece, 4),
+            "Seed_Bootstrap_95CI_low": round(ci_ece[0], 4),
+            "Seed_Bootstrap_95CI_high": round(ci_ece[1], 4),
+            "Cluster_Permutation_p_value": round(p_val_ece, 4)
+        },
+        {
+            "Metric": "Log-Loss NLL",
+            "Mean_Within_Seed_Spearman_rho": round(mean_rho_nll, 4),
+            "Clustered_SE": round(se_nll, 4),
+            "Seed_Bootstrap_95CI_low": round(ci_nll[0], 4),
+            "Seed_Bootstrap_95CI_high": round(ci_nll[1], 4),
+            "Cluster_Permutation_p_value": round(p_val_nll, 4)
+        },
     ])
     df_corrs.to_csv("reports/representation_zoo_reliability_correlations.csv", index=False)
 

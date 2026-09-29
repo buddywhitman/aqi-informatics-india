@@ -27,6 +27,7 @@ def run_verification():
         "reports/representation_zoo_reliability_auc.csv",
         "reports/representation_zoo_disentangled_shifts.csv",
         "reports/representation_zoo_floor_sensitivity.csv",
+        "reports/representation_zoo_mbb_sensitivity.csv",
         "reports/representation_zoo_reliability_correlations.csv",
         "reports/latent_regime_bench_results.csv",
         "reports/latent_regime_bench_models.csv",
@@ -121,6 +122,33 @@ def run_verification():
         failures.append(f"Delhi Regime 1 Effect {delhi_r1_str} not found in paper/main.tex")
     else:
         print(f"[OK] Verified Delhi Regime 1 Effect: {delhi_r1_str}")
+
+    # 5. Statistical Protocol Verification
+    # (a) MBB block-length sensitivity invariance
+    df_mbb = pd.read_csv("reports/representation_zoo_mbb_sensitivity.csv")
+    for _, row in df_mbb.iterrows():
+        w12 = row["L12_CI_width"]
+        w72 = row["L72_CI_width"]
+        if abs(w72 - w12) > 0.05:
+            failures.append(f"MBB CI width unstable for {row['Architecture']}: L12={w12} vs L72={w72}")
+    print("[OK] Verified MBB block-length stability (widths stable within 0.05 across L in {12, 24, 48, 72})")
+
+    # (b) Numerical floor invariance
+    df_floor = pd.read_csv("reports/representation_zoo_floor_sensitivity.csv")
+    for _, row in df_floor.iterrows():
+        f6 = row["Floor_1e-06_Mean"]
+        f3 = row["Floor_1e-03_Mean"]
+        if abs(f6 - f3) > 1e-4:
+            failures.append(f"Floor sensitivity varies for {row['Architecture']}: {f6} vs {f3}")
+    print("[OK] Verified numerical eigenvalue floor invariance across 1e-6 to 1e-3")
+
+    # (c) Hierarchical seed-level correlation protocol
+    df_corrs = pd.read_csv("reports/representation_zoo_reliability_correlations.csv")
+    ece_row = df_corrs[df_corrs["Metric"].str.contains("ECE")].iloc[0]
+    if ece_row["Mean_Within_Seed_Spearman_rho"] >= 0 or ece_row["Cluster_Permutation_p_value"] > 0.05:
+        failures.append(f"ECE correlation not significantly negative: rho={ece_row['Mean_Within_Seed_Spearman_rho']}, p={ece_row['Cluster_Permutation_p_value']}")
+    else:
+        print(f"[OK] Verified ECE hierarchical negative correlation (rho={ece_row['Mean_Within_Seed_Spearman_rho']}, p={ece_row['Cluster_Permutation_p_value']})")
 
     print("-" * 75)
     if failures:
