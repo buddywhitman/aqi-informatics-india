@@ -135,11 +135,11 @@ as well as the stationary Average Treatment Effect (ATE):
     \theta_{\text{ATE}}^* = \sum_{k=1}^K \pi_k^* \theta_k^*.
 \end{equation}
 
-\begin{assumption}[Regime-Conditional Unconfoundedness]
+\begin{assumption}[Regime-Conditional Unconfoundedness \& Innovation Exogeneity]
 \label{ass:unconfoundedness}
-Conditional on observed covariates $X_t$ and latent regime $S_t$, potential outcomes are independent of treatment assignment:
+Conditional on observed covariates $X_t$, latent regime $S_t$, and proxy history $Z_{1:N}$, potential outcomes are unconfounded ($Y_t(u) \perp T_t \mid (X_t, S_t, Z_{1:N}), \forall u$) and structural innovations have zero mean:
 \begin{equation}
-    Y_t(u) \perp T_t \mid (X_t, S_t), \quad \forall u \in \mathrm{supp}(T_t).
+    \E[U_t \mid X_t, S_t, T_t, Z_{1:N}] = 0.
 \end{equation}
 \end{assumption}
 
@@ -152,10 +152,10 @@ There exist constants $c_1, c_2 > 0$ such that for all $k \in \{1, \dots, K\}$ a
 \end{equation}
 \end{assumption}
 
-\begin{assumption}[Latent Proxy Conditional-Mean Sufficiency]
+\begin{assumption}[Latent Proxy State-Mean Sufficiency]
 \label{ass:innovation}
-The auxiliary state proxy sequence $Z_{1:N}$ satisfies conditional-mean sufficiency for the latent regime with respect to potential outcomes: $\E\left[ Y_t \;\middle|\; X_t, T_t, Z_{1:N} \right] = \sum_{k=1}^K \gamma_{tk} \left[ \theta_k^* T_t + g_k(X_t) \right]$, where $\gamma_{tk} \equiv P(S_t = k \mid Z_{1:N})$ (or $P(S_t = k \mid Z_{1:t})$ for causal filtering). Consequently, structural innovation $\varepsilon_t \equiv Y_t - \E[Y_t \mid X_t, T_t, Z_{1:N}]$ satisfies $\E[\varepsilon_t \mid X_t, T_t, Z_{1:N}] = 0$.
-\textit{Discussion.} This assumption is an explicit identifying restriction: it requires the observed proxy history to be sufficient for the conditional mean after conditioning on $(X_t, T_t)$, which is stronger than latent-state recoverability alone because conditioning on $(X_t, T_t, Z_{1:N})$ averages over posterior $P(S_t=k \mid X_t, T_t, Z_{1:N})$.
+The auxiliary state proxy sequence $Z_{1:N}$ satisfies conditional-mean sufficiency for the latent regime: $\E[H_{tk} \mid X_t, T_t, Z_{1:N}] = \gamma_{tk} \equiv P(S_t = k \mid Z_{1:N})$ (or $P(S_t = k \mid Z_{1:t})$ for causal filtering) almost surely for all $k \in \{1, \dots, K\}$.
+\textit{Discussion.} Combined with Assumption~\ref{ass:unconfoundedness}, this guarantees $\E[Y_t \mid X_t, T_t, Z_{1:N}] = \sum_{k=1}^K \gamma_{tk} [\theta_k^* T_t + g_k(X_t)]$. This identifying restriction requires $Z_{1:N}$ to be sufficiently informative that conditioning on $(X_t, T_t)$ provides no additional regime information beyond $Z_{1:N}$.
 \end{assumption}
 
 \begin{assumption}[Nuisance Estimation and Mixing Rates]
@@ -332,13 +332,13 @@ Theorem~\ref{thm:impossibility} formally proves via an explicit constructive cou
 
 \begin{theorem}[Graceful Degradation Error Bound]
 \label{thm:graceful}
-Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t |\tilde{T}_{tk}| \le M_T < \infty$ almost surely, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m(x, j) - m(x, k)| \le L_m < \infty$.
-If $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized coupled estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ constructed from state-weighted nuisances satisfies:
+Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator, and let $\boldsymbol{\gamma}_t \in \Delta^K$ be an estimated posterior state proxy with average $L_1$ proxy error $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Suppose $\|\boldsymbol{\theta}^*\|_2 \le M_\theta < \infty$, $\sup_t |\tilde{T}_{tk}^\gamma| \le M_T < \infty$ almost surely, and regime functions satisfy $\max_{j, k}|g(x, j) - g(x, k)| \le L_g < \infty$ and $\max_{j, k}|m_j^\gamma(x) - m_k^\gamma(x)| \le L_m < \infty$.
+Let $\boldsymbol{J} \in \R^{K \times K}$ with $J_{jk} \equiv \E[\gamma_{tj}\gamma_{tk} \tilde{T}_{tj}^\gamma \tilde{T}_{tk}^\gamma]$ and $\boldsymbol{S} \in \R^K$ with $S_k \equiv \E[\gamma_{tk} \tilde{T}_{tk}^\gamma \tilde{Y}_{tk}^\gamma]$ denote the population coupled Gram matrix and score vector targeting implemented proxy-weighted nuisances $(m_k^\gamma, \mu_k^\gamma)$. If $\lambda_{\min}(\boldsymbol{J}) > 0$, the population estimand $\boldsymbol{\theta}_\gamma \equiv \boldsymbol{J}^{-1}\boldsymbol{S}$ satisfies:
 \begin{equation}
 \label{eq:graceful_bound}
-    \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}),
+    \|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})},
 \end{equation}
-where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
+and the unregularized cross-fitted estimator $\hat{\boldsymbol{\theta}}_\gamma = \hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ satisfies $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
 \end{theorem}
 
 \begin{figure*}[t]
@@ -356,7 +356,7 @@ Theorem~\ref{thm:graceful} demonstrates that the leading asymptotic bias scales 
 \label{eq:difficulty_ratio}
     \mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})},
 \end{equation}
-where $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$ is the population posterior state error, estimated in finite samples by $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Because true states are unobserved at runtime, deployed systems cannot compute $\varepsilon_\gamma$ or $\hat{\varepsilon}_{\gamma, N}$ directly. We bridge unobservable causal difficulty to the computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
+where $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$ is the population posterior state error, evaluated in simulation benchmarks where true states are known by the empirical metric $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Because true states are unobserved in deployment, operational pipelines cannot evaluate $\varepsilon_\gamma$ or $\hat{\varepsilon}_{\gamma, N}$ on real data streams. We bridge this unobservable causal difficulty to the computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
 \begin{assumption}[Two-Sided Spectral Comparability]
 \label{ass:spectral_comparability}
 There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\underline{c}_J \le \frac{\lambda_{\min}(\boldsymbol{J}_t)}{\lambda_{\min}(\boldsymbol{J})} \le \overline{c}_J$ almost surely for all evaluation windows $t \ge w$.
@@ -364,7 +364,7 @@ There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such tha
 
 \begin{proposition}[Surrogate Entropy-Difficulty Bridge]
 \label{prop:bridge}
-Under correct posterior specification (Bayesian calibration), for causal forward-filtered posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ with filtration $\mathcal{F}_t = \sigma(Z_{1:t})$, the posterior error satisfies $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$ for $K=2$.
+Under correct posterior specification (Bayesian calibration) in binary regimes ($K=2$), for causal forward-filtered posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ with filtration $\mathcal{F}_t = \sigma(Z_{1:t})$, the posterior error satisfies $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$.
 We define the difficulty hierarchy:
 \begin{align}
     \mathcal{D}_{\mathrm{causal}} &\equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}, \quad \mathcal{D}_{\mathrm{global}}^H(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})}, \\
@@ -377,7 +377,7 @@ We define the difficulty hierarchy:
     \mathcal{D}_{\mathrm{causal}} &\le C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)], \\
     \E[\mathcal{D}_{\mathrm{operational}}(t)] &\le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]. \nonumber
 \end{align}
-The empirical sample surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N} / \lambda_{\min}(\boldsymbol{J})$ converges to $\mathcal{D}_{\mathrm{causal}}$ with $\mathcal{O}_P(N^{-1/2})$ error.
+In simulation benchmarks where $H_t$ is observed, $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N} / \lambda_{\min}(\boldsymbol{J})$ converges to $\mathcal{D}_{\mathrm{causal}}$ with $\mathcal{O}_P(N^{-1/2})$ error.
 \end{proposition}
 Proposition~\ref{prop:bridge} (proof in Appendix~\ref{app:proof_bridge}) mathematically grounds the deployable monitoring engine across three levels of observability: unobservable causal difficulty $\mathcal{D}_{\mathrm{causal}} \to$ observable operational surrogate $\mathcal{D}_{\mathrm{operational}}(t) \to$ realized downstream loss $L_{t+h}$. We emphasize that \eqref{eq:bridge_bound} establishes $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence ($\varepsilon_\gamma \le C_K \E[H_t]$ does not imply $\varepsilon_\gamma \asymp \E[H_t]$). The entropy bridge holds algebraically for retrospective smoothed posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid Z_{1:N})$ as well, though with retrospective rather than prospective interpretation.
 
@@ -398,11 +398,11 @@ Let $R_{\mathrm{bound}}(\lambda) \equiv \frac{(C \varepsilon_\gamma + \lambda M_
 
 \begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
 \label{thm:asymptotics}
-Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, with embargo buffer $\tau^* \ge C \log N$, the regularized OR-DML estimator under retrospective smoothing or training-fitted forward filtering satisfies:
+Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, with embargo buffer $\tau^* \ge C \log N$, the regularized OR-DML estimator under training-fitted forward filtering satisfies:
 \begin{equation}
     \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda) \right) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \boldsymbol{\Sigma}_\lambda\right),
 \end{equation}
-where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$. When $\lambda = o(N^{-1/2})$, $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, recovering centered asymptotic normality.
+where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ (with retrospective smoothing providing an offline descriptive counterpart). When $\lambda = o(N^{-1/2})$, $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, recovering centered asymptotic normality.
 \end{theorem}
 
 \begin{proposition}[Joint Asymptotic Distribution for Sample and Population ATE]
@@ -411,7 +411,7 @@ The sample ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}^\top \h
 \begin{equation}
     \sigma_{\mathrm{PATE}}^2 = \boldsymbol{\pi}^{*\top} \boldsymbol{\Sigma}_\lambda \boldsymbol{\pi}^* + \boldsymbol{\theta}^{*\top} \boldsymbol{\Sigma}_\pi \boldsymbol{\theta}^* + 2 \boldsymbol{\pi}^{*\top} \boldsymbol{\Sigma}_{\theta \pi} \boldsymbol{\theta}^*,
 \end{equation}
-where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\Lambda^{-1} (\nabla_\Lambda \boldsymbol{\pi}^*)^\top$ represents the parametric variance of the estimated stationary distribution derived from sequence-level HMM influence function $\boldsymbol{\phi}_{\Lambda, t}$, and $\boldsymbol{\Sigma}_{\theta\pi} = \mathrm{LRCov}(\boldsymbol{\phi}_{\theta, t}, \boldsymbol{\phi}_{\Lambda, t})$. The cross-covariance vanishes when DML score influence is orthogonal to HMM score influence: $\E[\boldsymbol{\phi}_{\theta, t} \boldsymbol{\phi}_{\Lambda, t}^\top] = \mathbf{0}$; in general, $\boldsymbol{\Sigma}_{\theta \pi}$ is estimated via the joint HAC sandwich estimator.
+where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\Lambda^{-1} (\nabla_\Lambda \boldsymbol{\pi}^*)^\top$ represents the parametric variance of the estimated stationary distribution derived from sequence-level HMM influence function $\boldsymbol{\phi}_{\Lambda, t}$, and $\boldsymbol{\Sigma}_{\theta\pi} = \mathrm{LRCov}(\boldsymbol{\phi}_{\theta, t}, \boldsymbol{\phi}_{\Lambda, t})$. The cross-covariance vanishes if and only if long-run cross-covariance is zero: $\operatorname{LRCov}(\boldsymbol{\phi}_\theta, \boldsymbol{\phi}_\Lambda) = \mathbf{0}$; in general, $\boldsymbol{\Sigma}_{\theta \pi}$ is consistently estimated via the stacked joint HAC sandwich estimator.
 \end{proposition}
 
 \begin{table*}[t]
@@ -421,7 +421,7 @@ where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\
 \caption{Empirical Regime-Specific Exposure Effects on Clean Longitudinal Ground-Sensor Data across Four Major Indian Megacities (>14,000 Complete Hourly Observations, February 2025 -- June 2026). Treatment $T_t = \text{NO}_2$ Exposure Proxy, Outcome $Y_t = \text{PM}_{2.5}$.}
 \label{tab:empirical}
 \vspace{-2mm}
-\resizebox{0.76\textwidth}{!}{%
+\resizebox{0.75\textwidth}{!}{%
 \begin{tabular}{llrccccc}
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$} & \textbf{Std Error} & \textbf{95\% CI} & \textbf{p-value} & $\lambda_{\min}(\hat{\boldsymbol{J}})$ [$\kappa$] \\
@@ -456,7 +456,7 @@ Kolkata & \textbf{Filtered OR-DML} & Overall ATE & $+0.1777$ & $1.2312$ & $[-2.2
 \bottomrule
 \end{tabular}%
 }
-\vspace{-5mm}
+\vspace{-5.5mm}
 \end{table*}
 
 \section{THE LATENT-CONFOUNDING DIFFICULTY FRONTIER}
@@ -484,10 +484,10 @@ We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records
 \vspace{-1.5mm}
 \textbf{Conditioning Diagnostics \& Physical Interpretation:}
 \textbf{Delhi Basin ($\lambda_{\min} = 111.8$):} Clean separation and strong residual variation. OR-DML decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, convective clearance).
-\textbf{Mumbai Coastal ($\lambda_{\min} = 0.32$):} Marine breeze reversals induce severe treatment collinearity ($\lambda_{\min} = 0.32$). Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates the significant stagnation regime effect ($+3.30 \pm 1.48$, $p=0.026$) from clearance ($-0.03 \pm 8.72$).
+\textbf{Mumbai Coastal ($\lambda_{\min} = 0.32$):} Marine breeze reversals induce severe collinearity. Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates significant stagnation ($+3.30 \pm 1.48$, $p=0.026$) from clearance ($-0.03 \pm 8.72$).
 \textbf{Bengaluru Plateau ($\lambda_{\min} = 4.22$):} Standard DML estimates zero effect ($-0.001 \pm 0.060$). OR-DML isolates daytime convective dispersion ($+0.092$) from nocturnal inversion ($-0.153 \pm 0.069$, $p=0.027$).
 \textbf{Reliability Contrast:} In Bengaluru, healthy conditioning ($\lambda_{\min} = 4.22$) renders state uncertainty informative ($\text{AUC}(H) = 0.674$), whereas Mumbai's ill-conditioning ($\lambda_{\min} = 0.32$) blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}).
-\textbf{Kolkata Airshed ($\lambda_{\min} = 0.0025$):} Demonstrates entropy vs.\ conditioning divergence: despite modest entropy ($\bar{H} = 0.083$), treatments are collinear. Unregularized DML explodes ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}).
+\textbf{Kolkata Airshed ($\lambda_{\min} = 0.0025$):} Despite modest entropy ($\bar{H} = 0.083$), collinear treatments cause unregularized DML to explode ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}).
 
 \vspace{-3mm}
 \subsection{Dynamic Exposure-Response Curves}
@@ -766,10 +766,10 @@ Expanding the outcome via SCM $Y_t = \sum_{j=1}^K H_{tj} [\theta_j^* T_t + g(X_t
 where $\Delta \mu_k^{\mathrm{disp}}(X_t) \equiv g(X_t, k) + \theta_k^* m_k^\gamma(X_t) - \mu_k^\gamma(X_t)$. Substituting into $S_k = \E[\gamma_{tk} \tilde{T}_{tk}^\gamma \tilde{Y}_{tk}^\gamma]$:
 \begin{align}
     S_k &= \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} \gamma_{tj} \tilde{T}_{tk}^\gamma \tilde{T}_{tj}^\gamma] + \sum_{j=1}^K \theta_j^* \E[\gamma_{tk} (H_{tj} - \gamma_{tj}) \tilde{T}_{tk}^\gamma \tilde{T}_{tj}^\gamma] \nonumber \\
-    &\quad + \E\left[ \gamma_{tk} \tilde{T}_{tk}^\gamma \sum_{j=1}^K (H_{tj} - \gamma_{tj}) \left( \theta_j^* \Delta m_{jk}^\gamma(X_t) + \Delta g_{jk}(X_t) \right) \right] + \E\left[ \gamma_{tk} \tilde{T}_{tk}^\gamma \Delta \mu_k^{\mathrm{disp}}(X_t) \right] \nonumber \\
+    &\quad + \E\left[ \gamma_{tk} \tilde{T}_{tk}^\gamma \sum_{j=1}^K (H_{tj} - \gamma_{tj}) \left( \theta_j^* \Delta m_{jk}^\gamma(X_t) + \Delta g_{jk}(X_t) \right) \right] + \E\left[ \gamma_{tk} \tilde{T}_{tk}^\gamma \Delta \mu_k^{\mathrm{disp}}(X_t) \right] + \E\left[ \gamma_{tk} \tilde{T}_{tk}^\gamma U_t \right] \nonumber \\
     &= (\boldsymbol{J}\boldsymbol{\theta}^*)_k + b_{\gamma, k},
 \end{align}
-where $\E[\gamma_{tk} \tilde{T}_{tk}^\gamma \Delta \mu_k^{\mathrm{disp}}(X_t)] = \E[\Delta \mu_k^{\mathrm{disp}}(X_t) \E[\gamma_{tk}\tilde{T}_{tk}^\gamma \mid X_t]] = 0$ vanishes identically because $\E[\gamma_{tk}\tilde{T}_{tk}^\gamma \mid X_t] \equiv 0$.
+where $\E[\gamma_{tk} \tilde{T}_{tk}^\gamma \Delta \mu_k^{\mathrm{disp}}(X_t)] = \E[\Delta \mu_k^{\mathrm{disp}}(X_t) \E[\gamma_{tk}\tilde{T}_{tk}^\gamma \mid X_t]] = 0$ vanishes identically because $\E[\gamma_{tk}\tilde{T}_{tk}^\gamma \mid X_t] \equiv 0$, and the structural innovation term vanishes by iterated expectations under Assumption~\ref{ass:unconfoundedness}: $\E[\gamma_{tk} \tilde{T}_{tk}^\gamma U_t] = \E[\gamma_{tk} \tilde{T}_{tk}^\gamma \E[U_t \mid X_t, S_t, T_t, Z_{1:N}]] = 0$, since $\gamma_{tk}\tilde{T}_{tk}^\gamma$ is $\sigma(X_t, T_t, Z_{1:N})$-measurable.
 The bias vector $b_{\gamma, k}$ thus captures all departures from replacing $\boldsymbol{H}_t$ by $\boldsymbol{\gamma}_t$: (i) direct regime-weighting error $\sum_j \theta_j^* \E[\gamma_{tk} (H_{tj} - \gamma_{tj}) \tilde{T}_{tk}^\gamma \tilde{T}_{tj}^\gamma]$, and (ii) proxy-induced cross-regime variation $\E[\gamma_{tk} \tilde{T}_{tk}^\gamma \sum_j (H_{tj} - \gamma_{tj})(\theta_j^* \Delta m_{jk}^\gamma(X_t) + \Delta g_{jk}(X_t))]$.
 Under bounded residual support ($\sup_t |\tilde{T}_{tk}^\gamma| \le M_T$ a.s., $\sup_{j,k,x} |\Delta m_{jk}^\gamma(x)| \le L_m$, and $\sup_{j,k,x} |\Delta g_{jk}(x)| \le L_g$), bounding expectations directly yields:
 \begin{align}
@@ -829,7 +829,7 @@ Furthermore, under Assumption~\ref{ass:spectral_comparability} (Two-Sided Spectr
 \begin{equation}
     \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \E\left[ \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} \right] = C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)],
 \end{equation}
-and $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]$. In finite samples, the ergodic theorem and central limit theorem for stationary $\alpha$-mixing chains ensure that $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \varepsilon_\gamma + \mathcal{O}_P(N^{-1/2})$, so the sample surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N}/\lambda_{\min}(\boldsymbol{J}) = \mathcal{D}_{\mathrm{causal}} + \mathcal{O}_P(N^{-1/2})$. We emphasize that these bounds establish $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence. Across our multi-season ground-sensor streams, the empirical ratio $\lambda_{\min}(\boldsymbol{J}_t)/\lambda_{\min}(\boldsymbol{J})$ has 95th percentile in $[1.06, 1.72]$ and maximum $\le 7.35$, empirically confirming that $\overline{c}_J$ is finite and bounded. $\blacksquare$
+and $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]$. In simulation benchmarks where true states are known, the ergodic theorem and central limit theorem for stationary $\alpha$-mixing chains ensure that $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \varepsilon_\gamma + \mathcal{O}_P(N^{-1/2})$, providing an evaluation-only benchmark surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N}/\lambda_{\min}(\boldsymbol{J}) = \mathcal{D}_{\mathrm{causal}} + \mathcal{O}_P(N^{-1/2})$. We emphasize that these bounds establish $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence. Across our multi-season ground-sensor streams, the empirical ratio $\lambda_{\min}(\boldsymbol{J}_t)/\lambda_{\min}(\boldsymbol{J})$ has 95th percentile in $[1.06, 1.72]$ and maximum $\le 7.35$, empirically confirming that $\overline{c}_J$ is finite and bounded. $\blacksquare$
 
 \subsection{A Priori Proxy Diagnostics and Separation Screening}
 \label{app:proxy_diagnostics}
@@ -999,7 +999,7 @@ Let the state-weighted regime score vector be:
 \begin{equation}
     \boldsymbol{\psi}_{\mathrm{regime}}(W_t; \boldsymbol{\theta}, \boldsymbol{\eta}, \boldsymbol{\Lambda}) \equiv \sum_{k=1}^K \gamma_{tk}(\boldsymbol{\Lambda}) (T_t - m_k(X_t)) \left( Y_t - \mu_k(X_t) - \theta_k (T_t - m_k(X_t)) \right).
 \end{equation}
-In a hidden Markov model, the latent parameters $\boldsymbol{\Lambda}$ are estimated via sequence-level maximum likelihood with sequence score $\nabla_{\boldsymbol{\Lambda}} \log p(Z_{1:N}; \boldsymbol{\Lambda}) = \sum_{t=1}^N \boldsymbol{\phi}_{\Lambda, t} + o_P(\sqrt{N})$, where $\boldsymbol{\phi}_{\Lambda, t} \equiv \nabla_{\boldsymbol{\Lambda}} \log p(Z_t \mid Z_{1:t-1}; \boldsymbol{\Lambda}^*)$ denotes the sequence-level prediction-error score increment satisfying $\E[\boldsymbol{\phi}_{\Lambda, t} \mid Z_{1:t-1}] = \mathbf{0}$ and $\frac{1}{N}\sum_{t=1}^N \E[\boldsymbol{\phi}_{\Lambda, t}\boldsymbol{\phi}_{\Lambda, t}^\top] \to \mathcal{I}_\Lambda$. Evaluating the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ at the oracle targets $(\boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*)$:
+In a hidden Markov model satisfying standard regularity and mixing conditions \citep{bickel1993efficient}, the latent parameters $\boldsymbol{\Lambda}$ are estimated via sequence-level maximum likelihood with sequence score $\nabla_{\boldsymbol{\Lambda}} \log p(Z_{1:N}; \boldsymbol{\Lambda}) = \sum_{t=1}^N \boldsymbol{\phi}_{\Lambda, t} + o_P(\sqrt{N})$, where $\boldsymbol{\phi}_{\Lambda, t} \equiv \nabla_{\boldsymbol{\Lambda}} \log p(Z_t \mid Z_{1:t-1}; \boldsymbol{\Lambda}^*)$ denotes the sequence-level prediction-error score increment satisfying $\E[\boldsymbol{\phi}_{\Lambda, t} \mid Z_{1:t-1}] = \mathbf{0}$ and $\frac{1}{N}\sum_{t=1}^N \E[\boldsymbol{\phi}_{\Lambda, t}\boldsymbol{\phi}_{\Lambda, t}^\top] \to \mathcal{I}_\Lambda$. Evaluating the Gateaux derivative with respect to $\boldsymbol{\Lambda}$ at the oracle targets $(\boldsymbol{\theta}^*, \boldsymbol{\eta}^*, \boldsymbol{\Lambda}^*)$:
 \begin{equation}
     \boldsymbol{A}_\Lambda \equiv \lim_{N \to \infty} \frac{1}{N} \sum_{t=1}^N \sum_{k=1}^K \E\left[ \frac{\partial \gamma_{tk}(\boldsymbol{\Lambda}^*)}{\partial \boldsymbol{\Lambda}^\top} (T_t - m_k^*(X_t)) \left( Y_t - \mu_k^*(X_t) - \theta_k^* (T_t - m_k^*(X_t)) \right) \right].
 \end{equation}
@@ -1052,7 +1052,7 @@ where $\mathcal{I}_\Lambda$ is the asymptotic Fisher information matrix of the H
 \begin{equation}
     \boldsymbol{\Sigma}_{\theta\pi} = \lim_{N \to \infty} \frac{1}{N} \sum_{t=1}^N \sum_{s=1}^N \E\left[ \boldsymbol{\phi}_\theta(W_t) \boldsymbol{\phi}_{\Lambda, s}^\top \right] \mathcal{I}_\Lambda^{-1} (\nabla_\Lambda \boldsymbol{\pi}^*)^\top = \operatorname{LRCov}(\boldsymbol{\phi}_\theta, \boldsymbol{\phi}_\Lambda) \mathcal{I}_\Lambda^{-1} (\nabla_\Lambda \boldsymbol{\pi}^*)^\top.
 \end{equation}
-Therefore, $\boldsymbol{\Sigma}_{\theta\pi} = \mathbf{0}$ if and only if the causal score innovations and the latent Markov sequence influence satisfy asymptotic cross-orthogonality: $\E[\boldsymbol{\phi}_\theta(W_t) \boldsymbol{\phi}_{\Lambda, s}^\top] = \mathbf{0}$ for all lag intervals $|t - s| \ge 0$. While this orthogonality holds under structural innovation independence where $\E[\boldsymbol{\Psi}_t \mid Z_{1:N}] = \mathbf{0}$, in empirical settings where unmodeled feedback exists between emissions and treatment errors, $\boldsymbol{\Sigma}_{\theta\pi}$ may be non-zero. In practice, $\sigma_{\mathrm{PATE}}^2$ is consistently estimated by computing a joint Newey-West HAC covariance over the stacked $(2K)$-dimensional influence sequence $(\boldsymbol{\phi}_\theta(W_t)^\top, \boldsymbol{\phi}_\pi(Z_t)^\top)^\top$, where $\boldsymbol{\phi}_\pi(Z_t) \equiv \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\Lambda^{-1} \boldsymbol{\phi}_{\Lambda, t}$.
+Therefore, $\boldsymbol{\Sigma}_{\theta\pi} = \mathbf{0}$ if and only if the causal score innovations and the latent Markov sequence influence satisfy long-run cross-orthogonality: $\operatorname{LRCov}(\boldsymbol{\phi}_\theta, \boldsymbol{\phi}_\Lambda) = \mathbf{0}$. While this orthogonality holds under structural innovation independence where $\E[\boldsymbol{\Psi}_t \mid Z_{1:N}] = \mathbf{0}$, in empirical settings where unmodeled feedback exists between emissions and treatment errors, $\boldsymbol{\Sigma}_{\theta\pi}$ may be non-zero. In practice, $\sigma_{\mathrm{PATE}}^2$ is consistently estimated by computing a joint Newey-West HAC covariance over the stacked $(2K)$-dimensional influence sequence $(\boldsymbol{\phi}_\theta(W_t)^\top, \boldsymbol{\phi}_\pi(Z_t)^\top)^\top$, where $\boldsymbol{\phi}_\pi(Z_t) \equiv \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\Lambda^{-1} \boldsymbol{\phi}_{\Lambda, t}$.
 
 \textbf{Stationary Distribution Variance vs.\ Sample Regime Occupancy:}
 The parametric asymptotic variance of the estimated stationary distribution vector $\hat{\boldsymbol{\pi}}(\hat{\boldsymbol{\Lambda}})$ is $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\Lambda^{-1} (\nabla_\Lambda \boldsymbol{\pi}^*)^\top$.
@@ -1102,7 +1102,9 @@ Kolkata & Regime 2 & 39.3\% & 0.810 & 7.89 & 32.65 & 51.2\% \\
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.85\textwidth,height=2.2cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
+\vspace{-1mm}
+\includegraphics[width=0.85\textwidth,height=1.9cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
+\vspace{-2mm}
 \caption{Dynamic Exposure-Response Curves $\hat{\theta}_h$ across Horizons $h \in [0, 24]$ Hours for Delhi, Mumbai, Bengaluru, and Kolkata. Shaded bands represent 95\% HAC confidence intervals. Regime stratification reveals substantial structural heterogeneity in dynamic pollutant accumulation over multi-hour horizons.}
 \label{fig:dynamic_irf}
 \end{figure}
@@ -1114,6 +1116,7 @@ To verify the theoretical behavior established in Theorem~\ref{thm:spectral} und
 \begin{table}[!ht]
 \centering
 \footnotesize
+\renewcommand{\arraystretch}{0.90}
 \caption{Regularization Sensitivity Grid for Kolkata Airshed ($\lambda_{\min} = 0.0024$, $N=1,209$). Standard errors decrease monotonically from $1.1071$ at $\lambda=0.0$ to $0.0063$ at $\lambda=1.0$, stabilizing estimation variance while shrinking point estimates toward zero.}
 \label{tab:kolkata_lambda_grid}
 \begin{tabular}{lccccc}
@@ -1175,7 +1178,9 @@ To systematically evaluate machine learning under persistent, partially observed
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.90\textwidth,height=3.0cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
+\vspace{-1mm}
+\includegraphics[width=0.90\textwidth,height=1.9cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
+\vspace{-2mm}
 \caption{Universal LatentRegimeBench Evaluation. (a) Calibration of causal estimation bias against theoretical degradation ratio $\mathcal{D} = \bar{\varepsilon}_\gamma / \lambda_{\min}(\mathbf{J})$. (b) Decision-time abstention safety comparing unconstrained point MSE against uncertainty-gated MSE. (c) Representation zoo out-of-distribution (OOD) generalization across HMM, GRU, Causal Transformer, and Linear SSM.}
 \label{fig:latent_regime_bench_fig}
 \end{figure}
@@ -1183,6 +1188,7 @@ To systematically evaluate machine learning under persistent, partially observed
 \begin{table}[!ht]
 \centering
 \footnotesize
+\renewcommand{\arraystretch}{0.90}
 \caption{LatentRegimeBench: Multi-Dimensional Stress Test across 5 Strategic Difficulty Configurations ($30$ Replications each). In well-conditioned regimes (C1, C3), OR-DML achieves a $>5.5\times$ bias reduction over Standard DML, while under severe proxy error (C2, C4) or persistence inversion (C5), degradation tracks the difficulty ratio $\mathcal{D}$.}
 \label{tab:bench_results}
 \resizebox{\columnwidth}{!}{%
@@ -1203,6 +1209,7 @@ High-Persistence Inversion & $2.0$ & $2.0$ & $0.96$ & $0.159$ & $1.5934$ & $1.31
 \begin{table}[!ht]
 \centering
 \footnotesize
+\renewcommand{\arraystretch}{0.90}
 \caption{Latent Representation Zoo under Disentangled Distribution Shifts ($N=2,000$ per evaluation stream, 5 independent random seeds; mean $\pm$ std). Shift A isolates transition dynamics ($\rho = 0.85 \to 0.96$); Shift B isolates observation noise ($\Delta_Z = 3.5 \to 1.0$); Shift C compounds both perturbations. While deep neural encoders achieve competitive latent recovery under compound shift, Gaussian HMM maintains the lowest compound calibration error ($\text{ECE} = 0.0397 \pm 0.0242$).}
 \label{tab:bench_models}
 \resizebox{\columnwidth}{!}{%
@@ -1264,6 +1271,7 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 \begin{table}[!ht]
 \centering
 \footnotesize
+\renewcommand{\arraystretch}{0.92}
 \caption{Multi-Horizon Downstream Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$ across Lead Times $h \in [1, 24]$. In ill-conditioned airsheds (Mumbai Coastal, $\lambda_{\min} = 0.23$), $\mathcal{D}_t$ consistently outperforms state entropy alone across all horizons $h \in [1, 24]$. Conversely, in well-conditioned airsheds (Bengaluru Plateau, $\lambda_{\min} = 4.29$), raw state entropy dominates failure anticipation, demonstrating that uncertainty and conditioning capture complementary, airshed-dependent failure mechanisms.}
 \label{tab:failure_ablation}
 \resizebox{\columnwidth}{!}{%
@@ -1302,7 +1310,9 @@ In coastal airsheds subject to land-sea breeze inversions and severe treatment c
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.90\textwidth,height=2.5cm,keepaspectratio]{plots/fig5_financial_transfer.png}
+\vspace{-2mm}
+\includegraphics[width=0.90\textwidth,height=1.85cm,keepaspectratio]{plots/fig5_financial_transfer.png}
+\vspace{-2mm}
 \caption{Quantitative Macro Financial Market Regime Transfer. (a) Daily asset factor returns colored by latent volatility regime. (b) Dynamic difficulty index $D_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$ with identification-based safety escalations. (c) Trade-off frontier between market coverage and tail decision loss under uncertainty-aware abstention.}
 \label{fig:financial_transfer_fig}
 \end{figure}
@@ -1312,6 +1322,7 @@ In coastal airsheds subject to land-sea breeze inversions and severe treatment c
 To verify that the latent regime confounding and difficulty framework reflects a general mathematical reality of sequential decision systems under hidden persistent context rather than an idiosyncratic atmospheric feature, we evaluate the Regime Intelligence engine on a synthetic macro financial stress test with real macroeconomic covariate context (daily FRED macroeconomic interest rate, spread, and liquidity indicators; $N=1,500$ daily trading periods). Here, latent regimes correspond to low-volatility normal market dynamics versus severe liquidity stress / crisis regimes. Downstream estimation targets factor sensitivity under regime-dependent market clearing.
 
 We partition the sequential trading stream into a strict temporal calibration split ($N=900$, first 60\%) and held-out test split ($N=600$, final 40\%). The optimal abstention threshold $\tau^* = 4.0$ is chosen strictly on the calibration split and frozen for test evaluation. Table~\ref{tab:financial_quartiles} partitions out-of-sample trading periods into dynamic regime risk quartiles $R_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$. In Q4 (Severe Risk), tail 95\% forecast MSE surges to $4.2931$ (compared to $1.7461$ in moderate periods), driven by catastrophic causal ill-conditioning ($\lambda_{\min} \to 0.211$).
+Table~\ref{tab:financial_abstention} demonstrates the out-of-sample performance of identification-aware abstention across a formal three-way decision regret evaluation comparing the adaptive risk-aware policy ($D_t \le \tau$) against Always-Active (zero abstention, active regret $0.1994$) and Always-Fallback (unconditional baseline abstention, $\text{MSE} = 11.3749$). The calibration-selected policy $\tau^* = 4.0$ abstains on just $1.0\%$ of severe tail-risk periods, slashing out-of-sample decision regret from $0.1994$ to $0.0025$ (a $\mathbf{98.74\%}$ regret reduction) while maintaining $99.0\%$ market coverage and trading $<0.1\%$ average loss. At $\tau = 2.5$, the policy achieves a $\mathbf{95.94\%}$ regret reduction while avoiding the catastrophic loss of unconditional fallback ($\text{MSE} = 11.3749$). Figure~\ref{fig:financial_transfer_fig} charts the cross-domain transfer dynamics.
 
 \begin{table}[!htb]
 \centering
@@ -1330,13 +1341,8 @@ Q4 (Severe Risk) & $19.164$ & $0.103$ & $0.211$ & $0.9419$ & $4.2931$ & $18.9\%$
 \bottomrule
 \end{tabular}%
 }
-\end{table}
+\vspace{2mm}
 
-Table~\ref{tab:financial_abstention} demonstrates the out-of-sample performance of identification-aware abstention across a formal three-way decision regret evaluation comparing the adaptive risk-aware policy ($D_t \le \tau$) against Always-Active (zero abstention, active regret $0.1994$) and Always-Fallback (unconditional baseline abstention, $\text{MSE} = 11.3749$). The calibration-selected policy $\tau^* = 4.0$ abstains on just $1.0\%$ of severe tail-risk periods, slashing out-of-sample decision regret from $0.1994$ to $0.0025$ (a $\mathbf{98.74\%}$ regret reduction) while maintaining $99.0\%$ market coverage and trading $<0.1\%$ average loss. At $\tau = 2.5$, the policy achieves a $\mathbf{95.94\%}$ regret reduction while avoiding the catastrophic loss of unconditional fallback ($\text{MSE} = 11.3749$). Figure~\ref{fig:financial_transfer_fig} charts the cross-domain transfer dynamics.
-
-\begin{table}[!htb]
-\centering
-\footnotesize
 \caption{Three-Way Decision Regret on Financial Macro Regimes ($N=600$ Test Days). Risk-Aware Policy ($D_t \le \tau$) vs.\ Always-Active (Active Regret $0.1994$) and Always-Fallback ($\text{MSE}=11.3749$). The calibration threshold $\tau^*=4.0$ slashes regret to $0.0025$ ($\mathbf{98.74\%}$ reduction) at $99.0\%$ coverage.}
 \label{tab:financial_abstention}
 \resizebox{\columnwidth}{!}{%
