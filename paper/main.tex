@@ -56,28 +56,28 @@
 \aistatsaddress{ Anonymous Institution(s) }]
 
 \begin{abstract}
-Sequential machine-learning systems often operate under persistent but partially observed context: latent regimes influence observed data and downstream tasks, while temporal dependence invalidates naive cross-sectional assumptions. We study how uncertainty in inferred latent context propagates into downstream reliability. For a latent Markov confounding model, we identify two distinct sources of degradation: imperfect latent-state recovery and weak task conditioning. Under explicit regularity conditions, we derive a graceful-degradation bound whose leading term scales as $\bar{\varepsilon}_\gamma/\lambda_{\min}(\boldsymbol{J})$, where $\bar{\varepsilon}_\gamma$ measures posterior state error and $\lambda_{\min}(\boldsymbol{J})$ measures downstream conditioning. We further show that posterior entropy provides an observable multiplicative surrogate for this difficulty under two-sided spectral comparability, and develop spectral regularization with purged block cross-fitting for weak-overlap sequential estimation. Beyond causal estimation, we evaluate HMM, GRU, Transformer, and state-space representations under disentangled temporal and observation shifts. Across 15 independent benchmark worlds, latent-state classification accuracy alone does not fully explain downstream reliability, while posterior log-loss provides additional explanatory power after controlling for accuracy. Real longitudinal sensor data from four Indian cities reveal complementary failure mechanisms: state uncertainty is more informative in well-conditioned settings, whereas task conditioning becomes informative under severe overlap limitations. A synthetic financial stress test further illustrates an out-of-sample adaptive abstention policy. Together, these results suggest that reliable sequential ML should assess uncertainty in latent context jointly with the geometry of the downstream task.
+Sequential machine-learning systems often operate under persistent but partially observed context, where uncertainty about latent regimes can propagate into downstream failure. We study how uncertainty in inferred latent context propagates into downstream reliability. For a latent Markov confounding model, we identify two distinct sources of degradation: imperfect latent-state recovery and weak task conditioning. Under explicit regularity conditions, we derive a graceful-degradation bound whose leading term scales as $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol{J})$, where $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$ measures population posterior state error and $\lambda_{\min}(\boldsymbol{J})$ measures downstream conditioning. We further show that posterior entropy provides an observable multiplicative surrogate for this difficulty under two-sided spectral comparability, and develop spectral regularization with purged block cross-fitting for weak-overlap sequential estimation. Beyond causal estimation, we evaluate HMM, GRU, Transformer, and state-space representations under disentangled temporal and observation shifts. Across 15 independent benchmark worlds, latent-state classification accuracy alone does not fully explain downstream reliability, while posterior log-loss provides additional explanatory power after controlling for accuracy. Real longitudinal sensor data from four Indian cities reveal complementary failure mechanisms: state uncertainty is more informative in well-conditioned settings, whereas task conditioning becomes informative under severe overlap limitations. A synthetic financial stress test further illustrates an out-of-sample adaptive abstention policy. Together, these results suggest that reliable sequential ML should assess uncertainty in latent context jointly with the geometry of the downstream task.
 \end{abstract}
 
 \section{INTRODUCTION}
 \label{sec:intro}
 
-Sequential machine learning systems frequently operate in environments governed by persistent, partially observed context—such as unobserved physical, macroeconomic, or operational regimes. A widespread design assumption in such systems is that predictive confidence or calibration over the latent state is sufficient for downstream reliability. However, this assumption fails: downstream reliability is fundamentally governed by the \emph{interaction} between latent-state uncertainty and downstream task geometry. When the downstream task is ill-conditioned—such as estimating causal effects under collinear treatments or weak overlap—even small posterior proxy error is catastrophically amplified, causing severe downstream failure despite seemingly confident latent representations.
+Sequential machine learning systems frequently operate in environments governed by persistent, partially observed context—such as unobserved physical, macroeconomic, or operational regimes. A widespread design assumption in such systems is that predictive confidence or calibration over the latent state is sufficient for downstream reliability. However, this assumption fails: downstream reliability can depend critically on the \emph{interaction} between latent-state uncertainty and downstream task geometry. When the downstream task is ill-conditioned—such as estimating causal effects under collinear treatments or weak overlap—even small posterior proxy error is catastrophically amplified, causing severe downstream failure despite seemingly confident latent representations.
 
-Continuous-treatment causal inference in atmospheric systems provides a rigorous, naturally occurring laboratory for this phenomenon: estimating the causal impact of emissions curtailment on ambient air quality ($\text{PM}_{2.5}$) \citep{dominici2014mitigating}. Observational time series in this domain violate two foundational assumptions of modern machine learning:
-\begin{enumerate}
-    \item \textbf{Persistent Latent Regime Confounding:} Planetary boundary-layer (PBL) dynamics transition between discrete thermodynamic regimes (e.g., severe nocturnal inversion vs.\ advective convective clearance). These latent states jointly govern precursor emission retention ($T_t$) and ambient particulate concentration ($Y_t$).
+Continuous-treatment causal inference in atmospheric systems provides a natural laboratory: estimating the causal effect of variation in the observed $\text{NO}_2$ exposure proxy on ambient $\text{PM}_{2.5}$ \citep{dominici2014mitigating} (translating this observational exposure effect to an emissions policy requires structural transport assumptions). Observational time series in this domain violate two foundational assumptions:
+\begin{enumerate}\setlength{\itemsep}{-2pt}\setlength{\parskip}{0pt}
+    \item \textbf{Persistent Latent Regime Confounding:} Planetary boundary-layer (PBL) dynamics transition between discrete thermodynamic regimes (e.g., severe nocturnal inversion vs.\ advective convective clearance). These latent states jointly govern precursor emission dispersion ($T_t$) and ambient particulate concentration ($Y_t$).
     \item \textbf{Imperfect Regime Overlap \& Temporal Dependence:} Latent states are never directly observed; auxiliary meteorological proxies $Z_t$ exhibit substantial overlap, making posterior state recovery uncertain ($\varepsilon_\gamma > 0$), while autoregressive persistence breaks cross-sectional exchangeability \citep{chernozhukov2018double}, leaking nuisance errors across temporal folds.
 \end{enumerate}
 
-When standard Double Machine Learning \citep{chernozhukov2018double} or tree-based plug-in estimators are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands are severely biased, frequently suffering \emph{sign inversions}—falsely suggesting that emission abatement exacerbates ambient pollution.
+When standard Double Machine Learning \citep{chernozhukov2018double} or tree-based plug-in estimators are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands can exhibit severe bias and, in our benchmark, sign inversions—falsely suggesting that precursor reductions exacerbate ambient pollution.
 
 \textbf{Related Work.} Standard DML \citep{chernozhukov2018double,foster2023orthogonal,nie2021quasi} relies on observed confounding and i.i.d.\ exchangeability. In time-series DML, \citet{ciganovic2026dml} adapt DML to macroeconomic series via Reverse Cross-Fitting; however, their framework requires strict stationarity and time-reversibility, precluding persistent regime-switching physical systems. In latent-state causal inference, \citet{clouth2024latent} examine latent Markov models using parametric g-computation, while \citet{huang2023sdci} study conditionally stationary time series; neither addresses semiparametric Neyman-orthogonal score stability under weak regime overlap. Crucially, recent advances at the frontier of causal representation learning \citep{aistats2026weakoverlap} treat weak overlap not as an ignorable nuisance, but as an explicit statistical design problem. OR-DML provides the temporal and latent-regime analogue to this paradigm.
 
 \textbf{Contributions.} We formulate the bridge between latent uncertainty, task conditioning, and sequential reliability:
 \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-    \item \textbf{Failure Decomposition (Theorems~\ref{thm:impossibility}--\ref{thm:graceful}):} We formalize latent regime confounding and prove that downstream estimation suffers two distinct degradation mechanisms: imperfect latent recovery ($\bar{\varepsilon}_\gamma$) and weak task conditioning ($\lambda_{\min}(\boldsymbol{J})$).
-    \item \textbf{Principled Difficulty Measure (Proposition~\ref{prop:bridge}):} We formulate causal difficulty $\mathcal{D}_{\mathrm{causal}} = \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ and establish rolling entropy $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$ as an observable multiplicative surrogate under two-sided spectral comparability.
+    \item \textbf{Failure Decomposition (Theorems~\ref{thm:impossibility}--\ref{thm:graceful}):} We formalize latent regime confounding and prove that downstream estimation suffers two distinct degradation mechanisms: imperfect latent recovery ($\varepsilon_\gamma$) and weak task conditioning ($\lambda_{\min}(\boldsymbol{J})$).
+    \item \textbf{Principled Difficulty Measure (Proposition~\ref{prop:bridge}):} We formulate causal difficulty $\mathcal{D}_{\mathrm{causal}} = \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ and establish rolling entropy $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$ as an observable multiplicative surrogate under two-sided spectral comparability.
     \item \textbf{Adaptive Sequential Response (Theorems~\ref{thm:spectral}--\ref{thm:asymptotics}):} We derive leading-order risk bounds under long-run covariance approximations and develop data-driven empirical risk-surrogate selection $\hat{\lambda}^*$ with purged block cross-fitting for weak-overlap sequential estimation.
     \item \textbf{Multi-Domain Empirical Investigation:} Across controlled multi-world benchmarks, $>14,000$ hours of Indian atmospheric sensor data, and a synthetic financial macro stress test, we find empirical instances of the predicted separation between latent representation accuracy, posterior calibration, and downstream task reliability, demonstrating that task geometry governs failure bottlenecks.
 \end{itemize}
@@ -97,13 +97,13 @@ We formalize the atmospheric data-generating process via the following Structura
     Y_t &= \theta(S_t) T_t + g(X_t, S_t) + U_t, \label{eq:outcome}
 \end{align}
 with $\E[U_t \mid X_t, S_t, T_t] = 0$, where:
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{-2pt}\setlength{\parskip}{0pt}
     \item $S_t$ is an unobserved discrete Markov regime with transition matrix $\Pi_{jk} = P(S_t = k \mid S_{t-1} = j)$ and stationary distribution $\pi^*$.
     \item $Z_t \in \R^q$ denotes observed auxiliary physical state indicators (e.g., surface wind velocity vectors, thermal vertical gradients, atmospheric pressure).
     \item $X_t \in \R^p$ is a vector of observed weather confounders and temporal lags.
     \item $T_t \in \R$ is the continuous treatment (precursor emission proxy, e.g., $\text{NO}_2$).
     \item $Y_t \in \R$ is the continuous outcome (ambient pollutant, e.g., $\text{PM}_{2.5}$).
-    \item $\theta(S_t) = \sum_{k=1}^K \theta_k^* \one(S_t = k)$ represents the regime-dependent causal elasticity.
+    \item $\theta(S_t) = \sum_{k=1}^K \theta_k^* \one(S_t = k)$ represents the regime-specific causal effect.
 \end{itemize}
 
 \begin{figure}[t]
@@ -216,7 +216,7 @@ To overcome the failure of standard cross-sectional DML, we introduce \textbf{Ov
 \subsection{Latent Regime Formulation \& Observability Diagnostics}
 Let $Z_t \in \R^q$ denote exogenous meteorological state trajectories (strictly pre-treatment, avoiding outcome contamination). We model the latent atmospheric state $S_t \in \{1, \dots, K\}$ via a Hidden Markov Model with transition matrix $\boldsymbol{\Pi}$ and emission parameters $\boldsymbol{\phi}$.
 Depending on the regulatory horizon, state posteriors fall into three operational modes:
-\begin{enumerate}
+\begin{enumerate}\setlength{\itemsep}{-2pt}\setlength{\parskip}{0pt}
     \item \textbf{Retrospective Smoothed Posteriors (Offline):} $\gamma_{tk}^{\mathrm{smooth}} \equiv P(S_t = k \mid Z_{1:N})$ for retrospective environmental epidemiology and structural causal auditing;
     \item \textbf{Training-Fitted Forward Filtered Posteriors:} $\gamma_{tk}^{\mathrm{filter}} \equiv P(S_t = k \mid Z_{1:t}, \hat{\boldsymbol{\phi}})$ where global transition/emission dynamics $\hat{\boldsymbol{\phi}}$ are calibrated offline, but sequential state updates proceed strictly causally on past-to-present observations $Z_{1:t}$; or
     \item \textbf{Expanding-Window Online Filter:} where both parameter estimation and forward filtering update causally without access to future measurements.
@@ -225,9 +225,10 @@ Our empirical and benchmark implementations evaluate Mode 1 (offline smoothing) 
 \begin{equation}
     \bar{H}(\boldsymbol{\gamma}) \equiv -\frac{1}{N}\sum_{t=1}^N \sum_{k=1}^K \gamma_{tk} \ln(\gamma_{tk} + \epsilon).
 \end{equation}
+\emph{A Priori Diagnostics:} Standardized separation $\Delta_Z < 0.5$ or entropy $\bar{H} \to \ln K$ signals non-identification (Theorem~\ref{thm:impossibility}; rules in Appendix~\ref{app:proxy_diagnostics}).
 
 \subsection{State-Weighted Coupled System \& Spectral Regularization}
-To avoid heuristic decoupled regressions that suffer cross-talk bias under regime overlap, OR-DML estimates regime-specific conditional expectations via state-weighted regressions targeting the population conditional expectations $m_k^\gamma(x) \equiv \frac{\E[\gamma_{tk} T_t \mid X_t=x]}{\E[\gamma_{tk} \mid X_t=x]}$ and $\mu_k^\gamma(x) \equiv \frac{\E[\gamma_{tk} Y_t \mid X_t=x]}{\E[\gamma_{tk} \mid X_t=x]}$. For each regime $k \in \{1, \dots, K\}$, we fit nuisances:
+To avoid heuristic decoupled regressions that suffer cross-talk bias under regime overlap, OR-DML estimates regime-specific conditional expectations via state-weighted regressions targeting population expectations $m_k^\gamma(x) \equiv \frac{\E[\gamma_{tk} T_t \mid X_t=x]}{\E[\gamma_{tk} \mid X_t=x]}$ and $\mu_k^\gamma(x) \equiv \frac{\E[\gamma_{tk} Y_t \mid X_t=x]}{\E[\gamma_{tk} \mid X_t=x]}$:
 \begin{align}
     \hat{m}_k(X) &= \arg\min_{m} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (T_t - m(X_t))^2, \label{eq:nuisance_m} \\
     \hat{\mu}_k(X) &= \arg\min_{\mu} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (Y_t - \mu(X_t))^2. \label{eq:nuisance_mu}
@@ -236,12 +237,14 @@ On evaluation fold $\mathcal{B}_b$, we form centered residuals $\tilde{T}_{tk} =
 \begin{equation}
     \hat{J}_{jk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk}, \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}.
 \end{equation}
-When regime separation is weak, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned. OR-DML introduces the \textbf{Spectrally Regularized Estimator}:
+When regime separation is weak or treatments are collinear, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned. OR-DML introduces the \textbf{Spectrally Regularized Estimator}:
 \begin{equation}
 \label{eq:theta_spectral}
     \hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}},
 \end{equation}
-where $\lambda \ge 0$ trades off regularization bias against collinearity variance. We distinguish three causal estimand targets: (i) the true stationary population ATE $\theta_{\mathrm{PATE}}^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$, (ii) the estimated stationary ATE $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}(\hat{\boldsymbol{\Lambda}})^\top \hat{\boldsymbol{\theta}}_\lambda$, and (iii) the empirical sample occupation ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}_N^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\bar{\boldsymbol{\gamma}}_N \equiv \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$.
+where $\lambda \ge 0$ trades off regularization bias against collinearity variance.
+\emph{Scalability \& Non-Identifiability:} Inverting $\hat{\boldsymbol{J}}$ is $\mathcal{O}(K^3)$ with sample complexity $N = \tilde{\Omega}\left(\frac{K \log(K/\delta)}{\min_k (\pi_k^*)^2 \lambda_{\min}^2 \rho_{\mathrm{gap}}}\right)$ under $\alpha$-mixing (Appendix~\ref{app:state_space_scalability}); when $\kappa(\hat{\boldsymbol{J}}) > 10^4$ or $\text{CI}(\lambda_{\min})$ covers 0, systems should diagnose non-identifiability and abstain.
+We distinguish three causal estimand targets: (i) the true stationary population ATE $\theta_{\mathrm{PATE}}^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$, (ii) the estimated stationary ATE $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}(\hat{\boldsymbol{\Lambda}})^\top \hat{\boldsymbol{\theta}}_\lambda$, and (iii) the empirical sample occupation ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}_N^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\bar{\boldsymbol{\gamma}}_N \equiv \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$.
 
 \subsection{Purged Block Cross-Fitting with Bartlett Embargo}
 To ensure validity under temporal dependence, we partition observations into $B$ contiguous blocks. To eliminate cross-fold leakage under $\alpha$-mixing, each test block $\mathcal{B}_b$ is surrounded by an embargo buffer of width $\tau^*$ (Algorithm~\ref{alg:purged_cv}). We determine $\tau^*$ from the data via the Bartlett significance threshold:
@@ -276,7 +279,7 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llcccccccc}
 \toprule
-$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{Abs Bias} & \textbf{RMSE} & \textbf{SATE Cov} & \textbf{PATE Cov} & $\lambda_{\min}(\boldsymbol{J})$ & $\kappa(\boldsymbol{J})$ & $\bar{\varepsilon}_\gamma$ \\
+$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean $\hat{\theta}$} & \textbf{Abs Bias} & \textbf{RMSE} & \textbf{SATE Cov} & \textbf{PATE Cov} & $\lambda_{\min}(\boldsymbol{J})$ & $\kappa(\boldsymbol{J})$ & $\hat{\varepsilon}_\gamma$ \\
 \midrule
 \multirow{4}{*}{0.2 (Severe Overlap)} 
 & Oracle DML & 1.5327 & 0.0558 & 0.0703 & 96.0\% & 94.0\% & 0.4485 & 1.26 & 0.0000 \\
@@ -340,7 +343,7 @@ where $C = L_g M_T + M_\theta M_T^2 + M_\theta M_T L_m < \infty$.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.72\textwidth,height=1.50cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
-\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Factorial calibration: Absolute bias $|\hat{\theta} - \theta^*|$ vs.\ the theoretical degradation ratio $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$ (Theorem~\ref{thm:graceful}) across 15 factorial grid cells, highlighting Adversarial Corners A (high $\bar{\varepsilon}_\gamma$, healthy $\lambda_{\min}$) and B (low $\bar{\varepsilon}_\gamma$, weak $\lambda_{\min}$).}
+\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Factorial calibration: Absolute bias $|\hat{\theta} - \theta^*|$ vs.\ empirical difficulty scaling $\hat{\varepsilon}_{\gamma,N} / \lambda_{\min}(\boldsymbol{J})$, validating the theoretical degradation scaling (Theorem~\ref{thm:graceful}) across 15 factorial grid cells, highlighting Adversarial Corners A (high $\hat{\varepsilon}_\gamma$, healthy $\lambda_{\min}$) and B (low $\hat{\varepsilon}_\gamma$, weak $\lambda_{\min}$).}
 \label{fig:difficulty_frontier}
 \end{figure*}
 
@@ -350,9 +353,9 @@ Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigoro
 Theorem~\ref{thm:graceful} demonstrates that the leading asymptotic bias scales with the theoretical ratio:
 \begin{equation}
 \label{eq:difficulty_ratio}
-    \mathcal{D}_{\mathrm{causal}} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
+    \mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})},
 \end{equation}
-Because true states are unobserved, runtime systems cannot compute $\bar{\varepsilon}_\gamma$ directly. We bridge unobservable causal difficulty to the computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
+where $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$ is the population posterior state error, estimated in finite samples by $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Because true states are unobserved at runtime, deployed systems cannot compute $\varepsilon_\gamma$ or $\hat{\varepsilon}_{\gamma, N}$ directly. We bridge unobservable causal difficulty to the computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
 \begin{assumption}[Two-Sided Spectral Comparability]
 \label{ass:spectral_comparability}
 There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\underline{c}_J \le \frac{\lambda_{\min}(\boldsymbol{J}_t)}{\lambda_{\min}(\boldsymbol{J})} \le \overline{c}_J$ almost surely for all evaluation windows $t \ge w$.
@@ -360,22 +363,22 @@ There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such tha
 
 \begin{proposition}[Surrogate Entropy-Difficulty Bridge]
 \label{prop:bridge}
-Let $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ be the calibrated posterior state given $\mathcal{F}_t = \sigma(Z_{1:t})$. Then $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$ for $K=2$.
+For causal forward-filtered posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ with filtration $\mathcal{F}_t = \sigma(Z_{1:t})$, the posterior error satisfies $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$ for $K=2$.
 We define the difficulty hierarchy:
 \begin{align}
-    \mathcal{D}_{\mathrm{causal}} &\equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}, \quad \mathcal{D}_{\mathrm{global}}^H(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})}, \\
+    \mathcal{D}_{\mathrm{causal}} &\equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}, \quad \mathcal{D}_{\mathrm{global}}^H(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})}, \\
     \mathcal{D}_{\mathrm{operational}}(t) &\equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}.
 \end{align}
-(i) Causal difficulty is unconditionally bounded by global entropy: $\mathcal{D}_{\mathrm{causal}} \le C_K \E\left[ \mathcal{D}_{\mathrm{global}}^H(t) \right] + \mathcal{O}_P(N^{-1/2})$.
+(i) Causal difficulty is unconditionally bounded in population by global entropy: $\mathcal{D}_{\mathrm{causal}} \le C_K \E\left[ \mathcal{D}_{\mathrm{global}}^H(t) \right]$.
 (ii) Under Assumption~\ref{ass:spectral_comparability}, the deployable index satisfies:
 \begin{align}
 \label{eq:bridge_bound}
-    \mathcal{D}_{\mathrm{causal}} &\le C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)] \nonumber \\
-    &\quad + \mathcal{O}_P(N^{-1/2}), \\
+    \mathcal{D}_{\mathrm{causal}} &\le C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)], \\
     \E[\mathcal{D}_{\mathrm{operational}}(t)] &\le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)].
 \end{align}
+The empirical sample surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N} / \lambda_{\min}(\boldsymbol{J})$ converges to $\mathcal{D}_{\mathrm{causal}}$ with $\mathcal{O}_P(N^{-1/2})$ error.
 \end{proposition}
-Proposition~\ref{prop:bridge} (proof in Appendix~\ref{app:proof_bridge}) mathematically grounds the deployable monitoring engine across three levels of observability: unobservable causal difficulty $\mathcal{D}_{\mathrm{causal}} \to$ observable operational surrogate $\mathcal{D}_{\mathrm{operational}}(t) \to$ realized downstream loss $L_{t+h}$. We emphasize that \eqref{eq:bridge_bound} establishes $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$; it does not assert a two-sided equivalence between $\mathcal{D}_{\mathrm{causal}}$ and $\mathcal{D}_{\mathrm{operational}}$, as lower-bounding $\bar{\varepsilon}_\gamma$ by entropy would require separate anti-concentration conditions.
+Proposition~\ref{prop:bridge} (proof in Appendix~\ref{app:proof_bridge}) mathematically grounds the deployable monitoring engine across three levels of observability: unobservable causal difficulty $\mathcal{D}_{\mathrm{causal}} \to$ observable operational surrogate $\mathcal{D}_{\mathrm{operational}}(t) \to$ realized downstream loss $L_{t+h}$. We emphasize that \eqref{eq:bridge_bound} establishes $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence. The entropy bridge holds algebraically for retrospective smoothed posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid Z_{1:N})$ as well, though with retrospective rather than prospective interpretation.
 
 \begin{theorem}[Leading-Order Risk Bound under Long-Run Covariance Approximation]
 \label{thm:spectral}
@@ -420,10 +423,10 @@ where $\boldsymbol{\Sigma}_\pi = \mathbf{D}_\pi \mathbf{Z} + \mathbf{Z}^\top \ma
 \begin{table*}[t]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.65}
+\renewcommand{\arraystretch}{0.58}
 \caption{Empirical Treatment Elasticities on Clean Longitudinal Ground-Sensor Data across Four Major Indian Megacities (>14,000 Complete Hourly Observations, February 2025 -- June 2026). Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$.}
 \label{tab:empirical}
-\resizebox{0.82\textwidth}{!}{%
+\resizebox{0.78\textwidth}{!}{%
 \begin{tabular}{llrccccc}
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$} & \textbf{Std Error} & \textbf{95\% CI} & \textbf{p-value} & $\lambda_{\min}(\hat{\boldsymbol{J}})$ [$\kappa$] \\
@@ -473,7 +476,7 @@ The difficulty of latent regime recovery is governed continuously by the separat
 
 \subsection{Difficulty Frontier Findings}
 Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three key statistical phenomena:
-\begin{enumerate}\setlength{\itemsep}{-1.5pt}\setlength{\parskip}{0pt}
+\begin{enumerate}\setlength{\itemsep}{-2.5pt}\setlength{\parskip}{0pt}
     \item \textbf{Persistence of Naive Confounding:} In our benchmark DGP, Standard and Block DML exhibit approximately constant omitted-regime bias ($+8.44$, RMSE $8.45$) and $0.0\%$ coverage across the entire $\Delta_Z$ grid, illustrating Theorem~\ref{thm:bias}. Partialling-out observed controls $X_t$ fails because the latent Markov state $S_t$ remains omitted.
     \item \textbf{Continuous Graceful Degradation:} In accordance with Theorem~\ref{thm:graceful}, OR-DML exhibits continuous graceful degradation. At $\Delta_Z = 0.2$, posterior overlap is high ($\bar{H} = 0.434$), confirming Theorem~\ref{thm:impossibility}'s non-identification. As $\Delta_Z$ increases to $1.0$, $2.0$, and $4.0$, absolute bias shrinks by $98.1\%$ (from $8.59 \to 4.25 \to 0.50 \to 0.16$), and coverage rises to $93.0\%$ (with average 95\% CI width narrowing from $1.323$ at $\Delta_Z=1.0$ to $0.287$ at $\Delta_Z=4.0$).
     \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across all separated regimes ($\Delta_Z \ge 2.0$, bias $0.2233$ vs $0.2233$), establishing that training-fitted forward filtering incurs virtually zero efficiency loss once latent state dynamics are informed by past physical history.
@@ -487,10 +490,11 @@ We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records
 
 \vspace{-2mm}
 \textbf{Conditioning Diagnostics \& Physical Interpretation:}
-\textbf{Delhi Basin ($\lambda_{\min} = 111.8$):} Clean separation and strong residual variation. OR-DML decomposes pooled elasticity ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, convective clearance).
+\textbf{Delhi Basin ($\lambda_{\min} = 111.8$):} Clean separation and strong residual variation. OR-DML decomposes pooled causal effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, convective clearance).
 \textbf{Mumbai Coastal ($\lambda_{\min} = 0.32$):} Marine breeze reversals induce severe treatment collinearity ($\lambda_{\min} = 0.32$). Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates the significant stagnation regime effect ($+3.30 \pm 1.48$, $p=0.026$) from clearance ($-0.03 \pm 8.72$).
 \textbf{Bengaluru Plateau ($\lambda_{\min} = 4.22$):} Standard DML estimates zero effect ($-0.001 \pm 0.060$). OR-DML isolates daytime convective dispersion ($+0.092$) from nocturnal inversion ($-0.153 \pm 0.069$, $p=0.027$).
-\textbf{Kolkata Airshed ($\lambda_{\min} = 0.0025$):} Demonstrates entropy vs.\ conditioning divergence: despite modest entropy ($\bar{H} = 0.083$), residual treatments are severely collinear. Unregularized DML explodes ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}).
+\textbf{Reliability Contrast:} In Bengaluru, healthy conditioning ($\lambda_{\min} = 4.22$) renders state uncertainty informative ($\text{AUC}(H) = 0.674$), whereas Mumbai's ill-conditioning ($\lambda_{\min} = 0.32$) blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}).
+\textbf{Kolkata Airshed ($\lambda_{\min} = 0.0025$):} Demonstrates entropy vs.\ conditioning divergence: despite modest entropy ($\bar{H} = 0.083$), treatments are collinear. Unregularized DML explodes ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}).
 
 \vspace{-3mm}
 \subsection{Dynamic Exposure-Response Curves}
@@ -499,12 +503,13 @@ Figure~\ref{fig:dynamic_irf} (Appendix~\ref{app:empirical_sensitivity}) depicts 
 \vspace{-3mm}
 \section{CONCLUSION}
 \label{sec:conclusion}
-We investigated how uncertainty in inferred latent context interacts with task geometry to govern reliability in sequential machine learning. The broader lesson is that reliable sequential ML requires evaluating uncertainty in latent context jointly with the geometry of the downstream task, rather than treating latent-state confidence as a sufficient proxy for downstream trust. OR-DML provides a theoretically tractable causal instance of this principle, while the representation and reliability experiments show its relevance beyond causal estimation.
+We investigated how latent-context uncertainty interacts with task geometry to govern sequential ML reliability. Reliable sequential systems must assess latent uncertainty jointly with downstream task geometry, rather than treating state confidence alone as a proxy for trust. OR-DML provides a tractable causal realization of this principle, with experiments confirming its broader validity across sequential learning tasks.
 
 \clearpage
 
 % \bibliographystyle{plainnat}
-\begin{thebibliography}{18}
+\begin{thebibliography}{19}
+\setlength{\itemsep}{-1.5pt}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -520,6 +525,11 @@ Susan Athey, Julie Tibshirani, and Stefan Wager.
 Jushan Bai.
 \newblock Panel data models with interactive fixed effects.
 \newblock \emph{Econometrica}, 77\penalty0 (4):\penalty0 1229--1279, 2009.
+
+\bibitem[Banna et~al.(2016)Banna, Merlev{\`e}de, and Peligrad]{banna2016bernstein}
+Zineb Banna, Florence Merlev{\`e}de, and Magda Peligrad.
+\newblock On the matrix {B}ernstein inequality for $\alpha$-mixing sequences.
+\newblock \emph{Bernoulli}, 22\penalty0 (4):\penalty0 2073--2098, 2016.
 
 \bibitem[Bickel et~al.(1993)Bickel, Klaassen, Ritov, and Wellner]{bickel1993efficient}
 Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
@@ -655,6 +665,15 @@ We have reviewed all AI-assisted work as follows: all mathematical proofs were v
 \clearpage
 \onecolumn
 \appendix
+\allowdisplaybreaks
+\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{2pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{2pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\renewcommand{\arraystretch}{0.85}
 \section*{MATHEMATICAL APPENDIX: COMPLETE PROOFS AND DERIVATIONS}
 
 \section{Proof of Theorem 1: Non-Identification Under Unconstrained Overlap}
@@ -766,16 +785,16 @@ Since $\lambda_{\min}(\boldsymbol{J}) > 0$, the unregularized estimand satisfies
 \end{equation}
 Combining with purged cross-fitting nuisance estimation error of order $\mathcal{O}_P(N^{-1/2})$ yields $\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2})$, completing the proof of Theorem~\ref{thm:graceful}. $\blacksquare$
 
-\subsection{The Latent-Confounding Difficulty Frontier $\mathcal{D}$}
+\subsection{The Latent-Confounding Difficulty Frontier $\mathcal{D}_{\mathrm{causal}}$}
 \label{app:difficulty_frontier}
 Theorem~\ref{thm:graceful} demonstrates that the upper bound on structural causal estimation error decomposes into:
 \begin{equation}
-    \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le C \cdot \mathcal{D} + \mathcal{O}_P(N^{-1/2}), \quad \text{where} \quad \mathcal{D} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
+    \|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le C \cdot \mathcal{D}_{\mathrm{causal}} + \mathcal{O}_P(N^{-1/2}), \quad \text{where} \quad \mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}.
 \end{equation}
-We highlight several structural properties of the difficulty index $\mathcal{D}$:
+We highlight several structural properties of the difficulty index $\mathcal{D}_{\mathrm{causal}}$:
 \begin{enumerate}
-    \item \textbf{Dimensionless Product:} Both proxy classification error $\bar{\varepsilon}_\gamma$ and Gram conditioning $\lambda_{\min}(\boldsymbol{J})$ interact multiplicatively in governing downstream estimation risk. When either proxy recovery is poor ($\bar{\varepsilon}_\gamma \to 1$) or overlap is weak ($\lambda_{\min} \to 0$), estimation risk escalates sharply.
-    \item \textbf{Asymmetric Sensitivity:} In our factorial simulations (Table~\ref{tab:bench_results}), reducing $\lambda_{\min}$ by an order of magnitude produces an equivalent variance and bias inflation to a tenfold increase in state proxy error $\bar{\varepsilon}_\gamma$.
+    \item \textbf{Dimensionless Product:} Both population proxy error $\varepsilon_\gamma$ and Gram conditioning $\lambda_{\min}(\boldsymbol{J})$ interact multiplicatively in governing downstream estimation risk. When either proxy recovery is poor ($\varepsilon_\gamma \to 1$) or overlap is weak ($\lambda_{\min} \to 0$), estimation risk escalates sharply.
+    \item \textbf{Asymmetric Sensitivity:} In our factorial simulations (Table~\ref{tab:bench_results}), reducing $\lambda_{\min}$ by an order of magnitude produces an equivalent variance and bias inflation to a tenfold increase in state proxy error $\varepsilon_\gamma$.
 \end{enumerate}
 
 \subsection{Proof of Proposition 4: Surrogate Entropy-Difficulty Bridge}
@@ -799,20 +818,28 @@ Furthermore, for any binary regime partition ($K=2$) with $\gamma_{t1} = p$ and 
     2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t), \quad \text{where } C_K \le \frac{1}{\ln 2} \approx 1.4427.
 \end{equation}
 
-\textbf{Step 3: Unobservable-to-Operational Bridge.}
-Taking empirical sample averages over the realized trajectory:
+\textbf{Step 3: Population and Observable Bridge.}
+Taking the population expectation of Step 1 and applying Step 2:
 \begin{equation}
-    \bar{\varepsilon}_\gamma \equiv \frac{1}{N} \sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \frac{2}{N}\sum_{t=1}^N \operatorname{Gini}(\boldsymbol{\gamma}_t) + \mathcal{O}_P(N^{-1/2}) \le \frac{C_K}{N}\sum_{t=1}^N H(\boldsymbol{\gamma}_t) + \mathcal{O}_P(N^{-1/2}).
+    \varepsilon_\gamma \equiv \E\left[ \E\left[ \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \;\middle|\; \mathcal{F}_t \right] \right] = 2 \E[\operatorname{Gini}(\boldsymbol{\gamma}_t)] \le C_K \E[H(\boldsymbol{\gamma}_t)].
 \end{equation}
 Dividing by the global minimal singular value $\lambda_{\min}(\boldsymbol{J})$:
 \begin{equation}
-    \mathcal{D}_{\mathrm{causal}} \equiv \frac{\bar{\varepsilon}_\gamma}{\lambda_{\min}(\boldsymbol{J})} \le C_K \cdot \frac{\frac{1}{N}\sum_{t=1}^N H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}) = C_K \cdot \E\left[ \mathcal{D}_{\mathrm{global}}^H(t) \right] + \mathcal{O}_P(N^{-1/2}).
+    \mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} \le C_K \E\left[ \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})} \right] = C_K \E[\mathcal{D}_{\mathrm{global}}^H(t)].
 \end{equation}
-Furthermore, under Assumption~\ref{ass:spectral_comparability} (Two-Sided Spectral Comparability), the rolling Gram matrix satisfies $\lambda_{\min}(\boldsymbol{J}_t) \le \overline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$, which implies $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{\overline{c}_J}{\lambda_{\min}(\boldsymbol{J}_t)}$. Substituting this pointwise yields:
+Furthermore, under Assumption~\ref{ass:spectral_comparability} (Two-Sided Spectral Comparability), the rolling Gram matrix satisfies $\lambda_{\min}(\boldsymbol{J}_t) \le \overline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$, which implies $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{\overline{c}_J}{\lambda_{\min}(\boldsymbol{J}_t)}$. Pointwise substitution yields:
 \begin{equation}
-    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \cdot \frac{1}{N}\sum_{t=1}^N \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} + \mathcal{O}_P(N^{-1/2}) = C_K \overline{c}_J \cdot \E\left[ \mathcal{D}_{\mathrm{operational}}(t) \right] + \mathcal{O}_P(N^{-1/2}),
+    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \E\left[ \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} \right] = C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)],
 \end{equation}
-establishing that the operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ is an observable surrogate upper bound for unobservable causal difficulty up to the finite spectral scaling constant $C_K \overline{c}_J$. Symmetrically, the lower bound $\lambda_{\min}(\boldsymbol{J}_t) \ge \underline{c}_J \lambda_{\min}(\boldsymbol{J})$ controls the operational/global entropy surrogate ratio: $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]$. We emphasize that these bounds establish $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$; they do not assert a two-sided equivalence between $\mathcal{D}_{\mathrm{causal}}$ and $\mathcal{D}_{\mathrm{operational}}$, as lower-bounding $\bar{\varepsilon}_\gamma$ by entropy would require separate anti-concentration conditions. Across our multi-season ground-sensor streams, the empirical ratio $\lambda_{\min}(\boldsymbol{J}_t)/\lambda_{\min}(\boldsymbol{J})$ has 95th percentile in $[1.06, 1.72]$ and maximum $\le 7.35$, empirically confirming that $\overline{c}_J$ is finite and bounded. $\blacksquare$
+and $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]$. In finite samples, the ergodic theorem and central limit theorem for stationary $\alpha$-mixing chains ensure that $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \varepsilon_\gamma + \mathcal{O}_P(N^{-1/2})$, so the sample surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N}/\lambda_{\min}(\boldsymbol{J}) = \mathcal{D}_{\mathrm{causal}} + \mathcal{O}_P(N^{-1/2})$. We emphasize that these bounds establish $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence. Across our multi-season ground-sensor streams, the empirical ratio $\lambda_{\min}(\boldsymbol{J}_t)/\lambda_{\min}(\boldsymbol{J})$ has 95th percentile in $[1.06, 1.72]$ and maximum $\le 7.35$, empirically confirming that $\overline{c}_J$ is finite and bounded. $\blacksquare$
+
+\subsection{A Priori Proxy Diagnostics and Separation Screening}
+\label{app:proxy_diagnostics}
+Before fitting OR-DML or downstream prediction heads, practitioners should assess proxy informativeness on auxiliary measurements $Z_t \in \R^q$. Let $\hat{\boldsymbol{\mu}}_{Z,k} \equiv \frac{1}{N_k}\sum_{t: \hat{S}_t=k} Z_t$ and $\hat{\boldsymbol{\Sigma}}_{Z,k}$ denote empirical cluster moments. We define the standardized separation index:
+\begin{equation}
+    \Delta_Z \equiv \min_{j \neq k} \frac{\|\hat{\boldsymbol{\mu}}_{Z,j} - \hat{\boldsymbol{\mu}}_{Z,k}\|_2}{\sqrt{\frac{1}{2}(\mathrm{Tr}(\hat{\boldsymbol{\Sigma}}_{Z,j}) + \mathrm{Tr}(\hat{\boldsymbol{\Sigma}}_{Z,k}))/q}}.
+\end{equation}
+When $\Delta_Z < 0.5$ (or silhouette score $< 0.15$), the overlap between regime emission densities $P(Z_t \mid S_t=j)$ and $P(Z_t \mid S_t=k)$ is severe, driving posterior entropy $\bar{H}(\boldsymbol{\gamma}) \to \ln K$. By Theorem~\ref{thm:impossibility}, point identification fails identically in the limit $\Delta_Z \to 0$. Deployed pipelines should enforce an automated screening gate: if $\Delta_Z < 0.5$ or mean entropy exceeds $0.80 \ln K$, the system must flag non-identifiability and refuse to emit point causal effects without external structural constraints.
 
 \section{Proof of Theorem 3: Spectral Regularization Bias-Variance Frontier}
 \label{app:proof_thm3}
@@ -898,6 +925,27 @@ Because $R'(u) = -\frac{2}{u^3}[AB u + (A^2+V)]$ changes sign strictly from nega
     R_{\mathrm{surr}}(\hat{\lambda}^*) \le \inf_{\lambda \ge 0} R_{\mathrm{surr}}(\lambda) + \mathcal{O}_P(N^{-1/2}),
 \end{equation}
 establishing that data-driven spectral shrinkage $\hat{\lambda}^*$ adaptively tracks the optimal surrogate risk trade-off without prior knowledge of the true latent proxy error. $\blacksquare$
+
+\subsection{State Space Scalability and Matrix Concentration for $K > 2$}
+\label{app:state_space_scalability}
+While our primary experiments study binary regimes ($K=2$), the OR-DML coupled estimator generalizes directly to arbitrary finite state dimensions $K \ge 2$. Here we formalize the computational and statistical scalability of the coupled Gram matrix $\hat{\boldsymbol{J}} \in \R^{K \times K}$.
+
+\textbf{Computational Complexity:}
+Constructing $\hat{\boldsymbol{J}}$ and score $\hat{\boldsymbol{S}}$ requires evaluating $K$ nuisance pairs across $B$ folds, taking $\mathcal{O}(B K \cdot \mathrm{Cost}(\text{Nuisance}))$ operations. Forming $\hat{\boldsymbol{J}}$ takes $\mathcal{O}(N K^2)$ operations, and solving $(\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ via Cholesky factorization takes $\mathcal{O}(K^3)$ operations. For moderate regime counts ($K \le 20$), the linear solve takes $<1$ ms and is computationally negligible compared to nuisance estimation.
+
+\textbf{Statistical Sample Complexity under $\alpha$-Mixing:}
+The statistical rate is governed by the concentration of the random matrix $\hat{\boldsymbol{J}} = \frac{1}{N}\sum_{t=1}^N \boldsymbol{\Gamma}_t \tilde{\boldsymbol{T}}_t \tilde{\boldsymbol{T}}_t^\top \boldsymbol{\Gamma}_t$ around its expectation $\boldsymbol{J}$. Let the latent Markov chain have spectral gap $\rho_{\mathrm{gap}} \equiv 1 - |\lambda_2(\boldsymbol{\Pi})| > 0$. By the Matrix Bernstein Inequality for geometrically $\alpha$-mixing processes \citep{banna2016bernstein}, with probability at least $1 - \delta$:
+\begin{equation}
+    \|\hat{\boldsymbol{J}} - \boldsymbol{J}\|_{\mathrm{op}} \le C_J \sqrt{\frac{K \log(K/\delta)}{N \cdot \rho_{\mathrm{gap}}}} + \frac{C_J' K \log(K/\delta)}{N \cdot \rho_{\mathrm{gap}}}.
+\end{equation}
+By Weyl's theorem, $|\lambda_{\min}(\hat{\boldsymbol{J}}) - \lambda_{\min}(\boldsymbol{J})| \le \|\hat{\boldsymbol{J}} - \boldsymbol{J}\|_{\mathrm{op}}$. Furthermore, the population minimal eigenvalue satisfies $\lambda_{\min}(\boldsymbol{J}) \le \min_{1 \le k \le K} \pi_k^* \E[\tilde{T}_{tk}^2]$. Therefore, to ensure that the empirical Gram matrix remains non-singular ($\lambda_{\min}(\hat{\boldsymbol{J}}) \ge \frac{1}{2}\lambda_{\min}(\boldsymbol{J}) > 0$) with high probability, the required sample size scales as:
+\begin{equation}
+    N = \tilde{\Omega}\left( \frac{K \log(K/\delta)}{\min_k (\pi_k^*)^2 \lambda_{\min}(\boldsymbol{J})^2 \rho_{\mathrm{gap}}} \right).
+\end{equation}
+This bound reveals that state-space scaling is limited not by linear algebra ($\mathcal{O}(K^3)$), but by the rarity of the least frequent regime ($\pi_{\min}^*$) and task ill-conditioning ($\lambda_{\min}$).
+
+\textbf{Non-Identifiability vs.\ Shrinkage: When Systems Must Abstain:}
+Spectral shrinkage $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ stabilizes variance under ill-conditioned overlap ($\lambda_{\min} \approx 0$). However, when data lack identifying variation entirely—diagnosed by condition number $\kappa(\hat{\boldsymbol{J}}) > 10^4$ or a moving-block bootstrap 95\% confidence interval for $\lambda_{\min}(\hat{\boldsymbol{J}})$ that covers zero—the structural parameter $\boldsymbol{\theta}^*$ is non-identified (Theorem~\ref{thm:impossibility}). In this regime, heavy shrinkage $\lambda \to \infty$ artificially forces $\|\hat{\boldsymbol{\theta}}_\lambda\| \to 0$ without recovering structural effects. Deployed decision pipelines should treat $\kappa(\hat{\boldsymbol{J}}) > 10^4$ as a structural abstention trigger rather than masking non-identifiability with excessive shrinkage.
 
 \section{Proof of Theorem 4: Decomposition of Omitted Regime Bias}
 \label{app:proof_thm4}
@@ -1032,9 +1080,9 @@ When $\Delta \theta^* = \theta_1^* - \theta_0^* \neq 0$, the sampling variation 
 \label{app:regime_profiles}
 Table~\ref{tab:regime_profiles} details the empirical regime profiles uncovered by the Gaussian HMM across all four megacities. Across all airsheds, the inferred regimes correspond directly to distinct synoptic meteorological states: cooler, high-humidity, low-wind nocturnal/winter inversion states versus warmer, lower-humidity daytime convective dispersion states.
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Meteorological Regime Profiling across Four Indian Megacities from Ground-Sensor Observations.}
 \label{tab:regime_profiles}
 \resizebox{\columnwidth}{!}{%
@@ -1058,20 +1106,20 @@ Kolkata & Regime 2 & 39.3\% & 0.810 & 7.89 & 32.65 & 51.2\% \\
 }
 \end{table}
 
-\begin{figure*}[h!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=0.85\textwidth,height=2.3cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
+\includegraphics[width=0.85\textwidth,height=2.2cm,keepaspectratio]{plots/fig3_dynamic_irf.png}
 \caption{Dynamic Exposure-Response Curves $\hat{\theta}_h$ across Horizons $h \in [0, 24]$ Hours for Delhi, Mumbai, Bengaluru, and Kolkata. Shaded bands represent 95\% HAC confidence intervals. Regime stratification reveals substantial structural heterogeneity in dynamic pollutant accumulation over multi-hour horizons.}
 \label{fig:dynamic_irf}
-\end{figure*}
+\end{figure}
 
 \subsection{Regularization Sensitivity in Ill-Conditioned Regimes (Kolkata Airshed)}
 \label{app:kolkata_sensitivity}
 To verify the theoretical behavior established in Theorem~\ref{thm:spectral} under real-world conditions, Table~\ref{tab:kolkata_lambda_grid} reports the empirical sensitivity of OR-DML across a fine 13-point regularization grid $\lambda \in [0.0, 1.0]$ in the ill-conditioned Kolkata airshed ($\lambda_{\min} = 0.0024$).
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Regularization Sensitivity Grid for Kolkata Airshed ($\lambda_{\min} = 0.0024$, $N=1,209$). Standard errors decrease monotonically from $1.1071$ at $\lambda=0.0$ to $0.0063$ at $\lambda=1.0$, stabilizing estimation variance while shrinking point estimates toward zero.}
 \label{tab:kolkata_lambda_grid}
 \begin{tabular}{lccccc}
@@ -1101,9 +1149,9 @@ As predicted by Theorem~\ref{thm:spectral}, when $\lambda \to 0$, standard error
 \label{app:imputation_sensitivity}
 To verify that our empirical findings are not artifacts of missing-data handling, we compare OR-DML causal estimates obtained on the full multi-season cleaned dataset (which uses causal forward-fill on isolated gaps $<0.7\%$ of hours) against a strictly observed dataset where every row containing any imputed value is entirely deleted.
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Sensitivity Analysis Comparing Full Dataset ($<0.7\%$ Causal Forward-Fill) vs. Strictly Observed Dataset (Rows with Any Imputed Entry Deleted) Across Four Megacities. Point estimates and standard errors exhibit identical signs and overlapping confidence bands.}
 \label{tab:imputation_sensitivity}
 \begin{tabular}{lcccccc}
@@ -1119,7 +1167,7 @@ Kolkata & $1,209$ & $-0.5563$ & $1.1055$ & $1,206$ & $-0.1924$ & $1.0148$ \\
 \end{table}
 
 As documented in Table~\ref{tab:imputation_sensitivity}:
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{-2pt}\setlength{\parskip}{0pt}
     \item In Delhi, deleting the 38 forward-filled hours ($0.8\%$) yields $\hat{\theta}_{\mathrm{Strict}} = +0.5366 \pm 0.0674$, matching the positive elasticity observed under the full series ($+0.3634 \pm 0.0460$).
     \item In Mumbai, deleting 34 hours ($0.8\%$) retains the strong negative dispersion elasticity ($-10.9323 \pm 2.6792$ vs. $-5.7671 \pm 2.1367$).
     \item In Bengaluru, deleting 9 hours ($0.2\%$) preserves the near-zero net effect ($+0.0202 \pm 0.0112$ vs. $+0.0046 \pm 0.0101$).
@@ -1131,16 +1179,16 @@ These results confirm that our conclusions are robust to missing data and do not
 \label{app:latent_regime_bench}
 To systematically evaluate machine learning under persistent, partially observed, and shifting latent regimes, we conduct comprehensive evaluations on \textbf{LatentRegimeBench} across five diagnostic configurations ($N=1,200$, $30$ Monte Carlo replications each) and four representation architectures (Table~\ref{tab:bench_results} and Table~\ref{tab:bench_models}, with summary visualizations in Figure~\ref{fig:latent_regime_bench_fig}).
 
-\begin{figure*}[t]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=0.90\textwidth,height=4.0cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
+\includegraphics[width=0.90\textwidth,height=3.0cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
 \caption{Universal LatentRegimeBench Evaluation. (a) Calibration of causal estimation bias against theoretical degradation ratio $\mathcal{D} = \bar{\varepsilon}_\gamma / \lambda_{\min}(\mathbf{J})$. (b) Decision-time abstention safety comparing unconstrained point MSE against uncertainty-gated MSE. (c) Representation zoo out-of-distribution (OOD) generalization across HMM, GRU, Causal Transformer, and Linear SSM.}
 \label{fig:latent_regime_bench_fig}
-\end{figure*}
+\end{figure}
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{LatentRegimeBench: Multi-Dimensional Stress Test across 5 Strategic Difficulty Configurations ($30$ Replications each). In well-conditioned regimes (C1, C3), OR-DML achieves a $>5.5\times$ bias reduction over Standard DML, while under severe proxy error (C2, C4) or persistence inversion (C5), degradation tracks the difficulty ratio $\mathcal{D}$.}
 \label{tab:bench_results}
 \resizebox{\columnwidth}{!}{%
@@ -1158,9 +1206,9 @@ High-Persistence Inversion & $2.0$ & $2.0$ & $0.96$ & $0.159$ & $1.5934$ & $1.31
 }
 \end{table}
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Latent Representation Zoo under Disentangled Distribution Shifts ($N=2,000$ per evaluation stream, 5 independent random seeds; mean $\pm$ std). Shift A isolates transition dynamics ($\rho = 0.85 \to 0.96$); Shift B isolates observation noise ($\Delta_Z = 3.5 \to 1.0$); Shift C compounds both perturbations. While deep neural encoders achieve competitive latent recovery under compound shift, Gaussian HMM maintains the lowest compound calibration error ($\text{ECE} = 0.0397 \pm 0.0242$).}
 \label{tab:bench_models}
 \resizebox{\columnwidth}{!}{%
@@ -1186,7 +1234,7 @@ We distinguish two operational regimes forming a three-level \textbf{Reliability
 (2) \emph{Probabilistic Trustworthiness} ($\text{ECE}, \text{NLL}$): Are posterior probabilities well-calibrated? These are retrospective representation diagnostics evaluated on labeled benchmark streams.
 (3) \emph{Downstream Reliability} ($\text{ROC-AUC}, \mathcal{D}_t$): Can the system anticipate downstream failure? At online deployment, true states $S_t$ are unobserved, precluding ECE or NLL computation; monitoring must rely on prospective signals ($H_t, \lambda_{\min}(\boldsymbol{J}_t), \mathcal{D}_t$).
 
-As shown in Table~\ref{tab:reliability_auc}, deep neural sequence models (GRU, Causal Transformer, Linear SSM) achieve competitive latent recovery ($F_1 \approx 0.84\text{--}0.86$), yet their uncalibrated softmax posteriors produce near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$). In contrast, Gaussian HMM causal filtering achieves well-calibrated posterior states ($\text{ECE} = 0.0397$) and provides statistically informative failure discrimination in this benchmark ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$, MBB 95\% CI $[0.540, 0.683]$, $\text{PR-AUC} = 0.1300 \pm 0.0169$).
+As shown in Table~\ref{tab:reliability_auc}, deep neural sequence models (GRU, Causal Transformer, Linear SSM) achieve competitive latent recovery ($F_1 \approx 0.84\text{--}0.86$), yet their uncalibrated softmax posteriors produce near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$). In contrast, Gaussian HMM causal filtering achieves well-calibrated posterior states ($\text{ECE} = 0.0397$) and provides statistically informative failure discrimination in this benchmark ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$, MBB 95\% CI $[0.540, 0.683]$, $\text{PR-AUC} = 0.1300 \pm 0.0169$). This discrepancy stems from two structural failure mechanisms: (i) neural sequence models trained under cross-entropy maximize margin rather than probability calibration, yielding overconfident softmax distributions under distribution shift that blind raw entropy alarms; and (ii) standard sequence models are entirely task-geometry agnostic, omitting the downstream Gram matrix $\boldsymbol{J}_t$. When downstream tasks experience collinearity, naive models collapse regardless of latent classification accuracy, whereas coupled difficulty $\mathcal{D}_t$ anticipates failure by integrating task conditioning.
 To evaluate whether calibration provides independent explanatory power beyond classification accuracy within the same benchmark environment, we conduct a multi-world fixed-effects hierarchical regression across $D=15$ independent benchmark worlds ($N=60$ observations; \texttt{reports/representation\_zoo\_hierarchical\_regression.csv}): $\mathrm{ReliabilityAUC}_{d,m} = \alpha_d + \beta_1 F1_{d,m} + \beta_2 \mathrm{Calibration}_{d,m} + \epsilon_{d,m}$. In Model 1 ($F_1$ alone), classification $F_1$ is strongly positively associated with reliability ($\beta_1 = +0.9817 \pm 0.2011, p = 0.0002, R^2_{\mathrm{within}} = 0.4313$), confirming that state identification is essential. However, in Model 3 ($F_1 + \text{NLL}$), posterior log-loss NLL provides statistically significant incremental explanatory power after controlling for $F_1$ ($\beta_{\mathrm{NLL}} = -0.0653 \pm 0.0295, p = 0.0442$), increasing within-world explanatory power by 9.24 percentage points ($\Delta R^2_{\mathrm{within}} = 0.0924$, raising $R^2_{\mathrm{within}} \to 0.5237$). In Model 2 ($F_1 + \text{ECE}$), calibration ECE exhibits a consistent negative association and increases within-world fit ($\Delta R^2_{\mathrm{within}} = 0.0647$, raising $R^2_{\mathrm{within}} \to 0.4960$). Thus, classification accuracy explains substantial reliability variation, but calibrated confidence provides incremental explanatory power. Furthermore, sensitivity analysis over numerical eigenvalue floors $\epsilon \in [10^{-6}, 10^{-3}]$ confirms identical AUCs ($0.6153$), demonstrating invariance to numerical conditioning floors.
 
 Crucially, we identify three empirically distinct operating regimes across our benchmark and case studies:
@@ -1196,9 +1244,9 @@ Crucially, we identify three empirically distinct operating regimes across our b
     \item \textbf{Regime III (Mixed / Joint Limitation):} Under compound distribution shifts (Shift C), neither state uncertainty nor task conditioning alone is universally sufficient; on Shift C with Gaussian HMM, state entropy alone achieves $\text{AUC} = 0.6209$ while coupled difficulty achieves $0.6153$. The coupled index $\mathcal{D}_t$ acts as a conservative, task-conditioned surrogate rather than universally dominating entropy, demonstrating that sequential reliability is governed jointly by both mechanisms.
 \end{enumerate}
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Representation Accuracy vs.\ Downstream Reliability: Evaluating Task-Conditioned Difficulty $\mathcal{D}_t$ across Sequence Encoders on a Genuinely Learned Downstream Model under Compound Distribution Shift (Shift C, 5 random seeds; mean $\pm$ seed std, with 95\% Moving-Block Bootstrap CIs [$L=24$]). High classification $F_1$ does not guarantee downstream reliability: uncalibrated softmax posteriors in deep neural encoders yield near-chance downstream failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$), whereas the Gaussian HMM causal filter achieves well-calibrated failure anticipation ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$, MBB 95\% CI $[0.540, 0.683]$).}
 \label{tab:reliability_auc}
 \resizebox{\columnwidth}{!}{%
@@ -1219,9 +1267,9 @@ Linear State Space Model (SSM) & $0.8580 \pm 0.012$ & $0.5492 \pm 0.021$ & $[0.4
 \label{app:failure_prediction}
 To test prospective reliability at deployment, we strictly utilize prospective information available at time $t$ ($\mathcal{D}_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$, $H_t = H(\boldsymbol{\gamma}_t)$, and $1/\lambda_{\min}(\boldsymbol{J}_t)$—without access to ground-truth state labels, ECE, or NLL) to forecast extreme downstream forecasting failures (worst decile, top 10\% loss $L_{t+h} = (Y_{t+h} - \hat{Y}_{t+h})^2$) across advance lead horizons $h \in [1, 24]$ hours on real-world sensor networks and synthetic streams (Table~\ref{tab:failure_ablation}). This directly evaluates the operational capability: \emph{Can the sequential system know now (at time $t$) that it will suffer downstream unreliability in the future ($t+h$)?}
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \caption{Multi-Horizon Downstream Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$ across Lead Times $h \in [1, 24]$. In ill-conditioned airsheds (Mumbai Coastal, $\lambda_{\min} = 0.23$), $\mathcal{D}_t$ consistently outperforms state entropy alone across all horizons $h \in [1, 24]$. Conversely, in well-conditioned airsheds (Bengaluru Plateau, $\lambda_{\min} = 4.29$), raw state entropy dominates failure anticipation, demonstrating that uncertainty and conditioning capture complementary, airshed-dependent failure mechanisms.}
 \label{tab:failure_ablation}
 \resizebox{\columnwidth}{!}{%
@@ -1258,12 +1306,12 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 In coastal airsheds subject to land-sea breeze inversions and severe treatment collinearity (Mumbai, $\lambda_{\min} = 0.2288$), state entropy $H_t$ alone acts as a coin flip ($\text{ROC-AUC} \approx 0.4855$ at $h=1$). Here, task difficulty $\mathcal{D}_t$ incorporates the conditioning denominator $\lambda_{\min}(\boldsymbol{J}_t)$, boosting ROC-AUC across all lead times up to 24 hours (peaking at $0.5640$ at $h=6$). Conversely, in well-conditioned inland airsheds where treatment variation is healthy (Bengaluru, $\lambda_{\min} = 4.29$), failure is governed by thermodynamic state transitions, making raw state entropy $H_t$ the dominant predictor ($\text{ROC-AUC} \approx 0.67$). This confirms that latent uncertainty and task conditioning capture complementary, domain-dependent failure mechanisms.
 
 
-\begin{figure*}[t!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=0.90\textwidth,height=3.0cm,keepaspectratio]{plots/fig5_financial_transfer.png}
+\includegraphics[width=0.90\textwidth,height=2.5cm,keepaspectratio]{plots/fig5_financial_transfer.png}
 \caption{Quantitative Macro Financial Market Regime Transfer. (a) Daily asset factor returns colored by latent volatility regime. (b) Dynamic difficulty index $D_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$ with identification-based safety escalations. (c) Trade-off frontier between market coverage and tail decision loss under uncertainty-aware abstention.}
 \label{fig:financial_transfer_fig}
-\end{figure*}
+\end{figure}
 
 \section{Synthetic Financial Macro Stress Test with Real Covariate Context}
 \label{app:financial_transfer}
