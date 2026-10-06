@@ -24,6 +24,7 @@
 | Double ill-posedness | DOUBLE_ILL_POSEDNESS.md | confusion_deconvolution_instability.py | deconfusing state geometry and causal inversion are sequential unstable inverse problems |
 | Self-canceling diagnostics | SELF_CANCELING_DIAGNOSTICS.md | phantom_diagnostic_cancellation.py | H/proxy-lambda can be worse than entropy because ambiguity inflates its denominator |
 | Phantom concentration | PHANTOM_CAUSAL_RESOLUTION.md | phantom_resolution_concentration.py | more data concentrate proxy geometry around an optimistic pseudo-parameter |
+| Posterior moment completion | POSTERIOR_SECOND_MOMENT_COMPLETION.md | posterior_second_moment_completion.py | conditional latent second moments recover oracle information in the correctly specified diagnostic model |
 | Resolution-adaptive targets | CAUSAL_RESOLUTION_SPECTRUM.md | resolution_adaptive_target.py | truncation helps only when target projection is explicit; unresolved is not zero |
 | Multitask incompatibility | MULTITASK_ABSTRACTION_GAP.md | multitask_abstraction.py | crossing partitions; exponential universal-compression gap construction |
 | Real K sensitivity | README R8/R19 | latent_state_count_sensitivity.py | BIC improves while downstream lambda_min collapses |
@@ -40,6 +41,7 @@
 6. **Unified causal-resolution budget:** growing target granularity, weak overlap, subtle effect scale, and score dependence combine through an information exponent; no single diagnostic should be interpreted in isolation.
 7. **Phantom causal resolution / double ill-posedness:** imperfect state recovery can make causal conditioning appear healthier than oracle conditioning; correcting that distortion requires another potentially singular inverse problem.
 8. **Self-canceling reliability diagnostics:** coupling uncertainty to a proxy-contaminated conditioning denominator can perform worse than uncertainty alone, even though oracle conditioning would make the coupled score nearly perfect.
+9. **Posterior second-moment completion:** generated-state information geometry should integrate latent second moments, not plug posterior means into nonlinear Gram moments; under correct joint state/treatment modeling this can recover oracle geometry without unstable confusion inversion.
 
 ## Strong negative results retained
 
