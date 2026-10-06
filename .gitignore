@@ -11,5 +11,6 @@ dummy.csv
 *.fls
 *.fdb_latexmk
 *.zip
+!AISTATS2027_OR_DML_Supplementary_Material.zip
 aistats2027_pack/
 overleaf_submission_pack/

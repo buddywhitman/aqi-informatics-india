@@ -34,6 +34,8 @@ REQUIRED_FILES = [
     # Canonical Codebase
     "src/or_dml.py",
     "src/calibration_intervention_zoo.py",
+    "src/factorial_reliability_experiment.py",
+    "src/update_difficulty_figure.py",
     "src/empirical_falsification_checks.py",
     "src/synthetic_dgp_benchmark.py",
     "src/empirical_evaluation.py",
@@ -41,11 +43,12 @@ REQUIRED_FILES = [
     "src/hierarchical_reliability_regression.py",
     "src/financial_regime_transfer.py",
     "src/data_pipeline_clean.py",
-    "src/generate_paper_figures.py",
     "src/regime_intelligence.py",
     "src/deep_empirical_evaluations.py",
     "src/test_soft_vs_hard_continuous_mixture.py",
     "src/advanced_methodological_frontiers.py",
+    "src/adaptive_spectral_optimizer.py",
+    "src/real_megacity_semisynthetic_benchmark.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "src/requirements.txt",
 

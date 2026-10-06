@@ -1,5 +1,0 @@
-Test_City,Train_Cities,Transferred_Tau_D,Transferred_Tau_H,HeldOut_Coverage_D_Pct,HeldOut_Coverage_H_Pct,HeldOut_ROC_AUC_D,HeldOut_ROC_AUC_H,ROC_AUC_Advantage,HeldOut_PR_AUC_D,HeldOut_PR_AUC_H,PR_AUC_Advantage,Tail95_Reduction_D_Pct,Tail95_Reduction_H_Pct,Generalization_Verdict
-Delhi,Mumbai+Bengaluru+Kolkata,48.0618,0.85,98.5,94.1,0.3875,0.3113,0.0762,0.0799,0.0701,0.0098,-0.13,-3.03,D_t Superior
-Mumbai,Delhi+Bengaluru+Kolkata,29.2741,0.7337,93.1,82.3,0.6243,0.5033,0.121,0.1851,0.0992,0.0859,-6.34,1.06,D_t Superior
-Bengaluru,Delhi+Mumbai+Kolkata,30.8621,0.8214,93.7,91.4,0.3554,0.6805,-0.3251,0.0711,0.1562,-0.0851,-3.25,3.61,Comparable
-Kolkata,Delhi+Mumbai+Bengaluru,9.9237,0.8074,33.7,88.3,0.6073,0.6661,-0.0588,0.16,0.1639,-0.0039,9.71,4.8,D_t Superior

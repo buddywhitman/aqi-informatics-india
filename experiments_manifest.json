@@ -16,40 +16,46 @@
   },
   "theoretical_assertions": [
     {
-      "theorem": "Theorem 1: Frisch-Waugh Singularity & Omitted Regime Bias",
-      "statement": "Residualization without latent state produces omitted regime bias proportional to regime treatment difference and latent transition persistence.",
-      "code_reference": "verify_science.py::assertion_1",
-      "paper_reference": "paper/main.tex#L210"
+      "theorem": "Theorem 1: Decomposition of Omitted Regime Bias",
+      "statement": "Omitting the latent regime leaves heterogeneity and confounding components amplified by residual treatment variation.",
+      "code_reference": "src/synthetic_dgp_benchmark.py",
+      "paper_reference": "paper/main.tex#thm:bias"
     },
     {
-      "theorem": "Theorem 2: Graceful Degradation under State Uncertainty",
-      "statement": "||theta_gamma - theta*||_2 <= C * epsilon_gamma / lambda_min(J), establishing that causal error is bounded jointly by proxy error and Gram conditioning.",
-      "code_reference": "src/synthetic_dgp_benchmark.py::run_factorial_difficulty_grid",
-      "paper_reference": "paper/main.tex#L240"
+      "theorem": "Theorem 2: Non-Identification Under Unconstrained Overlap",
+      "statement": "When proxies contain no state information, distinct non-permutation regime-effect vectors can induce identical observable laws.",
+      "code_reference": "paper/main.tex#app:proof_thm2",
+      "paper_reference": "paper/main.tex#thm:impossibility"
     },
     {
-      "theorem": "Theorem 3: Spectral Regularization Bias-Variance Frontier",
-      "statement": "Ridge regularization lambda > 0 bounds estimation variance to O(1 / (lambda_min + lambda)^2) at the cost of O(lambda^2) shrinkage bias.",
-      "code_reference": "src/or_dml_regularization_frontier.py",
-      "paper_reference": "paper/main.tex#L270"
+      "theorem": "Theorem 3: Graceful Degradation",
+      "statement": "||theta_gamma-theta*||_2 <= C epsilon_gamma/lambda_min(J), separating proxy error from downstream task conditioning.",
+      "code_reference": "src/factorial_reliability_experiment.py",
+      "paper_reference": "paper/main.tex#thm:graceful"
     },
     {
-      "theorem": "Theorem 4: Observable Entropy Bridge",
-      "statement": "Expected L1 state recovery error epsilon_gamma is bounded by Gini impurity and Shannon posterior entropy H(gamma_t).",
-      "code_reference": "verify_science.py::assertion_5",
-      "paper_reference": "paper/main.tex#L305"
+      "theorem": "Theorem 4: Leading-Order Risk Bound and Regularized Inversion",
+      "statement": "Spectral regularization trades shrinkage bias against variance amplification under weak conditioning.",
+      "code_reference": "reports/or_dml_regularization_frontier.csv",
+      "paper_reference": "paper/main.tex#thm:spectral"
     },
     {
-      "theorem": "Theorem 5: Uniform Asymptotic Normality",
-      "statement": "Under beta-mixing and nuisance convergence rate o_P(N^{-1/4}), sqrt(N)(hat{theta}_lambda - theta_lambda) -> N(0, V).",
-      "code_reference": "paper/main.tex#L340",
-      "paper_reference": "paper/main.tex#Appendix_D"
+      "theorem": "Theorem 5: Asymptotic Normality Under Dependent Purged Cross-Fitting",
+      "statement": "Under the stated mixing, rate, and training-fitted filtering assumptions, the bias-centered regularized estimator is asymptotically normal.",
+      "code_reference": "paper/main.tex#app:proof_thm5",
+      "paper_reference": "paper/main.tex#thm:asymptotics"
     },
     {
-      "theorem": "Theorem 6: Leading-Order Risk Bound under Long Memory",
-      "statement": "Causal mean squared error decomposes into nuisance rate, proxy error amplified by 1/lambda_min, and mixing variance inflation.",
-      "code_reference": "paper/main.tex#L363",
-      "paper_reference": "paper/main.tex#Appendix_E"
+      "theorem": "Proposition 1: Surrogate Entropy-Difficulty Bridge",
+      "statement": "Under Bayesian calibration and spectral comparability, posterior entropy provides a one-sided observable surrogate for proxy error.",
+      "code_reference": "paper/main.tex#app:proof_bridge",
+      "paper_reference": "paper/main.tex#prop:bridge"
+    },
+    {
+      "theorem": "Proposition 2: Joint Delta-Method Inference",
+      "statement": "SATE/PATE uncertainty includes estimator, regime-occupation, and state-model covariance terms.",
+      "code_reference": "paper/main.tex#app:proof_prop6",
+      "paper_reference": "paper/main.tex#prop:variance"
     }
   ],
   "experiments": [
@@ -82,7 +88,7 @@
       "paper_table": "Table 8 Panel B (paper/main.tex)",
       "sample_size": 1200,
       "replications": 5,
-      "description": "Demonstrates uncalibrated softmax posteriors in deep sequence models yield near-chance downstream failure detection, whereas HMM causal filter achieves ROC-AUC 0.6153."
+      "description": "Representation benchmark under compound shift; state recovery, calibration, and downstream reliability are reported separately. Post-hoc calibration is evaluated in EXP-06."
     },
     {
       "experiment_id": "EXP-04",
@@ -105,7 +111,7 @@
       "name": "Calibration Intervention (Platt / Temperature Scaling) on Representation Zoo",
       "script": "src/calibration_intervention_zoo.py",
       "report": "reports/representation_zoo_calibration_intervention.csv",
-      "description": "Tests whether post-hoc temperature scaling rescues downstream sequence reliability; reveals that while ECE drops 48-60%, failure ROC-AUC is unchanged."
+      "description": "Held-out temperature-scaling intervention: ECE/NLL improve substantially for neural encoders while downstream difficulty ROC-AUC does not, showing calibration alone is insufficient."
     },
     {
       "experiment_id": "EXP-07",
@@ -122,7 +128,7 @@
       "name": "Pre-Treatment Lead Placebo Falsification Suite",
       "script": "src/empirical_falsification_checks.py",
       "report": "reports/empirical_placebo_falsification.csv",
-      "description": "Evaluates pre-treatment lead horizons h in {-6, -3, -1} to confirm exposure effect drops to zero prior to treatment, validating temporal unconfoundedness."
+      "description": "Pre-treatment lead placebo suite at h in {-6,-3,-1}. Delhi rejects the placebo null and is therefore interpreted as an exposure-response stress test rather than a validated dynamic causal effect; the other cities do not reject immediate lead placebos."
     },
     {
       "experiment_id": "EXP-09",
@@ -137,6 +143,16 @@
     },
     {
       "experiment_id": "EXP-10",
+      "name": "Independent Factorial Representation-by-Task Reliability Validation",
+      "script": "src/factorial_reliability_experiment.py",
+      "report": "reports/factorial_reliability_correlations.csv",
+      "secondary_report": "reports/factorial_risk_coverage.csv",
+      "sample_size": 1200,
+      "replications": 100,
+      "description": "7x7 factorial design (4,900 runs) independently manipulating controlled proxy error and post-residualization residual treatment information. The joint ratio epsilon_gamma/lambda_min(J) ranks causal error with Spearman rho=0.9955, versus 0.6260 for proxy error and 0.5209 for inverse conditioning alone."
+    },
+    {
+      "experiment_id": "EXP-11",
       "name": "Deep Empirical Exploration Suite (Boundaries, Ill-Conditioning, Representations)",
       "script": "src/deep_empirical_evaluations.py",
       "report": "reports/deep_eval_exploration2_ill_conditioned_summary.csv",
@@ -144,12 +160,19 @@
       "description": "Evaluates soft vs hard weighting, verifies Theorem 4 spectral variance reduction (up to 9.8x), and confirms Theorem 3 monotonic proxy degradation (r=0.9614, rho=0.9870)."
     },
     {
-      "experiment_id": "EXP-11",
+      "experiment_id": "EXP-12",
       "name": "Advanced Methodological Frontiers (Selective Estimation, Type I Error, Low-Persistence)",
       "script": "src/advanced_methodological_frontiers.py",
       "report": "reports/frontier_a_selective_estimation_summary.csv",
       "secondary_report": "reports/frontier_c_persistence_stress_summary.csv",
       "description": "Demonstrates 23.8x causal error reduction via coupled difficulty D_t abstention, tests Type I error under null effects, and evaluates temporal shattering across persistence rho in [0.30, 0.88]."
+    },
+    {
+      "experiment_id": "EXP-13",
+      "name": "Real-Data-Calibrated Megacity Semi-Synthetic Benchmark",
+      "script": "src/real_megacity_semisynthetic_benchmark.py",
+      "report": "reports/megacity_semisynthetic_summary.csv",
+      "description": "Evaluates estimators on real meteorological covariates and calibrated regimes from Delhi, Mumbai, Bengaluru, and Kolkata with known injected causal ground truth."
     }
   ],
   "verification_suite": {
