@@ -32,6 +32,7 @@ jobs:
           python research/multitask_calibration_gap.py
           python research/task_conditioned_representation_dominance.py
           python research/minimax_task_family.py
+          python research/representation_selection_regret.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -47,3 +48,4 @@ jobs:
             research/results/multitask_calibration_gap_*.csv
             research/results/task_conditioned_representation_*.csv
             research/results/minimax_task_family_*.csv
+            research/results/representation_selection_regret*.csv
