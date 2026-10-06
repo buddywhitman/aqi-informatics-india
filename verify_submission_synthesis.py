@@ -61,7 +61,8 @@ assert "11.4\\times/21.2\\times" in tex
 assert "effectively two-hour grid" in tex
 assert "x23\\_real\\_hourly\\_fix.csv" in tex
 assert tex.index("AI Use Statement") < tex.index("\\begin{thebibliography}")
-assert "zero efficiency loss" not in tex
+assert "incurring zero efficiency loss" not in tex
+assert "We do not infer zero efficiency loss outside this benchmark." in tex
 assert "verified multi-season dataset" not in tex
 print("Central thesis, provenance, and AI-statement ordering checks passed.")
 
