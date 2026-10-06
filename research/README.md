@@ -349,3 +349,10 @@ Thus strong information ($s=0$) requires faster than $N^{-1/2}$ target-projected
 
 ### R65. Cross-fitting cannot remove systematic generated-representation bias
 A new independent-fold simulation tests nominal coverage when representation perturbation is learned on a separate fold. Cross-fitting breaks sample reuse but leaves the systematic $N^{-r}$ perturbation. Coverage should recover only when the perturbation is small relative to the target's sampling scale. This separates orthogonality/cross-fitting protection from latent representation identification error. Automated results pending.
+
+
+### R66. Cross-fitting does not rescue first-order generated-representation bias
+The independent-fold simulation confirms the rate argument. With representation perturbation $N^{-0.25}$, nominal 95% coverage falls from 0.6% at N=400 to **0%** thereafter even though the representation was learned independently of the evaluation fold. At the boundary $N^{-1/2}$, coverage remains stuck near **83%**, not 95%. At $N^{-0.75}$ coverage approaches 95% (94.3% to 94.9%), and $N^{-1}$ is essentially nominal. Cross-fitting removes sample reuse, not systematic first-order representation bias.
+
+### R67. Representation orthogonality could relax the accuracy requirement from N^-1/2 to N^-1/4
+A new methodological direction asks whether the causal score can be made Neyman-orthogonal not only to ordinary nuisances but also to admissible perturbations of the generated latent posterior. If first-order representation sensitivity $O(\epsilon_N)$ can be canceled so the leading term is $O(\epsilon_N^2)$, strong-information root-N inference would require only $\epsilon_N=o(N^{-1/4})$ instead of $o(N^{-1/2})$. A toy Taylor-debiasing experiment now tests the epsilon-versus-epsilon-squared scaling. This is proof-of-concept only; operational latent-state orthogonality remains an open problem.
