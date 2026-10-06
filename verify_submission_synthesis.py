@@ -53,3 +53,14 @@ assert "residual-confounding identity" in tex
 assert "not monotone" in tex
 assert "lower-bound/optimistic diagnostic" in tex
 print("Cross-branch residual-confounding integration checks passed.")
+
+
+# Central-thesis and provenance consistency gates.
+assert "phantom causal resolution" in tex.lower()
+assert "11.4\\times/21.2\\times" in tex
+assert "effectively two-hour grid" in tex
+assert "x23\\_real\\_hourly\\_fix.csv" in tex
+assert tex.index("AI Use Statement") < tex.index("\\begin{thebibliography}")
+assert "zero efficiency loss" not in tex
+assert "verified multi-season dataset" not in tex
+print("Central thesis, provenance, and AI-statement ordering checks passed.")
