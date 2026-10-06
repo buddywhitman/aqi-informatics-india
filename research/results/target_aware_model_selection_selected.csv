@@ -1,0 +1,8 @@
+irrelevant_eigenvalue,target,lambda_min_pick,target_aware_pick,lambda_pick_target_amp,target_pick_amp,selection_regret
+0.1,first,global_healthy,target_healthy,5.0,1.0,5.0
+0.01,first,global_healthy,target_healthy,5.0,1.0,5.0
+0.001,first,global_healthy,target_healthy,5.0,1.0,5.0
+0.0001,first,global_healthy,target_healthy,5.0,1.0,5.0
+0.000001,first,global_healthy,target_healthy,5.0,1.0,5.0
+0.1,second,global_healthy,global_healthy,5.0,5.0,1.0
+0.01,second,global_healthy,global_healthy,5.0,5.0,1.0

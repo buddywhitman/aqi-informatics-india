@@ -1,0 +1,5 @@
+Risk_Quartile,Mean_Regime_Risk_R,Mean_State_Entropy,Mean_Lambda_Min,Forecast_MSE,Tail_95_MSE,Crisis_Regime_Pct
+Q1 (Safe),0.0,0.0,0.365,0.9278,3.3514,96.5
+Q2 (Low Risk),0.0,0.0,0.306,0.6191,2.8449,27.7
+Q3 (Moderate),0.0,0.0,0.324,0.4899,1.7461,3.2
+Q4 (Severe Risk),19.164,0.103,0.211,0.9419,4.2931,18.9

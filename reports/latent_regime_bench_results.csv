@@ -1,0 +1,6 @@
+Configuration,Delta_Z,Delta_T,Rho,P_Miss,Difficulty_Ratio_D,OR_DML_Abs_Bias,Standard_DML_Bias,Bias_Advantage_Factor,Full_Decision_MSE,Accepted_Decision_MSE,Abstain_Rate_Pct,Decision_MSE_Reduction_Pct
+"Ideal (High Obs, High Overlap)",3.5,5.0,0.85,0.0,0.001,0.2165,1.2061,5.57,47.3073,47.2821,10.0,0.05
+"Adversarial A (Low Obs, High Overlap)",0.3,5.0,0.85,0.0,0.709,1.195,1.2061,1.01,4.3998,4.4047,10.0,-0.11
+"Adversarial B (High Obs, Weak Overlap)",3.5,0.4,0.85,0.0,0.001,0.2498,1.3886,5.56,20.8329,20.8161,10.0,0.08
+"Challenging (Low Obs, Weak Overlap)",0.5,0.5,0.9,0.1,2.748,1.3237,1.3862,1.05,5.3544,5.3481,3.2,0.12
+High-Persistence Inversion,2.0,2.0,0.96,0.05,0.159,1.5934,1.3175,0.83,6.5952,6.6206,9.8,-0.38

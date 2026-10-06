@@ -1,0 +1,180 @@
+{
+  "project": {
+    "title": "Reliable Causal Estimation under Latent Markov Confounding",
+    "venue": "AISTATS 2027",
+    "track": "Main Conference",
+    "license": "MIT",
+    "status": "Authoritative Reproducible Artifact Package",
+    "central_claim": "Phantom causal resolution: generated latent-state representations can leave residual confounding while optimistically inflating apparent downstream causal information."
+  },
+  "methodology": {
+    "framework": "Overlap-Aware Regime Double Machine Learning (OR-DML)",
+    "core_estimator": "\\hat{\\theta}_\\lambda = (\\hat{J} + \\lambda I)^{-1} \\hat{S}",
+    "diagnostic_index": "D_t = H(\\gamma_t) / \\lambda_{\\min}(J_t)",
+    "sampling_scheme": "Purged Block Cross-Fitting with Temporal Embargo (\\tau = 24h)",
+    "inference_engine": "Gaussian HMM Causal Filtering / Backward Smoothing",
+    "regularization_selection": "Calibration-partition split-sample spectral risk minimization"
+  },
+  "theoretical_assertions": [
+    {
+      "theorem": "Theorem 1: Decomposition of Omitted Regime Bias",
+      "statement": "Omitting the latent regime leaves heterogeneity and confounding components amplified by residual treatment variation.",
+      "code_reference": "src/synthetic_dgp_benchmark.py",
+      "paper_reference": "paper/main.tex#thm:bias"
+    },
+    {
+      "theorem": "Theorem 2: Non-Identification Under Unconstrained Overlap",
+      "statement": "When proxies contain no state information, distinct non-permutation regime-effect vectors can induce identical observable laws.",
+      "code_reference": "paper/main.tex#app:proof_thm2",
+      "paper_reference": "paper/main.tex#thm:impossibility"
+    },
+    {
+      "theorem": "Theorem 3: Graceful Degradation",
+      "statement": "||theta_gamma-theta*||_2 <= C epsilon_gamma/lambda_min(J), separating proxy error from downstream task conditioning.",
+      "code_reference": "src/factorial_reliability_experiment.py",
+      "paper_reference": "paper/main.tex#thm:graceful"
+    },
+    {
+      "theorem": "Theorem 4: Leading-Order Risk Bound and Regularized Inversion",
+      "statement": "Spectral regularization trades shrinkage bias against variance amplification under weak conditioning.",
+      "code_reference": "reports/or_dml_regularization_frontier.csv",
+      "paper_reference": "paper/main.tex#thm:spectral"
+    },
+    {
+      "theorem": "Theorem 5: Asymptotic Normality Under Dependent Purged Cross-Fitting",
+      "statement": "Under the stated mixing, rate, and training-fitted filtering assumptions, the bias-centered regularized estimator is asymptotically normal.",
+      "code_reference": "paper/main.tex#app:proof_thm5",
+      "paper_reference": "paper/main.tex#thm:asymptotics"
+    },
+    {
+      "theorem": "Proposition 1: Surrogate Entropy-Difficulty Bridge",
+      "statement": "Under Bayesian calibration and spectral comparability, posterior entropy provides a one-sided observable surrogate for proxy error.",
+      "code_reference": "paper/main.tex#app:proof_bridge",
+      "paper_reference": "paper/main.tex#prop:bridge"
+    },
+    {
+      "theorem": "Proposition 2: Joint Delta-Method Inference",
+      "statement": "SATE/PATE uncertainty includes estimator, regime-occupation, and state-model covariance terms.",
+      "code_reference": "paper/main.tex#app:proof_prop6",
+      "paper_reference": "paper/main.tex#prop:variance"
+    },
+    {
+      "theorem": "Audited sensitivity proposition: posterior residual-confounding identity",
+      "statement": "In the binary residual model, bias = Delta_T Delta_g v / (Delta_T^2 v + sigma^2); the K-state analogue is a' Sigma b / (a' Sigma a + sigma^2). This is a sensitivity identity, not an identification theorem.",
+      "code_reference": "src/bias_law/bias_law.py",
+      "paper_reference": "paper/main.tex#app:biaslaw"
+    }
+  ],
+  "experiments": [
+    {
+      "experiment_id": "EXP-01",
+      "name": "LatentRegimeBench Diagnostic Suite",
+      "script": "src/latent_regime_bench.py",
+      "report": "reports/latent_regime_bench_results.csv",
+      "figure": "plots/fig4_latent_regime_bench.png",
+      "paper_table": "Table 7 (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 30,
+      "description": "5 factorial configurations evaluating OR-DML vs Standard DML, Block DML, and Oracle under varied observability and regime overlap."
+    },
+    {
+      "experiment_id": "EXP-02",
+      "name": "Latent Representation Zoo under Disentangled Distribution Shifts",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/representation_zoo_disentangled_shifts.csv",
+      "paper_table": "Table 8 Panel A (paper/main.tex)",
+      "sample_size": 2000,
+      "replications": 5,
+      "description": "Evaluates HMM, GRU, Transformer, and SSM across in-distribution, Shift A (transition dynamics), Shift B (observation noise), and Shift C (compound)."
+    },
+    {
+      "experiment_id": "EXP-03",
+      "name": "Representation Accuracy vs Downstream Reliability",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/representation_zoo_reliability_auc.csv",
+      "paper_table": "Table 8 Panel B (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 5,
+      "description": "Representation benchmark under compound shift; state recovery, calibration, and downstream reliability are reported separately. Post-hoc calibration is evaluated in EXP-06."
+    },
+    {
+      "experiment_id": "EXP-04",
+      "name": "Multi-Horizon Prospective Downstream Failure Forecasting",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/multidomain_failure_forecasting.csv",
+      "paper_table": "Table 9 (paper/main.tex)",
+      "description": "Forecasts worst-decile downstream loss across advance lead times h in [1, 24] hours on Mumbai, Bengaluru, Delhi, and synthetic streams."
+    },
+    {
+      "experiment_id": "EXP-05",
+      "name": "Hierarchical Multi-World Fixed Effects & LOWO Cross-Validation",
+      "script": "src/hierarchical_reliability_regression.py",
+      "report": "reports/representation_zoo_hierarchical_regression.csv",
+      "secondary_report": "reports/representation_zoo_lowo_evaluation.csv",
+      "description": "Within-world fixed-effects regressions across 15 worlds (N=60) and 15-fold Leave-One-World-Out validation proving calibration doubles out-of-world R^2."
+    },
+    {
+      "experiment_id": "EXP-06",
+      "name": "Calibration Intervention (Platt / Temperature Scaling) on Representation Zoo",
+      "script": "src/calibration_intervention_zoo.py",
+      "report": "reports/representation_zoo_calibration_intervention.csv",
+      "description": "Held-out temperature-scaling intervention: ECE/NLL improve substantially for neural encoders while downstream difficulty ROC-AUC does not, showing calibration alone is insufficient."
+    },
+    {
+      "experiment_id": "EXP-07",
+      "name": "Multi-City Empirical Atmospheric Exposure Study",
+      "script": "src/empirical_evaluation.py",
+      "report": "reports/empirical_or_dml_results.csv",
+      "secondary_report": "reports/empirical_irf_results.csv",
+      "figure": "plots/fig3_dynamic_irf.png",
+      "paper_table": "Table 2 (paper/main.tex)",
+      "description": "Empirical evaluation on >14,000 hourly observations across Delhi, Mumbai, Bengaluru, Kolkata comparing OR-DML to Standard DML and Block DML."
+    },
+    {
+      "experiment_id": "EXP-08",
+      "name": "Pre-Treatment Lead Placebo Falsification Suite",
+      "script": "src/empirical_falsification_checks.py",
+      "report": "reports/empirical_placebo_falsification.csv",
+      "description": "Pre-treatment lead placebo suite at h in {-6,-3,-1}. Delhi rejects the placebo null and is therefore interpreted as an exposure-response stress test rather than a validated dynamic causal effect; the other cities do not reject immediate lead placebos."
+    },
+    {
+      "experiment_id": "EXP-09",
+      "name": "Macro Financial Regime Transfer & 3-Way Regret Abstention Policy",
+      "script": "src/financial_regime_transfer.py",
+      "report": "reports/financial_abstention_policy.csv",
+      "secondary_report": "reports/financial_regime_risk_quartiles.csv",
+      "figure": "plots/fig5_financial_transfer.png",
+      "paper_table": "Table 10 & 11 (paper/main.tex)",
+      "sample_size": 1500,
+      "description": "Macroeconomic interest rate and liquidity indicators (FRED) testing whether D_t guides risk-aware selective estimation, reducing regret by 98.74%."
+    },
+    {
+      "experiment_id": "EXP-10",
+      "name": "Independent Factorial Representation-by-Task Reliability Validation",
+      "script": "src/factorial_reliability_experiment.py",
+      "report": "reports/factorial_reliability_correlations.csv",
+      "secondary_report": "reports/factorial_risk_coverage.csv",
+      "sample_size": 1200,
+      "replications": 100,
+      "description": "7x7 factorial design (4,900 runs) independently manipulating controlled proxy error and post-residualization residual treatment information. The joint ratio epsilon_gamma/lambda_min(J) ranks causal error with Spearman rho=0.9955, versus 0.6260 for proxy error and 0.5209 for inverse conditioning alone."
+    },
+    {
+      "experiment_id": "EXP-11",
+      "name": "Phantom Causal Resolution and Generated-State Geometry Stress Tests",
+      "script": "research/generated_state_resolution_inflation.py",
+      "report": "research/results/generated_state_resolution_inflation_summary.csv",
+      "description": "Tests whether state ambiguity can inflate generated-state lambda_min and reduce apparent condition number relative to oracle causal geometry; interpreted as a diagnostic failure mode, not estimator superiority."
+    },
+    {
+      "experiment_id": "EXP-12",
+      "name": "Residual-Confounding Law Audit and Corrected-Hourly Sensitivity",
+      "script": "src/bias_law/run_experiments.py; src/bias_law/ext_real_hourly_fix.py; src/bias_law/ext_misspec_crossfit.py",
+      "report": "reports/bias_law/summary_numbers.json; reports/bias_law/x23_real_hourly_fix.csv; reports/bias_law/x29_misspec_v.csv",
+      "description": "Verifies the residual-confounding sensitivity law, audits posterior-uncertainty misspecification, and reconstructs the true-hourly sensor sensitivity after discovery of the legacy timestamp-rounding issue."
+    }
+  ],
+  "verification_suite": {
+    "scientific_invariances": "python verify_science.py",
+    "artifact_synchronization": "python verify_artifacts.py"
+  }
+}

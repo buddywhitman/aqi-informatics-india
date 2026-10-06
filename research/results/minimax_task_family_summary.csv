@@ -1,0 +1,10 @@
+task_family,rule,selected_representation,average_risk,worst_risk,oracle_per_task_average
+uniform,global,global_best,0.008352075,0.008352075,0.008352075
+uniform,average,global_best,0.008352075,0.008352075,0.008352075
+uniform,minimax,global_best,0.008352075,0.008352075,0.008352075
+uniform;left;right,global,global_best,0.004954923331491533,0.008352075,0.004423595450354234
+uniform;left;right,average,global_best,0.004954923331491533,0.008352075,0.004423595450354234
+uniform;left;right,minimax,global_best,0.004954923331491533,0.008352075,0.004423595450354234
+uniform;left;right;center,global,global_best,0.0109537841836597,0.0289503667401642,0.0039343225055252
+uniform;left;right;center,average,uniform,0.0099999999999999,0.0099999999999999,0.0039343225055252
+uniform;left;right;center,minimax,uniform,0.0099999999999999,0.0099999999999999,0.0039343225055252

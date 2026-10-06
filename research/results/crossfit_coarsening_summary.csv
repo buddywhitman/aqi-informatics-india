@@ -1,0 +1,4 @@
+N,test_microstate_ARI,refined_test_error,coarsened_test_error,correct_pairing_rate,coarsening_win_rate
+800,0.989411,0.641920,0.129213,0.930000,0.953333
+1600,0.990893,0.435283,0.089342,0.940000,0.950000
+3200,0.990814,0.337996,0.064247,0.973333,0.960000

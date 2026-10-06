@@ -1,0 +1,6 @@
+Model,Predictor,Coefficient,Clustered_SE,t_stat,p_value,Within_R2,N_Worlds,N_Obs
+Model 1: F1 Alone,Classification F1,0.9817,0.2011,4.8825,0.0002,0.4313,15,60
+Model 2: F1 + ECE,Classification F1,0.52,0.3367,1.5443,0.1448,0.496,15,60
+Model 2: F1 + ECE,Calibration ECE,-0.3772,0.1839,-2.0512,0.0594,0.496,15,60
+Model 3: F1 + NLL,Classification F1,0.4788,0.3209,1.4918,0.1579,0.5237,15,60
+Model 3: F1 + NLL,Log-Loss NLL,-0.0653,0.0295,-2.2108,0.0442,0.5237,15,60

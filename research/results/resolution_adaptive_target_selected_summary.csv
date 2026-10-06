@@ -1,0 +1,10 @@
+N,alpha,signal,delta_science,effective_rank,mse_unregularized,mse_oracle_ridge,mse_resolution_total,mse_resolution_estimation,mse_resolution_approximation
+400,0.50,aligned_strong,0.25,4,2.550,0.043,0.048,0.048,0.000
+400,0.50,aligned_weak,0.25,4,2.550,0.298,0.688,0.048,0.640
+400,0.50,diffuse,0.25,4,2.550,0.095,0.133,0.048,0.085
+1600,0.50,aligned_strong,0.25,5,1.065,0.016,0.047,0.047,0.000
+1600,0.50,aligned_weak,0.25,5,1.065,0.233,0.687,0.047,0.640
+1600,0.50,diffuse,0.25,5,1.065,0.062,0.109,0.047,0.063
+6400,0.50,aligned_strong,0.25,5,1.001,0.006,0.012,0.012,0.000
+6400,0.50,aligned_weak,0.25,5,1.001,0.216,0.652,0.012,0.640
+6400,0.50,diffuse,0.25,5,1.001,0.042,0.074,0.012,0.063

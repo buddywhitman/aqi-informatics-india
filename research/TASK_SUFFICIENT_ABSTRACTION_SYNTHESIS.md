@@ -1,0 +1,191 @@
+# Task-Sufficient Latent Abstraction: Exploratory Research Synthesis
+
+**Not part of the AISTATS submission.**
+
+## Core empirical facts established on this branch
+
+1. **State-refinement paradox.** Under local weak residual treatment information sigma_N=N^{-alpha}, estimating perfectly observed microstate effects separately has error O_p(N^{alpha-1/2}); a causally sufficient merge can remain O_p(N^{-1/2}). For alpha>1/2 the refined estimator diverges while the coarsened estimator converges.
+
+2. **Generative/downstream conflict.** Four-state BIC beats two-state BIC in 100% of simulations and by a growing margin with N, while the task-aware two-state estimator has 4-5x lower causal error under fixed weak overlap.
+
+3. **Held-out learnability.** A sample-split Wald merger recovers the correct task partition 93-97% of the time and reduces held-out causal error about 5x despite microstate ARI about 0.99.
+
+4. **Bias-information frontier.** Coarsening helps when within-group task heterogeneity is small and hurts when it is large. In the current sweep, average error gain moves from +65% at delta=0 to +10% at delta=.5, then -56% at delta=1 and -175% at delta=2.
+
+5. **Task dependence.** The same latent representation requires incompatible abstractions for two different causal functionals; sample-split selection recovers both task-specific partitions.
+
+6. **Directional representation risk.** In K=3, equal average posterior error and similar lambda_min can yield 6x different causal errors. Scalar eps/lambda_min is a worst-case/order diagnostic, not a sufficient general representation metric.
+
+7. **Adaptive selection is possible but imperfect.** A train-only heterogeneity+variance risk criterion nearly matches oracle partition choice in low/moderate heterogeneity, but struggles near the crossover where refinement becomes preferable.
+
+## Candidate formal framework
+
+Let S be a fine latent state and phi:S->A a task abstraction/partition. Let tau(S) be the fine-state causal functional and tau_phi(A) the estimand after pooling. Define
+
+    R(phi) = B_task(phi)^2 + V_task(phi) + U_repr(phi),
+
+where:
+- B_task measures heterogeneity erased by pooling;
+- V_task is estimation variance/information loss under the downstream score geometry;
+- U_repr is error from estimating/assigning the latent abstraction.
+
+The best generative representation minimizes a likelihood/reconstruction objective. The best downstream abstraction minimizes R(phi). These objectives need not agree.
+
+A sharper local representation-risk object is
+
+    R_dir(gamma) = || (J + lambda I)^(-1) b_gamma ||,
+
+with b_gamma the downstream score perturbation caused by representation error. The familiar eps_gamma/lambda_min(J) is a worst-case bound when ||b_gamma|| is controlled by eps_gamma.
+
+## Candidate theorem sequence for future work
+
+**Theorem A (Refinement rate penalty).** If a refined microstate has probability bounded away from zero but residual treatment variance N^{-2alpha}, its separately estimated effect has standard error O(N^{alpha-1/2}). Any aggregate retaining nonvanishing weight on that estimate inherits this rate.
+
+**Corollary (Refinement inconsistency).** For alpha>=1/2, the refined aggregate is not root-N; for alpha>1/2 it is inconsistent/divergent under the local sequence.
+
+**Theorem B (Task-sufficient pooling rescue).** If a weak microstate and a strong-information microstate share the target effect and are pooled, with strong-state treatment information bounded away from zero, the pooled effect remains root-N.
+
+**Theorem C (Approximate pooling).** If within-group effect heterogeneity is delta_N, pooling risk is approximately delta_N^2 times an occupancy/information factor plus O(1/N) variance. This gives a threshold comparing delta_N against the information loss of refinement.
+
+**Theorem D (Directional proxy perturbation).** First-order target displacement under a generated latent representation is J^{-1}b_gamma; eps_gamma/lambda_min(J) follows as a worst-case bound under ||b_gamma||<=C eps_gamma.
+
+## Critical caveats
+
+- Similar ideas exist in causal abstraction, RL state abstraction/bisimulation, weak-overlap representation learning, unnecessary adjustment, and causal coarsening. Novelty must rest on the precise latent-confounder/weak-overlap rate phenomenon and an estimable downstream abstraction procedure, if literature review confirms the gap.
+- Current coarsening algorithms use very small K and enumerate partitions. Scaling requires graph/agglomerative/continuous relaxations.
+- Valid confidence intervals after learned partition selection remain unsolved.
+- If heterogeneity is large, coarsening is harmful; no universal preference for coarse states is justified.
+- Real-data K sensitivity is suggestive only because the true state/effects are unknown.
+
+
+## Update: causal resolution, not state resolution, is the sharper organizing principle
+
+The latest results refine the framework further.
+
+### Information-theoretic resolution boundary
+For a perfectly observed microstate with residual treatment SD N^{-alpha} and effect separation delta_N=N^{-beta}, the expected KL divergence between the two effect models is order
+
+    N^(1-2 alpha-2 beta).
+
+Thus alpha+beta=1/2 is a causal heterogeneity detection boundary. Above it, total variation vanishes and no test can reliably distinguish the effect models even though the state label is known exactly.
+
+### Resolution spectrum
+For a K-dimensional effect vector with score-information matrix J_N, direction v has detectable effect scale
+
+    delta_res(v) ~ 1/sqrt(N v^T J_N v).
+
+Eigenvalues lambda_j(J_N) therefore define a causal resolution spectrum. A useful effect-scale-specific effective rank is
+
+    r_causal(delta) = #{j : N delta^2 lambda_j >> 1}.
+
+A generative model may support K well-separated latent states while the downstream causal effective rank is much smaller.
+
+### Dual resolution
+Fine state detail can still be required in nuisance adjustment. The safe operation is therefore:
+- retain enough latent resolution for identification;
+- adapt the **target/effect resolution** to the causal resolution spectrum.
+
+Hard state-effect merging deletes unsupported contrast directions. Spectral regularization continuously shrinks them. These are discrete and continuous forms of resolution control.
+
+### Multitask consequence
+Different tasks can require crossing effect partitions. Hence a single coarse universal abstraction is generally inadequate. A rich shared latent substrate with task-specific target-resolution heads is more appropriate.
+
+This reframing avoids the incorrect slogan "coarser representations are better." The actual claim is that **the data have a finite, task-dependent causal resolution that can be much lower than their observational latent-state resolution.**
+
+
+## Update: resolution divergence and honest treatment of unresolved directions
+
+Two additional findings materially sharpen the framework.
+
+### Resolution divergence theorem
+It is possible for observational and causal resolutions to move in opposite asymptotic directions. With fixed-separated state emissions, evidence for the state split accumulates at O(N). If residual treatment SD within the causal contrast shrinks as N^{-alpha}, information for a fixed effect contrast is O(N^{1-2alpha}). For alpha>1/2, state-model evidence diverges while causal-effect KL vanishes.
+
+Therefore more data can make us increasingly certain that two states are genuinely distinct while making their causal-effect difference statistically less learnable.
+
+### Unresolved is not zero
+The causal resolution spectrum cannot justify silently projecting unsupported effect directions to zero. In the spectral-target experiment, removing a weak direction is excellent when its true coefficient is zero but creates large approximation error when that direction carries real signal. Resolution diagnostics describe **estimability**, not effect magnitude.
+
+The framework must therefore distinguish:
+1. identification resolution (what must be conditioned on);
+2. causal resolution (what contrasts the data can estimate);
+3. structural/task assumptions (which unresolved contrasts may legitimately be pooled/constrained);
+4. estimand definition (whether a projected/coarse target is scientifically acceptable).
+
+This guards against converting weak identification into an unjustified null-effect assumption.
+
+
+## Update: unified causal-resolution budget
+
+A growing-state calculation adds representation granularity itself to the information boundary.
+
+Let:
+    K_N = N^kappa              (fine target/state count),
+    sigma_N = N^-alpha        (residual treatment SD),
+    delta_N = N^-beta         (effect contrast scale).
+
+With roughly equal state occupancy, each state has N/K_N observations. The KL information for a state-specific effect contrast is therefore
+
+    (N/K_N) sigma_N^2 delta_N^2
+      = N^(1-kappa-2alpha-2beta).
+
+Hence the unified resolution boundary is
+
+    kappa + 2 alpha + 2 beta = 1.
+
+Interpretation:
+- kappa is a **granularity tax** from asking for more state-specific target parameters;
+- 2 alpha is an **overlap/information tax** from shrinking treatment variation;
+- 2 beta is a **signal-resolution tax** from asking to distinguish smaller effect differences.
+
+The three taxes consume one causal-information budget. Below total cost 1, the contrast becomes detectable; at 1 it is local; above 1 it becomes asymptotically unresolved.
+
+This formulation includes:
+- fixed-K weak overlap (kappa=0);
+- growing subgroup/state count with healthy overlap (alpha=0);
+- local heterogeneity detection (beta>0);
+- combinations of all three.
+
+It also clarifies why a learned representation can become too causally granular even without poor overlap inside any individual state.
+
+### Inferential consequence
+
+In a direction with lambda_N=N^-2alpha, honest interval width is O(N^(alpha-1/2)). For alpha>1/2 it widens with N. A root-N interval can therefore become narrower and more misleading exactly while true information disappears. This is classical weak-identification behavior; its role here is to provide an observable warning against reporting falsely precise fine-state effects.
+
+
+## Update: proxy-induced phantom resolution and double ill-posedness
+
+Generated latent states introduce a new complication: the proxy-weighted information spectrum can look **better** than the oracle spectrum. State mixing redistributes treatment information across inferred regimes and can lift weak eigenvalues. In the K=3 experiment, soft/hard inferred states inflate the oracle lambda_min by 11x/21x under poor separation and reduce an oracle condition number around 153 to an apparent 5.9/4.0.
+
+Therefore an observed/proxy causal-resolution spectrum is not automatically conservative.
+
+If a representation confusion/channel operator A were known, one might deconvolve latent moments via A^{-1}. But A itself becomes ill-conditioned as state recovery degrades. The causal stage then applies J^{-1}. This creates two sequential inverse problems, with worst-case perturbation amplification involving both ||A^{-1}|| and ||J^{-1}||.
+
+This suggests a revised hierarchy:
+1. observational resolution determines how invertible the representation channel is;
+2. identification resolution determines what fine state detail nuisance adjustment requires;
+3. causal resolution determines how invertible the downstream score geometry is;
+4. target resolution determines which causal contrasts are requested;
+5. generated-state inference couples stages 1 and 3, so their ill-conditioning can multiply.
+
+A future method should either jointly regularize both inverse problems or construct conservative partial-identification bounds for oracle causal information from posterior/confusion uncertainty.
+
+
+## Update: generated-state geometry needs posterior second moments, not posterior-mean plug-in
+
+The phantom-resolution experiments reveal a general generated-latent-variable lesson. If H is one-hot and q=P(S|I), nonlinear latent moments should integrate over the conditional distribution:
+    E[HH'|I] = diag(q),
+not substitute the posterior mean:
+    E[H|I]E[H|I]' = qq'.
+
+For a diagnostic moment weighted by W, exact completion requires W to be measurable with respect to the posterior information set I. In the state-specific treatment-variance experiment, P(S|Z) is insufficient for W=T^2 because T contains additional state information. Updating to q=P(S|Z,T) gives
+    E[T^2 diag(q)] = E[T^2 HH']
+and recovers oracle weak-state information in population.
+
+This suggests that the operational causal-resolution spectrum should be built from **posterior expected latent sufficient statistics** under a joint state/treatment diagnostic model, rather than from plug-in posterior state means.
+
+It also creates a causal-design separation:
+- estimator posterior: constrained by the identification/orthogonality argument;
+- diagnostic posterior: may incorporate pre-outcome treatment-assignment information to estimate latent causal information geometry;
+- outcome Y must not be used casually in the diagnostic posterior without a joint generative/causal argument.
+
+This may avoid explicit confusion-matrix inversion but trades algebraic ill-conditioning for model-specification risk.

@@ -1,0 +1,5 @@
+Architecture,Optimal_Temperature,Raw_ECE,Calibrated_ECE,ECE_Reduction_Pct,Raw_NLL,Calibrated_NLL,Raw_ROC_AUC_D,Calibrated_ROC_AUC_D,Delta_ROC_AUC,Raw_PR_AUC_D,Calibrated_PR_AUC_D
+Gaussian HMM (Causal Filter),1.00 +/- 0.00,0.0416 +/- 0.0206,0.0416 +/- 0.0206,0.0%,0.2052,0.2052,0.5895 +/- 0.0433,0.5895 +/- 0.0433,+0.0000,0.1271,0.1271
+Neural GRU Encoder,3.20 +/- 0.60,0.1050 +/- 0.0167,0.0569 +/- 0.0273,47.9%,0.5475,0.3312,0.5644 +/- 0.0586,0.5609 +/- 0.0748,-0.0035,0.1046,0.1077
+Causal Transformer Encoder,4.80 +/- 0.47,0.1379 +/- 0.0167,0.0541 +/- 0.0113,60.3%,1.0058,0.3816,0.5356 +/- 0.0412,0.5282 +/- 0.0393,-0.0075,0.0921,0.0922
+Linear State Space Model (SSM),1.54 +/- 0.40,0.0496 +/- 0.0173,0.0386 +/- 0.0099,15.8%,0.3252,0.3016,0.5492 +/- 0.0175,0.5463 +/- 0.0231,-0.0030,0.1031,0.1038

@@ -1,0 +1,5 @@
+metric,value
+mean_abs_prediction_error,2.1e-13
+median_abs_prediction_error,4.7e-14
+max_abs_prediction_error,8.6e-12
+mean_proxy_lmin_over_oracle_lmin,4.31

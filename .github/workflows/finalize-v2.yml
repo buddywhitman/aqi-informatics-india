@@ -1,0 +1,49 @@
+name: Finalize AISTATS v2 artifacts
+on:
+  push:
+    branches: [v2]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run corrected factorial mechanism experiment
+        run: python src/factorial_reliability_experiment.py
+      - name: Regenerate corrected difficulty figure
+        run: python src/update_difficulty_figure.py
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+      - name: Compile manuscript twice
+        run: |
+          cd paper
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+          test "$(pdfinfo main.pdf | awk '/Pages:/ {print $2}')" = "24"
+      - name: Build canonical supplementary archive
+        run: python src/build_supplementary_archive.py
+      - name: Verify scientific and artifact invariants
+        run: |
+          python verify_science.py
+          python verify_artifacts.py
+      - name: Commit generated artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paper/main.pdf paper/plots/fig2_difficulty_frontier.png plots/fig2_difficulty_frontier.png reports/factorial_reliability_raw.csv reports/factorial_reliability_summary.csv reports/factorial_reliability_correlations.csv reports/factorial_risk_coverage.csv AISTATS2027_OR_DML_Supplementary_Material.zip
+          if ! git diff --cached --quiet; then
+            git commit -m "build: regenerate verified v2 submission artifacts [skip ci]"
+            git push origin HEAD:v2
+          fi

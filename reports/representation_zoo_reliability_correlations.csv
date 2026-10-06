@@ -1,0 +1,4 @@
+Metric,Mean_Within_Seed_Spearman_rho,Clustered_SE,Seed_Bootstrap_95CI_low,Seed_Bootstrap_95CI_high,Cluster_Permutation_p_value
+Classification F1,0.8,0.098,0.6,0.96,0.0007
+Calibration ECE,-0.76,0.1734,-1.0,-0.36,0.0015
+Log-Loss NLL,-0.84,0.1043,-1.0,-0.6,0.0001

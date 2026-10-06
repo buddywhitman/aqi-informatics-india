@@ -1,0 +1,7 @@
+metric,value
+mean_rmse_ratio,0.9997
+median_rmse_ratio,0.9994
+q05_rmse_ratio,0.9808
+q95_rmse_ratio,1.0196
+max_abs_relative_error,0.0391
+num_cells,243

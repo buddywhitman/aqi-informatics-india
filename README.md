@@ -1,156 +1,200 @@
-# Regime-Conditional Double Machine Learning (RC-DML) for Non-Stationary Time Series
+# Reliable Causal Estimation under Latent Markov Confounding
 
-## 🌟 Overview & Core Contribution
-This repository implements **Regime-Conditional Double Machine Learning (RC-DML)**, a causal inference framework designed for continuous treatments in non-stationary, autocorrelated observational time series. 
-
-While Double Machine Learning (DML; Chernozhukov et al., 2018) provides $\sqrt{N}$-consistent causal effect estimation under cross-sectional unconfoundedness, it fails catastrophically when latent thermodynamic or environmental regimes (e.g., atmospheric stagnation vs. advective clearance) act as time-varying confounders. RC-DML solves this by integrating latent Markov-switching regime inference into Neyman-orthogonal score equations, combined with **Purged Block-Temporal Cross-Fitting** with embargo buffers.
-
-## 📄 Primary Deliverables
-* **AISTATS 2027 Submission**: [`paper/main.tex`](./paper/main.tex) — Strict 8-page manuscript formatted for the 30th International Conference on Artificial Intelligence and Statistics (AISTATS 2027).
-* **Strategic & Methodological Pivot Guide**: [`docs/AISTATS_2027_PIVOT_EXPLANATION.md`](./docs/AISTATS_2027_PIVOT_EXPLANATION.md) — Comprehensive explanation of the audit, flaw remediation, and new ML contributions.
-* **Architectural Decisions**: [`docs/adr/`](./docs/adr/) — Formal ADRs documenting the methodological pivot ([ADR-0001](./docs/adr/0001-aistats-methodological-pivot.md)) and mathematical formulation ([ADR-0002](./docs/adr/0002-rc-dml-mathematical-formulation.md)).
+Official code repository and reproducibility artifact suite for the manuscript **"Reliable Causal Estimation under Latent Markov Confounding"** (AISTATS 2027).
 
 ---
 
-## 🔬 Detailed Methodology & Configuration Parameters
+## 🌟 Overview & Scientific Problem
 
-### 1. High-Resolution Data Acquisition (`src/data_acquisition_v2.py`)
-- **Sources**: OpenAQ API v3 (CPCB/SAFAR Aggregator) & Open-Meteo Historical Archive.
-- **Metropolises**: Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Ahmedabad.
-- **Pollutants**: PM2.5, PM10, NO2, SO2, CO, O3, **NH3** (Ammonia).
-- **Meteorology**: Temp, Humidity, Wind Speed/Dir, **Precipitation**, **Rain**, **Surface Pressure**.
-- **Configuration**: 
-    - Timeframe: 2 years (2024-2026) of hourly data (approx. 17,520 rows per city).
-    - Chunk Size: 30-day temporal windows to satisfy OpenAQ rate limits.
-    - Pagination: 1000 records per call limit handling.
+The submission is organized around one failure mode: **phantom causal resolution**. When an unobserved sequential confounder is replaced by a learned posterior, representation error can simultaneously leave residual confounding and make the downstream score geometry appear better conditioned. A generated-state conditioning diagnostic can therefore become more reassuring while the causal analysis becomes less trustworthy.
 
-### 2. Advanced Data Engineering (`src/data_preprocessing_v3.py`)
-- **Temporal Alignment**: Fixed "00:00:00" artifacts by rounding both pollution and weather timestamps to the nearest hour ('h' alias for Pandas 3.0).
-- **Imputation (Anti-NaN Strategy)**:
-    - **Linear Interpolation**: Gaps < 3 hours (limit=3).
-    - **Multivariate Imputation (MICE)**: `IterativeImputer` with 5 iterations, using inter-pollutant and pollutant-weather cross-correlations to estimate larger gaps.
-- **Feature Generation**:
-    - Ratios: PM2.5/PM10, NO2/CO, O3/NO2.
-    - Lags: 1h, 3h, 6h, 24h.
-    - Rolling Windows: 3h mean, 24h max, 24h std.
+The evidence chain has four layers: (1) an exact residual-confounding sensitivity law; (2) analytic and synthetic demonstrations of phantom geometry; (3) controlled factorial and higher-dimensional task-relative reliability tests; and (4) conservative inference and abstention procedures with negative results retained. OR-DML is one operational response, not the sole contribution or an unconditionally dominant estimator.
 
-### 3. Pollution Regime Discovery (`src/regime_discovery.py`)
-- **Dimensionality Reduction**: Principal Component Analysis (PCA) retaining **95% variance**.
-- **Clustering**: Gaussian Mixture Models (GMM) with **5 latent components**.
-- **Validation**: Silhouette Score (**0.2199**) and Davies-Bouldin Index (**1.6698**).
-- **Regimes Identified**: Stagnation-Driven, Traffic-Dominated, Industrial-Bypass, Dust-Event, Low-Pollution/Clearance.
-- **Transition Analysis**: First-order Markov Chains calculating the probability of atmospheric state shifts.
-
-### 4. Non-Parametric Nuisance Estimation & Benchmarking (`src/model_benchmarking.py`)
-- **Role in DML**: Estimating nuisance functions $\ell(X) = \mathbb{E}[Y \mid X]$ and $m(X) = \mathbb{E}[T \mid X]$.
-- **Architectures**: Evaluated LightGBM, CatBoost, RandomForest, and deep sequential models (CNN-LSTM, TFT).
-- **Finding**: Tree-based ensembles consistently achieve lower cross-validated MSE on tabular lagged meteorology compared to deep architectures (consistent with Grinsztajn et al., NeurIPS 2022), making them the preferred nuisance estimators for satisfying Neyman orthogonality.
-
-### 5. Regime-Conditional Double Machine Learning (`src/rc_dml.py`)
-- **Identification Strategy**: Conditions treatment and outcome residuals on inferred latent regimes $S_t \in \{1,\dots,K\}$, eliminating omitted regime bias.
-- **Cross-Fitting**: Employs **Purged Block Temporal Cross-Fitting** with embargo buffer $\tau$ to prevent temporal leakage under $\alpha$-mixing.
-- **Inference**: Closed-form regime-specific treatment effects $\hat{\theta}_k$ with asymptotic sandwich covariance standard errors.
-
-### 6. Causal Policy Simulation (`src/policy_simulation_exhaustive.py`)
-- **Estimand**: Causal marginal elasticity $\hat{\theta}_k = \frac{\partial \mathbb{E}[Y \mid \text{do}(T)]}{\partial T}$ conditioned on atmospheric regime $S_t$.
-- **Correction**: Resolved sign inversions of naive DML in peninsular plateau airsheds (Bengaluru: $-1.772 \to +0.081$) and collapsed spurious negative confounding artifacts by 79% in coastal megacities (Mumbai: $-296.092 \to -62.382$). Transparently evaluates persistent negative confounding in continental basins (Delhi).
-- **Health Impact**: Rigorously bounded using the official WHO 2021 log-linear concentration-response function without heuristic scaling factors or fabricated dollar conversions.
+The four-city sensor analysis is an observational stress test, not causal ground truth. The corrected-hourly bias-law audit and the canonical 14,122-row processed dataset are retained with separate provenance because the earlier processed file was affected by a timestamp-rounding issue documented in `docs/V2_CHANGELOG.md`.
 
 ---
 
-## 📈 Key Insights & Informed Recommendations
-- **Dynamic Industrial Throttling**: Regulators should implement a predictive **Atmospheric Stagnation Index (ASI)**. When wind speeds are forecast to drop below **10.5 km/h** in Delhi, industrial emissions should be pre-emptively throttled by 30-50%.
-- **Targeted "Super-Spreader" Enforcement**: In Kolkata, 1% of hours (anthropogenic anomalies) account for ~2.5% of annual excess mortality. Policy should prioritize **Edge-AI monitoring** at industrial point-sources to flag these weather-independent spikes.
-- **Diurnal Traffic Management**: Implementing "EV-Only" hours between **18:00 and 22:00** in Bengaluru and Chennai can mitigate the bimodal exposure peaks identified during boundary layer collapse.
+## 📁 Repository Structure
+
+```text
+├── paper/
+│   ├── main.tex                    # Authoritative LaTeX manuscript (exact 8-page main text, strictly 24 pages total)
+│   ├── main.pdf                    # Compiled PDF submission (24 pages, 0 warnings)
+│   ├── aistats2027.sty             # Official AISTATS conference style file
+│   └── plots/                      # Publication figures embedded in manuscript
+├── src/                            # Active, self-contained Python codebase
+│   ├── or_dml.py                   # Canonical Overlap-Aware Regime DML (OR-DML) implementation
+│   ├── calibration_intervention_zoo.py # Post-hoc temperature-scaling intervention on Representation Zoo
+│   ├── factorial_reliability_experiment.py # Corrected 7x7 representation-by-task mechanism experiment
+│   ├── empirical_falsification_checks.py # Pre-treatment lead placebo falsification suite (h in {-6, -3, -1})
+│   ├── synthetic_dgp_benchmark.py  # 500-draw Monte Carlo difficulty frontier simulation
+│   ├── empirical_evaluation.py     # 4-city sensor evaluation, conditioning diagnostics, dynamic IRFs
+│   ├── train_real_representation_zoo.py # HMM, GRU, Transformer, SSM benchmark under distribution shifts
+│   ├── hierarchical_reliability_regression.py # 15-world fixed-effects regressions & LOWO cross-validation
+│   ├── financial_regime_transfer.py # Multi-domain synthetic transfer & selective abstention policy
+│   ├── data_pipeline_clean.py      # Clean data engineering pipeline for 14,122 hourly records
+│   ├── regime_intelligence.py      # Meteorological regime validation and profiling
+│   └── requirements.txt            # Minimal pip environment dependencies
+├── reports/                        # Synchronized CSV report artifacts cited in manuscript
+├── plots/                          # Generated high-resolution publication figures
+├── data/
+│   └── processed_clean/            # Cleaned analysis dataset (14,122 hourly rows)
+├── docs/
+│   └── adr/                        # Architectural Decision Records (ADRs 0001–0007)
+├── experiments_manifest.json       # Machine-readable experiment and theorem manifest
+├── SUPPLEMENT_ROADMAP.md           # Authoritative supplementary roadmap and table of contents
+├── verify_artifacts.py             # Automated artifact and byte-for-byte manuscript synchronization check
+└── verify_science.py               # Automated verification of 10 core mathematical/algebraic invariances
+```
 
 ---
 
-## 📁 Repository Map
-- `src/`: Core Python pipeline scripts (Acquisition, Preprocessing, CNN-LSTM, SHAP, CausalML, Health Models).
-- `data/`: (Ignored by git) Raw and processed hourly datasets.
-- `plots/`: High-resolution visualizations including diurnal signatures and SHAP tipping points.
-- `manuscript/`: Structured Markdown sections and drafts for the final paper.
-- `models/`: (Ignored by git) Trained Keras model files.
-- `reports/`: Intermediary analysis and strategy summaries.
+## 🔬 Canonical Implementation: OR-DML (`src/or_dml.py`)
 
----
-
-## ✅ Framework Checklist & Implementation Status
-
-Below is the status of the implementation against the original *Pollution Regime Discovery Framework*:
-
-### Phase 1: Data Engineering
-- [x] **Hourly air pollution data (PM2.5, PM10, NO₂, SO₂, CO, O₃, NH₃, AQI)**: Implemented via OpenAQ API v3.
-- [x] **Meteorological data (Temperature, Humidity, Wind speed, Wind direction, Rainfall, Atmospheric pressure)**: Implemented via Open-Meteo Archive.
-- [x] **Merge pollution and weather datasets using timestamp and location**: Implemented.
-- [x] **Handle missing values using KNN Imputation, MissForest**: Implemented (Using SOTA MICE/IterativeImputer and KNNImputer).
-- [x] **Detect outliers using Isolation Forest, IQR-based analysis**: Implemented.
-- [x] **Generate engineered features (Ratios, Lags, Rolling Stats)**: Implemented.
-
-### Phase 2: Pollution Regime Discovery
-- [x] **Standardize all variables & Apply PCA (95% variance)**: Implemented.
-- [x] **Apply HDBSCAN / GMM / K-Means clustering**: Implemented.
-- [x] **Identify and characterize latent pollution regimes**: Implemented (Stagnation, Traffic, Industrial, etc.).
-- [x] **Validate clusters using Silhouette Score, Davies–Bouldin Index**: Implemented.
-- [x] **Bootstrap stability analysis**: Implemented (Mean Bootstrap Adjusted Rand Index: 0.77).
-
-### Phase 3: Regime Transition Analysis
-- [x] **Convert hourly observations into regime sequences & Build Markov matrices**: Implemented.
-- [x] **Identify high-risk pollution pathways**: Implemented.
-- [x] **Compare transition patterns across all cities**: Implemented.
-- [x] **Quantify persistence of pollution regimes**: Implemented (Time-to-Exit persistence metrics calculated).
-
-### Phase 4: Predictive Benchmarking
-- [x] **Develop AQI forecasting models (RF, LightGBM, CatBoost)**: Implemented.
-- [x] **Benchmarking & Nuisance Estimation (RF, LightGBM, CatBoost)**: Implemented.
-- [x] **Time-Series Block Cross-Validation**: Implemented with purging and embargo buffers.
-- [x] **Uncertainty Quantification**: Validated via asymptotic sandwich covariance and Monte Carlo coverage.
-
-### Phase 5: Explainable AI & Regime Attribution
-- [x] **Identify key meteorological regimes & tipping points**: Implemented (e.g., wind velocity thresholds for stagnation).
-- [x] **Quantify regime transition probabilities**: Implemented via first-order Markov chains.
-
-### Phase 6: Regime-Conditional Double Machine Learning (RC-DML)
-- [x] **Formulate Neyman-orthogonal score conditioned on latent state**: Implemented (`src/rc_dml.py`).
-- [x] **Eliminate omitted regime bias in non-stationary confounding**: Proved theoretically and validated empirically.
-- [x] **Purged Block Temporal Cross-Fitting**: Implemented with embargo buffer $\tau$.
-- [x] **Synthetic DGP Monte Carlo Benchmark**: Proved $\sqrt{N}$-consistency, 99.83% bias elimination, and valid population coverage (88.9%) accounting for Markov persistence (`src/synthetic_dgp_benchmark.py`).
+The primary estimator is implemented in [`src/or_dml.py`](./src/or_dml.py):
+* **Class**: `OverlapAwareRegimeDML`
+* **Posterior Modes**: Supports causal forward filtering ($\boldsymbol{\gamma}_t = P(S_t \mid \mathcal{F}_t)$) and retrospective smoothing ($\boldsymbol{\gamma}_t = P(S_t \mid Z_{1:N})$).
+* **Nuisance Estimation**: Cross-fitted with purged temporal blocks and temporal embargo buffers (Ridge regressors in the 4-city observational study; Ridge and Gradient Boosting regressors in the synthetic benchmarks).
+* **Inversion**: Spectrally regularized coupled Jacobian inversion $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$.
+* **Conditioning Diagnostics**: Automatically computes $\lambda_{\min}(\hat{\boldsymbol{J}})$, condition number $\kappa(\hat{\boldsymbol{J}})$, and sample state occupancy.
 
 ---
 
 ## 🚀 Reproducibility Guide
 
 ### 1. Environment Setup
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
 
-python -m pip install --upgrade pip
-python -m pip install -r src/requirements.txt
+```bash
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate       # On Linux/macOS
+# .venv\Scripts\activate        # On Windows
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### 2. Core Methodological Reproduction
-To reproduce the AISTATS 2027 paper results, figures, and benchmark tables from scratch:
-1. `python src/synthetic_dgp_benchmark.py` — Runs the 45-replication Monte Carlo benchmark across high, moderate, and rapid persistence regimes; generates `reports/rc_dml_benchmarks.csv` and `reports/rc_dml_sensitivity_by_config.csv` (Table 1).
-2. `python src/empirical_evaluation.py` — Fits Naive DML vs RC-DML across Delhi, Mumbai, and Bengaluru sensor networks; generates `reports/empirical_rc_dml_results.csv` (Table 2).
-3. `python src/generate_paper_figures.py` — Generates publication-quality 300 DPI figures:
-   - `plots/fig1_bias_amplification.png` (The Frisch-Waugh Singularity)
-   - `plots/fig2_monte_carlo_convergence.png` (Empirical $O(N^{-1/2})$ Semiparametric Convergence Rate)
-   - `plots/fig3_regime_elasticities.png` (Real-World Sensor Causal Elasticities with 95% CIs)
-4. `python src/policy_simulation_exhaustive.py` — Runs the grounded WHO 2021 concentration-response policy simulation; outputs `reports/exhaustive_policy_scenarios.csv`.
-5. `pdflatex paper/main.tex` — Compiles the complete 17-page submission with 8-page main text, references, and complete Mathematical Appendix A–F (`paper/main.pdf`).
+### 2. End-to-End Pipeline Execution
 
----
+To reproduce all numerical results, figures, and benchmark tables from scratch:
 
-## 🏆 Target Venue
-* **AISTATS 2027** (30th International Conference on Artificial Intelligence and Statistics)
-* Track: Methodological Contributions in Causal Inference & Time-Series Modeling
-* Target Award: Best Student Paper Award
+```bash
+# Step 1: Preprocess raw atmospheric records into clean analysis format (14,122 rows)
+python src/data_pipeline_clean.py
 
-## 📄 Key Artifacts
-* Paper Source: [`paper/main.tex`](./paper/main.tex)
-* Architecture Decision Records: [`docs/adr/`](./docs/adr/)
-* Archived Drafts: [`archive/legacy_nature_drafts/`](./archive/legacy_nature_drafts/)
+# Step 2: Run 500-draw Monte Carlo difficulty frontier benchmark
+python src/synthetic_dgp_benchmark.py
+
+# Step 3: Run corrected 7x7 representation-by-task factorial mechanism test
+python src/factorial_reliability_experiment.py
+
+# Step 4: Run real-world megacity evaluation and dynamic exposure-response functions
+python src/empirical_evaluation.py
+
+# Step 5: Run representation zoo evaluation (HMM, GRU, Transformer, SSM)
+python src/train_real_representation_zoo.py
+
+# Step 6: Run hierarchical reliability regressions across 15 benchmark worlds
+python src/hierarchical_reliability_regression.py
+
+# Step 7: Run multi-domain transfer and selective abstention policy
+python src/financial_regime_transfer.py
+
+# Step 8: Run post-hoc calibration interventions on representation zoo
+python src/calibration_intervention_zoo.py
+
+# Step 9: Run pre-treatment lead placebo falsification checks
+python src/empirical_falsification_checks.py
+
+```
+
+### 3. Automated Dual-Layer Verification
+
+The repository includes two automated verification layers to ensure reproducibility and scientific soundness:
+
+```bash
+# Layer 1: Artifact & Manuscript Synchronization
+# Checks report existence, figure existence, absence of mock tokens, and byte-for-byte synchronization
+python verify_artifacts.py
+
+# Layer 2: Mathematical & Scientific Invariances
+# Asserts normal equations, oracle recovery, K=1 reduction, permutation covariance, simplex, and temporal disjointness
+python verify_science.py
+```
+
+### 4. Compiling the Manuscript
+
+```bash
+cd paper
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
+```
+* **Page Budget**: Strictly 8 pages of main text; exactly 24 pages total including AI statement, references, checklist, and Appendices A–I.
+* **Compilation Status**: 0 errors, 0 warnings.
+
+
+## Exploratory task-relative reliability research
+
+The isolated branch `research/task-relative-reliability` contains a large adversarial follow-up program. It is **not part of the canonical AISTATS submission evidence chain** unless a result is explicitly promoted after verification.
+
+Start here:
+
+- `research/README.md` — chronological result ledger (R1 onward), including negative results.
+- `research/RESEARCH_INDEX.md` — study-to-code/result index.
+- `research/REMAINING_RESEARCH_PLAN.md` — work packages and saturation criteria.
+- `research/SATURATION_STATUS.md` — completion status and unresolved requirements.
+- `research/FINAL_CANDIDATE_SYNTHESIS.md` — compressed candidate contribution set.
+- `research/NOVELTY_COLLISION_AUDIT.md` — conservative prior-art collision audit.
+- `research/FINAL_REAL_DATA_COLLISION.md` — observational sensor-data stress test.
+- `research/REPRESENTATION_ZOO_REANALYSIS.md` — aggregate zoo reinterpretation.
+- `research/FINAL_AUDIT_CHECKLIST.md` — claim/reproducibility/limitation audit.
+- `research/UNIFIED_THEOREM_SKETCH.md` — working local reliability expansion.
+
+The strongest surviving research themes are phantom causal resolution, self-canceling proxy diagnostics, target/directional generated-representation reliability, conservative posterior-moment/sensitivity diagnostics, and the distinction between fine adjustment resolution and scientifically justified target resolution. Broad weak-identification, task-aware-calibration, generated-covariate, latent-class correction, and Neyman-orthogonality ideas are explicitly treated as prior art rather than claimed as new.
+
+The research workflow `.github/workflows/research-reliability.yml` executes the committed exploratory experiments and publishes their result artifacts.
+
+
+## AISTATS 2027 final synthesis branch
+
+The branch `submission/aistats2027-final-synthesis` is the submission-oriented synthesis built from the fully audited research branch. It preserves the title and abstract registered before the AISTATS abstract deadline and revises the body/supplement only to improve factual scope, falsification transparency, reproducibility, and compliance.
+
+Submission-critical files:
+
+- `paper/main.tex` — anonymous AISTATS manuscript source.
+- `paper/aistats2027.sty` — AISTATS 2027 style used by the manuscript.
+- `paper/main.pdf` — compiled manuscript produced by the final verification workflow.
+- `AISTATS2027_OR_DML_Supplementary_Material.zip` — canonical supplementary archive.
+- `SUPPLEMENT_ROADMAP.md` — map of proofs, protocols, reports, and post-audit evidence.
+- `verify_science.py` — mathematical/scientific invariance checks.
+- `verify_artifacts.py` — manuscript/report/figure synchronization checks.
+- `.github/workflows/submission-final.yml` — compile, verification, anonymity, AI-statement-ordering, and packaging workflow.
+- `SUBMISSION_SYNTHESIS_CHANGELOG.md` — exact scientific/editorial changes promoted from the audit.
+
+The final synthesis deliberately does **not** promote every exploratory result. Results enter the submission only when they are reproducible, consistent with adversarial falsification, and compatible with the frozen title/abstract and the main-paper evidence chain.
+
+
+## AISTATS 2027 final synthesis branch
+
+The branch `submission/aistats2027-final-synthesis` is the submission-candidate integration branch. It preserves the registered title/abstract framing while incorporating only post-audit qualifications that are supported by committed evidence.
+
+Canonical submission artifacts:
+
+- `paper/main.tex` — anonymous AISTATS manuscript source.
+- `paper/aistats2027.sty` — AISTATS 2027 style used by the manuscript.
+- `paper/main.pdf` — generated by the final verification workflow; do not hand-edit.
+- `AISTATS2027_OR_DML_Supplementary_Material.zip` — generated anonymous supplementary archive.
+- `SUPPLEMENT_README.md` and `SUPPLEMENT_ROADMAP.md` — reproduction and evidence maps.
+- `SUBMISSION_COMPLIANCE.md` — AISTATS formatting/anonymity/page-order compliance manifest.
+- `verify_science.py`, `verify_artifacts.py`, and `verify_submission_synthesis.py` — scientific, synchronization, and promoted-claim gates.
+- `.github/workflows/submission-final.yml` — compiles the manuscript, builds the supplement, checks page placement/anonymity, and publishes final artifacts.
+
+Final-synthesis editorial policy:
+
+- main text is limited to eight pages before the AI Use Statement/references;
+- the mandatory AI Use Statement precedes references;
+- observational sensor estimates are explicitly stress tests rather than causal ground truth;
+- negative/falsification results are retained where they delimit interpretation;
+- exploratory research is promoted only when supported by committed evidence and consistent with the final novelty audit;
+- the supplement contains the code/results needed to interrogate promoted claims while excluding identifying repository links.
