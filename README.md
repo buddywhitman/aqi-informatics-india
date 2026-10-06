@@ -137,3 +137,25 @@ pdflatex -interaction=nonstopmode main.tex
 ```
 * **Page Budget**: Strictly 8 pages of main text; exactly 24 pages total including AI statement, references, checklist, and Appendices A–I.
 * **Compilation Status**: 0 errors, 0 warnings.
+
+
+## Exploratory task-relative reliability research
+
+The isolated branch `research/task-relative-reliability` contains a large adversarial follow-up program. It is **not part of the canonical AISTATS submission evidence chain** unless a result is explicitly promoted after verification.
+
+Start here:
+
+- `research/README.md` — chronological result ledger (R1 onward), including negative results.
+- `research/RESEARCH_INDEX.md` — study-to-code/result index.
+- `research/REMAINING_RESEARCH_PLAN.md` — work packages and saturation criteria.
+- `research/SATURATION_STATUS.md` — completion status and unresolved requirements.
+- `research/FINAL_CANDIDATE_SYNTHESIS.md` — compressed candidate contribution set.
+- `research/NOVELTY_COLLISION_AUDIT.md` — conservative prior-art collision audit.
+- `research/FINAL_REAL_DATA_COLLISION.md` — observational sensor-data stress test.
+- `research/REPRESENTATION_ZOO_REANALYSIS.md` — aggregate zoo reinterpretation.
+- `research/FINAL_AUDIT_CHECKLIST.md` — claim/reproducibility/limitation audit.
+- `research/UNIFIED_THEOREM_SKETCH.md` — working local reliability expansion.
+
+The strongest surviving research themes are phantom causal resolution, self-canceling proxy diagnostics, target/directional generated-representation reliability, conservative posterior-moment/sensitivity diagnostics, and the distinction between fine adjustment resolution and scientifically justified target resolution. Broad weak-identification, task-aware-calibration, generated-covariate, latent-class correction, and Neyman-orthogonality ideas are explicitly treated as prior art rather than claimed as new.
+
+The research workflow `.github/workflows/research-reliability.yml` executes the committed exploratory experiments and publishes their result artifacts.
