@@ -43,3 +43,6 @@ Findings (honest):
 
 ## Round 5: learned-parameter statement
 App. A now states precisely what is reduced to cited results (Leroux 1992; Douc-Moulines-Olsson-van Handel 2011; Cappe et al. 2005 for filter continuity/forgetting) and what is not proved (rate; independence of the fitted HMM from the held-out fold). Citation details are from memory (not re-verified online): check before camera-ready.
+
+## Round 6: law-regression (environment route)
+`ext_envreal.py`, `ext_envreg.py`: theta_e = theta + b_e k_e with observable k_e = a_e v_e / Var(T~_e). Cross-environment regression intercept recovers theta when b_e is invariant or independent of k_e (sim: bias +0.03/0.00 vs pooled +0.30; violation b_e ~ a_e: -0.14 vs +0.36; `x10_envreg.csv`). Real cities (monthly environments): no leverage (|k|<=0.06) and unstable monthly theta; no real-data claim (`x11_*`). Related in spirit to invariance/ICP-style identification; novelty limited to the exact linear form supplied by the law; unvalidated beyond simulation.
