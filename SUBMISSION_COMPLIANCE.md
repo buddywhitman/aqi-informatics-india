@@ -9,10 +9,11 @@ This file documents the mechanical compliance gates enforced by the final-submis
 - AI Use Statement must appear immediately before references and outside the 8-page main-text budget.
 - Checklist and appendices follow references.
 - Title/abstract framing is treated as frozen except for minor consistency edits.
-- Observational sensor analyses are explicitly labeled stress tests rather than causal ground truth.
+- The central claim is phantom causal resolution; observational sensor analyses are explicitly labeled stress tests rather than causal ground truth.
+- Legacy 14,122-row panel results and the corrected-hourly audit are distinguished explicitly; neither is silently substituted for the other.
 
 ## Supplement
-- Built by `src/build_supplementary_archive.py`.
+- Built by `src/build_supplementary_archive.py`, which fails closed on missing required evidence, sorts archive members, fixes ZIP metadata, and emits `SUPPLEMENT_SHA256SUMS.txt`.
 - Includes manuscript source/style, canonical implementation, clean processed data, canonical reports, verification scripts, and promoted post-audit evidence.
 - Identifying repository/author links are forbidden by automated archive scan.
 - Exploratory files are included only when they delimit or reproduce promoted claims.
