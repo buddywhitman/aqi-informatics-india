@@ -60,6 +60,8 @@ jobs:
           python research/integrated_latent_nonlinear_outcome.py
           python research/oracle_validity_decomposition.py
           python research/operational_b_bounds.py
+          python research/validation_sample_bounds.py
+          python research/validation_design_priority.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -103,3 +105,5 @@ jobs:
             research/results/integrated_latent_nonlinear_outcome*.csv
             research/results/oracle_validity_decomposition*.csv
             research/results/operational_b_bounds*.csv
+            research/results/validation_sample_bounds*.csv
+            research/results/validation_design_priority*.csv
