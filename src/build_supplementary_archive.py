@@ -58,6 +58,12 @@ REQUIRED_FILES = [
     "src/bias_law/ext_cp_proof_check.py",
     "src/bias_law/ext_h2_lemma_check.py",
     "docs/V2_CHANGELOG.md",
+    # Phase-2 frontier provenance retained after audit
+    "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
+    "docs/FUTURE_WORK_AND_FRONTIERS.md",
+    "src/deep_empirical_evaluations.py",
+    "src/adaptive_spectral_optimizer.py",
+    "src/real_megacity_semisynthetic_benchmark.py",
 
     "src/requirements.txt",
 
