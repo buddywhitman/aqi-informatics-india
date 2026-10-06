@@ -29,12 +29,18 @@ Using a standardized two-state HMM on the six exogenous meteorological features,
 ### R7. Frozen-sensor sensitivity is a material empirical limitation, especially in Mumbai
 Removing complete-analysis rows belonging to NO2 constant-value runs of length >=6 hours leaves Delhi unchanged but removes 885/4,180 Mumbai rows (21.2%), 163/4,093 Bengaluru rows (4.0%), and 110/1,209 Kolkata rows (9.1%). Re-fitting the same smoothed OR-DML specification changes Mumbai's overall estimate from 1.59 to 2.92, regime estimates from (-0.03, 3.30) to (3.86, 2.25), and lambda_min from 0.317 to 0.178. Bengaluru changes little; Kolkata remains extremely ill-conditioned and uncertain. This is not evidence that the filtered estimate is "truer"—removing long constant runs may discard legitimate periods—but it shows that the Mumbai empirical decomposition is materially telemetry-sensitive and should not be treated as a stable physical effect without source-level sensor QA.
 
+### R8. Real-data conclusions are sensitive to the chosen number of latent regimes
+Re-fitting the identical observational specification with K=2,3,4 leaves Delhi's overall ATE relatively stable (0.374, 0.428, 0.422) and Bengaluru near zero (-0.026, 0.064, 0.038), but Mumbai changes materially (1.59, 2.83, 5.99). At K=4 Mumbai's lambda_min falls to 0.029 and one regime coefficient reaches 23.0, a clear warning of weak identification rather than credible fine-grained heterogeneity. Kolkata remains near-singular for every K. The fitted HMM BIC decreases monotonically from K=2 through K=5 in all four cities, so K=2 is an interpretability/coarse-graining choice rather than a BIC-selected latent-state count. This is a substantive model-selection limitation and a promising research direction: task-aware state aggregation should trade emission fit against downstream identifiability.
+
+A useful positive control: five different HMM random seeds (1,7,19,42,97) produced identical reported fits for all four cities under the current implementation, so the observed K sensitivity is not merely random initialization noise.
+
 ## Reproduction
 
 Run:
 ```bash
 python research/run_extended_reliability_studies.py
 python research/frozen_sensor_sensitivity.py
+python research/latent_state_count_sensitivity.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
