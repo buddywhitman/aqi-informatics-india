@@ -385,3 +385,15 @@ This is the first integrated test of the synthesis rather than another isolated 
 
 ### R75. Nonlinear breakdown boundary
 A second adversarial experiment replaces the linearized moment with a curved nonlinear equation and measures when $J^{-1}b$ ceases to approximate the exact target displacement. This explicitly searches for the regime where the proposed directional reliability operator fails rather than assuming local asymptotics are adequate.
+
+
+### R76. Integrated linearized reliability budget validates exactly, as it should
+Across 243 factorial cells spanning information weakness, perturbation magnitude/orientation, target orientation and N, empirical RMSE divided by the predicted $\sqrt{(a^\top J^{-1}b)^2+a^\top J^{-1}\Sigma J^{-1}a/N}$ has mean 0.9997, median 0.9994, and 5th/95th percentiles 0.981/1.020. Because the simulation is generated from the same linearized equation, this is a consistency check rather than independent evidence. The important next test is the integrated latent-state nonlinear DGP now committed.
+
+### R77. Weak information destroys the local validity of the first-order operator through a curvature number
+For scalar nonlinear moment $\lambda d+c d^2=b$, the relevant dimensionless nonlinearity is
+$$z=cb/\lambda^2.$$
+At curvature 1 and perturbation .01, relative linearization error is ~1% for $\lambda=1$, ~21% for .2, **156%** for .05, and **951%** for .01. Thus weak information not only amplifies representation error; it can invalidate the first-order $J^{-1}b$ approximation itself. Any unified theorem needs a remainder condition controlling curvature at roughly inverse-information-squared scale.
+
+### R78. Integrated Markov latent-state validation
+A new DGP now combines Markov persistence, imperfect emission-based filtering, state-specific treatment information/effects, generated soft states, oracle/proxy information spectra, and multiple scientific targets. It compares actual proxy-versus-oracle target displacement against the score-operator prediction in a genuine generated-state ratio estimator. This is the first nontrivial integrated validation of the proposed operator framework. Results pending automated execution.
