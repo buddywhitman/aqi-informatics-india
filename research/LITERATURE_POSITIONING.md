@@ -89,3 +89,17 @@ Also relevant: Kalavasis, Mehrotra & Zampetakis (COLT 2024) introduce data-depen
 The broad observation that a representation sufficient/minimal for one task can discard information needed by other downstream tasks is established in representation learning; e.g. Wang et al. (CVPR 2022), _Rethinking Minimal Sufficient Representation in Contrastive Learning_, proves that a minimal representation for the pretext/shared-view objective may lose downstream-task information. Therefore the generic statement "no single minimal representation is optimal for all tasks" is not novel.
 
 Our exact crossing-partition/exponential construction should be treated as an explanatory lemma. Its research value is in motivating a **rich shared latent substrate + task-specific causal target heads**, particularly when universal fine target parameterization pays weak-overlap costs. A future contribution must quantify that statistical cost rather than rely on the elementary partition argument alone.
+
+
+## Targeted search for the causal-resolution boundary (2026-10-06)
+
+A focused search for weak-overlap heterogeneous/subgroup effects found substantial neighboring work on:
+- doubly robust estimation and inference under weak overlap (Ma, Sant'Anna, Sasaki & Ura);
+- subgroup causal effects with overlap weighting;
+- trimming/thresholding and positivity violations;
+- representation learning that improves overlap while preserving causal identification (Clivio et al.);
+- coarsening/discretization bias (Ou & Nabi).
+
+This search did **not** surface, in the queried literature, the exact local-sequence result currently derived on this branch: a perfectly observed latent subgroup whose residual treatment variance is N^{-2 alpha}, with causal-effect separation N^{-beta}, yielding KL order N^{1-2 alpha-2 beta} and an information-theoretic heterogeneity-detection boundary alpha+beta=1/2. Absence from this search is not evidence of novelty. A formal literature review should search semiparametric weak identification, local alternatives, subgroup testing under positivity violations, and nonregular inference before any novelty claim.
+
+The dual-resolution principle is also supported by recent work on coarsened exact matching showing that coarse confounder adjustment can leave residual confounding that persists with sample size; this is conceptually consistent with our analytic coarse-adjustment bias construction.
