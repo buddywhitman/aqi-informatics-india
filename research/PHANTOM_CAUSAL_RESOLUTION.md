@@ -114,3 +114,23 @@ See:
 - True residual treatment variances are known only in simulation.
 - Label permutations do not affect eigenvalues, so alignment is irrelevant for the spectral result.
 - This does not prove the current empirical OR-DML lambda_min is wrong; it shows that proxy-weighted conditioning need not be conservative and should be stress-tested.
+
+
+## Asymptotic false reassurance: the phantom geometry becomes more stable with more data
+
+A fixed-separation experiment (Delta_Z=.5, weak-state treatment SD=.08) was repeated over N=300..4800. The oracle lambda_min remains about .0021, while the soft-proxy lambda_min converges near .0242-.0263, an approximately 11x optimistic pseudo-geometry.
+
+Crucially, the proxy estimator's sampling SD shrinks:
+- N=300: SD=.01299, bias=1.74 proxy SDs;
+- N=600: SD=.01089, bias=2.21 SDs;
+- N=1200: SD=.00713, bias=3.09 SDs;
+- N=2400: SD=.00511, bias=4.37 SDs;
+- N=4800: SD=.00360, bias=6.11 SDs.
+
+Thus more data do not repair the proxy geometry under persistent representation ambiguity. They make the optimistic pseudo-geometry **more precisely estimated**. A naive bootstrap/stability analysis centered on the proxy estimand can therefore report increasing confidence in a systematically inflated causal-resolution diagnostic.
+
+This is analogous to classical misspecification: resampling quantifies sampling uncertainty around the wrong pseudo-parameter, not discrepancy from the unobserved oracle geometry.
+
+Reproduction:
+- research/phantom_resolution_concentration.py
+- research/results/phantom_resolution_concentration_summary.csv
