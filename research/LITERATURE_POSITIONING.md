@@ -82,3 +82,10 @@ What the branch adds as a candidate specialized result is the latent-state/local
 This should be described as a **dual-resolution latent-state estimation problem**, not as generic invention of the confounder/effect-modifier distinction.
 
 Also relevant: Kalavasis, Mehrotra & Zampetakis (COLT 2024) introduce data-dependent coarsened IPW to improve robustness/confidence intervals under inaccurate propensity scores and extreme propensities. This is close in spirit and must be distinguished from the latent-state target-resolution problem. Their result makes a broad novelty claim about "coarsening improves weak-overlap causal estimation" untenable.
+
+
+## Multitask sufficiency prior art
+
+The broad observation that a representation sufficient/minimal for one task can discard information needed by other downstream tasks is established in representation learning; e.g. Wang et al. (CVPR 2022), _Rethinking Minimal Sufficient Representation in Contrastive Learning_, proves that a minimal representation for the pretext/shared-view objective may lose downstream-task information. Therefore the generic statement "no single minimal representation is optimal for all tasks" is not novel.
+
+Our exact crossing-partition/exponential construction should be treated as an explanatory lemma. Its research value is in motivating a **rich shared latent substrate + task-specific causal target heads**, particularly when universal fine target parameterization pays weak-overlap costs. A future contribution must quantify that statistical cost rather than rely on the elementary partition argument alone.
