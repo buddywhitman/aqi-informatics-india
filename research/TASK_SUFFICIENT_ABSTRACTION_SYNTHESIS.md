@@ -112,3 +112,41 @@ The framework must therefore distinguish:
 4. estimand definition (whether a projected/coarse target is scientifically acceptable).
 
 This guards against converting weak identification into an unjustified null-effect assumption.
+
+
+## Update: unified causal-resolution budget
+
+A growing-state calculation adds representation granularity itself to the information boundary.
+
+Let:
+    K_N = N^kappa              (fine target/state count),
+    sigma_N = N^-alpha        (residual treatment SD),
+    delta_N = N^-beta         (effect contrast scale).
+
+With roughly equal state occupancy, each state has N/K_N observations. The KL information for a state-specific effect contrast is therefore
+
+    (N/K_N) sigma_N^2 delta_N^2
+      = N^(1-kappa-2alpha-2beta).
+
+Hence the unified resolution boundary is
+
+    kappa + 2 alpha + 2 beta = 1.
+
+Interpretation:
+- kappa is a **granularity tax** from asking for more state-specific target parameters;
+- 2 alpha is an **overlap/information tax** from shrinking treatment variation;
+- 2 beta is a **signal-resolution tax** from asking to distinguish smaller effect differences.
+
+The three taxes consume one causal-information budget. Below total cost 1, the contrast becomes detectable; at 1 it is local; above 1 it becomes asymptotically unresolved.
+
+This formulation includes:
+- fixed-K weak overlap (kappa=0);
+- growing subgroup/state count with healthy overlap (alpha=0);
+- local heterogeneity detection (beta>0);
+- combinations of all three.
+
+It also clarifies why a learned representation can become too causally granular even without poor overlap inside any individual state.
+
+### Inferential consequence
+
+In a direction with lambda_N=N^-2alpha, honest interval width is O(N^(alpha-1/2)). For alpha>1/2 it widens with N. A root-N interval can therefore become narrower and more misleading exactly while true information disappears. This is classical weak-identification behavior; its role here is to provide an observable warning against reporting falsely precise fine-state effects.
