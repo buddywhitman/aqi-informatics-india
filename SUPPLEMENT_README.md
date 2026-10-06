@@ -12,9 +12,10 @@ This anonymous archive accompanies the submission **Reliable Causal Estimation u
 
 ## Evidence hierarchy
 
+- The central claim is phantom causal resolution: generated latent states can distort apparent downstream causal information while residual confounding remains.
 - `reports/` contains canonical numerical outputs cited by the manuscript.
 - `research/` contains selected post-audit stress tests included to delimit claim scope and document negative results.
-- Observational sensor analyses are stress tests, not causal ground truth.
+- Observational sensor analyses are stress tests, not causal ground truth. `data/processed_clean/combined_hourly_clean.csv` is retained for legacy/canonical experiment reproducibility; the corrected-hourly bias-law audit is separately reproduced by `src/bias_law/real_cities_sensitivity.py` and associated audit outputs, because the earlier processed file is affected by the timestamp-rounding issue documented in `docs/V2_CHANGELOG.md`.
 - Synthetic oracle experiments are labeled as such.
 
 ## Anonymity
