@@ -50,6 +50,7 @@ REQUIRED_FILES = [
     "src/adaptive_spectral_optimizer.py",
     "src/real_megacity_semisynthetic_benchmark.py",
     "src/test_multiregime_scalability.py",
+    "src/latent_regime_bench.py",
     "src/walkthrough_tutorial.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "docs/FUTURE_WORK_AND_FRONTIERS.md",

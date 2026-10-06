@@ -33,41 +33,60 @@ class LatentRegimeHMM:
     Gaussian Hidden Markov Model for temporal regime discovery from exogenous
     meteorological dynamics Z_t. Supports both forward-filtering and retrospective smoothing.
     """
-    def __init__(self, n_regimes: int = 3, n_iter: int = 25, tol: float = 1e-3, random_state: int = 42):
+    def __init__(self, n_regimes: int = 3, n_iter: int = 50, tol: float = 1e-3, random_state: int = 42, n_inits: int = 5):
         self.n_regimes = n_regimes
         self.n_iter = n_iter
         self.tol = tol
         self.random_state = random_state
+        self.n_inits = n_inits
         self.pi = None       # Initial state distribution (K,)
         self.A = None        # Transition matrix (K, K)
         self.means = None    # Emission means (K, d)
         self.covs = None     # Emission diagonal variances (K, d)
         self._hmm_backend = None
+        self.best_log_likelihood = -np.inf
 
     def fit(self, Z: np.ndarray) -> 'LatentRegimeHMM':
-        """Fit Gaussian HMM parameters on exogenous state dynamics Z (N, d) via EM."""
+        """Fit Gaussian HMM parameters on exogenous state dynamics Z (N, d) via multi-restart EM."""
         N, d = Z.shape
         K = self.n_regimes
         
         try:
             from hmmlearn import hmm
-            m = hmm.GaussianHMM(
-                n_components=K,
-                covariance_type='diag',
-                n_iter=self.n_iter,
-                tol=self.tol,
-                random_state=self.random_state
-            )
-            m.fit(Z)
-            order = np.argsort(m.means_[:, 0])
-            self.means = m.means_[order]
-            self.covs = np.array([np.diag(c) if c.ndim == 2 else c for c in m.covars_[order]])
-            self.pi = m.startprob_[order]
-            self.A = m.transmat_[order][:, order]
-            self._hmm_model = m
-            self._order = order
-            self._hmm_backend = 'hmmlearn'
-            return self
+            best_m = None
+            best_score = -np.inf
+            base_seed = 42 if self.random_state is None else (self.random_state if isinstance(self.random_state, int) else 42)
+            n_inits = max(1, getattr(self, 'n_inits', 5))
+            
+            for init_idx in range(n_inits):
+                try:
+                    m = hmm.GaussianHMM(
+                        n_components=K,
+                        covariance_type='diag',
+                        n_iter=self.n_iter,
+                        tol=self.tol,
+                        random_state=base_seed + init_idx * 10007
+                    )
+                    m.fit(Z)
+                    score = m.score(Z)
+                    if score > best_score:
+                        best_score = score
+                        best_m = m
+                except Exception:
+                    continue
+
+            if best_m is not None:
+                m = best_m
+                self.best_log_likelihood = best_score
+                order = np.argsort(m.means_[:, 0])
+                self.means = m.means_[order]
+                self.covs = np.array([np.diag(c) if c.ndim == 2 else c for c in m.covars_[order]])
+                self.pi = m.startprob_[order]
+                self.A = m.transmat_[order][:, order]
+                self._hmm_model = m
+                self._order = order
+                self._hmm_backend = 'hmmlearn'
+                return self
         except Exception:
             pass
 
@@ -256,7 +275,8 @@ class OverlapAwareRegimeDML:
                  boot_block_len: int = 24,
                  nuisance_model = None,
                  hac_lag: int = 12,
-                 random_state: int = 42):
+                 random_state: int = 42,
+                 n_inits: int = 5):
         self.n_regimes = n_regimes
         self.n_splits = n_splits
         self.embargo_tau = embargo_tau
@@ -274,6 +294,7 @@ class OverlapAwareRegimeDML:
         self.nuisance_model = nuisance_model if nuisance_model is not None else HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20)
         self.hac_lag = hac_lag
         self.random_state = random_state
+        self.n_inits = n_inits
         
         # Fitted attributes
         self.theta_regimes_ = {}
@@ -313,7 +334,7 @@ class OverlapAwareRegimeDML:
             self.effective_embargo_tau_ = self.embargo_tau
             
         # 2. Fit HMM on exogenous meteorological variables Z (optionally conditioned on T)
-        self.hmm_ = LatentRegimeHMM(n_regimes=K, random_state=self.random_state)
+        self.hmm_ = LatentRegimeHMM(n_regimes=K, random_state=self.random_state, n_inits=self.n_inits)
         if self.condition_on_treatment:
             T_std = ((T - np.mean(T)) / max(np.std(T), 1e-6))[:, None]
             Z_fit = np.column_stack([Z, T_std])

@@ -138,8 +138,8 @@ def run_verification():
     t2_checks = [
         (f"{delhi_r1['Effect_Theta']:.4f}", "+0.7038", "Table 2: Delhi Regime 1"),
         (f"{delhi_r2['Effect_Theta']:.4f}", "+0.1281", "Table 2: Delhi Regime 2"),
-        (f"{mum_r1['Effect_Theta']:.4f}", "-13.3873", "Table 2: Mumbai Regime 1"),
-        (f"{mum_r2['Effect_Theta']:.4f}", "+6.9702", "Table 2: Mumbai Regime 2"),
+        (f"{mum_r1['Effect_Theta']:.4f}", "-7.6278", "Table 2: Mumbai Regime 1"),
+        (f"{mum_r2['Effect_Theta']:.4f}", "+7.2007", "Table 2: Mumbai Regime 2"),
     ]
     for val, expected_str, desc in t2_checks:
         if val != expected_str and expected_str not in tex_content:
