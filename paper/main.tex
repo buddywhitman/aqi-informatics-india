@@ -265,6 +265,11 @@ P.~Ding, T.~J. VanderWeele, and J.~M. Robins.
 \newblock Instrumental variables as bias amplifiers with general outcome and confounding.
 \newblock \emph{Biometrika}, 104(2):291--302, 2017.
 
+\bibitem[Douc et~al.(2011)]{douc2011consistency}
+R.~Douc, E.~Moulines, J.~Olsson, and R.~van Handel.
+\newblock Consistency of the maximum likelihood estimator for general hidden Markov models.
+\newblock \emph{The Annals of Statistics}, 39(1):474--513, 2011.
+
 \bibitem[Greenland(1980)]{greenland1980effect}
 S.~Greenland.
 \newblock The effect of misclassification in the presence of covariates.
@@ -274,6 +279,11 @@ S.~Greenland.
 J.~D. Hamilton.
 \newblock A new approach to the economic analysis of nonstationary time series and the business cycle.
 \newblock \emph{Econometrica}, 57(2):357--384, 1989.
+
+\bibitem[Leroux(1992)]{leroux1992maximum}
+B.~G. Leroux.
+\newblock Maximum-likelihood estimation for hidden {M}arkov models.
+\newblock \emph{Stochastic Processes and their Applications}, 40(1):127--143, 1992.
 
 \bibitem[Lewis and Syrgkanis(2020)]{lewis2020double}
 G.~Lewis and V.~Syrgkanis.
@@ -359,6 +369,8 @@ and $\hth-\theta=\sum_t\tilde T_t(\tilde Y_t-\theta\tilde T_t)/\sum_t\tilde T_t^
 \paragraph{Proof of Proposition~\ref{prop:info}.} For $\mathcal F\subseteq\mathcal F'$ the law of total variance gives $\E\Cov(D\mid\mathcal F')\preceq\E\Cov(D\mid\mathcal F)$; hard labels are a measurable function of $\hg$, hence $\sigma(\text{hard})\subseteq\sigma(\hg)$. Part (iii) of Corollary~\ref{cor:hump} finishes the $K=2$ case. $\square$
 
 \paragraph{Proof of Proposition~\ref{prop:calib}.} With $c=\E[D\mid F]$, $\gamma(1-\gamma)-c(1-c)=(\gamma-c)(1-2c)-(\gamma-c)^2$, so $|\E[\gamma(1-\gamma)-c(1-c)]|\le\E|\gamma-c|+\E(\gamma-c)^2\le\sqrt{CE}+CE$ (Cauchy--Schwarz, $|1-2c|\le1$), and $\E c(1-c)=\E\Var(D\mid F)=v$. If $m$ is linear and $c=\hg$, then $\E[T\mid F]=m(X)+a^\top\hg$ is linear in $(X,\hg)$ and the OLS coefficient is $a$; $\Var(\tilde T)=a^\top\Sigma a+\sigma^2$ is Step~1. $\square$
+
+\paragraph{Learned HMM parameters (what is and is not proved).} Let $\gamma_{\vartheta}$ denote the smoothing posterior under HMM parameters $\vartheta$ and $\vartheta^*$ the pseudo-true value (the Kullback--Leibler minimizer; the truth if the emission model is correct). Two standard facts reduce Assumption~\ref{as:post} to known results: (i) under strong mixing and identifiability the EM/ML estimator $\hat\vartheta$ converges to $\vartheta^*$ up to label permutation \citep{leroux1992maximum,douc2011consistency}; (ii) under strong mixing the posterior $\gamma_{t,\vartheta}$ is continuous in $\vartheta$ uniformly in $t$ and forgets its initial condition geometrically \citep{cappe2005inference}. Together they give $\sup_t\E|\hg_t-\gamma_{t,\vartheta^*}|\to0$, so $\hat v\to v(\vartheta^*)$ and the law holds with $v(\vartheta^*)$. We do \emph{not} prove a rate, nor the cross-fitting independence between $\hat\vartheta$ and the held-out fold (the HMM is fitted on all of $Z_{1:N}$), which we handle only through the embargo; the learned-HMM experiments (Sec.~\ref{sec:exp}) are the evidence that this approximation is benign. Misspecified emissions (e.g.\ a continuous latent) leave $\vartheta^*$ well defined but $v(\vartheta^*)$ large, which the law still predicts (Sec.~\ref{sec:prior}).
 
 \section{HETEROGENEOUS EFFECTS AND MULTIPLE REGIMES}\label{app:hetero}
 \paragraph{Heterogeneous effects ($K=2$).} Let $Y_t=\theta(S_t)T_t+g(X_t)+bD_t+U_t$ with $\theta(0)=\theta_0,\theta(1)=\theta_1$, $\bar\theta=\E\theta(S)$, $T_t=\bar m+m_0(X_t)+aD_t+V_t$ with $\E m_0=0$, and assume $\E[m_0(X)\Var(D\mid F)]=0$. Then

@@ -40,3 +40,6 @@ Findings (honest):
 ## Round 4: finite-state bound, X-aware v
 - `ext_xaware.py`: for a persistent binary chain, v = MMSE <= linear Wiener error 0.25*v_W(2rho-1, iota) (`x8_finite_state.csv`). Tight for weak signals (ratio 1.04-1.4 at dz<=0.5, rho=.9), very loose for separated regimes (v=1e-4 vs bound 0.017 at dz=2): discrete regimes -> exponentially small v, continuous latent -> polynomial. Bound is for known parameters.
 - X-aware v (`x9_xaware.csv`): Z-only v_hat predicted bias within 3% when X0 informs the regime (0.301 vs 0.308); an HMM refit on (Z,X) *under*-predicts (0.242) because linear nuisances cannot use that information. v is relative to the learner class; do NOT refit the HMM on X for v_hat. Z-only v_hat slightly under-predicts without informative X (0.301 vs 0.324, posterior overconfidence).
+
+## Round 5: learned-parameter statement
+App. A now states precisely what is reduced to cited results (Leroux 1992; Douc-Moulines-Olsson-van Handel 2011; Cappe et al. 2005 for filter continuity/forgetting) and what is not proved (rate; independence of the fitted HMM from the held-out fold). Citation details are from memory (not re-verified online): check before camera-ready.
