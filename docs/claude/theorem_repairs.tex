@@ -1,0 +1,249 @@
+% =====================================================================
+% THEOREM REPAIRS for main.tex (AISTATS 2027, OR-DML)
+% Each block says WHAT IT REPLACES.  Macros used: \E \R \Var (already in
+% main.tex), \boldsymbol, \one.  New labels: ass:envelopes, lem:orth,
+% prop:flip.  Existing labels (thm:graceful, thm:spectral, thm:asymptotics,
+% app:proof_thm3/4/5) are reused so all \ref's keep working.
+% Main-text edits are length-neutral (8-page limit); the long material is in
+% the appendix.  Numerical checks of Lemma A and Prop. flip are in
+% PATCH_NOTES.md.
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% R1. NEW ASSUMPTION.  Insert right after Assumption~\ref{ass:overlap}
+%     (it replaces the hypotheses L_g, L_m of Theorem 3, which are stated
+%     but never used in the proof, and supplies the c_0 and the envelope the
+%     proof does use but never assumes).
+% ---------------------------------------------------------------------
+\begin{assumption}[Bounded Envelopes and Pointwise Positivity]
+\label{ass:envelopes}
+There are constants $B_T,B_Y<\infty$ and $c_0\in(0,1]$ such that $|T_t|\le B_T$,
+$|Y_t|\le B_Y$ almost surely, and for almost every $x$ and all $k$,
+$\pi_k(x)\equiv P(S_t=k\mid X_t=x)\ge c_0$ and $\E[\gamma_{tk}\mid X_t=x]\ge c_0$.
+Consequently the proxy- and oracle-weighted nuisances are bounded by $B_T,B_Y$,
+and all residuals satisfy $|\tilde T_{tk}|\le M_T\equiv 2B_T$,
+$|\tilde Y_{tk}|\le M_Y\equiv 2B_Y$.
+\end{assumption}
+
+% ---------------------------------------------------------------------
+% R2. THEOREM 3 (thm:graceful).  Replace the statement in Section 5.
+%     Changes: (i) hypotheses now match the proof (Assumption envelopes);
+%     (ii) explicit constants; (iii) the finite-sample part no longer hides
+%     the 1/lambda_min amplification of sampling noise inside O_P(N^{-1/2}),
+%     and uses the correct nuisance rate for the Gram matrix (it is NOT
+%     Neyman-orthogonal, see Lemma A) -> O_P(N^{-1/2}+r_N), not O_P(N^{-1/2}).
+% ---------------------------------------------------------------------
+\begin{theorem}[Graceful Degradation Error Bound]
+\label{thm:graceful}
+Let $\boldsymbol H_t=\boldsymbol e_{S_t}$, let $\boldsymbol\gamma_t\in\Delta^K$ be a state proxy with
+$\varepsilon_\gamma\equiv\E\|\boldsymbol\gamma_t-\boldsymbol H_t\|_1$, and let $\boldsymbol J,\boldsymbol S$ be the
+population coupled Gram matrix and score built from the proxy-weighted nuisances
+$(m^\gamma_k,\mu^\gamma_k)$. Under Assumption~\ref{ass:envelopes} and $\|\boldsymbol\theta^*\|_2\le M_\theta$,
+if $\lambda_{\min}(\boldsymbol J)>0$:
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item[(i)] $\boldsymbol\theta_\gamma\equiv\boldsymbol J^{-1}\boldsymbol S$ satisfies
+$\|\boldsymbol\theta_\gamma-\boldsymbol\theta^*\|_2\le C\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ with
+$C=C_S+M_\theta C_J$, $C_S=\sqrt K\,(M_TM_Y+M_Y\tilde C_m+M_T\tilde C_\mu)$,
+$C_J=K(2M_T^2+2M_T\tilde C_m)$, $\tilde C_m=2B_T/c_0^2$, $\tilde C_\mu=2B_Y/c_0^2$.
+\item[(ii)] Let $r_N=\max_k(\|\hat m_k-m_k^\gamma\|_{L_2}+\|\hat\mu_k-\mu_k^\gamma\|_{L_2})$. Under purged cross-fitting
+and Assumption~\ref{ass:rates}, $\|\hat{\boldsymbol S}-\boldsymbol S\|_2=O_P(N^{-1/2}+r_N^2)$ and
+$\|\hat{\boldsymbol J}-\boldsymbol J\|_{\rm op}=O_P(N^{-1/2}+r_N)$; on
+$\mathcal E_N=\{\|\hat{\boldsymbol J}-\boldsymbol J\|_{\rm op}\le\lambda_{\min}(\boldsymbol J)/2\}$,
+\[
+\|\hat{\boldsymbol\theta}_\gamma-\boldsymbol\theta_\gamma\|_2\le\frac{2}{\lambda_{\min}(\boldsymbol J)}\Big(\|\hat{\boldsymbol S}-\boldsymbol S\|_2+\|\hat{\boldsymbol J}-\boldsymbol J\|_{\rm op}\|\boldsymbol\theta_\gamma\|_2\Big),
+\]
+so $\|\hat{\boldsymbol\theta}_\gamma-\boldsymbol\theta^*\|_2\le C\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)+O_P\big((N^{-1/2}+r_N)/\lambda_{\min}(\boldsymbol J)\big)$.
+\end{enumerate}
+\end{theorem}
+% Main-text sentence to add after the theorem (one line):
+% "$C$ carries units of $T\!\cdot\!Y$ ($C\propto B_T(B_Y+B_TM_\theta)$), so the dimensionless difficulty is
+%  $\varepsilon_\gamma C/\lambda_{\min}(\boldsymbol J)$; $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ alone is scale-dependent."
+
+% --- Appendix C patch (app:proof_thm3) ---------------------------------
+% Step 1, Step 3: unchanged.
+% Step 2: DELETE the paragraph "Establish Neyman nuisance orthogonality" and
+%         replace by Lemma A below (it is correct for the S-part only; the
+%         Gram part is not orthogonal for soft gamma).
+% Step 4: unchanged except use Assumption~\ref{ass:envelopes}: M_T=2B_T,
+%         M_Y=2B_Y, c_0 as stated, \sqrt K / K from norm conversions
+%         (||v||_2<=sqrt K max|v_k|, ||A||_op<=||A||_F<=K max|A_jk|) and the
+%         sharper constant 2B/c_0 (<= 2B/c_0^2) may be kept as is.
+% Step 5: append the finite-sample part:
+\paragraph{Step 5$'$ (finite-sample part of (ii)).}
+Since $\boldsymbol J\boldsymbol\theta_\gamma=\boldsymbol S$,
+$\hat{\boldsymbol\theta}_\gamma-\boldsymbol\theta_\gamma=\hat{\boldsymbol J}^{-1}\big[(\hat{\boldsymbol S}-\boldsymbol S)-(\hat{\boldsymbol J}-\boldsymbol J)\boldsymbol\theta_\gamma\big]$.
+$\hat{\boldsymbol J}$ is symmetric positive semidefinite (a sample mean of $\boldsymbol v_t\boldsymbol v_t^\top$ with $v_{tk}=\gamma_{tk}\tilde T_{tk}$),
+so by Weyl's inequality $\lambda_{\min}(\hat{\boldsymbol J})\ge\lambda_{\min}(\boldsymbol J)-\|\hat{\boldsymbol J}-\boldsymbol J\|_{\rm op}\ge\lambda_{\min}(\boldsymbol J)/2$ on $\mathcal E_N$,
+whence $\|\hat{\boldsymbol J}^{-1}\|_{\rm op}\le 2/\lambda_{\min}(\boldsymbol J)$. The rate for $\hat{\boldsymbol S}$ follows from Lemma~\ref{lem:orth}(i)--(ii)
+(second-order nuisance remainder) and the mixing LLN under the embargo; the rate for $\hat{\boldsymbol J}$ is first-order in $r_N$ because the
+Gram matrix is not orthogonal (Lemma~\ref{lem:orth}(iii)). Combine with (i) and $\|\boldsymbol\theta_\gamma\|_2\le M_\theta+C\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$. $\blacksquare$
+
+% ---------------------------------------------------------------------
+% R3. LEMMA A (orthogonality structure of the coupled score).  New; put in
+%     Appendix C, replacing Step 2.  It also corrects the main-text sentence
+%     "While the score is Neyman-orthogonal to continuous nuisances ...".
+% ---------------------------------------------------------------------
+\begin{lemma}[Orthogonality Structure of the Coupled Score]
+\label{lem:orth}
+Let $\Psi_{k}(\boldsymbol\theta;\eta)=\gamma_k\tilde T_k\big(\tilde Y_k-\sum_{j}\gamma_j\tilde T_j\theta_j\big)$ with
+$\tilde T_k=T-m_k(X)$, $\tilde Y_k=Y-\mu_k(X)$, so that $\hat{\boldsymbol S}-\hat{\boldsymbol J}\boldsymbol\theta=\frac1N\sum_t\boldsymbol\Psi_t$.
+At $\eta^\gamma=(m^\gamma,\mu^\gamma)$ and any $\boldsymbol\theta$, with $g(X)\equiv\E[\|\boldsymbol\gamma-\boldsymbol H\|_1\mid X]$:
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item[(i)] $\partial_\mu\E\Psi_k[\Delta\mu]=0$ (any $\gamma$).
+\item[(ii)] The cross-moment part $\gamma_k\tilde T_k\tilde Y_k$ is orthogonal in both directions.
+\item[(iii)] $|\partial_m\E\Psi_k[\Delta m]|\le 2M_T\|\boldsymbol\theta\|_1\,\|g\|_{L_2}\,\max_i\|\Delta m_i\|_{L_2}\le 2M_T\|\boldsymbol\theta\|_1\sqrt{2\varepsilon_\gamma}\,\max_i\|\Delta m_i\|_{L_2}$.
+If $\boldsymbol\gamma_t\in\{0,1\}^K$ (hard assignment) the derivative in (iii) is exactly $0$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i),(ii): $\E[\gamma_k(T-m_k^\gamma)\mid X]=0$ and $\E[\gamma_k(Y-\mu_k^\gamma)\mid X]=0$ by definition of $m_k^\gamma,\mu_k^\gamma$, as in the original Step~2.
+(iii): writing $W=\sum_j\gamma_j\tilde T_j\theta_j$, differentiation of $-\gamma_k\tilde T_kW$ in direction $\Delta m$ gives
+\[
+\E\Big[\Delta m_k\textstyle\sum_j\theta_j\E[\gamma_k\gamma_j\tilde T_j\mid X]\Big]+\E\Big[\textstyle\sum_j\theta_j\Delta m_j\,\E[\gamma_k\gamma_j\tilde T_k\mid X]\Big].
+\]
+For $j=k$: $\E[\gamma_k^2\tilde T_k\mid X]=\E[(\gamma_k^2-\gamma_k)\tilde T_k\mid X]$ because $\E[\gamma_k\tilde T_k\mid X]=0$, and
+$\gamma_k(1-\gamma_k)\le|\gamma_k-H_k|$. For $j\neq k$: $\gamma_k\gamma_j\le|\gamma_k-H_k|+|\gamma_j-H_j|$ because at least one of $H_k,H_j$ is $0$.
+Hence every conditional moment is bounded by $M_T\,g(X)$; Cauchy--Schwarz and $g\le2\Rightarrow\|g\|_{L_2}^2\le2\E g=2\varepsilon_\gamma$ give (iii).
+For hard assignments $\gamma_k\gamma_j=\delta_{kj}\gamma_k$ and $\gamma_k^2=\gamma_k$, so both conditional moments vanish.
+\end{proof}
+% Main-text replacement sentence (Section 5, after Theorem 3):
+% "The cross-moment is Neyman-orthogonal to $(\mu_k,m_k)$, the coupled Gram part is orthogonal for hard assignments and
+%  orthogonal up to $O(\sqrt{\varepsilon_\gamma})$ otherwise (Lemma~\ref{lem:orth}), and neither is orthogonal to $\boldsymbol\gamma_t$;
+%  latent proxy uncertainty carries an irremediable statistical price."
+
+% ---------------------------------------------------------------------
+% R4. THEOREM 4 (thm:spectral).  Replace statement + proof of the risk bound.
+%     Problems fixed: (a) the cross term used ||E[theta_hat-theta_lambda]||
+%     <= C_1/N "by Theorem 5", but Theorem 5 is a distributional statement
+%     and gives no bias rate -> removed via Minkowski; (b) the claimed
+%     sharpening to O(N^{-3/2}) had no derivation -> removed; (c) the
+%     variance expansion needs uniform integrability (convergence in
+%     distribution does not give convergence of second moments) and the
+%     score must be centred at theta_lambda, not theta^*.
+% ---------------------------------------------------------------------
+\begin{theorem}[Risk Bound for Spectrally Regularized OR-DML]
+\label{thm:spectral}
+Let $\lambda\ge0$ with $\lambda_{\min}(\boldsymbol J)+\lambda>0$ and $\boldsymbol\theta_\lambda=(\boldsymbol J+\lambda\boldsymbol I)^{-1}\boldsymbol S$. Under the hypotheses of Theorem~\ref{thm:graceful}:
+(a) $\boldsymbol\theta_\lambda-\boldsymbol\theta^*=(\boldsymbol J+\lambda\boldsymbol I)^{-1}(\boldsymbol b_\gamma-\lambda\boldsymbol\theta^*)$ with $\|\boldsymbol b_\gamma\|_2\le C\varepsilon_\gamma$, hence
+$B_\lambda\equiv\|\boldsymbol\theta_\lambda-\boldsymbol\theta^*\|_2\le\frac{C\varepsilon_\gamma+\lambda M_\theta}{\lambda_{\min}(\boldsymbol J)+\lambda}$.
+(b) If in addition the conditions of Theorem~\ref{thm:asymptotics}(a) hold and $N\|\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda\|_2^2$ is uniformly integrable, then
+$V_N\equiv\E\|\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda\|_2^2=N^{-1}\mathrm{Tr}(\boldsymbol\Sigma^{\rm tot}_\lambda)+o(N^{-1})\le\frac{\mathrm{Tr}(\boldsymbol\Omega^{\rm tot}_\lambda)}{N(\lambda_{\min}(\boldsymbol J)+\lambda)^2}+o(N^{-1})$
+and
+\[
+\E\|\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta^*\|_2^2\le\big(B_\lambda+\sqrt{V_N}\big)^2\le 2B_\lambda^2+2V_N .
+\]
+\end{theorem}
+% Main text: replace the displayed bound of Theorem 4 by the last display, delete
+% "sharpening to O(N^{-3/2}) under eps+lambda=O(N^{-1/2})", and change "\boldsymbol\Omega" to
+% "\boldsymbol\Omega^{\rm tot}_\lambda" (defined in Theorem 5).  The empirical surrogate
+% \hat R(lambda) and its minimiser are UNCHANGED (the factor 2 on both terms does not move the argmin).
+\begin{proof}[Proof of Theorem~\ref{thm:spectral}]
+(a) is the algebra of the original proof. (b) $\sqrt N(\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda)\Rightarrow\mathcal N(0,\boldsymbol\Sigma_\lambda^{\rm tot})$ by Theorem~\ref{thm:asymptotics}(a);
+with uniform integrability, $N\E\|\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda\|_2^2\to\mathrm{Tr}\,\boldsymbol\Sigma^{\rm tot}_\lambda$. Since $\boldsymbol A=\boldsymbol J+\lambda\boldsymbol I\succ0$ and $\boldsymbol\Omega\succeq0$,
+$\mathrm{Tr}(\boldsymbol A^{-1}\boldsymbol\Omega\boldsymbol A^{-1})=\mathrm{Tr}(\boldsymbol\Omega^{1/2}\boldsymbol A^{-2}\boldsymbol\Omega^{1/2})\le\|\boldsymbol A^{-2}\|_{\rm op}\mathrm{Tr}(\boldsymbol\Omega)$.
+Finally, Minkowski's inequality in $L_2(P;\R^K)$ gives $\big(\E\|\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta^*\|^2\big)^{1/2}\le V_N^{1/2}+B_\lambda$, which \emph{avoids} any bound on
+$\E[\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda]$ (the old cross term). $\blacksquare$
+\end{proof}
+
+% --- Appendix D, "Adaptive Spectral Regularization": three edits ----------
+% (1) Replace "Constraining the search to a compact admissible set with upper bound
+%     \bar\lambda \asymp N^{-1/2}" by "with a fixed upper bound \bar\lambda<\infty (independent of N)";
+%     an N^{-1/2} cap contradicts the risk-minimisation regime lambda_risk=O(1) and the reported
+%     lambda in {0.10, 0.20}.
+% (2) Replace the "M-estimation consistency" sentence by the following lemma and proof.
+\begin{lemma}[Oracle inequality for the surrogate]
+Let $R_{\rm surr}$ be the population surrogate, $\hat R$ its plug-in, and $\Delta_N=\sup_{\lambda\in[0,\bar\lambda]}|\hat R(\lambda)-R_{\rm surr}(\lambda)|=O_P(N^{-1/2})$.
+Then $R_{\rm surr}(\hat\lambda^*)\le\inf_{\lambda\in[0,\bar\lambda]}R_{\rm surr}(\lambda)+2\Delta_N$.
+\end{lemma}
+\begin{proof}
+For any $\lambda^\circ$: $R_{\rm surr}(\hat\lambda^*)\le\hat R(\hat\lambda^*)+\Delta_N\le\hat R(\lambda^\circ)+\Delta_N\le R_{\rm surr}(\lambda^\circ)+2\Delta_N$.
+\end{proof}
+% (3) Add: "This guarantee concerns the surrogate, not the true risk; and \hat\varepsilon_\gamma is the
+%     calibrated plug-in (2/N)\sum_t Gini(\gamma_t) (Prop. 1), C is unknown and may be set to 1, which
+%     preserves the ranking of lambda only when C\hat\varepsilon_\gamma dominates the other terms."
+
+% ---------------------------------------------------------------------
+% R5. THEOREM 5 (thm:asymptotics).  Replace statement (Section 5) and proof
+%     (Appendix E).  Problems fixed:
+%   * The proof applied the Ibragimov CLT to Psi(W;theta^*) as if mean zero;
+%     it has mean b_gamma - the very bias the theorem is about.  The
+%     correct centring is theta_lambda (exact identity, Step 1).
+%   * "centred normality holds IFF eps=o(N^{-1/2}) and lambda=o(N^{-1/2})":
+%     only sufficiency is shown (||b_gamma|| <= C eps is an upper bound,
+%     b_gamma can vanish for eps>0, and b_gamma=lambda theta^* is possible).
+%   * The Gram matrix is not Neyman-orthogonal (Lemma A): a fixed-eps CLT
+%     needs sqrt(eps)*||m_hat-m^gamma|| = o_P(N^{-1/2}) (Assumption G).
+%   * The variance omitted the effect of estimating the HMM parameters
+%     Lambda (A_Lambda != 0, shown in App. E.2); the main statement
+%     contradicted the appendix.
+%   * Needed: embargo constant C > 1/c_alpha for N*alpha(tau)->0;
+%     lambda_min(J)+lambda >= c > 0 (pointwise asymptotics; the
+%     local-to-singular case lambda_min ~ N^{-1/2} is NOT covered).
+% ---------------------------------------------------------------------
+\begin{assumption}[HMM Regularity, Gram-Nuisance Rate, Moments]
+\label{ass:hmm_gram}
+(H) The emission model is correctly specified and identifiable up to label permutation; $\hat{\boldsymbol\Lambda}$ is the (globally maximizing) MLE fitted on a calibration window of length $N_{\rm cal}$ separated from the evaluation sample by the embargo, with $N/N_{\rm cal}\to\kappa\in[0,\infty)$ ($\kappa=0$ for the oracle filter, Mode~1), and $\gamma_{tk}(\boldsymbol\Lambda)$ is continuously differentiable with bounded derivative. Then $\sqrt{N_{\rm cal}}(\hat{\boldsymbol\Lambda}-\boldsymbol\Lambda^*)\Rightarrow\mathcal N(0,\mathcal I_\Lambda^{-1})$ \citep{leroux1992maximum,bickel1998asymptotic,douc2004asymptotic}.
+(G) $\sqrt{\varepsilon_\gamma}\max_k\|\hat m_k-m_k^\gamma\|_{L_2}=o_P(N^{-1/2})$; automatically true for hard assignments, and under Assumption~\ref{ass:rates} whenever $\varepsilon_\gamma=O(N^{-1/2})$.
+(M) $\E\|\boldsymbol\Psi_t\|^{2+\delta}<\infty$ for some $\delta>0$, and $\lambda_{\min}(\boldsymbol J)+\lambda\ge c_\lambda>0$ is fixed.
+\end{assumption}
+
+\begin{theorem}[Asymptotic Distribution Under Dependent Purged Cross-Fitting]
+\label{thm:asymptotics}
+Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, \ref{ass:envelopes}, \ref{ass:hmm_gram} and an embargo $\tau^*\ge C\log N$ with $C>1/c_\alpha$:
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item[(a)] $\sqrt N(\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda)\Rightarrow\mathcal N(\boldsymbol 0,\boldsymbol\Sigma^{\rm tot}_\lambda)$, where $\boldsymbol\Sigma^{\rm tot}_\lambda=(\boldsymbol J+\lambda\boldsymbol I)^{-1}\boldsymbol\Omega^{\rm tot}_\lambda(\boldsymbol J+\lambda\boldsymbol I)^{-1}$,
+$\boldsymbol\Omega^{\rm tot}_\lambda=\boldsymbol\Omega_\lambda+\kappa\,\boldsymbol A_\Lambda\mathcal I_\Lambda^{-1}\boldsymbol A_\Lambda^\top$,
+$\boldsymbol\Omega_\lambda=\lim\Var(N^{-1/2}\sum_t\boldsymbol\Psi_t(\boldsymbol\theta_\lambda;\eta^\gamma,\boldsymbol\Lambda^*))$ and $\boldsymbol A_\Lambda=\partial_{\boldsymbol\Lambda}\E\boldsymbol\Psi_t(\boldsymbol\theta_\lambda;\eta^\gamma,\boldsymbol\Lambda)|_{\boldsymbol\Lambda^*}$.
+\item[(b)] Since $\boldsymbol\theta_\lambda=\boldsymbol\theta^*+\mathrm{Bias}(\lambda,\boldsymbol\gamma)$, $\mathrm{Bias}=(\boldsymbol J+\lambda\boldsymbol I)^{-1}(\boldsymbol b_\gamma-\lambda\boldsymbol\theta^*)$, $\|\boldsymbol b_\gamma\|_2\le C\varepsilon_\gamma$, (a) is the statement that $\sqrt N(\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta^*-\mathrm{Bias})\Rightarrow\mathcal N(\boldsymbol0,\boldsymbol\Sigma^{\rm tot}_\lambda)$.
+\item[(c)] \emph{(Sufficient condition for centring.)} If $\sqrt N(C\varepsilon_\gamma+\lambda M_\theta)/(\lambda_{\min}(\boldsymbol J)+\lambda)\to0$ (e.g.\ $\varepsilon_\gamma=o(N^{-1/2})$ and $\lambda=o(N^{-1/2})$), then $\sqrt N(\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta^*)\Rightarrow\mathcal N(\boldsymbol0,\boldsymbol\Sigma^{\rm tot}_\lambda)$.
+Otherwise intervals centred at $\hat{\boldsymbol\theta}_\lambda$ cover $\boldsymbol\theta_\lambda\neq\boldsymbol\theta^*$ in general, which explains coverage collapse under weak separation (Table~1).
+\end{enumerate}
+\end{theorem}
+% Main-text edits: replace "holds iff both" by "holds if"; add the sentence
+% "Whenever the HMM parameters are estimated, the HAC sandwich must be stacked with the HMM score (App. E.2);
+%  otherwise it omits the term $\kappa A_\Lambda \mathcal I_\Lambda^{-1}A_\Lambda^\top$."
+
+\begin{proof}[Proof of Theorem~\ref{thm:asymptotics}]
+\emph{Step 1 (exact algebra, centring at $\boldsymbol\theta_\lambda$).} Because $(\hat{\boldsymbol J}+\lambda\boldsymbol I)\hat{\boldsymbol\theta}_\lambda=\hat{\boldsymbol S}$ and $(\boldsymbol J+\lambda\boldsymbol I)\boldsymbol\theta_\lambda=\boldsymbol S$,
+\[
+\hat{\boldsymbol\theta}_\lambda-\boldsymbol\theta_\lambda=(\hat{\boldsymbol J}+\lambda\boldsymbol I)^{-1}\Big[(\hat{\boldsymbol S}-\hat{\boldsymbol J}\boldsymbol\theta_\lambda)-(\boldsymbol S-\boldsymbol J\boldsymbol\theta_\lambda)\Big]
+=(\hat{\boldsymbol J}+\lambda\boldsymbol I)^{-1}\frac1N\sum_t\tilde{\boldsymbol\Psi}_t,
+\]
+with $\tilde{\boldsymbol\Psi}_t=\boldsymbol\Psi_t(\boldsymbol\theta_\lambda)-\E\boldsymbol\Psi_t(\boldsymbol\theta_\lambda)$ \emph{mean zero}. (At $\boldsymbol\theta^*$ the summands have mean $\boldsymbol b_\gamma\neq0$, so the CLT cannot be applied there.)
+\emph{Step 2 (nuisances).} Expanding in $\hat\eta-\eta^\gamma$: by Lemma~\ref{lem:orth}(i)--(ii) the $\mu$-direction and the cross-moment have zero first-order term; the Gram part contributes $O(\sqrt{\varepsilon_\gamma}\,\|\hat m-m^\gamma\|)=o_P(N^{-1/2})$ by (G); the second-order remainder is $O_P(r_N^2)=o_P(N^{-1/2})$ by Assumption~\ref{ass:rates}.
+\emph{Step 3 (cross-fitting under dependence).} By the Berbee/Bradley coupling lemma \citep{bradley2005basic}, the nuisance fit on a block separated by $\tau^*$ from the test block can be replaced by an independent copy except on an event of probability $\le N\alpha(\tau^*)\le MN^{1-c_\alpha C}\to0$ when $C>1/c_\alpha$.
+\emph{Step 4 (CLT).} $\tilde{\boldsymbol\Psi}_t$ is strictly stationary, mean zero, $\alpha$-mixing with geometric rate and $(2{+}\delta)$ moments, so $N^{-1/2}\sum_t\tilde{\boldsymbol\Psi}_t\Rightarrow\mathcal N(0,\boldsymbol\Omega_\lambda)$ \citep{ibragimov1962some}.
+\emph{Step 5 (HMM parameters).} $\boldsymbol\gamma_t=\boldsymbol\gamma_t(\hat{\boldsymbol\Lambda})$. A first-order expansion gives $N^{-1/2}\sum_t\tilde{\boldsymbol\Psi}_t(\hat{\boldsymbol\Lambda})=N^{-1/2}\sum_t\tilde{\boldsymbol\Psi}_t(\boldsymbol\Lambda^*)+\boldsymbol A_\Lambda\sqrt N(\hat{\boldsymbol\Lambda}-\boldsymbol\Lambda^*)+o_P(1)$.
+By (H), $\sqrt N(\hat{\boldsymbol\Lambda}-\boldsymbol\Lambda^*)\Rightarrow\mathcal N(0,\kappa\,\mathcal I_\Lambda^{-1})$, asymptotically independent of the evaluation sum by the embargo and mixing, so the variances add.
+\emph{Step 6 (Slutsky).} $\hat{\boldsymbol J}\to_p\boldsymbol J$ (envelopes, $r_N\to0$, mixing LLN) and $\lambda_{\min}(\boldsymbol J)+\lambda\ge c_\lambda$ give $(\hat{\boldsymbol J}+\lambda\boldsymbol I)^{-1}\to_p(\boldsymbol J+\lambda\boldsymbol I)^{-1}$. (b) is the identity $\boldsymbol\theta_\lambda-\boldsymbol\theta^*=\mathrm{Bias}$ of Theorem~\ref{thm:spectral}(a); (c) follows from Slutsky because $\sqrt N\|\mathrm{Bias}\|\le\sqrt N(C\varepsilon_\gamma+\lambda M_\theta)/(\lambda_{\min}+\lambda)$. $\blacksquare$
+\end{proof}
+% If (H) fails (misspecified emissions, EM trapped in a local optimum, label switching):
+% \hat\Lambda -> \Lambda_0 (pseudo-true), and the theorem holds with \Lambda^* := \Lambda_0 and eps_gamma
+% computed for that proxy.  This is the formal reason multi-restart EM must be reported.
+
+% ---------------------------------------------------------------------
+% R6. PROPOSITION (exact bias in the symmetric flip model).  OPTIONAL ADDITION
+%     (appendix, one remark in main text).  It is the closed form behind the
+%     construction gamma=(1-eps/2)H+(eps/2)(1-H) used in the factorial
+%     experiment, shows the linear-in-eps regime of Theorem 3 is attained and
+%     reproduces Theorem 2 as eps -> 1.  Verified numerically (PATCH_NOTES.md).
+% ---------------------------------------------------------------------
+\begin{proposition}[Exact Proxy Bias in the Symmetric Flip Model]
+\label{prop:flip}
+Let $K=2$, $\boldsymbol\pi^*=(\tfrac12,\tfrac12)$, $T_t=V_t$ with $V_t\perp(S_t,X_t,U_t)$, $\E V_t=0$, $\Var V_t=\sigma^2$ (bounded), $Y_t=\theta_{S_t}T_t+g_{S_t}+U_t$, $\E[U_t\mid T_t,S_t]=0$, and
+$\boldsymbol\gamma_t=(1-\tfrac\varepsilon2)\boldsymbol H_t+\tfrac\varepsilon2(\boldsymbol 1-\boldsymbol H_t)$, $\varepsilon\in[0,1)$ (so $\varepsilon_\gamma=\varepsilon$). Then
+$\lambda_{\min}(\boldsymbol J)=\sigma^2(1-\varepsilon)^2/2$ and
+\[
+\boldsymbol\theta_\gamma-\boldsymbol\theta^*=\frac{\varepsilon}{1-\varepsilon}\cdot\frac{\theta_1-\theta_2}{2}\,(1,-1)^\top,\qquad
+\|\boldsymbol\theta_\gamma-\boldsymbol\theta^*\|_2=\frac{\varepsilon}{1-\varepsilon}\frac{|\theta_1-\theta_2|}{\sqrt2}.
+\]
+\end{proposition}
+\begin{proof}
+$m^\gamma_k=0$ (since $\E V=0$, $V\perp S$), so $\tilde T_k=V$ and constants in $\tilde Y_k$ drop out of $\boldsymbol S$ because $\E V=0$. With $a=1-\varepsilon/2$, $b=\varepsilon/2$, $\boldsymbol M=\left(\begin{smallmatrix}a&b\\b&a\end{smallmatrix}\right)$:
+$\E[\gamma_j\gamma_k]\sigma^2$ gives $\boldsymbol J=\frac{\sigma^2}{2}\boldsymbol M^2$ and $\boldsymbol S=\frac{\sigma^2}{2}\boldsymbol M\boldsymbol\theta^*$.
+$\boldsymbol M$ has eigenpairs $(a+b,(1,1))=(1,(1,1))$ and $(a-b,(1,-1))=(1-\varepsilon,(1,-1))$, so $\boldsymbol\theta_\gamma=\boldsymbol J^{-1}\boldsymbol S=\boldsymbol M^{-1}\boldsymbol\theta^*$, $\lambda_{\min}(\boldsymbol J)=\sigma^2(1-\varepsilon)^2/2$ and
+$(\boldsymbol M^{-1}-\boldsymbol I)\boldsymbol\theta^*$ evaluates to the displayed vector.
+\end{proof}
+% Remark (one sentence in main text): "The bias is independent of sigma^2 while lambda_min(J) is not, so
+%  eps/lambda_min(J) is scale-dependent; the scale-free object is eps*C/lambda_min(J) (Theorem 3), and
+%  amplification by 1/lambda_min requires the confounding channel (Delta m * Delta g != 0), as in the DGPs of Sec. 6."

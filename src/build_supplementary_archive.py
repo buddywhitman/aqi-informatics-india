@@ -52,6 +52,8 @@ REQUIRED_FILES = [
     "src/test_multiregime_scalability.py",
     "src/latent_regime_bench.py",
     "src/walkthrough_tutorial.py",
+    "src/experiment_failure_prediction.py",
+    "src/experiment_failure_forecasting_multidomain.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "docs/FUTURE_WORK_AND_FRONTIERS.md",
     "src/requirements.txt",

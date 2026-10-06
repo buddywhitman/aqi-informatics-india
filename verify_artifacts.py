@@ -119,16 +119,31 @@ def run_verification():
     t1_checks = [
         (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Oracle DML")]["Abs_Bias"].iloc[0], "0.0572", "Table 1: Oracle DML Bias (dZ=1.0)"),
         (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Standard DML")]["Abs_Bias"].iloc[0], "8.4331", "Table 1: Standard DML Bias (dZ=1.0)"),
-        (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Regime FE DML (Hard)")]["Abs_Bias"].iloc[0], "2.9473", "Table 1: Regime FE Hard Bias (dZ=1.0)"),
-        (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "4.2481", "Table 1: Spectral OR-DML Bias (dZ=1.0)"),
-        (df_bench[(df_bench.Delta_Z == 2.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "0.5012", "Table 1: Spectral OR-DML Bias (dZ=2.0)"),
-        (df_bench[(df_bench.Delta_Z == 4.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "0.2233", "Table 1: Spectral OR-DML Bias (dZ=4.0)"),
+        (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Regime FE DML (Hard)")]["Abs_Bias"].iloc[0], "2.6472", "Table 1: Regime FE Hard Bias (dZ=1.0)"),
+        (df_bench[(df_bench.Delta_Z == 1.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "4.0170", "Table 1: Spectral OR-DML Bias (dZ=1.0)"),
+        (df_bench[(df_bench.Delta_Z == 2.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "0.0812", "Table 1: Spectral OR-DML Bias (dZ=2.0)"),
+        (df_bench[(df_bench.Delta_Z == 4.0) & (df_bench.Method == "Spectral OR-DML (Ours)")]["Abs_Bias"].iloc[0], "0.0538", "Table 1: Spectral OR-DML Bias (dZ=4.0)"),
     ]
     for val, expected_str, desc in t1_checks:
         if expected_str not in tex_content or f"{val:.4f}" != expected_str:
             failures.append(f"{desc}: expected {expected_str}, found in csv {val:.4f}")
         else:
             print(f"[OK] Verified {desc}: {expected_str}")
+
+    # Table 6: Data imputation sensitivity checks
+    df_imp = pd.read_csv("reports/data_imputation_sensitivity.csv")
+    for _, imp_row in df_imp.iterrows():
+        c_name = imp_row["City"]
+        th_f = f"{imp_row['Theta_Full']:+.4f}"
+        th_s = f"{imp_row['Theta_Strict']:+.4f}"
+        if th_f not in tex_content:
+            failures.append(f"Table 6 {c_name} Full Theta {th_f} not found in paper/main.tex")
+        else:
+            print(f"[OK] Verified Table 6 {c_name} Full Theta: {th_f}")
+        if th_s not in tex_content:
+            failures.append(f"Table 6 {c_name} Strict Theta {th_s} not found in paper/main.tex")
+        else:
+            print(f"[OK] Verified Table 6 {c_name} Strict Theta: {th_s}")
 
     # Table 2: Empirical megacity checks
     delhi_r1 = df_emp[(df_emp["City"] == "Delhi") & (df_emp["Regime"] == "Regime 1")].iloc[0]
