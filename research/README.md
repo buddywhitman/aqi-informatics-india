@@ -66,6 +66,11 @@ To prevent the coarsening story from becoming one-sided, a held-out experiment i
 
 This is the necessary counterweight to R9-R11: the optimal abstraction is neither maximally fine nor maximally coarse. It lies on a **task-specific bias-information frontier**. Merging is beneficial only while the information gained by pooling outweighs the task heterogeneity erased by the merge. Any principled method therefore needs an explicit approximation-bias term, not merely a conditioning penalty.
 
+### R13. There is no universally optimal abstraction: the same latent process needs different state partitions for different downstream tasks
+A clean multi-task experiment uses the **same four latent microstates, same observations, and same fitted K=4 representation**, but defines two downstream causal functionals. Task A has effects $(0.5,0.5,2.5,2.5)$, so its task-sufficient partition is $(0,1)|(2,3)$. Task B has effects $(0.5,2.5,0.5,2.5)$, so its task-sufficient partition is $(0,2)|(1,3)$. A sample-split Wald coarsener recovers the appropriate, mutually incompatible partition for each task in 100% of 100 replications at N=800,1600,3200, with held-out effect-vector error decreasing approximately root-N.
+
+This provides a direct experimental demonstration of the broad principle: **representation optimality is a relation between a representation and a downstream functional, not an intrinsic property of the representation alone.** The exact same high-fidelity latent representation should be abstracted differently depending on the query.
+
 ## Reproduction
 
 Run:
@@ -78,6 +83,7 @@ python research/data_driven_task_coarsening.py
 python research/crossfit_task_coarsening.py
 python research/weak_overlap_refinement_paradox.py
 python research/abstraction_tradeoff.py
+python research/multitask_abstraction.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
