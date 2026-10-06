@@ -81,6 +81,7 @@ def run_verification():
     # Check for zip only when running in development repo root, not inside an unzipped distribution
     if os.path.exists("src/build_supplementary_archive.py"):
         required_meta.append("AISTATS2027_OR_DML_Supplementary_Material.zip")
+        required_meta.append("overleaf_submission_pack.zip")
     for meta in required_meta:
         if not os.path.exists(meta) or os.path.getsize(meta) == 0:
             failures.append(f"Missing or empty metadata: {meta}")
