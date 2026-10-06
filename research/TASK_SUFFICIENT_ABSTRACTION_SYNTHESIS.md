@@ -150,3 +150,21 @@ It also clarifies why a learned representation can become too causally granular 
 ### Inferential consequence
 
 In a direction with lambda_N=N^-2alpha, honest interval width is O(N^(alpha-1/2)). For alpha>1/2 it widens with N. A root-N interval can therefore become narrower and more misleading exactly while true information disappears. This is classical weak-identification behavior; its role here is to provide an observable warning against reporting falsely precise fine-state effects.
+
+
+## Update: proxy-induced phantom resolution and double ill-posedness
+
+Generated latent states introduce a new complication: the proxy-weighted information spectrum can look **better** than the oracle spectrum. State mixing redistributes treatment information across inferred regimes and can lift weak eigenvalues. In the K=3 experiment, soft/hard inferred states inflate the oracle lambda_min by 11x/21x under poor separation and reduce an oracle condition number around 153 to an apparent 5.9/4.0.
+
+Therefore an observed/proxy causal-resolution spectrum is not automatically conservative.
+
+If a representation confusion/channel operator A were known, one might deconvolve latent moments via A^{-1}. But A itself becomes ill-conditioned as state recovery degrades. The causal stage then applies J^{-1}. This creates two sequential inverse problems, with worst-case perturbation amplification involving both ||A^{-1}|| and ||J^{-1}||.
+
+This suggests a revised hierarchy:
+1. observational resolution determines how invertible the representation channel is;
+2. identification resolution determines what fine state detail nuisance adjustment requires;
+3. causal resolution determines how invertible the downstream score geometry is;
+4. target resolution determines which causal contrasts are requested;
+5. generated-state inference couples stages 1 and 3, so their ill-conditioning can multiply.
+
+A future method should either jointly regularize both inverse problems or construct conservative partial-identification bounds for oracle causal information from posterior/confusion uncertainty.
