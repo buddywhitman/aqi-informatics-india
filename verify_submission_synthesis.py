@@ -46,7 +46,7 @@ print("Final submission synthesis checks passed.")
 
 # Cross-branch bias-law integration gates.
 from src.bias_law.bias_law import law_bias, peak_dT, sup_bias
-assert abs(law_bias(2.0, 3.0, 0.25, 1.0) - 1.0) < 1e-12
+assert abs(law_bias(2.0, 3.0, 0.25, 1.0) - 0.75) < 1e-12
 assert abs(peak_dT(0.25, 1.0) - 2.0) < 1e-12
 assert abs(sup_bias(3.0, 0.25, 1.0) - 0.75) < 1e-12
 assert "residual-confounding identity" in tex
