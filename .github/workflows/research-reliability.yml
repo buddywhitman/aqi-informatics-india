@@ -66,6 +66,7 @@ jobs:
           python research/granularity_adjustment_target.py
           python research/simultaneous_target_family_inference.py
           python research/zoo_task_relative_reanalysis.py
+          python research/real_data_collision_panel.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -115,3 +116,4 @@ jobs:
             research/results/granularity_adjustment_target*.csv
             research/results/simultaneous_target_family_inference*.csv
             research/results/zoo_task_relative_aggregate*.csv
+            research/results/real_data_collision_panel*.csv
