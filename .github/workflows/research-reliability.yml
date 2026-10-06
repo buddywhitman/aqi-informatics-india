@@ -53,6 +53,8 @@ jobs:
           python research/orthogonal_latent_moment.py
           python research/partial_orthogonality.py
           python research/orthogonality_priority.py
+          python research/integrated_operator_stress_test.py
+          python research/operator_nonlinearity_breakdown.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -89,3 +91,5 @@ jobs:
             research/results/orthogonal_latent_moment*.csv
             research/results/partial_orthogonality*.csv
             research/results/orthogonality_priority*.csv
+            research/results/integrated_operator_stress_test*.csv
+            research/results/operator_nonlinearity_breakdown*.csv
