@@ -39,6 +39,21 @@ A deliberately simple four-microstate experiment separates **representation fit*
 
 This suggests a potentially broad new principle: **latent-state complexity should be selected jointly with downstream identifiability, not solely by emission likelihood/state-prediction fit.** The real-data BIC/K sensitivity in R8 points in the same direction, but does not establish ground truth.
 
+### R10. State-refinement paradox under local weak overlap: finer can become inconsistent while coarser stays root-N
+This is the strongest theoretical/simulation finding so far. Consider four **perfectly observed** and observationally distinguishable microstates. States 0/1 share causal effect $\theta_A$ and states 2/3 share $\theta_B$, but one microstate in each pair has residual treatment standard deviation $\sigma_N=N^{-\alpha}$. If all four microstate slopes are estimated separately and then occupancy-averaged, the weak-state slope has standard deviation of order
+$(N\sigma_N^2)^{-1/2}=N^{\alpha-1/2}.$
+Thus:
+- $\alpha<1/2$: the refined estimator converges, but slower than root-N;
+- $\alpha=1/2$: its error remains $O_p(1)$;
+- $\alpha>1/2$: its error **diverges with more data**.
+By contrast, pooling causally equivalent microstates preserves $O(N)$ treatment information from the strong member of each pair, so the coarsened estimator remains root-N consistent.
+
+The simulation is stark. For $\alpha=0.75$, mean refined error increases from 5.58 at N=400 to 10.64 at N=6400, while task-aware coarsened error falls from 0.126 to 0.0327. At $\alpha=1$, refined error rises 24.9 -> 95.2 while coarsened error again falls 0.126 -> 0.0327. This occurs with **perfect microstate labels**, so it is not a representation-recovery failure. It is a downstream information failure induced by over-refining the representation.
+
+Combined with R9, this yields a genuine representation paradox: a generative model can consistently prefer and perfectly recover a finer latent state space while that finer representation is statistically worse—and under local weak overlap can become asymptotically unusable—for the downstream causal functional. A coarser task-sufficient representation can be dramatically better.
+
+This appears to motivate a new object: **task-sufficient latent abstraction**, where states are distinguished only to the extent that doing so changes the downstream functional enough to justify the information cost.
+
 ## Reproduction
 
 Run:
@@ -47,6 +62,7 @@ python research/run_extended_reliability_studies.py
 python research/frozen_sensor_sensitivity.py
 python research/latent_state_count_sensitivity.py
 python research/task_aware_state_coarsening.py
+python research/weak_overlap_refinement_paradox.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
