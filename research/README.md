@@ -257,3 +257,10 @@ The appropriate comparison object is a task-conditioned risk vector/Pareto front
 
 ### R40. Minimax task-family selection
 A follow-up experiment compares the globally best representation, average-task selection, minimax worst-task selection, and per-task oracle as the declared task family expands. This operationalizes the decision-theoretic consequence of R39. Results are generated automatically; no numerical claim is recorded until committed.
+
+
+### R41. The preferred representation changes when the declared task family changes
+Automated minimax results confirm the decision-theoretic consequence of the Pareto frontier. For tasks {uniform,left,right}, global, average-risk, and minimax rules all select global_best. Adding the center task causes average-risk and minimax rules to switch to the uniform representation, while global calibration still selects global_best. On the expanded family, global_best has worst-task risk 0.02895 versus 0.01000 for the minimax choice: **2.90x larger worst-case risk**. The representations did not change; only the legitimate downstream task family did.
+
+### R42. Global-selection regret scaling
+A new automated experiment increases task leverage localization and measures how badly global calibration selection can regret relative to minimax and per-task-oracle selection. This tests whether causal/task regret can grow with leverage heterogeneity rather than being a fixed constructed factor. No numeric claim until outputs are committed.
