@@ -134,3 +134,17 @@ The new granularity calculation on this branch should be treated as a unifying r
 implies per-state causal KL order
     N^(1-kappa-2alpha-2beta).
 The potentially useful contribution is tying the subgroup-growth exponent kappa directly to **learned latent-state resolution** and combining it with overlap and local effect scale in one causal-resolution budget.
+
+
+## Phantom-resolution / latent-class uncertainty literature check (2026-10-06)
+
+A targeted search found substantial prior work showing that classify-analyze latent subgroup causal effects can be biased or unstable when class membership is uncertain. In particular:
+- Diemer et al. (2022/2023), _Evaluating sensitivity to classification uncertainty in latent subgroup effect analyses_, explicitly studies sensitivity of subgroup causal effects to posterior/classification uncertainty and recommends perturbation/bootstrap sensitivity analysis.
+- Lyu, Kim & Suk (2023), _Estimating Heterogeneous Treatment Effects Within Latent Class Multilevel Models_, jointly models latent classes and heterogeneous treatment effects so that sequential misclassification does not obstruct inference.
+- Recent latent-variable causal work on misclassified treatment similarly models the measurement-error channel jointly rather than treating labels as known.
+
+Therefore **classification uncertainty affecting latent subgroup causal effects is not novel**.
+
+The more specific phenomenon found on this branch is different: misclassification can *inflate the smallest eigenvalue of the downstream treatment-information/Gram matrix*, making the proxy-weighted causal geometry look healthier than the oracle true-state geometry. In the symmetric two-state calculation, chance-level classification drives inferred state-specific information toward equality and apparent condition number toward 1 even when true state information is arbitrarily imbalanced.
+
+The targeted search did not surface a paper framing this as optimistic distortion of a downstream causal-information spectrum or studying serial inversion of a latent-state confusion operator followed by a weak causal moment operator. This absence is not evidence of novelty. Search should be expanded to errors-in-variables inverse problems, mixture deconvolution, latent-class distal-outcome corrections, and information geometry under misclassification before making any claim.
