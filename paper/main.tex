@@ -68,7 +68,7 @@ Continuous-treatment causal inference in atmospheric systems provides a natural 
 
 When standard Double Machine Learning \citep{chernozhukov2018double} or tree-based plug-in estimators are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands can exhibit severe bias and, in our benchmark, sign inversions—falsely suggesting that precursor reductions exacerbate ambient pollution.
 
-\textbf{Related Work.} We position our contribution across four neighboring literatures: (1)~\textbf{Double Machine Learning \& Orthogonal Inference:} \citet{chernozhukov2018double,chernozhukov2022automatic,foster2023orthogonal,nie2021quasi,kennedy2023towards} achieve $\sqrt{N}$-rate inference under unconfoundedness given $X_t$. (2)~\textbf{Dependent \& Time-Series Causal Inference:} \citet{ciganovic2026dml,semenova2023generalized,lewis2020double,bai2009panel,bonhomme2015grouped,hamilton1989new} relax exchangeability under mixing, but do not address latent Markov confounding. (3)~\textbf{Latent Markov \& Proximal Inference:} \citet{clouth2024latent,huang2023sdci,miao2018identifying,tchetgen2020introduction,mastouri2021proximal,cappe2005inference} use proxies for unmeasured confounders, focusing on asymptotic identification rather than downstream finite-sample score conditioning. (4)~\textbf{Weak Overlap \& Selective Reliability:} \citet{damour2021overlap,shalit2017estimating,crump2009dealing,guo2017calibration,geifman2017selective,sankararaman2023selective} address overlap and abstention, without linking latent uncertainty to coupled score conditioning.
+\textbf{Related Work.} We position our contribution across four neighboring literatures: (1)~\textbf{Double Machine Learning \& Orthogonal Inference:} \citet{chernozhukov2018double,chernozhukov2022automatic,foster2023orthogonal,nie2021quasi,kennedy2023towards} achieve $\sqrt{N}$-rate inference under unconfoundedness given $X_t$. (2)~\textbf{Dependent \& Time-Series Causal Inference:} \citet{ciganovic2026dml,semenova2023generalized,lewis2020double,bai2009panel,bonhomme2015grouped,hamilton1989new} relax exchangeability under mixing, but do not address latent Markov confounding. (3)~\textbf{Latent Markov \& Proximal Inference:} \citet{clouth2024latent,huang2023sdci,miao2018identifying,tchetgen2020introduction,mastouri2021proximal,cappe2005inference} use proxies for unmeasured confounders, focusing on asymptotic identification rather than downstream finite-sample score conditioning. (4)~\textbf{Weak Overlap \& Selective Reliability:} \citet{damour2021overlap,shalit2017estimating,crump2009dealing,guo2017calibration,geifman2017selective,sankararaman2023selective} address overlap and abstention, without linking latent uncertainty to coupled score conditioning. Generated-covariate asymptotics \citep{mammen2016generated} and general weak-identification theory \citep{kaji2021weak,bennett2023strong} establish that generated first stages and weakly identified objects can require nonstandard inference; our focus is the specific distortion induced when a generated sequential latent state changes the downstream causal-information geometry.
 
 \textbf{Contributions.} We separate latent-state uncertainty from downstream information geometry:
 \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
@@ -608,7 +608,21 @@ Uri Shalit, Fredrik~D Johansson, and David Sontag.
 Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
 \newblock An introduction to proximal causal learning.
 \newblock \emph{arXiv preprint arXiv:2009.10835}, 2020.
-\end{thebibliography}
+\n\bibitem[Mammen et~al.(2016)Mammen, Rothe, and Schienle]{mammen2016generated}
+Enno Mammen, Christoph Rothe, and Melanie Schienle.
+\newblock Semiparametric estimation with generated covariates.
+\newblock \emph{Econometric Theory}, 32\penalty0 (5):\penalty0 1140--1177, 2016.
+
+\bibitem[Kaji(2021)]{kaji2021weak}
+Tetsuya Kaji.
+\newblock Theory of weak identification in semiparametric models.
+\newblock \emph{Econometrica}, 89\penalty0 (2):\penalty0 733--763, 2021.
+
+\bibitem[Bennett et~al.(2023)Bennett, Kallus, Mao, Newey, Syrgkanis, and Uehara]{bennett2023strong}
+Andrew Bennett, Nathan Kallus, Xiaojie Mao, Whitney Newey, Vasilis Syrgkanis, and Masatoshi Uehara.
+\newblock Inference on strongly identified functionals of weakly identified functions.
+\newblock \emph{Proceedings of Machine Learning Research}, 195:\penalty0 2265--2265, 2023.
+\n\end{thebibliography}
 
 \clearpage
 
