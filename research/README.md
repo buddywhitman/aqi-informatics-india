@@ -227,3 +227,15 @@ A new experiment compares posterior-outer, representation-only diagonal completi
 Global ECE/Brier can miss errors concentrated on observations carrying most causal information. A new experiment weights posterior error by residual-treatment leverage and compares it with ordinary calibration as a predictor of oracle/proxy spectral distortion. See research/task_weighted_calibration.py and research/ROBUST_CAUSAL_GEOMETRY.md.
 
 These studies are prospective until their full Monte Carlo outputs are committed; no favorable numeric claim is made yet.
+
+
+### R34. Matched global calibration can hide a ~3000x task-weighted error gap
+The automated Monte Carlo completed successfully. Two representations were constructed with exactly the same global posterior squared error (0.016) but with mistakes concentrated on either the bottom or top 20% of treatment leverage. Across N=1,000, 5,000, 20,000, the high-leverage representation has task-weighted calibration error about 0.069, while the low-leverage representation is about 2.3e-5: roughly a **3,000x gap despite identical global calibration error**. The corresponding causal-geometry log error is about 0.46 versus 0.0093-0.0096, roughly a 48-50x difference.
+
+This is a clean impossibility result for task-agnostic calibration: marginal/global calibration magnitude alone cannot determine downstream causal reliability when error location relative to score leverage is unconstrained.
+
+### R35. Generic geometry disagreement is NOT a reliable misspecification detector
+The proposed spread among posterior-outer, Z-only diagonal completion, and joint-completed spectra failed as a generic falsification diagnostic. Spearman correlation with completed-geometry error is only 0.128 and AUC for detecting >2x completion error is 0.486, essentially chance, despite a 69.7% failure prevalence in the designed sweep. This negative result is important: disagreement among several biased geometry constructions does not automatically produce a conservative diagnostic.
+
+### R36. Task-weighted calibration helps modestly in the broad temperature sweep, not dramatically
+Across the automated temperature/separation/weak-information sweep, ordinary Brier error has Spearman 0.470 with causal-geometry distortion; treatment-leverage-weighted Brier improves this only to 0.505. Thus task weighting is theoretically necessary in adversarial constructions but is not by itself a universally strong predictor in broad smooth distortions. The useful contribution is the impossibility/counterexample and the need for task-aware calibration, not a claim that one simple weighted Brier score solves reliability.
