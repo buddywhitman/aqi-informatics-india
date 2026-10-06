@@ -64,3 +64,13 @@ assert tex.index("AI Use Statement") < tex.index("\\begin{thebibliography}")
 assert "zero efficiency loss" not in tex
 assert "verified multi-season dataset" not in tex
 print("Central thesis, provenance, and AI-statement ordering checks passed.")
+
+
+# Corrected-hourly audit must agree with the promoted appendix values.
+hourly=pd.read_csv("reports/bias_law/x23_real_hourly_fix.csv")
+for city,n,theta in [("Delhi",9024,0.3703095053),("Mumbai",8113,2.2349491649),("Bengaluru",7775,0.0132185163),("Kolkata",2322,1.7901017124)]:
+    r=hourly[(hourly.city==city)&(hourly.frozen_screen==False)].iloc[0]
+    assert int(r.N)==n and abs(float(r.theta)-theta)<1e-8
+for token in ["0.370","2.235","0.013","1.790","16 distinct"]:
+    assert token in tex, token
+print("Corrected-hourly manuscript values match the committed audit table.")
