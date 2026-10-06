@@ -116,20 +116,25 @@ def build_archive():
     # Gather all CSV reports in reports/
     report_files = glob.glob("reports/*.csv") + glob.glob("reports/bias_law/*")
 
-    all_files = list(REQUIRED_FILES) + report_files
+    all_files = sorted(dict.fromkeys(list(REQUIRED_FILES) + report_files))
 
-    missing = [f for f in all_files if not os.path.exists(f)]
-    if missing:
-        print(f"Error: {len(missing)} files missing:")
-        for m in missing:
-            print(f"  [X] {m}")
-        # Proceed with available files if only optional new ones missing
-        all_files = [f for f in all_files if os.path.exists(f)]
+    missing_required = [p for p in REQUIRED_FILES if not os.path.isfile(p) or os.path.getsize(p) == 0]
+    if missing_required:
+        raise FileNotFoundError("Required supplementary evidence missing or empty:\n  " + "\n  ".join(missing_required))
 
+    # Deterministic archive: stable ordering, fixed timestamps/permissions, explicit bytes.
+    # This makes repeated builds from the same source tree byte-reproducible.
     with zipfile.ZipFile(ARCHIVE_NAME, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
         for file_path in all_files:
+            if not os.path.isfile(file_path):
+                continue
             archive_path = os.path.join(BASE_DIR, file_path).replace("\\", "/")
-            zipf.write(file_path, archive_path)
+            info = zipfile.ZipInfo(archive_path, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o100644 << 16
+            with open(file_path, "rb") as fh:
+                payload = fh.read()
+            zipf.writestr(info, payload, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
             print(f"  Added: {file_path} -> {archive_path}")
 
     zip_size_mb = os.path.getsize(ARCHIVE_NAME) / (1024 * 1024)
