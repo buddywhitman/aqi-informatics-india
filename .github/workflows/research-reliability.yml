@@ -55,6 +55,8 @@ jobs:
           python research/orthogonality_priority.py
           python research/integrated_operator_stress_test.py
           python research/operator_nonlinearity_breakdown.py
+          python research/nonlinear_reliability_number.py
+          python research/integrated_latent_dgp.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -93,3 +95,5 @@ jobs:
             research/results/orthogonality_priority*.csv
             research/results/integrated_operator_stress_test*.csv
             research/results/operator_nonlinearity_breakdown*.csv
+            research/results/nonlinear_reliability_number*.csv
+            research/results/integrated_latent_dgp*.csv
