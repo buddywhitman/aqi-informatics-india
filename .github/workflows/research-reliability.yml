@@ -39,6 +39,7 @@ jobs:
           python research/operator_bound_tightness.py
           python research/contrast_specific_bound.py
           python research/subspace_reliability.py
+          python research/target_subspace_resolution_paradox.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -61,3 +62,4 @@ jobs:
             research/results/operator_bound_tightness*.csv
             research/results/contrast_specific_bound*.csv
             research/results/subspace_reliability*.csv
+            research/results/target_subspace_resolution_paradox*.csv
