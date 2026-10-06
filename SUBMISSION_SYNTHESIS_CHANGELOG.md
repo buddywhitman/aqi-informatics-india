@@ -75,3 +75,8 @@ The final CI workflow:
 6. uploads the compiled submission package as a workflow artifact.
 
 No success claim should be made until that workflow completes successfully.
+
+
+## Final packaging guardrails
+
+The supplementary builder now packages an anonymous `SUPPLEMENT_README.md` instead of the repository README. The final workflow scans the ZIP for identifying repository strings before committing the compiled PDF/archive upstream.
