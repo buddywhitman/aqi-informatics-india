@@ -301,3 +301,10 @@ Random-orientation Monte Carlo shows the global worst-case bound is usually loos
 
 ### R52. Scientific-target subspace reliability
 A new exact formulation replaces global $\|J^{-1}\|=1/\lambda_{\min}$ with $\|AJ^{-1}\|$ when the scientific estimand is a contrast vector/subspace $A\theta$. Weak causal directions lying in the null space of $A$ should not determine reliability. This yields a hierarchy from global worst-case, to target-subspace, to fixed-contrast, to realized $a^\top J^{-1}b$ reliability. Automated experiments are now quantifying the gap when scientific targets align with strong, weak, or random information subspaces.
+
+
+### R53. Global ill-conditioning can be 10,000x worse than scientific-target conditioning
+The target-subspace experiment makes the distinction extreme. With global condition number 10,000, a one-dimensional target aligned with the strongest information eigenvector has amplification 1 while the global worst-case amplification is 10,000: a **10,000x gap**. A target aligned with the weakest direction has ratio 1, while random targets fall between. For K=50, a random one-dimensional target has amplification ~1,668 versus global 10,000 (~6x pessimism), and a five-dimensional strong target has amplification ~2.12 versus 10,000 (~4,715x pessimism).
+
+### R54. Target-subspace resolution paradox
+A new exact sequence sets $J_N=\mathrm{diag}(1,N^{-2\alpha})$ while the scientific target is the first coordinate. Global $\lambda_{\min}\to0$ and condition number diverges, but target-specific amplification stays exactly 1 and target standard error shrinks root-N. For $\alpha>1/2$, a global weak-direction uncertainty scale diverges while the actual target becomes more precise. Combined with phantom resolution, this proves $\lambda_{\min}$ alone can fail in **both directions**: optimistic when proxy mixing hides target-relevant weakness, and arbitrarily pessimistic when weakness lies outside the target.
