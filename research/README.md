@@ -98,6 +98,11 @@ This is the strongest impossibility result found on the branch so far. It implie
 ### R18. Crossing task abstractions imply an exponential universal-compression gap
 The two-task experiment's optimal partitions cross. Generalizing to an $m$-bit latent state and $m$ tasks where task $j$ depends only on bit $j$, each task individually needs only 2 abstract states, while any single deterministic abstraction sufficient for all tasks must preserve all $2^m$ fine states. This exact construction does not by itself establish novelty, but combined with R17 it implies a severe statistical tension: a universal fine target parameterization may preserve every possible task distinction while forcing estimation of distinctions that individual tasks neither need nor can identify under weak overlap. Task-specific target heads avoid that unnecessary resolution cost.
 
+### R19. Real data show a consistent generative-resolution / causal-information divergence as K increases
+Combining the previously computed HMM BIC and OR-DML K-sensitivity gives a striking descriptive pattern in all four cities. Moving from K=2 to K=4 improves HMM BIC by 8,401 (Delhi), 8,900 (Mumbai), 10,138 (Bengaluru), and 2,103 (Kolkata), while the smallest downstream score eigenvalue simultaneously collapses by factors of 4.8x, 10.8x, 4.5x, and 3.1x, respectively. Mumbai is the clearest case: BIC strongly favors greater latent resolution while $\lambda_{\min}(J)$ falls from 0.317 to 0.029 and the overall effect estimate shifts from 1.59 to 5.99.
+
+This does **not** prove that K=4 is causally wrong or that K=2 is correct—the true state count and effects are unknown. But it is exactly the empirical signature predicted by the synthetic resolution-mismatch story: additional latent distinctions can improve the observation model while fragmenting downstream treatment information. It motivates reporting a two-axis model-selection diagnostic: generative fit versus causal effective information, rather than selecting K from likelihood alone.
+
 ## Reproduction
 
 Run:
