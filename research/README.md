@@ -12,13 +12,18 @@ At the population score level, fix `||b||`, fix the spectrum of J, and rotate th
 `R_task = ||(J+lambda I)^{-1} b_gamma||`.
 This is a mathematical stress test, not an independent empirical discovery.
 
-### R3. Regularization helps, but scalar difficulty does not identify the optimal lambda
+### R3. K>=3 exposes a major limitation of the scalar difficulty ratio
+A three-state experiment holds average posterior L1 error and $\lambda_{\min}(J)$ in roughly the same range while changing **which states receive the posterior perturbation**. At perturbation level $a=0.03$, the three designs have $\varepsilon_\gamma\approx0.020$ and $\lambda_{\min}(J)\approx0.0125$--$0.0133$, hence scalar difficulty about 1.5--1.6, but mean causal L2 error ranges from 0.109 (weak-state perturbation) and 0.127 (strong-state perturbation) to **0.667** (balanced cyclic perturbation). Across all 1,500 runs, Spearman correlation of error with $\varepsilon_\gamma/\lambda_{\min}$ is only 0.424. The score-aware worst-case bound $\|b_\gamma\|/\lambda_{\min}$ improves this to 0.712, while the directional propagation $\|J^{-1}b_\gamma\|$ exactly tracks the unregularized population moment error by construction.
+
+This is the most important new finding: the current scalar ratio is a useful worst-case/order diagnostic in the two-state experiments, but it is **not a sufficient task-relative representation metric in higher-dimensional latent spaces**. Error orientation relative to the full spectrum matters.
+
+### R4. Regularization helps, but scalar difficulty does not identify the optimal lambda
 Across 48 synthetic settings (20 replications each), oracle choice over a fixed ridge grid reduces MSE substantially: median gains are 81.8%, 87.3%, and 85.5% for N=600,1200,2400. However, Spearman correlation between oracle lambda and scalar difficulty is only 0.393. Thus the current difficulty score is useful for detecting danger but appears insufficient by itself for tuning regularization. This is an important negative result and argues for a richer risk estimator involving perturbation direction, noise level, and target magnitude.
 
-### R4. Posterior error is transition-localized
+### R5. Posterior error is transition-localized
 For a correctly specified two-state Gaussian HMM using causal filtering, posterior L1 error is concentrated near true state transitions. At emission separation 2.0, mean L1 error is 0.577 within 0-1 steps of a transition versus 0.134 at distance >=9; at separation 3.0 it is 0.270 versus 0.056. This suggests that aggregate posterior metrics may hide a small set of temporally localized, high-impact representation failures.
 
-### R5. The same transition phenomenon appears qualitatively in the four-city sensor data
+### R6. The same transition phenomenon appears qualitatively in the four-city sensor data
 Using a standardized two-state HMM on the six exogenous meteorological features, filter-vs-smoother disagreement is sharply concentrated around inferred transitions. In Delhi, mean L1 disagreement is 0.923 within 0-1 hours of an inferred transition versus 0.009 at >=25 hours. Mumbai shows 0.413 versus 0.017. Bengaluru/Kolkata switch much more frequently, so long interior segments are scarce. Because inferred transitions are defined by the same fitted model, this is a descriptive diagnostic, not ground-truth validation.
 
 ## Reproduction
