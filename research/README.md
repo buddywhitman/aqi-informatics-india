@@ -373,3 +373,15 @@ With $J=\mathrm{diag}(1,.1,.01)$ and an equal-weight target, the same raw pertur
 
 ### R72. Correction-budget allocation
 A new experiment compares three rules when only a limited number of representation-error directions can be modeled/corrected: largest raw error, weakest information, and largest target-amplified contribution $|a_jb_j|/\lambda_j$. Deliberately conflicting cases test whether the directional reliability operator supplies the correct allocation principle. Automated results pending.
+
+
+### R73. Target-amplified correction priority beats raw-error and weak-eigenvalue heuristics in conflicting cases
+With one correction direction available, the raw-error heuristic can leave 94.1% of target bias in the raw-misleading case, while target-amplified priority leaves 41.2%. In the weak-information-misleading case, blindly correcting the weakest eigen-direction leaves **100%** of bias, raw-error priority leaves 66.7%, and target-amplified priority leaves 33.3%. With two corrections, target-amplified priority removes all bias in that case while weak-eigenvalue priority still removes none. Neither raw error nor weak information alone is sufficient; the relevant product is target alignment x perturbation x inverse information.
+
+### R74. Integrated operator falsification
+A new full-factorial local experiment crosses information weakness, representation-error magnitude/orientation, scientific-target orientation, and N, then compares empirical RMSE against the proposed prediction
+$$\sqrt{(a^\top J^{-1}b)^2+a^\top J^{-1}\Sigma J^{-1}a/N}.$$
+This is the first integrated test of the synthesis rather than another isolated construction.
+
+### R75. Nonlinear breakdown boundary
+A second adversarial experiment replaces the linearized moment with a curved nonlinear equation and measures when $J^{-1}b$ ceases to approximate the exact target displacement. This explicitly searches for the regime where the proposed directional reliability operator fails rather than assuming local asymptotics are adequate.
