@@ -408,11 +408,11 @@ where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\
 \begin{table*}[t]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.72}
+\renewcommand{\arraystretch}{0.62}
 \caption{Empirical Regime-Specific Exposure Effects across Four Indian Megacities ($>14,000$ 2-Hourly Observations, Feb 2025-Jun 2026, Median Cadence 2.0h, Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$). Evaluated via Gaussian HMM on meteorology ($^\dagger$Mumbai displays 3 local optima: $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; table reports global mode $\text{LL}=-55,557.7$). Diagnostics in Appendix~\ref{app:empirical_sensitivity}.}
 \label{tab:empirical}
-\vspace{1.5mm}
-\resizebox{0.78\textwidth}{!}{%
+\vspace{0.5mm}
+\resizebox{0.74\textwidth}{!}{%
 \begin{tabular}{llrccccc}
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$} & \textbf{Std Error} & \textbf{95\% CI} & \textbf{p-value} & $\lambda_{\min}(\hat{\boldsymbol{J}})$ [$\kappa$] \\
@@ -457,14 +457,15 @@ To test the theoretical predictions of Theorems~\ref{thm:impossibility}-\ref{thm
 
 \textbf{Representation Quality vs.\ Downstream Reliability.} State discrimination, calibration, and task reliability are distinct. Across 15 shifted worlds, adding NLL to $F_1$ improves leave-one-world-out reliability prediction from $R^2=0.113$ ($\rho=0.374$) to $R^2=0.221$ ($\rho=0.527$). Yet temperature scaling cuts GRU/Transformer ECE by $47.9\%/60.3\%$ and NLL from $0.548/1.006$ to $0.331/0.382$ without improving failure discrimination ($\Delta\mathrm{AUC}=-0.004/-0.008$), proving calibration cannot rescue downstream reliability under ill-conditioned task geometry (Appendix~\ref{app:latent_regime_bench}).
 
-\vspace{-4.5mm}
+\enlargethispage{4.5\baselineskip}
+\vspace{-5.5mm}
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
 \label{sec:empirical}
 We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025-Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational diagnostic stress test rather than physical causal ground truth. Complete-case and Newey-West HAC lag sensitivity ($h \in \{12, 24, 72, 168\}$h) appear in Appendix~\ref{app:empirical_sensitivity}.
 
 \textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$, $\kappa = 1.58$): Decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.20$, $\kappa = 2.52$): Standard DML is unstable ($+2.64 \pm 4.42$), while Spectral OR-DML yields Regime 2 $+7.20 \pm 3.90$ ($p=0.065$) and Regime 1 $-7.63 \pm 7.05$ ($p=0.280$; overall $+1.08 \pm 3.91$). Telemetry screening reveals a 273-hour constant run and $985\,\mu\text{g/m}^3$ saturation, causing multi-modal EM likelihood surfaces (across local modes, $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; Table~\ref{tab:empirical}). \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$, $\kappa = 1.72$): Standard DML yields $-0.001 \pm 0.060$; OR-DML isolates Regime 1 ($+0.092 \pm 0.155$) from Regime 2 ($-0.153 \pm 0.069$, nominal $p=0.0265$, overall $-0.026 \pm 0.079$). Under Frontier B null size distortion ($78\%$ Type I error, Table~\ref{tab:frontier_b_null}), nominal regime $p$-values require transport modeling before causal interpretation. \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$, $\kappa = 1.43$): Sparse telemetry ($N=1,209$) and discrete quantization (31 unique $\text{NO}_2$ values; 376-hour constant $\text{PM}_{2.5}$ run) collapse residual variance; overall ATE is $-0.006 \pm 1.300$. In single-index sensitivity, unregularized DML yields $-0.557 \pm 1.107$, stabilized by spectral penalty ($\text{SE} \to 0.060$ at $\lambda=0.10$, Table~\ref{tab:kolkata_lambda_grid}). Modest condition numbers ($\kappa = 1.43\text{-}2.52$) confirm SE inflation stems from low residual variance and sensor defects rather than Gram collinearity. \emph{Semi-Synthetic Megacity Benchmark}: In real atmospheric covariates with known ground truth ($\boldsymbol{\theta}^*=(0.75, 2.50)$; Table~\ref{tab:semisynthetic_megacity}), all proxy estimators suffer bias ($3.72\text{-}5.27$ for Spectral OR-DML, $1.09\text{-}2.56$ for HMM$(Z, T)$) and $0.0\%$ coverage, confirming real sensor confounding invalidates naive causal inference. \emph{Dynamic Projections}: Exposure effect peaks at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), but Delhi fails pre-treatment placebos at $h \in \{-6,-3,-1\}$ ($p<0.01$). We treat this curve as an exposure diagnostic; other cities pass placebos (Appendix~\ref{app:empirical_sensitivity}).
 
-\vspace{-5.5mm}
+\vspace{-6.0mm}
 \section{DISCUSSION, LIMITATIONS \& CONCLUSION}
 \label{sec:conclusion}
 Latent-state recovery and downstream reliability are distinct: proxy errors are benign under strong geometry but catastrophic when ill-conditioned, motivating joint diagnostics over calibration alone. \textbf{Limitations:} (1)~Proposition~\ref{prop:bridge} assumes calibration and spectral comparability. (2)~Sensor estimates are exposure tests; Delhi placebos preclude unmodeled dynamic claims. (3)~Operational difficulty does not dominate entropy everywhere. (4)~Financial transfer is synthetic.
@@ -510,7 +511,6 @@ Marwa Banna, Florence Merlev{\`e}de, and Pierre Youssef.
 \newblock Bernstein-type inequality for a class of dependent random matrices.
 \newblock \emph{Random Matrices: Theory and Applications}, 5\penalty0 (2):\penalty0 1650006, 2016.
 \newblock arXiv:1504.05834.
-% verify: V
 
 \bibitem[Bartlett and Wegkamp(2008)]{bartlett2008classification}
 Peter~L Bartlett and Marten~H Wegkamp.
@@ -531,7 +531,6 @@ Christoph Bergmeir, Rob~J Hyndman, and Bonsoo Koo.
 Ioana Bica, Ahmed~M Alaa, and Mihaela van~der Schaar.
 \newblock Time series deconfounder: Estimating treatment effects over time in the presence of hidden confounders.
 \newblock In \emph{International Conference on Machine Learning (ICML)}, volume 119 of \emph{Proceedings of Machine Learning Research}, pages 884-895, 2020.
-% verify: V
 
 \bibitem[Bickel et~al.(1993)Bickel, Klaassen, Ritov, and Wellner]{bickel1993efficient}
 Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
@@ -597,8 +596,8 @@ C~K Chow.
 Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
 \newblock Double machine learning for time series.
 \newblock \emph{The Econometrics Journal}, 2026.
+\newblock \doi{10.1093/ectj/utag019}.
 \newblock arXiv:2603.10999.
-% verify: arXiv ID confirmed; check journal-acceptance status, else cite as arXiv preprint
 
 \bibitem[Cinelli and Hazlett(2020)]{cinelli2020making}
 Carlos Cinelli and Chad Hazlett.
@@ -641,7 +640,6 @@ Alexander D'Amour, Peng Ding, Avi Feller, Lihua Lei, and Jasjeet Sekhon.
 \newblock Overlap in observational studies with high-dimensional covariates.
 \newblock \emph{Journal of Econometrics}, 221\penalty0 (2):\penalty0 644-654, 2021.
 \newblock arXiv:1711.02582.
-% verify: V: title and arXiv ID
 
 \bibitem[Dempster et~al.(1977)Dempster, Laird, and Rubin]{dempster1977maximum}
 Arthur~P Dempster, Nan~M Laird, and Donald~B Rubin.
@@ -718,7 +716,6 @@ Kilian Hendrickx, Lorenzo Perini, Dries Van~der Plas, Wannes Meert, and Jesse Da
 \newblock Machine learning with a reject option: A survey.
 \newblock \emph{Machine Learning}, 113\penalty0 (5):\penalty0 3073-3110, 2024.
 \newblock arXiv:2107.11277.
-% verify: V: authors, title, journal, year, arXiv ID; volume/pages from memory
 
 \bibitem[Hoerl and Kennard(1970)]{hoerl1970ridge}
 Arthur~E Hoerl and Robert~W Kennard.
@@ -734,8 +731,6 @@ Roger~A Horn and Charles~R Johnson.
 Biwei Huang, Kun Zhang, Jiji Zhang, Joseph Ramsey, Ruben Sanchez-Romero, Clark Glymour, and Bernhard Sch{\"o}lkopf.
 \newblock Causal discovery from heterogeneous/nonstationary data.
 \newblock \emph{Journal of Machine Learning Research}, 21\penalty0 (89):\penalty0 1-53, 2020.
-\newblock
-% verify: V: title, venue, volume; page range from memory
 
 \bibitem[Ibragimov(1962)]{ibragimov1962some}
 Il'dar~A Ibragimov.
@@ -761,7 +756,6 @@ John~G Kemeny and J~Laurie Snell.
 Edward~H Kennedy.
 \newblock Semiparametric doubly robust targeted double machine learning: a review.
 \newblock \emph{arXiv preprint arXiv:2203.06469}, 2022.
-% verify: V
 
 \bibitem[Khan and Tamer(2010)]{khan2010irregular}
 Shakeeb Khan and Elie Tamer.
@@ -811,9 +805,8 @@ Marcos L{\'o}pez~de Prado.
 \bibitem[Mastouri et~al.(2021)Mastouri, Zhu, Gultchin, Korba, Silva, Kusner, Gretton, and Muandet]{mastouri2021proximal}
 Afsaneh Mastouri, Yuchen Zhu, Limor Gultchin, Anna Korba, Ricardo Silva, Matt~J Kusner, Arthur Gretton, and Krikamol Muandet.
 \newblock Proximal causal learning with kernels: Two-stage estimation and moment restriction.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 139 of \emph{Proceedings of Machine Learning Research}, 2021.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 139 of \emph{Proceedings of Machine Learning Research}, pages 7512-7523, 2021.
 \newblock arXiv:2105.04544.
-% verify: V: title, venue, arXiv ID. CHECK the author list against the PMLR page; the previous entry also had the first name wrong
 
 \bibitem[Miao et~al.(2018)Miao, Geng, and Tchetgen~Tchetgen]{miao2018identifying}
 Wang Miao, Zhi Geng, and Eric~J Tchetgen~Tchetgen.
@@ -840,10 +833,10 @@ Open-Meteo.
 \newblock Historical weather API and ECMWF ERA5 meteorological reanalysis.
 \newblock Technical documentation and API service, 2025-2026.
 
-\bibitem[Pearl(2010)]{pearl2012bias}  % key kept for compatibility; paper is UAI 2010
+\bibitem[Pearl(2010)]{pearl2012bias}
 Judea Pearl.
 \newblock On a class of bias-amplifying variables that endanger effect estimates.
-\newblock In \emph{Proceedings of the 26th Conference on Uncertainty in Artificial Intelligence (UAI)}, 2010.
+\newblock In \emph{Proceedings of the 26th Conference on Uncertainty in Artificial Intelligence (UAI)}, pages 417-424, 2010.
 \newblock arXiv:1203.3503.
 
 \bibitem[Petersen et~al.(2012)Petersen, Porter, Gruber, Wang, and van~der Laan]{petersen2012diagnosing}
@@ -881,13 +874,11 @@ Vira Semenova, Matt Goldman, Victor Chernozhukov, and Matt Taddy.
 \newblock Inference on heterogeneous treatment effects in high-dimensional dynamic panels under weak dependence.
 \newblock \emph{Quantitative Economics}, 14\penalty0 (2):\penalty0 471-510, 2023.
 \newblock arXiv:1712.09988.
-% verify: V: title, venue, year, arXiv ID; pages from memory
 
 \bibitem[Shalit et~al.(2017)Shalit, Johansson, and Sontag]{shalit2017estimating}
 Uri Shalit, Fredrik~D Johansson, and David Sontag.
 \newblock Estimating individual treatment effect: Generalization bounds and algorithms.
 \newblock In \emph{International Conference on Machine Learning (ICML)}, volume~70 of \emph{Proceedings of Machine Learning Research}, pages 3076-3085, 2017.
-% verify: V
 
 \bibitem[Tchetgen~Tchetgen et~al.(2020)Tchetgen~Tchetgen, Ying, Cui, Shi, and Miao]{tchetgen2020introduction}
 Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
@@ -903,8 +894,6 @@ Joel~A Tropp.
 Tuan~V Vu, Zongbo Shi, Jing Cheng, Qiang Zhang, Kebin He, Shuxiao Wang, and Roy~M Harrison.
 \newblock Assessing the impact of clean air action on air quality trends in {B}eijing using a machine learning technique.
 \newblock \emph{Atmospheric Chemistry and Physics}, 19\penalty0 (17):\penalty0 11303-11314, 2019.
-\newblock
-% verify: CHECK author list/order on the ACP page before submission
 
 \bibitem[Wang and Blei(2019)]{wang2019blessings}
 Yixin Wang and David~M Blei.
