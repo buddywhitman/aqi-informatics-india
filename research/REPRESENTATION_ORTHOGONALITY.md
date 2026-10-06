@@ -38,3 +38,16 @@ The current OR-DML graceful-degradation theorem treats representation error as a
 ## Next experiment
 
 Construct a simple latent-mixture causal moment where a correction term based on posterior score functions cancels the first-order derivative with respect to a controlled posterior perturbation, then verify epsilon versus epsilon-squared target error.
+
+
+## Proof-of-concept result
+
+The Taylor-correction experiment confirms the intended scaling over epsilon=1e-4 to .316. Naive target error is approximately 0.04517*epsilon. After subtracting the first-order derivative term, residual error is approximately 0.00030*epsilon^2 (up to Monte Carlo/numerical error). At epsilon=.1, naive error is about 4.51e-3 while corrected error is about 3.0e-6, roughly a 1,500x reduction in this deliberately favorable toy.
+
+This is not yet an estimator: the derivative is oracle/numerically known. It establishes only that first-order representation sensitivity can in principle be removed when the perturbation tangent is known.
+
+## Operational augmented-moment toy
+
+The script orthogonal_latent_moment.py replaces the oracle Taylor derivative by explicit correction moments for a known perturbation direction h. If gamma=S+epsilon*h, correcting both numerator and denominator by epsilon E[hY] and epsilon E[hT] reconstructs the oracle latent moment in population. The experiment then misspecifies the correction coefficient to quantify robustness.
+
+This exposes the actual methodological requirement: representation orthogonality needs a model for the posterior perturbation tangent, validation information that identifies correction moments, repeated/proxy measurements, or structural score identities. Without information about the latent perturbation direction, first-order bias cannot generally be canceled from observed data alone.
