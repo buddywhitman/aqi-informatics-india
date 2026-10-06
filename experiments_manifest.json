@@ -134,6 +134,22 @@
       "paper_table": "Table 10 & 11 (paper/main.tex)",
       "sample_size": 1500,
       "description": "Macroeconomic interest rate and liquidity indicators (FRED) testing whether D_t guides risk-aware selective estimation, reducing regret by 98.74%."
+    },
+    {
+      "experiment_id": "EXP-10",
+      "name": "Deep Empirical Exploration Suite (Boundaries, Ill-Conditioning, Representations)",
+      "script": "src/deep_empirical_evaluations.py",
+      "report": "reports/deep_eval_exploration2_ill_conditioned_summary.csv",
+      "secondary_report": "reports/deep_eval_exploration3_representation_summary.csv",
+      "description": "Evaluates soft vs hard weighting, verifies Theorem 4 spectral variance reduction (up to 9.8x), and confirms Theorem 3 monotonic proxy degradation (r=0.9614, rho=0.9870)."
+    },
+    {
+      "experiment_id": "EXP-11",
+      "name": "Advanced Methodological Frontiers (Selective Estimation, Type I Error, Low-Persistence)",
+      "script": "src/advanced_methodological_frontiers.py",
+      "report": "reports/frontier_a_selective_estimation_summary.csv",
+      "secondary_report": "reports/frontier_c_persistence_stress_summary.csv",
+      "description": "Demonstrates 23.8x causal error reduction via coupled difficulty D_t abstention, tests Type I error under null effects, and evaluates temporal shattering across persistence rho in [0.30, 0.88]."
     }
   ],
   "verification_suite": {

@@ -43,6 +43,10 @@ REQUIRED_FILES = [
     "src/data_pipeline_clean.py",
     "src/generate_paper_figures.py",
     "src/regime_intelligence.py",
+    "src/deep_empirical_evaluations.py",
+    "src/test_soft_vs_hard_continuous_mixture.py",
+    "src/advanced_methodological_frontiers.py",
+    "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "src/requirements.txt",
 
     # Clean Datasets
