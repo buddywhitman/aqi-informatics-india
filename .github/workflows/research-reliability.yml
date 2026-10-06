@@ -43,6 +43,7 @@ jobs:
           python research/target_aware_model_selection.py
           python research/target_aware_regularization.py
           python research/target_drift_robustness.py
+          python research/robust_target_family_regularization.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -69,3 +70,4 @@ jobs:
             research/results/target_aware_model_selection*.csv
             research/results/target_aware_regularization*.csv
             research/results/target_drift_robustness*.csv
+            research/results/robust_target_family_regularization*.csv
