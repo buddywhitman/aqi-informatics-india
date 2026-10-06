@@ -43,6 +43,11 @@ jobs:
               assert x not in t, x
           print("AI statement ordering and manuscript anonymity checks passed")
           PY
+          if zipgrep -Eiq 'buddywhitman|github\.com/buddywhitman|aqi-informatics-india' AISTATS2027_OR_DML_Supplementary_Material.zip; then
+            echo "Identifying repository material found in supplementary archive"
+            exit 1
+          fi
+          echo "Supplement anonymity scan passed"
       - uses: actions/upload-artifact@v4
         with:
           name: aistats2027-final-submission
