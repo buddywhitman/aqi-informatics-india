@@ -28,8 +28,8 @@ jobs:
       - name: Copy compiled PDF and verify artifacts
         run: |
           test -s paper/main.pdf
-          python verify_artifacts.py
           python src/build_supplementary_archive.py
+          python verify_artifacts.py
           pdfinfo paper/main.pdf | tee paper/pdfinfo.txt
           pages=$(pdfinfo paper/main.pdf | awk '/^Pages:/ {print $2}')
           echo "Compiled pages: $pages"
