@@ -1,0 +1,3 @@
+Method,Nominal_Size,Empirical_Type_I_Error,Mean_Abs_Bias
+Spectral OR-DML (Sandwich),5.0%,78.0%,0.342
+Hard Regime FE (Naive Post-Cluster),5.0%,31.0%,0.2486
