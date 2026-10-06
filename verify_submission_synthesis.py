@@ -74,3 +74,10 @@ for city,n,theta in [("Delhi",9024,0.3703095053),("Mumbai",8113,2.2349491649),("
 for token in ["0.370","2.235","0.013","1.790","16 distinct"]:
     assert token in tex, token
 print("Corrected-hourly manuscript values match the committed audit table.")
+
+# Citation-integrity gates for references corrected during final audit.
+for token in ["Clouth, Bijlsma, Pauws, and Vermunt","doi:10.1177/00491241251377068","Semenova, Matt Goldman, Victor Chernozhukov, and Matt Taddy","doi:10.3982/QE1670"]:
+    assert token in tex, token
+assert "Clouth, Veen, and Kaptein" not in tex
+assert "Generalized double machine learning for dependent data" not in tex
+print("Final citation-integrity gates passed.")
