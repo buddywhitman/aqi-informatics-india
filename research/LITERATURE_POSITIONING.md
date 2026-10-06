@@ -67,3 +67,18 @@ The potentially distinctive phenomenon is therefore narrower:
 5. the abstraction itself can be selected on a training split using downstream effect similarity and validated on held-out outcomes.
 
 Whether this exact combination is novel remains unproven; a systematic scholarly review is still required.
+
+
+## Dual-resolution correction and prior art
+
+The distinction between **confounder adjustment** and **effect-modifier/subgroup parameterization** is classical. Reviews of heterogeneous treatment-effect estimation explicitly separate confounders required for ignorability from effect modifiers defining subgroups. Therefore "fine for adjustment, coarse for target" is not novel as a generic causal principle.
+
+What the branch adds as a candidate specialized result is the latent-state/local-weak-overlap rate separation:
+- fine latent microstate detail may remain necessary in nuisance functions to remove confounding;
+- estimating a separate target effect for every fine microstate can have O_p(N^{alpha-1/2}) error under local weak residual treatment information;
+- pooling only the target parameters across task-equivalent microstates can restore root-N while retaining fine-state adjustment;
+- coarsening the nuisance representation itself can induce persistent omitted-microstate bias.
+
+This should be described as a **dual-resolution latent-state estimation problem**, not as generic invention of the confounder/effect-modifier distinction.
+
+Also relevant: Kalavasis, Mehrotra & Zampetakis (COLT 2024) introduce data-dependent coarsened IPW to improve robustness/confidence intervals under inaccurate propensity scores and extreme propensities. This is close in spirit and must be distinguished from the latent-state target-resolution problem. Their result makes a broad novelty claim about "coarsening improves weak-overlap causal estimation" untenable.
