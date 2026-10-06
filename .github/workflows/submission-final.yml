@@ -16,7 +16,7 @@ jobs:
       - run: pip install numpy pandas scipy scikit-learn
       - name: Scientific verification
         run: python verify_science.py
-      - name: Compile AISTATS manuscript
+      - name: Final synthesis consistency\n        run: python verify_submission_synthesis.py\n      - name: Compile AISTATS manuscript
         uses: xu-cheng/latex-action@v3
         with:
           root_file: main.tex
