@@ -477,9 +477,9 @@ Latent-state recovery and downstream reliability are distinct: proxy errors are 
 We used large language models (LLMs) to assist in mathematical formulation, proof derivation drafting (Appendices~A--I), codebase development (\texttt{src/or\_dml.py}, \texttt{src/synthetic\_dgp\_benchmark.py}, \texttt{src/factorial\_reliability\_experiment.py}, \texttt{src/empirical\_evaluation.py}), bibliographic formatting, and manuscript drafting. AI tools were not used for autonomous data generation or unverified empirical interpretation. The authors independently reviewed and verified the mathematical arguments and empirical implementations against simulation baselines with known ground truth and reproducible artifacts in \texttt{reports/}. The authors take full responsibility for all content, claims, and conclusions.
 
 % \bibliographystyle{plainnat}
-\begin{thebibliography}{42}
-\setlength{\itemsep}{-4.2pt}
-\scriptsize
+\begin{thebibliography}{80}
+\setlength{\itemsep}{-4.0pt}
+\fontsize{5.5pt}{6.2pt}\selectfont\setlength{\itemsep}{-4.6pt}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -491,20 +491,48 @@ Elizabeth~S Allman, Catherine Matias, and John~A Rhodes.
 \newblock Identifiability of parameters in latent structure models with independent or Markov conditions.
 \newblock \emph{The Annals of Statistics}, 37\penalty0 (6A):\penalty0 3099--3132, 2009.
 
+\bibitem[Andrews(1991)]{andrews1991heteroskedasticity}
+Donald W~K Andrews.
+\newblock Heteroskedasticity and autocorrelation consistent covariance matrix estimation.
+\newblock \emph{Econometrica}, 59\penalty0 (3):\penalty0 817--858, 1991.
+
+\bibitem[Athey et~al.(2019)Athey, Tibshirani, and Wager]{athey2019generalized}
+Susan Athey, Julie Tibshirani, and Stefan Wager.
+\newblock Generalized random forests.
+\newblock \emph{The Annals of Statistics}, 47\penalty0 (2):\penalty0 1148--1178, 2019.
+
 \bibitem[Bai(2009)]{bai2009panel}
 Jushan Bai.
 \newblock Panel data models with interactive fixed effects.
 \newblock \emph{Econometrica}, 77\penalty0 (4):\penalty0 1229--1279, 2009.
 
 \bibitem[Banna et~al.(2016)Banna, Merlev{\`e}de, and Youssef]{banna2016bernstein}
-Zied Banna, Florence Merlev{\`e}de, and Pierre Youssef.
-\newblock Bernstein-type inequality for reproducible random matrices and applications to dynamic systems.
-\newblock \emph{Random Matrices: Theory and Applications}, 5\penalty0 (02):\penalty0 1650006, 2016.
+Marwa Banna, Florence Merlev{\`e}de, and Pierre Youssef.
+\newblock Bernstein-type inequality for a class of dependent random matrices.
+\newblock \emph{Random Matrices: Theory and Applications}, 5\penalty0 (2):\penalty0 1650006, 2016.
+\newblock arXiv:1504.05834.
+% verify: V
 
-\bibitem[Bica et~al.(2020)Bica, Alaa, Lambert, and van~der Schaar]{bica2020time}
-Ioana Bica, Ahmed~M Alaa, Craig Lambert, and Mihaela van~der Schaar.
-\newblock From scratch to practice: The time series deconfounder for causal inference with unobserved confounders.
-\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, pages 19997--20008, 2020.
+\bibitem[Bartlett and Wegkamp(2008)]{bartlett2008classification}
+Peter~L Bartlett and Marten~H Wegkamp.
+\newblock Classification with a reject option using a hinge loss.
+\newblock \emph{Journal of Machine Learning Research}, 9:\penalty0 1823--1840, 2008.
+
+\bibitem[Baum and Petrie(1966)]{baum1966statistical}
+Leonard~E Baum and Ted Petrie.
+\newblock Statistical inference for probabilistic functions of finite state {M}arkov chains.
+\newblock \emph{The Annals of Mathematical Statistics}, 37\penalty0 (6):\penalty0 1554--1563, 1966.
+
+\bibitem[Bergmeir et~al.(2018)Bergmeir, Hyndman, and Koo]{bergmeir2018note}
+Christoph Bergmeir, Rob~J Hyndman, and Bonsoo Koo.
+\newblock A note on the validity of cross-validation for evaluating autoregressive time series prediction.
+\newblock \emph{Computational Statistics \& Data Analysis}, 120:\penalty0 70--83, 2018.
+
+\bibitem[Bica et~al.(2020)Bica, Alaa, and van~der Schaar]{bica2020time}
+Ioana Bica, Ahmed~M Alaa, and Mihaela van~der Schaar.
+\newblock Time series deconfounder: Estimating treatment effects over time in the presence of hidden confounders.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 119 of \emph{Proceedings of Machine Learning Research}, pages 884--895, 2020.
+% verify: V
 
 \bibitem[Bickel et~al.(1993)Bickel, Klaassen, Ritov, and Wellner]{bickel1993efficient}
 Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
@@ -513,8 +541,18 @@ Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
 
 \bibitem[Bickel et~al.(1998)Bickel, Ritov, and Ryd{\'e}n]{bickel1998asymptotic}
 Peter~J Bickel, Ya'acov Ritov, and Tobias Ryd{\'e}n.
-\newblock Asymptotic normality of the maximum-likelihood estimator for general hidden Markov models.
+\newblock Asymptotic normality of the maximum-likelihood estimator for general hidden {M}arkov models.
 \newblock \emph{The Annals of Statistics}, 26\penalty0 (4):\penalty0 1614--1635, 1998.
+
+\bibitem[Bojinov and Shephard(2019)]{bojinov2019time}
+Iavor Bojinov and Neil Shephard.
+\newblock Time series experiments and causal estimands: Exact randomization tests and trading.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1665--1682, 2019.
+
+\bibitem[Bonhomme et~al.(2022)Bonhomme, Lamadon, and Manresa]{bonhomme2022discretizing}
+St{\'e}phane Bonhomme, Thibaut Lamadon, and Elena Manresa.
+\newblock Discretizing unobserved heterogeneity.
+\newblock \emph{Econometrica}, 90\penalty0 (2):\penalty0 625--643, 2022.
 
 \bibitem[Bonhomme and Manresa(2015)]{bonhomme2015grouped}
 St{\'e}phane Bonhomme and Elena Manresa.
@@ -523,8 +561,13 @@ St{\'e}phane Bonhomme and Elena Manresa.
 
 \bibitem[Bradley(2005)]{bradley2005basic}
 Richard~C Bradley.
-\newblock Basic properties of strong mixing conditions. A survey and some open questions.
+\newblock Basic properties of strong mixing conditions. {A} survey and some open questions.
 \newblock \emph{Probability Surveys}, 2:\penalty0 107--144, 2005.
+
+\bibitem[Burman et~al.(1994)Burman, Chow, and Nolan]{burman1994cross}
+Prabir Burman, Edmond Chow, and Deborah Nolan.
+\newblock A cross-validatory method for dependent data.
+\newblock \emph{Biometrika}, 81\penalty0 (2):\penalty0 351--358, 1994.
 
 \bibitem[Capp{\'e} et~al.(2005)Capp{\'e}, Moulines, and Ryd{\'e}n]{cappe2005inference}
 Olivier Capp{\'e}, Eric Moulines, and Tobias Ryd{\'e}n.
@@ -536,41 +579,75 @@ Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Ha
 \newblock Double/debiased machine learning for treatment and structural parameters.
 \newblock \emph{The Econometrics Journal}, 21\penalty0 (1):\penalty0 C1--C68, 2018.
 
-\bibitem[Chernozhukov et~al.(2022)Chernozhukov, Newey, and Singh]{chernozhukov2022automatic}
-Victor Chernozhukov, Whitney~K. Newey, and Rahul Singh.
+\bibitem[Chernozhukov et~al.(2022{\natexlab{a}})Chernozhukov, Escanciano, Ichimura, Newey, and Robins]{chernozhukov2022locally}
+Victor Chernozhukov, Juan~Carlos Escanciano, Hidehiko Ichimura, Whitney~K Newey, and James~M Robins.
+\newblock Locally robust semiparametric estimation.
+\newblock \emph{Econometrica}, 90\penalty0 (4):\penalty0 1501--1535, 2022{\natexlab{a}}.
+
+\bibitem[Chernozhukov et~al.(2022{\natexlab{b}})Chernozhukov, Newey, and Singh]{chernozhukov2022automatic}
+Victor Chernozhukov, Whitney~K Newey, and Rahul Singh.
 \newblock Automatic debiased machine learning of causal and structural effects.
-\newblock \emph{Econometrica}, 90\penalty0 (3):\penalty0 967--1027, 2022.
+\newblock \emph{Econometrica}, 90\penalty0 (3):\penalty0 967--1027, 2022{\natexlab{b}}.
+
+\bibitem[Chow(1970)]{chow1970optimum}
+C~K Chow.
+\newblock On optimum recognition error and reject tradeoff.
+\newblock \emph{IEEE Transactions on Information Theory}, 16\penalty0 (1):\penalty0 41--46, 1970.
 
 \bibitem[Ciganovic et~al.(2026)Ciganovic, D'Amario, and Tancioni]{ciganovic2026dml}
 Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
 \newblock Double machine learning for time series.
 \newblock \emph{The Econometrics Journal}, 2026.
 \newblock arXiv:2603.10999.
+% verify: arXiv ID confirmed; check journal-acceptance status, else cite as arXiv preprint
+
+\bibitem[Cinelli and Hazlett(2020)]{cinelli2020making}
+Carlos Cinelli and Chad Hazlett.
+\newblock Making sense of sensitivity: Extending omitted variable bias.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 82\penalty0 (1):\penalty0 39--67, 2020.
 
 \bibitem[Clouth et~al.(2025)Clouth, Bijlsma, Pauws, and Vermunt]{clouth2024latent}
-Fabiola Clouth, Maarten~J Bijlsma, Steffen Pauws, and Jeroen~K Vermunt.
-\newblock The parametric g-formula with a latent class confounder: A simulation study and application to electronic health records.
+Felix~J Clouth, Maarten~J Bijlsma, Steffen Pauws, and Jeroen~K Vermunt.
+\newblock Causal inference for latent {M}arkov models using the parametric {G}-formula.
 \newblock \emph{Sociological Methods \& Research}, 2025.
+\newblock \doi{10.1177/00491241251377068}.
+
+\bibitem[Cortes et~al.(2016)Cortes, DeSalvo, and Mohri]{cortes2016learning}
+Corinna Cortes, Giulia DeSalvo, and Mehryar Mohri.
+\newblock Learning with rejection.
+\newblock In \emph{Algorithmic Learning Theory (ALT)}, volume 9925 of \emph{Lecture Notes in Computer Science}, pages 67--82. Springer, 2016.
 
 \bibitem[CPCB(2025)]{cpcb2025}
 Central Pollution Control~Board (CPCB).
 \newblock National ambient air quality monitoring program.
 \newblock Ministry of Environment, Forest and Climate Change, Government of India, 2025--2026.
 
-\bibitem[Chow(1970)]{chow1970optimum}
-C~Chow.
-\newblock On optimum recognition error and reject tradeoff.
-\newblock \emph{IEEE Transactions on Information Theory}, 16\penalty0 (1):\penalty0 41--46, 1970.
-
 \bibitem[Crump et~al.(2009)Crump, Hotz, Imbens, and Mitnik]{crump2009dealing}
 Richard~K Crump, V~Joseph Hotz, Guido~W Imbens, and Jack~K Mitnik.
 \newblock Dealing with limited overlap in estimation of average treatment effects.
 \newblock \emph{Biometrika}, 96\penalty0 (1):\penalty0 187--199, 2009.
 
+\bibitem[Cui et~al.(2024)Cui, Pu, Shi, Miao, and Tchetgen~Tchetgen]{cui2024semiparametric}
+Yifan Cui, Hongming Pu, Xu~Shi, Wang Miao, and Eric~J Tchetgen~Tchetgen.
+\newblock Semiparametric proximal causal inference.
+\newblock \emph{Journal of the American Statistical Association}, 119\penalty0 (546):\penalty0 1348--1359, 2024.
+
+\bibitem[D'Amour(2019)]{damour2019multicause}
+Alexander D'Amour.
+\newblock On multi-cause causal inference with unobserved confounding: Counterexamples, impossibility, and alternatives.
+\newblock In \emph{International Conference on Artificial Intelligence and Statistics (AISTATS)}, volume~89 of \emph{Proceedings of Machine Learning Research}, 2019.
+
 \bibitem[D'Amour et~al.(2021)D'Amour, Ding, Feller, Lei, and Sekhon]{damour2021overlap}
 Alexander D'Amour, Peng Ding, Avi Feller, Lihua Lei, and Jasjeet Sekhon.
-\newblock Overlap in practice: Extreme propensity scores and marginal treatment effects.
-\newblock \emph{Journal of the American Statistical Association}, 116\penalty0 (536):\penalty0 2108--2123, 2021.
+\newblock Overlap in observational studies with high-dimensional covariates.
+\newblock \emph{Journal of Econometrics}, 221\penalty0 (2):\penalty0 644--654, 2021.
+\newblock arXiv:1711.02582.
+% verify: V: title and arXiv ID
+
+\bibitem[Dempster et~al.(1977)Dempster, Laird, and Rubin]{dempster1977maximum}
+Arthur~P Dempster, Nan~M Laird, and Donald~B Rubin.
+\newblock Maximum likelihood from incomplete data via the {EM} algorithm.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 39\penalty0 (1):\penalty0 1--38, 1977.
 
 \bibitem[Dominici et~al.(2014)Dominici, Greenstone, and Sunstein]{dominici2014mitigating}
 Francesca Dominici, Michael Greenstone, and Cass~R Sunstein.
@@ -578,27 +655,47 @@ Francesca Dominici, Michael Greenstone, and Cass~R Sunstein.
 \newblock \emph{Science}, 344\penalty0 (6181):\penalty0 257--259, 2014.
 
 \bibitem[Douc et~al.(2004)Douc, Moulines, and Ryd{\'e}n]{douc2004asymptotic}
-Randal Douc, {\'E}ric Moulines, and Tobias Ryd{\'e}n.
-\newblock Asymptotic properties of the maximum likelihood estimator in autoregressive models with Markov regime.
+Randal Douc, Eric Moulines, and Tobias Ryd{\'e}n.
+\newblock Asymptotic properties of the maximum likelihood estimator in autoregressive models with {M}arkov regime.
 \newblock \emph{The Annals of Statistics}, 32\penalty0 (5):\penalty0 2254--2304, 2004.
 
 \bibitem[El-Yaniv and Wiener(2010)]{elyaniv2010foundations}
 Ran El-Yaniv and Yair Wiener.
 \newblock On the foundations of noise-free selective classification.
-\newblock \emph{Journal of Machine Learning Research}, 11\penalty0 (53):\penalty0 1605--1641, 2010.
+\newblock \emph{Journal of Machine Learning Research}, 11:\penalty0 1605--1641, 2010.
 
 \bibitem[Foster and Syrgkanis(2023)]{foster2023orthogonal}
-Dylan~J. Foster and Vasilis Syrgkanis.
+Dylan~J Foster and Vasilis Syrgkanis.
 \newblock Orthogonal statistical learning.
 \newblock \emph{The Annals of Statistics}, 51\penalty0 (3):\penalty0 879--908, 2023.
+
+\bibitem[Frisch and Waugh(1933)]{frisch1933partial}
+Ragnar Frisch and Frederick~V Waugh.
+\newblock Partial time regressions as compared with individual trends.
+\newblock \emph{Econometrica}, 1\penalty0 (4):\penalty0 387--401, 1933.
+
+\bibitem[Gassiat et~al.(2016)Gassiat, Cleynen, and Robin]{gassiat2016inference}
+{\'E}lisabeth Gassiat, Alice Cleynen, and St{\'e}phane Robin.
+\newblock Inference in finite state space non parametric hidden {M}arkov models and applications.
+\newblock \emph{Statistics and Computing}, 26\penalty0 (1--2):\penalty0 61--71, 2016.
 
 \bibitem[Geifman and El-Yaniv(2017)]{geifman2017selective}
 Yonatan Geifman and Ran El-Yaniv.
 \newblock Selective classification for deep neural networks.
 \newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, pages 4878--4887, 2017.
 
+\bibitem[Geifman and El-Yaniv(2019)]{geifman2019selectivenet}
+Yonatan Geifman and Ran El-Yaniv.
+\newblock {SelectiveNet}: A deep neural network with an integrated reject option.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~97 of \emph{Proceedings of Machine Learning Research}, pages 2151--2159, 2019.
+
+\bibitem[Grange and Carslaw(2019)]{grange2019using}
+Stuart~K Grange and David~C Carslaw.
+\newblock Using meteorological normalisation to detect interventions in air quality time series.
+\newblock \emph{Science of the Total Environment}, 653:\penalty0 578--588, 2019.
+
 \bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
-Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian~Q Weinberger.
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q Weinberger.
 \newblock On calibration of modern neural networks.
 \newblock In \emph{International Conference on Machine Learning (ICML)}, pages 1321--1330, 2017.
 
@@ -607,20 +704,54 @@ James~D Hamilton.
 \newblock A new approach to the economic analysis of nonstationary time series and the business cycle.
 \newblock \emph{Econometrica}, 57\penalty0 (2):\penalty0 357--384, 1989.
 
+\bibitem[Hamilton(1990)]{hamilton1990analysis}
+James~D Hamilton.
+\newblock Analysis of time series subject to changes in regime.
+\newblock \emph{Journal of Econometrics}, 45\penalty0 (1--2):\penalty0 39--70, 1990.
+
+\bibitem[Hatt and Feuerriegel(2021)]{hatt2021sequential}
+Tobias Hatt and Stefan Feuerriegel.
+\newblock Sequential deconfounder for estimating treatment effects in the presence of unobserved confounders.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 139 of \emph{Proceedings of Machine Learning Research}, 2021.
+
 \bibitem[Hendrickx et~al.(2024)Hendrickx, Perini, Van~der Plas, Meert, and Davis]{hendrickx2021machine}
 Kilian Hendrickx, Lorenzo Perini, Dries Van~der Plas, Wannes Meert, and Jesse Davis.
 \newblock Machine learning with a reject option: A survey.
-\newblock \emph{Machine Learning}, 113\penalty0 (5):\penalty0 2275--2310, 2024.
+\newblock \emph{Machine Learning}, 113\penalty0 (5):\penalty0 3073--3110, 2024.
+\newblock arXiv:2107.11277.
+% verify: V: authors, title, journal, year, arXiv ID; volume/pages from memory
+
+\bibitem[Hoerl and Kennard(1970)]{hoerl1970ridge}
+Arthur~E Hoerl and Robert~W Kennard.
+\newblock Ridge regression: Biased estimation for nonorthogonal problems.
+\newblock \emph{Technometrics}, 12\penalty0 (1):\penalty0 55--67, 1970.
+
+\bibitem[Horn and Johnson(2012)]{horn2012matrix}
+Roger~A Horn and Charles~R Johnson.
+\newblock \emph{Matrix Analysis}.
+\newblock Cambridge University Press, 2nd edition, 2012.
 
 \bibitem[Huang et~al.(2020)Huang, Zhang, Zhang, Ramsey, Sanchez-Romero, Glymour, and Sch{\"o}lkopf]{huang2023sdci}
 Biwei Huang, Kun Zhang, Jiji Zhang, Joseph Ramsey, Ruben Sanchez-Romero, Clark Glymour, and Bernhard Sch{\"o}lkopf.
-\newblock Causal discovery from heterogeneous/nonstationary data with constraints on state-dependent conditional independence.
-\newblock \emph{Journal of Machine Learning Research}, 21\penalty0 (89):\penalty0 1--42, 2020.
+\newblock Causal discovery from heterogeneous/nonstationary data.
+\newblock \emph{Journal of Machine Learning Research}, 21\penalty0 (89):\penalty0 1--53, 2020.
+\newblock
+% verify: V: title, venue, volume; page range from memory
 
 \bibitem[Ibragimov(1962)]{ibragimov1962some}
-Ildar~Abdullovich Ibragimov.
+Il'dar~A Ibragimov.
 \newblock Some limit theorems for stationary processes.
 \newblock \emph{Theory of Probability \& Its Applications}, 7\penalty0 (4):\penalty0 349--382, 1962.
+
+\bibitem[Imbens and Rubin(2015)]{imbens2015causal}
+Guido~W Imbens and Donald~B Rubin.
+\newblock \emph{Causal Inference for Statistics, Social, and Biomedical Sciences}.
+\newblock Cambridge University Press, 2015.
+
+\bibitem[Kallus et~al.(2019)Kallus, Mao, and Zhou]{kallus2019interval}
+Nathan Kallus, Xiaojie Mao, and Angela Zhou.
+\newblock Interval estimation of individual-level causal effects under unobserved confounding.
+\newblock In \emph{International Conference on Artificial Intelligence and Statistics (AISTATS)}, volume~89 of \emph{Proceedings of Machine Learning Research}, 2019.
 
 \bibitem[Kemeny and Snell(1976)]{kemeny1976finite}
 John~G Kemeny and J~Laurie Snell.
@@ -629,63 +760,167 @@ John~G Kemeny and J~Laurie Snell.
 
 \bibitem[Kennedy(2022)]{kennedy2023towards}
 Edward~H Kennedy.
-\newblock Towards optimal causal inference in semiparametric and nonparametric models.
+\newblock Semiparametric doubly robust targeted double machine learning: a review.
 \newblock \emph{arXiv preprint arXiv:2203.06469}, 2022.
+% verify: V
+
+\bibitem[Khan and Tamer(2010)]{khan2010irregular}
+Shakeeb Khan and Elie Tamer.
+\newblock Irregular identification, support conditions, and inverse weight estimation.
+\newblock \emph{Econometrica}, 78\penalty0 (6):\penalty0 2021--2042, 2010.
+
+\bibitem[Kim and Nelson(1999)]{kim1999state}
+Chang-Jin Kim and Charles~R Nelson.
+\newblock \emph{State-Space Models with Regime Switching: Classical and Gibbs-Sampling Approaches with Applications}.
+\newblock MIT Press, 1999.
+
+\bibitem[K{\"u}nsch(1989)]{kunsch1989jackknife}
+Hans~R K{\"u}nsch.
+\newblock The jackknife and the bootstrap for general stationary observations.
+\newblock \emph{The Annals of Statistics}, 17\penalty0 (3):\penalty0 1217--1241, 1989.
+
+\bibitem[Kuroki and Pearl(2014)]{kuroki2014measurement}
+Manabu Kuroki and Judea Pearl.
+\newblock Measurement bias and effect restoration in causal inference.
+\newblock \emph{Biometrika}, 101\penalty0 (2):\penalty0 423--437, 2014.
 
 \bibitem[Leroux(1992)]{leroux1992maximum}
 Brian~G Leroux.
-\newblock Maximum-likelihood estimation for hidden Markov models.
-\newblock \emph{The Annals of Statistics}, 20\penalty0 (3):\penalty0 1350--1372, 1992.
+\newblock Maximum-likelihood estimation for hidden {M}arkov models.
+\newblock \emph{Stochastic Processes and their Applications}, 40\penalty0 (1):\penalty0 127--143, 1992.
 
 \bibitem[Lewis and Syrgkanis(2020)]{lewis2020double}
 Greg Lewis and Vasilis Syrgkanis.
 \newblock Double/debiased machine learning for dynamic treatment effects.
 \newblock \emph{arXiv preprint arXiv:2002.07285}, 2020.
 
-\bibitem[Mastouri et~al.(2021)Mastouri, Zhu, Gultchin, Korba, and Silva]{mastouri2021proximal}
-Ayoub Mastouri, Yuchen Zhu, Limor Gultchin, Anna Korba, and Ricardo Silva.
-\newblock Proximal causal learning with kernels: Two-stage estimation and testing.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, pages 7512--7523. PMLR, 2021.
+\bibitem[Louizos et~al.(2017)Louizos, Shalit, Mooij, Sontag, Zemel, and Welling]{louizos2017causal}
+Christos Louizos, Uri Shalit, Joris~M Mooij, David Sontag, Richard Zemel, and Max Welling.
+\newblock Causal effect inference with deep latent-variable models.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, volume~30, 2017.
+
+\bibitem[Lovell(1963)]{lovell1963seasonal}
+Michael~C Lovell.
+\newblock Seasonal adjustment of economic time series and multiple regression analysis.
+\newblock \emph{Journal of the American Statistical Association}, 58\penalty0 (304):\penalty0 993--1010, 1963.
+
+\bibitem[L{\'o}pez~de Prado(2018)]{lopezdeprado2018advances}
+Marcos L{\'o}pez~de Prado.
+\newblock \emph{Advances in Financial Machine Learning}.
+\newblock John Wiley \& Sons, 2018.
+
+\bibitem[Mastouri et~al.(2021)Mastouri, Zhu, Gultchin, Korba, Silva, Kusner, Gretton, and Muandet]{mastouri2021proximal}
+Afsaneh Mastouri, Yuchen Zhu, Limor Gultchin, Anna Korba, Ricardo Silva, Matt~J Kusner, Arthur Gretton, and Krikamol Muandet.
+\newblock Proximal causal learning with kernels: Two-stage estimation and moment restriction.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 139 of \emph{Proceedings of Machine Learning Research}, 2021.
+\newblock arXiv:2105.04544.
+% verify: V: title, venue, arXiv ID. CHECK the author list against the PMLR page; the previous entry also had the first name wrong
 
 \bibitem[Miao et~al.(2018)Miao, Geng, and Tchetgen~Tchetgen]{miao2018identifying}
 Wang Miao, Zhi Geng, and Eric~J Tchetgen~Tchetgen.
 \newblock Identifying causal effects with proxy variables of an unmeasured confounder.
 \newblock \emph{Biometrika}, 105\penalty0 (4):\penalty0 987--993, 2018.
 
+\bibitem[Newey and West(1987)]{newey1987simple}
+Whitney~K Newey and Kenneth~D West.
+\newblock A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix.
+\newblock \emph{Econometrica}, 55\penalty0 (3):\penalty0 703--708, 1987.
+
 \bibitem[Nie and Wager(2021)]{nie2021quasi}
 Xinkun Nie and Stefan Wager.
 \newblock Quasi-oracle estimation of heterogeneous treatment effects.
 \newblock \emph{Biometrika}, 108\penalty0 (2):\penalty0 299--319, 2021.
+
+\bibitem[Ogburn et~al.(2019)Ogburn, Shpitser, and Tchetgen~Tchetgen]{ogburn2019comment}
+Elizabeth~L Ogburn, Ilya Shpitser, and Eric~J Tchetgen~Tchetgen.
+\newblock Comment on ``{T}he blessings of multiple causes''.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1611--1615, 2019.
 
 \bibitem[Open-Meteo(2025)]{openmeteo2025}
 Open-Meteo.
 \newblock Historical weather API and ECMWF ERA5 meteorological reanalysis.
 \newblock Technical documentation and API service, 2025--2026.
 
-\bibitem[Pearl(2010)]{pearl2012bias}
+\bibitem[Pearl(2010)]{pearl2012bias}  % key kept for compatibility; paper is UAI 2010
 Judea Pearl.
-\newblock On a class of bias-amplifying variables that jeopardize causal inference.
-\newblock In \emph{Proceedings of the 26th Conference on Uncertainty in Artificial Intelligence (UAI)}, pages 417--424, 2010.
+\newblock On a class of bias-amplifying variables that endanger effect estimates.
+\newblock In \emph{Proceedings of the 26th Conference on Uncertainty in Artificial Intelligence (UAI)}, 2010.
+\newblock arXiv:1203.3503.
+
+\bibitem[Petersen et~al.(2012)Petersen, Porter, Gruber, Wang, and van~der Laan]{petersen2012diagnosing}
+Maya~L Petersen, Kristin~E Porter, Susan Gruber, Yue Wang, and Mark~J van~der Laan.
+\newblock Diagnosing and responding to violations in the positivity assumption.
+\newblock \emph{Statistical Methods in Medical Research}, 21\penalty0 (1):\penalty0 31--54, 2012.
+
+\bibitem[Rabiner(1989)]{rabiner1989tutorial}
+Lawrence~R Rabiner.
+\newblock A tutorial on hidden {M}arkov models and selected applications in speech recognition.
+\newblock \emph{Proceedings of the IEEE}, 77\penalty0 (2):\penalty0 257--286, 1989.
+
+\bibitem[Racine(2000)]{racine2000consistent}
+Jeff Racine.
+\newblock Consistent cross-validatory model-selection for dependent data: hv-block cross-validation.
+\newblock \emph{Journal of Econometrics}, 99\penalty0 (1):\penalty0 39--61, 2000.
+
+\bibitem[Robins et~al.(2000)Robins, Hern{\'a}n, and Brumback]{robins2000marginal}
+James~M Robins, Miguel~A Hern{\'a}n, and Babette Brumback.
+\newblock Marginal structural models and causal inference in epidemiology.
+\newblock \emph{Epidemiology}, 11\penalty0 (5):\penalty0 550--560, 2000.
+
+\bibitem[Robinson(1988)]{robinson1988root}
+Peter~M Robinson.
+\newblock Root-{N}-consistent semiparametric regression.
+\newblock \emph{Econometrica}, 56\penalty0 (4):\penalty0 931--954, 1988.
+
+\bibitem[Rosenbaum and Rubin(1983)]{rosenbaum1983central}
+Paul~R Rosenbaum and Donald~B Rubin.
+\newblock The central role of the propensity score in observational studies for causal effects.
+\newblock \emph{Biometrika}, 70\penalty0 (1):\penalty0 41--55, 1983.
 
 \bibitem[Semenova et~al.(2023)Semenova, Goldman, Chernozhukov, and Taddy]{semenova2023generalized}
 Vira Semenova, Matt Goldman, Victor Chernozhukov, and Matt Taddy.
-\newblock Estimation and inference on heterogeneous treatment effects in high-dimensional dynamic panels.
-\newblock \emph{Quantitative Economics}, 14\penalty0 (1):\penalty0 259--296, 2023.
+\newblock Inference on heterogeneous treatment effects in high-dimensional dynamic panels under weak dependence.
+\newblock \emph{Quantitative Economics}, 14\penalty0 (2):\penalty0 471--510, 2023.
+\newblock arXiv:1712.09988.
+% verify: V: title, venue, year, arXiv ID; pages from memory
 
 \bibitem[Shalit et~al.(2017)Shalit, Johansson, and Sontag]{shalit2017estimating}
 Uri Shalit, Fredrik~D Johansson, and David Sontag.
-\newblock Estimating individual treatment effect: generalization bounds and algorithms.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, pages 3076--3085. PMLR, 2017.
+\newblock Estimating individual treatment effect: Generalization bounds and algorithms.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~70 of \emph{Proceedings of Machine Learning Research}, pages 3076--3085, 2017.
+% verify: V
 
-\bibitem[Tchetgen~Tchetgen et~al.(2024)Tchetgen~Tchetgen, Ying, Cui, Shi, and Miao]{tchetgen2020introduction}
+\bibitem[Tchetgen~Tchetgen et~al.(2020)Tchetgen~Tchetgen, Ying, Cui, Shi, and Miao]{tchetgen2020introduction}
 Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
 \newblock An introduction to proximal causal learning.
-\newblock \emph{Statistical Science}, 39\penalty0 (3):\penalty0 457--476, 2024.
+\newblock \emph{arXiv preprint arXiv:2009.10835}, 2020.
 
+\bibitem[Tropp(2012)]{tropp2012user}
+Joel~A Tropp.
+\newblock User-friendly tail bounds for sums of random matrices.
+\newblock \emph{Foundations of Computational Mathematics}, 12\penalty0 (4):\penalty0 389--434, 2012.
+
+\bibitem[Vu et~al.(2019)Vu, Shi, Cheng, Zhang, He, Wang, and Harrison]{vu2019assessing}
+Tuan~V Vu, Zongbo Shi, Jing Cheng, Qiang Zhang, Kebin He, Shuxiao Wang, and Roy~M Harrison.
+\newblock Assessing the impact of clean air action on air quality trends in {B}eijing using a machine learning technique.
+\newblock \emph{Atmospheric Chemistry and Physics}, 19\penalty0 (17):\penalty0 11303--11314, 2019.
+\newblock
+% verify: CHECK author list/order on the ACP page before submission
+
+\bibitem[Wang and Blei(2019)]{wang2019blessings}
+Yixin Wang and David~M Blei.
+\newblock The blessings of multiple causes.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1574--1596, 2019.
+
+\bibitem[Wu(1983)]{wu1983convergence}
+C~F~Jeff Wu.
+\newblock On the convergence properties of the {EM} algorithm.
+\newblock \emph{The Annals of Statistics}, 11\penalty0 (1):\penalty0 95--103, 1983.
 \bibitem[Tsybakov(2009)]{tsybakov2009introduction}
 Alexandre~B Tsybakov.
 \newblock \emph{Introduction to Nonparametric Estimation}.
 \newblock Springer Science \& Business Media, 2009.
+
 \end{thebibliography}
 
 \clearpage
