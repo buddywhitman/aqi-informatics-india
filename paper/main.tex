@@ -1197,6 +1197,30 @@ To evaluate the sensitivity of statistical inference to temporal dependence band
 \label{app:latent_regime_bench}
 To systematically evaluate machine learning under persistent, partially observed, and shifting latent regimes, we conduct comprehensive evaluations on \textbf{LatentRegimeBench} across five diagnostic configurations ($N=1,200$, $30$ Monte Carlo replications each) and four representation architectures (Table~\ref{tab:bench_results} and Table~\ref{tab:bench_models}, with summary visualizations in Figure~\ref{fig:latent_regime_bench_fig}).
 
+\subsection{Independent Factorial Validation of the Graceful-Degradation Mechanism}
+\label{app:factorial_reliability}
+The earlier treatment-mean-separation diagnostic is intentionally not used because correctly specified regime-aware nuisance residualization removes regime mean shifts. Instead, we independently manipulate (i) controlled posterior proxy error $\varepsilon_\gamma$ and (ii) state-specific treatment innovation variance, which changes residual information and hence $\lambda_{\min}(\boldsymbol J)$ \emph{after} oracle regime-aware cross-fitting. The $7\times7$ design uses 100 independent Markov sequences per cell ($N=1,200$; 4,900 runs). Across runs, causal $L_2$ error has Spearman correlation $0.9955$ with $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$, versus $0.6260$ with $\varepsilon_\gamma$ alone and $0.5209$ with $1/\lambda_{\min}$ alone; cell-mean correlations are $0.9963$, $0.6249$, and $0.5294$, respectively (\texttt{reports/factorial\_reliability\_correlations.csv}). Selective retention of the lowest-difficulty 40\% of runs reduces mean causal error from $48.81$ to $2.61$ and the 95th percentile from $228.10$ to $8.39$ (\texttt{reports/factorial\_risk\_coverage.csv}). These results validate an interaction, not dominance of either constituent.
+
+\begin{table}[!ht]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{0.72}
+\caption{Independent mechanism validation. The joint theoretical difficulty ranks causal error substantially better than either constituent alone.}
+\label{tab:factorial_validation}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Failure score} & \textbf{Run-level $\rho$} & \textbf{Cell-mean $\rho$}\\
+\midrule
+$\varepsilon_\gamma/\lambda_{\min}(J)$ & \textbf{0.9955} & \textbf{0.9963}\\
+$\varepsilon_\gamma$ only & 0.6260 & 0.6249\\
+$1/\lambda_{\min}(J)$ only & 0.5209 & 0.5294\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Calibration Intervention and Leave-One-World-Out Reliability}
+Temperature scaling is fit on a held-out calibration partition and evaluated on a disjoint compound-shift test partition. It sharply improves conventional probabilistic metrics but does not rescue downstream failure discrimination: GRU ECE falls $0.1050\to0.0569$ and NLL $0.5475\to0.3312$, while difficulty ROC-AUC changes $0.5644\to0.5609$; Transformer ECE falls $0.1379\to0.0541$ and NLL $1.0058\to0.3816$, while ROC-AUC changes $0.5356\to0.5282$. Thus calibration is not a sufficient intervention for task reliability. Conversely, probabilistic quality is still informative across domains: in 15-fold leave-one-world-out evaluation, adding NLL to $F_1$ improves reliability-prediction $R^2$ from $0.1133$ to $0.2207$ and Spearman correlation from $0.3742$ to $0.5265$ (\texttt{reports/representation\_zoo\_lowo\_evaluation.csv}).
+
 \begin{figure}[!ht]
 \centering
 \vspace{-2mm}
