@@ -61,3 +61,7 @@ Every claimed numeric result should point to a committed CSV under `research/res
 
 | Robust geometry falsification | ROBUST_CAUSAL_GEOMETRY.md | geometry_disagreement_diagnostic.py | tests whether disagreement among operational spectra flags misspecified completed geometry |
 | Task-weighted calibration | ROBUST_CAUSAL_GEOMETRY.md | task_weighted_calibration.py | tests whether causal-leverage-weighted calibration tracks spectral distortion better than global calibration |
+
+| Leverage-calibration impossibility | LEVERAGE_CALIBRATION_IMPOSSIBILITY.md | adversarial_calibration_concentration.py | identical global calibration can hide ~3000x task-weighted error gap |
+| Geometry disagreement negative result | ROBUST_CAUSAL_GEOMETRY.md | geometry_disagreement_diagnostic.py | generic spread among biased geometries is near-chance for detecting bad completion |
+| Multitask calibration reversal | LEVERAGE_CALIBRATION_IMPOSSIBILITY.md | multitask_calibration_gap.py | same representation can reverse reliability ranking across task-induced measures |
