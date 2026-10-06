@@ -366,3 +366,10 @@ A new augmented-moment toy replaces numerical Taylor correction with explicit co
 
 ### R70. Partial representation orthogonality
 A new experiment corrects only a known subspace of representation perturbations and leaves the orthogonal remainder untouched. This tests whether useful robustness can be obtained without modeling the entire latent error process, and whether uncorrected weak-information directions dominate residual bias.
+
+
+### R71. Partial orthogonality can be nearly useless if it corrects the wrong representation directions
+With $J=\mathrm{diag}(1,.1,.01)$ and an equal-weight target, the same raw perturbation magnitude in the weak direction contributes about **100x** more target bias than in the strong direction. Correcting the strong direction perfectly leaves 100% of weak-direction bias; for a mixed perturbation, correcting both strong and medium directions still leaves about **90%** of total target-amplified bias. Thus partial representation orthogonality must be prioritized by target-amplified contribution, not raw representation error.
+
+### R72. Correction-budget allocation
+A new experiment compares three rules when only a limited number of representation-error directions can be modeled/corrected: largest raw error, weakest information, and largest target-amplified contribution $|a_jb_j|/\lambda_j$. Deliberately conflicting cases test whether the directional reliability operator supplies the correct allocation principle. Automated results pending.
