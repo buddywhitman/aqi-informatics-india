@@ -98,3 +98,25 @@ The archive also includes `research/results/frozen_sensor_sensitivity.csv` and `
 ### Claim hierarchy
 
 The paper's theorem statements and canonical reports remain authoritative. Post-audit research files are used to **narrow**, stress-test, or contextualize claims; they do not silently supersede the proved assumptions or create new submission claims. In particular, representation orthogonality, target-family methodology, and the unified operator theorem remain research directions unless explicitly proved in `paper/main.tex`.
+
+
+## Audited cross-branch synthesis
+
+The final integration preserves complementary evidence rather than selecting a branch by recency.
+
+### Bias-law lineage
+- `src/bias_law/bias_law.py`: exact scalar and K-state residual-confounding identities and robustness value.
+- `src/bias_law/run_experiments.py`, `sim.py`: simulation verification.
+- `src/bias_law/real_cities_sensitivity.py`, `hac_sensitivity.py`: corrected-hourly and HAC robustness.
+- `src/bias_law/ext_misspec_crossfit.py`: emission misspecification and fold-wise/global HMM stress tests.
+- `src/bias_law/ext_cp_proof_check.py`, `ext_h2_lemma_check.py`: numerical checks supporting qualified analytic arguments.
+- `reports/bias_law/`: promoted audit outputs; `docs/V2_CHANGELOG.md` records corrections and withdrawn claims.
+
+### Phase-2 lineage
+The phase-2 branch remains the provenance for broad frontier stress testing, semisynthetic megacity evaluation, adaptive spectral experiments, and extensive hard-vs-soft baseline comparisons. Its strongest surviving lesson is not unconditional estimator dominance: hard regime FE can be competitive or better in clean synthetic settings, while overlap-aware methods contribute coupled uncertainty diagnostics, dependence-aware inference, and explicit failure/abstention logic.
+
+### Exploration/final-synthesis lineage
+The final-synthesis research program supplies phantom causal resolution, self-canceling proxy diagnostics, task/direction-relative reliability, posterior second-moment completion with misspecification caveats, frozen-sensor collision tests, and conservative novelty boundaries. Exploratory operator/orthogonality ideas remain future work unless explicitly proved in `paper/main.tex`.
+
+### Superseded evidence
+Old Exp. 29/30 task-conditioning/representation results are retained only as provenance and are not submission evidence because their nuisance construction leaked regime shifts. The corrected factorial experiment and later task-relative analyses replace them.
