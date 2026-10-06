@@ -203,22 +203,25 @@ class LatentRegimeHMM:
         return float(-2.0 * log_lik + n_params * np.log(N))
 
 
-def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 72) -> int:
-    """Estimate optimal embargo buffer tau* using Bartlett 95% autocorrelation bound."""
+def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 24, c_log: float = 2.0) -> int:
+    """Estimate optimal embargo buffer tau* per Eq. 17 using Bartlett 95% autocorrelation bound and C*log(N)."""
     N = len(X)
     crit = 1.96 / np.sqrt(N)
     V = np.column_stack([X, Z])
     V_centered = V - np.mean(V, axis=0)
     var_V = np.var(V, axis=0) + 1e-12
-    max_tau = min(max_tau, max(12, N // 10))
+    search_tau = min(max_tau, max(12, int(N // 10)))
     
     significant_lags = [0]
-    for h in range(1, max_tau + 1):
+    for h in range(1, search_tau + 1):
         cov_h = np.mean(V_centered[:-h] * V_centered[h:], axis=0)
         corr_h = np.abs(cov_h / var_V)
         if np.any(corr_h >= crit):
             significant_lags.append(h)
-    return int(max(max(significant_lags) + 1, 1))
+    bartlett_tau = max(significant_lags)
+    min_log_tau = int(np.ceil(c_log * np.log(max(N, 2))))
+    tau_star = max(bartlett_tau, min_log_tau, 1)
+    return int(min(tau_star, max_tau))
 
 
 class PurgedBlockKFold:
