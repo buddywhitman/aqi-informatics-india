@@ -48,3 +48,22 @@ This needs a much deeper literature review before any novelty claim. Search spec
 Do not describe "task-aware abstraction", "minimal task-specific representation", "causal abstraction", or "state coarsening" as new in isolation.
 
 A defensible future contribution would need to center the **weak-overlap statistical-rate paradox**, an estimable causal-functional-specific abstraction criterion, and valid post-selection inference.
+
+
+## Additional closest weak-overlap/coarsening work found
+
+- **Clivio et al., AISTATS 2026, _Deconfounding Scores and Representation Learning for Causal Effect Estimation with Weak Overlap_.** This is highly relevant and substantially narrows any novelty claim. They explicitly optimize feature representations for improved overlap subject to a deconfounding-score constraint that preserves identification/target. A future task-abstraction paper must distinguish latent-state *refinement/coarsening* and the local-rate paradox from their overlap-optimal observed-feature representation problem.
+- **Ou & Nabi, UAI 2026, _Coarsening Bias from Variable Discretization in Causal Functionals_.** They formalize population-level approximation bias induced by discretization/coarsening. This reinforces the need for the bias term in our R12 frontier; coarsening is not free.
+- Classical epidemiologic work on unnecessary adjustment/overadjustment already notes that adding adjustment variables can reduce precision without changing bias. The candidate novelty cannot be the generic observation that "more adjustment can hurt precision."
+
+## Sharpened candidate gap after this scan
+
+The potentially distinctive phenomenon is therefore narrower:
+
+1. the variable being refined is an **estimated/persistent latent confounder state**, not merely an observed covariate representation;
+2. fine microstates may be perfectly recovered and increasingly preferred by generative likelihood;
+3. the downstream target is a vector of regime-specific causal effects / task functional;
+4. local weak residual treatment information creates a **rate separation** where fine-state estimation is $O_p(N^{\alpha-1/2})$ while a task-sufficient merge remains $O_p(N^{-1/2})$;
+5. the abstraction itself can be selected on a training split using downstream effect similarity and validated on held-out outcomes.
+
+Whether this exact combination is novel remains unproven; a systematic scholarly review is still required.
