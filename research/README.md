@@ -120,6 +120,20 @@ An exploratory 50-replication simulation makes the contrast concrete. At $\alpha
 
 This is a stronger statement than generative/causal model-selection disagreement at fixed N: **observational resolution and causal resolution can diverge in opposite asymptotic directions on the same sequence of data-generating processes.**
 
+### R22. Honest inference can get wider with more data when causal information per observation collapses
+For a weak causal direction with information eigenvalue $\lambda_N=N^{-2\alpha}$, the honest 95% interval width scales as $N^{\alpha-1/2}$. At $\alpha=.75$, its expected Gaussian width increases from about 17.5 at N=400 to 49.6 at N=25,600. A naive root-N interval simultaneously shrinks from 0.196 to 0.0245, but its approximate coverage collapses from 1.75% to 0.077%. This is a classical weak-identification phenomenon in spirit, not a novelty claim; here it is a diagnostic consequence of latent-state causal resolution. The lesson is operational: **apparent precision can increase exactly while actual causal information decreases.**
+
+### R23. Granularity-induced weak identification: causal resolution can collapse even with healthy overlap inside every state
+Let the learned/fine state count grow as $K_N=N^\kappa$, with equal occupancy and residual treatment variance bounded away from zero in every state. Each state then receives only $N/K_N=N^{1-\kappa}$ observations, so a state-specific effect has standard error $O(N^{(\kappa-1)/2})$. At $\kappa=1$, fine-state causal error no longer vanishes despite perfect state labels and healthy within-state treatment variation; a pooled task effect still uses $O(N)$ information and remains root-N.
+
+Combining growing granularity $K_N=N^\kappa$, treatment SD $N^{-\alpha}$, and local effect separation $N^{-\beta}$ yields the unified per-state causal-information law
+$KL_{\mathrm{state}}\asymp N^{1-\kappa-2\alpha-2\beta}.$
+Thus the causal-resolution boundary is
+$\boxed{\kappa+2\alpha+2\beta=1.}$
+This gives a simple **causal resolution budget**: representation granularity, overlap deterioration, and increasingly subtle heterogeneity all consume the same information exponent. The earlier $\alpha+\beta=1/2$ boundary is the special case $\kappa=0$.
+
+This is especially relevant to learned latent representations: model capacity/data can increase the number of statistically real states even when every state has good local overlap, while the downstream demand for one effect per state outruns the available sample information.
+
 ## Reproduction
 
 Run:
