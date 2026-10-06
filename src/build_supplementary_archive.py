@@ -21,6 +21,7 @@ REQUIRED_FILES = [
     # Documentation & Manifests
     "SUPPLEMENT_README.md",
     "SUPPLEMENT_ROADMAP.md",
+    "SUBMISSION_COMPLIANCE.md",
     "experiments_manifest.json",
     "verify_science.py",
     "verify_artifacts.py",
