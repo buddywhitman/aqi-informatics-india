@@ -1,0 +1,4 @@
+method,adjustment_resolution,target_resolution,asymptotic_behavior,leading_issue
+fine_adjust_fine_target,fine,fine,"O_p(N^(alpha-1/2)) for occupancy aggregate when weak microstate has sigma_N=N^-alpha","weak-state target variance"
+fine_adjust_coarse_target,fine,coarse,"O_p(N^-1/2) if at least one pooled microstate has positive occupancy and nondegenerate residual treatment variance","requires within-pool effect equivalence or controlled approximation bias"
+coarse_adjust_coarse_target,coarse,coarse,"persistent bias; in committed symmetric construction Bias_N=2/[1+(1+N^(-2alpha))/2] -> 4/3","unresolved microstate confounding"
