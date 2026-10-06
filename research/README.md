@@ -278,3 +278,12 @@ The automated adversarial construction confirms the scalar-metric boundary quant
 
 ### R46. Directional calibration spectrum
 A new study moves from task-level weighting to contrast-level weighting inside a vector causal target. Different effect directions induce different causal-score leverage measures, so a single task-weighted calibration scalar can still hide directional failures. The proposed object is a directional calibration spectrum C(v), paired with the causal-resolution spectrum v'Jv. This points toward a direction-specific reliability functional rather than entropy divided by a single worst-case eigenvalue. Automated results are pending.
+
+
+### R47. Equal global representation error can be almost perfectly contrast-specific
+The directional calibration experiment gives two representations with essentially identical global error (~0.015). Errors concentrated in state 0 produce directional calibration error 0.045 for the state-0 contrast and 0 for state 2; errors concentrated in state 2 reverse this. Because state 2 has much weaker treatment leverage, the mixed/average contrast sees ~0.0447 error from state-0 corruption but only ~0.000288 from state-2 corruption, a **~155x difference** despite equal global representation error. Thus task dependence persists inside a single vector causal estimand: different contrasts can experience radically different representation reliability.
+
+### R48. The scalar difficulty is formally a worst-case operator bound, not the instance-specific object
+For first-order score perturbation $b$, the exact target displacement is $J^{-1}b$. The familiar scalar $\|b\|/\lambda_{\min}(J)$ is simply the operator-norm upper bound. In the eigenbasis,
+$$\|J^{-1}b\|^2=\sum_j (q_j^\top b)^2/\lambda_j^2.$$
+Equal-norm perturbations therefore receive the same scalar difficulty while their actual causal displacement can differ by the ratio of information eigenvalues. The natural object is a **directional reliability operator/spectrum**, pairing perturbation projections $q_j^\top b$ with causal-resolution eigenvalues $\lambda_j$. This mathematically unifies the earlier orientation counterexample, task-weighted calibration, and causal-resolution spectrum.
