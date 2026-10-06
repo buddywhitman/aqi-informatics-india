@@ -34,6 +34,11 @@ Re-fitting the identical observational specification with K=2,3,4 leaves Delhi's
 
 A useful positive control: five different HMM random seeds (1,7,19,42,97) produced identical reported fits for all four cities under the current implementation, so the observed K sensitivity is not merely random initialization noise.
 
+### R9. Emission-optimal latent granularity can be causally suboptimal
+A deliberately simple four-microstate experiment separates **representation fit** from **downstream causal utility**. Four observational microstates have well-separated Gaussian emissions (means -3,-1,1,3), but pairs share the same causal effect, yielding two causal macro-regimes. Two microstates also have weak residual treatment variation. Gaussian-mixture BIC prefers K=4 over K=2 in 100% of 100 replications at N=400,800,1600 (mean BIC advantage 283, 587, 1210 respectively). Yet estimating four microstate slopes and then aggregating is far less accurate than causally appropriate two-state pooling: mean macro-effect L2 error is 0.642 vs 0.129 at N=400, 0.438 vs 0.089 at N=800, and 0.321 vs 0.061 at N=1600; the merged representation wins in 96-97% of replications.
+
+This suggests a potentially broad new principle: **latent-state complexity should be selected jointly with downstream identifiability, not solely by emission likelihood/state-prediction fit.** The real-data BIC/K sensitivity in R8 points in the same direction, but does not establish ground truth.
+
 ## Reproduction
 
 Run:
@@ -41,6 +46,7 @@ Run:
 python research/run_extended_reliability_studies.py
 python research/frozen_sensor_sensitivity.py
 python research/latent_state_count_sensitivity.py
+python research/task_aware_state_coarsening.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
