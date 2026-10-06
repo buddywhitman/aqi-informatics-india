@@ -173,6 +173,13 @@
       "script": "src/real_megacity_semisynthetic_benchmark.py",
       "report": "reports/megacity_semisynthetic_summary.csv",
       "description": "Evaluates estimators on real meteorological covariates and calibrated regimes from Delhi, Mumbai, Bengaluru, and Kolkata with known injected causal ground truth."
+    },
+    {
+      "experiment_id": "EXP-14",
+      "name": "Multi-Regime Scalability and Matrix Concentration Benchmark (K in {2, 3, 4, 5})",
+      "script": "src/test_multiregime_scalability.py",
+      "report": "reports/multiregime_scalability_summary.csv",
+      "description": "Empirical validation of Appendix D.2 testing coupled inversion, condition numbers, and runtime across state dimensions K in {2, 3, 4, 5} under Markov regime switching."
     }
   ],
   "verification_suite": {

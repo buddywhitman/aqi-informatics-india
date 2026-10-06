@@ -49,6 +49,7 @@ REQUIRED_FILES = [
     "src/advanced_methodological_frontiers.py",
     "src/adaptive_spectral_optimizer.py",
     "src/real_megacity_semisynthetic_benchmark.py",
+    "src/test_multiregime_scalability.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "src/requirements.txt",
 
