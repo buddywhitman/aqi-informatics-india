@@ -325,3 +325,12 @@ With weak irrelevant eigenvalue 0.001, isotropic ridge at $\lambda=.1$ induces f
 
 ### R59. Robust target families interpolate between fixed-target and global reliability
 A new framework declares a family $\mathcal F$ of plausible scientific targets and uses $\sup_{A\in\mathcal F}\|AJ^{-1}\|$. A singleton recovers fixed-target reliability; all unit contrasts recover $1/\lambda_{\min}$; restricted cones/subspaces provide an explicit middle ground for reusable representations. An automated regularization experiment now studies how the optimal spectral penalty changes as the allowed target cone widens.
+
+
+### R60. Target awareness requires target-selection validity
+A new null experiment tests the cost of choosing the reported causal contrast after inspecting noisy effect estimates. Post-hoc largest-effect selection incurs winner's-curse error that grows with the number of candidate targets, whereas predeclared and split-sample-selected targets retain ordinary root-N error. This establishes an important boundary: **target-aware does not mean outcome-adaptive target shopping without penalty**. Confirmatory targets should be predeclared; adaptive targets require sample splitting or selective inference.
+
+### R61. Target reliability budget separates representation-limited from sampling-limited regimes
+The local synthesis is
+$$\widehat\theta-\theta\approx J^{-1}b_\gamma + J^{-1}\xi/\sqrt N.$$
+For contrast $a$, representation displacement is $|a^\top J^{-1}b_\gamma|$ while sampling variance is $a^\top J^{-1}\Sigma J^{-1}a/N$. This implies a subtle large-data effect: a fixed representation bias can become the dominant inferential bottleneck as N grows because sampling noise shrinks around it. Root-N-valid inference requires the **target-projected** representation perturbation to be $o(N^{-1/2})$, not merely globally small. An automated experiment now maps the representation-limited/sampling-limited phase boundary.
