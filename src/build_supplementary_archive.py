@@ -35,6 +35,7 @@ REQUIRED_FILES = [
     "src/or_dml.py",
     "src/calibration_intervention_zoo.py",
     "src/factorial_reliability_experiment.py",
+    "src/update_difficulty_figure.py",
     "src/empirical_falsification_checks.py",
     "src/synthetic_dgp_benchmark.py",
     "src/empirical_evaluation.py",
