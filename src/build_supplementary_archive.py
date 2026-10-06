@@ -42,7 +42,6 @@ REQUIRED_FILES = [
     "src/hierarchical_reliability_regression.py",
     "src/financial_regime_transfer.py",
     "src/data_pipeline_clean.py",
-    "src/generate_paper_figures.py",
     "src/regime_intelligence.py",
     "src/requirements.txt",
 
