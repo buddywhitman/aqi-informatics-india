@@ -177,4 +177,29 @@ pdflatex -interaction=nonstopmode main.tex
 ```bash
 python src/build_supplementary_archive.py
 ```
-Packages all 93 canonical files into `AISTATS2027_OR_DML_Supplementary_Material.zip` (9.33 MB).
+Packages all 98 canonical files into `AISTATS2027_OR_DML_Supplementary_Material.zip` (9.35 MB).
+
+---
+
+## 🚀 Looking Ahead: The `py-ordml` Ecosystem & The Dual-Factor Law
+
+For a detailed blueprint of post-publication software architecture and theoretical extensions, see [`docs/FUTURE_WORK_AND_FRONTIERS.md`](docs/FUTURE_WORK_AND_FRONTIERS.md).
+
+### 1. The `py-ordml` Open-Source Library Roadmap
+We are packaging the numerical core into an installable Python library (`pip install py-ordml`):
+* **Scikit-Learn / EconML Compatibility**: Native `OverlapAwareRegimeDML` estimator supporting plug-and-play regime models (`HMM`, `StateSpaceModel`, `GRU`) and nuisance learners (`LightGBM`, `CatBoost`, `Ridge`).
+* **Automated Causal Guardrails**: Built-in automated Bartlett causal embargo ($\tau^* \ge C \log N$) and Theorem 4 adaptive spectral shrinkage ($\hat{\lambda}^*_{\mathrm{risk}}$).
+* **Self-Contained Walkthrough**: Run `python src/walkthrough_tutorial.py` for a 30-second zero-dependency tutorial demonstrating baseline omitted-regime bias vs. OR-DML recovery.
+
+### 2. The Dual-Factor Law of Prospective Difficulty
+A central methodological breakthrough of this work is that **causal estimation breakdown cannot be foreseen by representation uncertainty or task geometry alone**:
+$$\mathcal{D}_t \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$$
+* In controlled factorial experiments (`EXP-10`), the Dual-Factor Index $\mathcal{D}_t$ predicts downstream causal RMSE with **$\rho = 0.995$** Spearman rank correlation ($p < 10^{-15}$), strictly outperforming marginal entropy ($\rho = 0.626$) and marginal Gram ill-conditioning ($\rho = 0.521$).
+* While filtering by task conditioning alone achieves **0% error reduction**, selective estimation via $\mathcal{D}_t$ slashes error by **$23.8\times$** ($3.28 \to 0.138$).
+
+### 3. Broader Horizons for Selective Causal Abstention
+We recommend deploying the Dual-Factor difficulty index as a prospective safety filter across high-stakes sequential decision systems:
+* **Healthcare & ICU Sepsis Resuscitation**: Detecting latent hemodynamic transition phases where observational confounding makes vasopressor effect estimation unidentifiable, prompting algorithmic abstention and human clinical review.
+* **Financial Markets & High-Frequency Execution**: Identifying volatile liquidity transitions to prevent causal execution policy breakdown, reducing decision regret by **$56.8\times$** (`EXP-08`).
+* **Offline Reinforcement Learning in POMDPs**: Bounding importance sampling weight explosion during unobserved environmental regime shifts.
+* **Airshed Environmental Policy**: Establishing airshed-specific conditioning thresholds (e.g., separating well-conditioned basins like Delhi from collinear coastal airsheds like Mumbai).

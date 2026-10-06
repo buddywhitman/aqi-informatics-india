@@ -53,6 +53,7 @@ REQUIRED_FILES = [
     "src/walkthrough_tutorial.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
     "docs/REVIEWER_DEFENSE_AND_REBUTTAL_DOSSIER.md",
+    "docs/FUTURE_WORK_AND_FRONTIERS.md",
     "src/requirements.txt",
 
     # Clean Datasets
