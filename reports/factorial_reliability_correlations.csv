@@ -1,0 +1,2 @@
+N_Replications,N_Cells,N_Runs,Spearman_Run_Difficulty,Spearman_Run_ProxyError,Spearman_Run_InvLambda,Spearman_Cell_Difficulty,Spearman_Cell_ProxyError,Spearman_Cell_InvLambda
+100,49,4900,0.9954947761024066,0.6259703166248679,0.520891077224339,0.996322294858123,0.6248515025587246,0.5293877551020407
