@@ -20,6 +20,8 @@
 | Honest weak-resolution inference | HONEST_INFERENCE_BELOW_RESOLUTION.md | honest_inference_resolution.py | honest intervals can widen while naive root-N intervals become falsely precise |
 | Granularity weak ID | GRANULARITY_INDUCED_WEAK_IDENTIFICATION.md | granularity_weak_identification.py | growing state count consumes causal information even with healthy within-state overlap |
 | Sequential resolution budget | SEQUENTIAL_CAUSAL_RESOLUTION_BUDGET.md | sequential_resolution_budget.py | score dependence adds an effective-sample-size tax; state persistence alone is insufficient |
+| Phantom causal resolution | PHANTOM_CAUSAL_RESOLUTION.md | generated_state_resolution_inflation.py | inferred states can inflate lambda_min and hide true weak causal geometry |
+| Double ill-posedness | DOUBLE_ILL_POSEDNESS.md | confusion_deconvolution_instability.py | deconfusing state geometry and causal inversion are sequential unstable inverse problems |
 | Resolution-adaptive targets | CAUSAL_RESOLUTION_SPECTRUM.md | resolution_adaptive_target.py | truncation helps only when target projection is explicit; unresolved is not zero |
 | Multitask incompatibility | MULTITASK_ABSTRACTION_GAP.md | multitask_abstraction.py | crossing partitions; exponential universal-compression gap construction |
 | Real K sensitivity | README R8/R19 | latent_state_count_sensitivity.py | BIC improves while downstream lambda_min collapses |
@@ -34,6 +36,7 @@
 4. **Causal resolution spectrum/effective rank:** replace one worst-case eigenvalue with direction-specific detectable effect scales.
 5. **State-refinement rate paradox:** full fine-state target parameterization can lose root-N behavior or diverge even with perfect state recovery.
 6. **Unified causal-resolution budget:** growing target granularity, weak overlap, subtle effect scale, and score dependence combine through an information exponent; no single diagnostic should be interpreted in isolation.
+7. **Phantom causal resolution / double ill-posedness:** imperfect state recovery can make causal conditioning appear healthier than oracle conditioning; correcting that distortion requires another potentially singular inverse problem.
 
 ## Strong negative results retained
 
