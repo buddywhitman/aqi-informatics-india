@@ -239,3 +239,12 @@ The proposed spread among posterior-outer, Z-only diagonal completion, and joint
 
 ### R36. Task-weighted calibration helps modestly in the broad temperature sweep, not dramatically
 Across the automated temperature/separation/weak-information sweep, ordinary Brier error has Spearman 0.470 with causal-geometry distortion; treatment-leverage-weighted Brier improves this only to 0.505. Thus task weighting is theoretically necessary in adversarial constructions but is not by itself a universally strong predictor in broad smooth distortions. The useful contribution is the impossibility/counterexample and the need for task-aware calibration, not a claim that one simple weighted Brier score solves reliability.
+
+
+### R37. Multitask calibration ranking reversal is exact and ~100x
+The automated experiment confirms that two representations with indistinguishable global posterior error (~0.016) can reverse reliability ranking across tasks. At N=50,000, left-concentrated error has task-A/task-B weighted errors 0.07693/0.000770, while right-concentrated error has 0.000768/0.07692. Each representation is roughly **100x worse for one task and 100x better for the other**, with the same global calibration. The reversal is stable from N=2,000 to 50,000.
+
+This strengthens the impossibility result: without restrictions on downstream leverage functions, there is no task-independent scalar ordering of representations by reliability. Task dependence governs both state abstraction and the measure under which representation error matters.
+
+### R38. Representation evaluation should be a task-conditioned Pareto problem, not a universal leaderboard
+A new experiment constructs multiple error profiles and downstream leverage tasks, then evaluates the full risk matrix and Pareto frontier. The goal is to test whether globally best calibration can be dominated for relevant task families and whether specialist representations occupy different non-dominated regions. This is being run automatically; no numeric claim is made until outputs are committed.
