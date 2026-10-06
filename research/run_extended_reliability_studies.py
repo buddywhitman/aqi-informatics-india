@@ -55,6 +55,32 @@ def directional_sensitivity():
             rows.append((cond,a*180/np.pi,exact,bound,exact/bound))
     pd.DataFrame(rows,columns=["condition_number","angle_from_weak_eigenvector_deg","exact_error","scalar_bound","bound_tightness"]).to_csv(os.path.join(OUT,"directional_sensitivity.csv"),index=False)
 
+
+def k3_orientation_study():
+    """Same average proxy error can have very different downstream impact in K=3."""
+    theta=np.array([.5,1.5,3.]); sig=np.array([.2,1.,1.]); rows=[]
+    for a in [.03,.06,.10,.20,.30]:
+      for mode in ["weak","strong","balanced"]:
+       for rep in range(100):
+        r=np.random.default_rng(50_000_000+rep); N=5000; S=r.integers(0,3,N); V=r.normal(size=N)*sig[S]; U=r.normal(0,1,N); H=np.eye(3)[S]; g=H.copy()
+        if mode=="weak":
+            m=S==0; g[m,0]-=a; g[m,1]+=a
+        elif mode=="strong":
+            m=S==1; g[m,1]-=a; g[m,2]+=a
+        else:
+            aa=a/3
+            for k in range(3):
+                m=S==k; g[m,k]-=aa; g[m,(k+1)%3]+=aa
+        eps=np.abs(g-H).sum(1).mean(); tt=np.tile(V,(3,1)); ty=np.vstack([theta[k]*V+U for k in range(3)]); J=np.zeros((3,3)); q=np.zeros(3)
+        for j in range(3):
+            q[j]=np.mean(g[:,j]*tt[j]*ty[j])
+            for k in range(3): J[j,k]=np.mean(g[:,j]*g[:,k]*tt[j]*tt[k])
+        lm=np.linalg.eigvalsh(J)[0]; b=q-J@theta; est=np.linalg.pinv(J)@q
+        rows.append((a,mode,rep,eps,lm,np.linalg.norm(est-theta),eps/lm,np.linalg.norm(b),np.linalg.norm(b)/lm,np.linalg.norm(np.linalg.solve(J,b))))
+    d=pd.DataFrame(rows,columns=["a","orientation","rep","eps","lmin","error","eps_over_lmin","b_norm","b_over_lmin","directional_error"])
+    d.to_csv(os.path.join(OUT,"k3_orientation_raw.csv"),index=False)
+    d.groupby(["a","orientation"],as_index=False).mean(numeric_only=True).to_csv(os.path.join(OUT,"k3_orientation_summary.csv"),index=False)
+
 def adaptive_regularization():
     L=np.r_[0,np.logspace(-4,0,13)]; rows=[]
     for N in [600,1200,2400]:
@@ -104,4 +130,4 @@ def real_transition_diagnostics():
     pd.DataFrame(rows,columns=["city","distance_band","n","filter_entropy","smooth_entropy","filter_smooth_l1"]).to_csv(os.path.join(OUT,"real_transition_diagnostics.csv"),index=False)
 
 if __name__=="__main__":
-    phase_scaling(); directional_sensitivity(); adaptive_regularization(); synthetic_transition_localization(); real_transition_diagnostics()
+    phase_scaling(); directional_sensitivity(); k3_orientation_study(); adaptive_regularization(); synthetic_transition_localization(); real_transition_diagnostics()
