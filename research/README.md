@@ -287,3 +287,10 @@ The directional calibration experiment gives two representations with essentiall
 For first-order score perturbation $b$, the exact target displacement is $J^{-1}b$. The familiar scalar $\|b\|/\lambda_{\min}(J)$ is simply the operator-norm upper bound. In the eigenbasis,
 $$\|J^{-1}b\|^2=\sum_j (q_j^\top b)^2/\lambda_j^2.$$
 Equal-norm perturbations therefore receive the same scalar difficulty while their actual causal displacement can differ by the ratio of information eigenvalues. The natural object is a **directional reliability operator/spectrum**, pairing perturbation projections $q_j^\top b$ with causal-resolution eigenvalues $\lambda_j$. This mathematically unifies the earlier orientation counterexample, task-weighted calibration, and causal-resolution spectrum.
+
+
+### R49. Worst-case lambda-min difficulty can overstate realized sensitivity by >150x
+The exact directional-operator calculation makes the looseness concrete. With information eigenvalues corresponding to residual treatment SDs $(1,.3,.08)$, equal score-perturbation norm 0.01 yields exact target displacement 0.03 along the strong direction, 0.333 along the medium direction, and 4.6875 along the weak direction. The scalar worst-case bound $\|b\|/\lambda_{\min}=4.6875$ assigns all three the same difficulty, overestimating the strong-direction displacement by **156.25x** and medium by 14.06x while being tight only in the weakest direction.
+
+### R50. Typical versus worst-case reliability
+New automated experiments sample random perturbation orientations and scientific contrasts as dimension and condition number grow. They quantify how loose the global $\lambda_{\min}$ bound is for typical perturbations and how much tighter the exact contrast-specific sensitivity $\|J^{-1}a\|$ can be. This tests whether worst-case conditioning becomes increasingly uninformative in higher-dimensional latent-state models. Results pending automated execution.
