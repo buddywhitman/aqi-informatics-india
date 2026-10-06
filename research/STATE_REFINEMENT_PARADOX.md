@@ -99,3 +99,24 @@ This resembles a task-specific sufficient abstraction rather than generative sta
 - determine whether the task-aware abstraction transfers across downstream functionals or must be relearned per task.
 
 No claim of general optimality is warranted yet.
+
+
+## 8. Bias-information frontier: why coarsening is not universally optimal
+
+A valid abstraction theory must charge approximation bias when merged states have genuinely different downstream effects. The exploratory experiment in `research/abstraction_tradeoff.py` introduces within-pair heterogeneity delta and evaluates the pooled coefficient assigned back to every microstate against the true four-dimensional effect vector.
+
+Average total-error reduction from coarsening is:
+- delta=0: +65.1%;
+- delta=0.1: +58.7%;
+- delta=0.25: +38.3%;
+- delta=0.5: +9.6%;
+- delta=1: -55.8%;
+- delta=2: -174.7%.
+
+Therefore the proposed object is not "coarsen whenever conditioning is weak." The relevant optimization is a bias-information tradeoff: preserve distinctions whose task heterogeneity exceeds the variance/information benefit of pooling, and erase distinctions that are generatively real but task-irrelevant or statistically unidentifiable.
+
+A schematic population objective for a partition phi is
+```
+Risk(phi) = ApproximationBias(phi)^2 + EstimationVariance(phi) + RepresentationUncertainty(phi),
+```
+possibly with a complexity penalty. Formalizing estimable versions of these terms, and valid inference after selecting phi, remains open.
