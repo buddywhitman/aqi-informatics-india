@@ -1,0 +1,57 @@
+name: Final AISTATS submission verification
+on:
+  push:
+    branches: [submission/aistats2027-final-synthesis]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy pandas scipy scikit-learn
+      - name: Scientific verification
+        run: python verify_science.py
+      - name: Compile AISTATS manuscript
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: paper
+          latexmk_use_xelatex: false
+      - name: Copy compiled PDF and verify artifacts
+        run: |
+          test -s paper/main.pdf
+          python verify_artifacts.py
+          python src/build_supplementary_archive.py
+          pdfinfo paper/main.pdf | tee paper/pdfinfo.txt
+          pages=$(pdfinfo paper/main.pdf | awk '/^Pages:/ {print $2}')
+          echo "Compiled pages: $pages"
+          test "$pages" -ge 10
+      - name: Compliance text checks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          t=Path("paper/main.tex").read_text()
+          assert t.index("\\subsection*{AI Use Statement}") < t.index("\\begin{thebibliography}")
+          assert "Anonymous Author(s)" in t and "Anonymous Institution(s)" in t
+          forbidden=["buddywhitman","aqi-informatics-india/commit","github.com/buddywhitman"]
+          for x in forbidden:
+              assert x not in t, x
+          print("AI statement ordering and manuscript anonymity checks passed")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aistats2027-final-submission
+          path: |
+            paper/main.pdf
+            paper/main.tex
+            paper/aistats2027.sty
+            paper/pdfinfo.txt
+            AISTATS2027_OR_DML_Supplementary_Material.zip
+            SUPPLEMENT_ROADMAP.md
+            research/FINAL_AUDIT_CHECKLIST.md
+            research/FINAL_CANDIDATE_SYNTHESIS.md
