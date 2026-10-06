@@ -82,3 +82,32 @@ Expected pattern:
 - (3) is asymptotically biased when unresolved microstate treatment/outcome baselines covary.
 
 This is a stronger and more honest experiment than simply deleting microstates from the adjustment set.
+
+
+## Exact three-way asymptotic separation in the committed experiment
+
+The committed `dual_resolution_experiment.py` uses, within each macrostate, two equally likely microstates with treatment means (-1,+1), outcome baselines (-2,+2), common causal slope theta_A, and residual treatment SDs (1,N^{-alpha}).
+
+For macro-only residualization,
+```
+plim theta_hat_coarse
+ = theta_A + Cov(a_M,b_M|A) /
+   [Var(a_M|A) + E(sigma_M^2|A)].
+```
+Here Cov(a,b)=2, Var(a)=1, and E(sigma^2)=(1+N^{-2alpha})/2, so
+```
+Bias_N = 2 / [1 + (1+N^{-2alpha})/2]
+       -> 4/3.
+```
+Thus coarse adjustment has persistent asymptotic bias even though the causal slope is identical across the two microstates.
+
+For fine adjustment + fine target, the weak microstate slope has SD O(N^{alpha-1/2}), so the occupancy-averaged macro effect inherits that rate.
+
+For fine adjustment + coarse target, the pooled residual-score denominator contains O(N) information from the strong microstate, while the weak microstate contributes nonnegative information. Therefore the pooled macro effect is root-N.
+
+This produces an exact **resolution trilemma**:
+- over-coarse adjustment -> asymptotic confounding bias;
+- over-fine target parameterization -> weak-identification variance/rate failure;
+- fine adjustment + coarse target -> identification and root-N efficiency when the pooled effects are truly equal.
+
+This correction is more precise than saying that the latent representation itself should simply be coarsened.
