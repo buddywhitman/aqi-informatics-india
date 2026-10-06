@@ -91,3 +91,24 @@ Hard state-effect merging deletes unsupported contrast directions. Spectral regu
 Different tasks can require crossing effect partitions. Hence a single coarse universal abstraction is generally inadequate. A rich shared latent substrate with task-specific target-resolution heads is more appropriate.
 
 This reframing avoids the incorrect slogan "coarser representations are better." The actual claim is that **the data have a finite, task-dependent causal resolution that can be much lower than their observational latent-state resolution.**
+
+
+## Update: resolution divergence and honest treatment of unresolved directions
+
+Two additional findings materially sharpen the framework.
+
+### Resolution divergence theorem
+It is possible for observational and causal resolutions to move in opposite asymptotic directions. With fixed-separated state emissions, evidence for the state split accumulates at O(N). If residual treatment SD within the causal contrast shrinks as N^{-alpha}, information for a fixed effect contrast is O(N^{1-2alpha}). For alpha>1/2, state-model evidence diverges while causal-effect KL vanishes.
+
+Therefore more data can make us increasingly certain that two states are genuinely distinct while making their causal-effect difference statistically less learnable.
+
+### Unresolved is not zero
+The causal resolution spectrum cannot justify silently projecting unsupported effect directions to zero. In the spectral-target experiment, removing a weak direction is excellent when its true coefficient is zero but creates large approximation error when that direction carries real signal. Resolution diagnostics describe **estimability**, not effect magnitude.
+
+The framework must therefore distinguish:
+1. identification resolution (what must be conditioned on);
+2. causal resolution (what contrasts the data can estimate);
+3. structural/task assumptions (which unresolved contrasts may legitimately be pooled/constrained);
+4. estimand definition (whether a projected/coarse target is scientifically acceptable).
+
+This guards against converting weak identification into an unjustified null-effect assumption.
