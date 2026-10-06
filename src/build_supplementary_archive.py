@@ -13,6 +13,7 @@ import os
 import sys
 import zipfile
 import glob
+import hashlib
 
 ARCHIVE_NAME = "AISTATS2027_OR_DML_Supplementary_Material.zip"
 BASE_DIR = "AISTATS2027_OR_DML_Supplementary_Material"
@@ -121,6 +122,18 @@ def build_archive():
     missing_required = [p for p in REQUIRED_FILES if not os.path.isfile(p) or os.path.getsize(p) == 0]
     if missing_required:
         raise FileNotFoundError("Required supplementary evidence missing or empty:\n  " + "\n  ".join(missing_required))
+
+    # Write an inspectable content manifest for every packaged source artifact.
+    checksum_path = "SUPPLEMENT_SHA256SUMS.txt"
+    checksum_lines = []
+    for file_path in all_files:
+        if os.path.isfile(file_path):
+            with open(file_path, "rb") as fh:
+                digest = hashlib.sha256(fh.read()).hexdigest()
+            checksum_lines.append(f"{digest}  {file_path}")
+    with open(checksum_path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write("\n".join(checksum_lines) + "\n")
+    all_files = sorted(all_files + [checksum_path])
 
     # Deterministic archive: stable ordering, fixed timestamps/permissions, explicit bytes.
     # This makes repeated builds from the same source tree byte-reproducible.
