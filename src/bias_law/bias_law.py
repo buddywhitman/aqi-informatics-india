@@ -106,7 +106,7 @@ def sensor_information(h, R, snr=1.0):
 
 def v_changepoint(rho, d2, switch_rate=None, c=None):
     """Change-point approximation (symmetric persistent two-state chain, Gaussian emissions, Mahalanobis separation d^2):
-    v ~ sqrt(8/pi) (1-rho) exp(-d^2/8) / d.  Parameter-free; within ~10% of the exact HMM v for rho in [0.9,0.97], d^2 in [2.8,25]."""
+    v ~ sqrt(8/pi) (1-rho) exp(-d^2/8) / d.  Parameter-free; within ~10% of the exact HMM v for rho<=0.95 and ~14% at rho=0.97, d^2 in [2.8,25] (x12, x17)."""
     import numpy as _np
     d = _np.sqrt(d2)
     r = (1 - rho) if switch_rate is None else switch_rate          # symmetric chain: switch rate = 1-rho; general: pi0*eps0 + pi1*eps1
