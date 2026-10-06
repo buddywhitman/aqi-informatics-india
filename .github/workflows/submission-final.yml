@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install numpy pandas scipy scikit-learn
+      - run: pip install numpy pandas scipy scikit-learn pypdf
       - name: Scientific verification
         run: python verify_science.py
       - name: Final synthesis consistency
@@ -30,18 +30,19 @@ jobs:
           test -s paper/main.pdf
           python src/build_supplementary_archive.py
           python verify_artifacts.py
-          pdfinfo paper/main.pdf | tee paper/pdfinfo.txt
-          pages=$(pdfinfo paper/main.pdf | awk '/^Pages:/ {print $2}')
-          echo "Compiled pages: $pages"
-          test "$pages" -ge 10
-          pdftotext -f 8 -l 8 paper/main.pdf paper/page8.txt
-          pdftotext -f 9 -l 9 paper/main.pdf paper/page9.txt
-          if grep -q "AI Use Statement" paper/page8.txt; then
-            echo "AI Use Statement leaked into page 8: main-text page-budget violation"
-            exit 1
-          fi
-          grep -q "AI Use Statement" paper/page9.txt
-          echo "Main text ends by page 8; AI Use Statement begins on page 9."
+          python - <<'PY'
+          from pathlib import Path
+          from pypdf import PdfReader
+          r=PdfReader("paper/main.pdf")
+          pages=len(r.pages)
+          Path("paper/pdfinfo.txt").write_text(f"Pages: {pages}\n")
+          assert pages >= 10
+          p8=r.pages[7].extract_text() or ""
+          p9=r.pages[8].extract_text() or ""
+          assert "AI Use Statement" not in p8, "AI Use Statement leaked into page 8"
+          assert "AI Use Statement" in p9, "AI Use Statement is not on page 9"
+          print(f"Compiled pages: {pages}; main text ends by page 8; AI Use Statement begins on page 9.")
+          PY
       - name: Compliance text checks
         run: |
           python - <<'PY'
