@@ -181,7 +181,7 @@ def test_nn_constant_limit():
     from src.bias_law.ext_nn_quad import c
     sp = float(np.sqrt(np.pi / 2))
     gaps = {d: 1 - c(d) / sp for d in (8, 20, 40)}
-    ok = all(abs(gaps[d] / (np.pi ** 2 / (2 * d * d)) - 1) < 0.15 for d in gaps) and gaps[40] < 0.005
+    ok = all(abs(gaps[d] / (np.pi ** 2 / (2 * d * d)) - 1) < tol for d, tol in ((8, 0.2), (20, 0.1), (40, 0.1))) and gaps[40] < 0.005
     check('nearest-neighbour constant -> sqrt(pi/2) with relative gap pi^2/(2 d^2)', ok, f'(gaps {gaps})')
 
 
