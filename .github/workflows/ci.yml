@@ -1,0 +1,54 @@
+name: Continuous Verification & Artifact Synchronization
+on:
+  push:
+    branches:
+      - feature/or-dml-phase2-pivot
+      - v2
+      - master
+  pull_request:
+    branches:
+      - feature/or-dml-phase2-pivot
+      - v2
+      - master
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Verify Mathematical & Scientific Invariances
+        run: python verify_science.py
+        
+      - name: Verify Artifact & Manuscript Synchronization
+        run: python verify_artifacts.py
+        
+      - name: Install LaTeX & PDF Utilities
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-extra texlive-fonts-recommended poppler-utils
+          
+      - name: Compile Manuscript and Validate Strict 24-Page Ceiling
+        run: |
+          cd paper
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+          PAGE_COUNT=$(pdfinfo main.pdf | awk '/Pages:/ {print $2}')
+          echo "Compiled Page Count: $PAGE_COUNT"
+          if [ "$PAGE_COUNT" -ne 24 ]; then
+            echo "ERROR: Manuscript is $PAGE_COUNT pages, must be strictly 24 pages."
+            exit 1
+          fi
+          
+      - name: Validate Supplementary Material Build
+        run: python src/build_supplementary_archive.py

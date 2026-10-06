@@ -50,7 +50,9 @@ REQUIRED_FILES = [
     "src/adaptive_spectral_optimizer.py",
     "src/real_megacity_semisynthetic_benchmark.py",
     "src/test_multiregime_scalability.py",
+    "src/walkthrough_tutorial.py",
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
+    "docs/REVIEWER_DEFENSE_AND_REBUTTAL_DOSSIER.md",
     "src/requirements.txt",
 
     # Clean Datasets
