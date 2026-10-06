@@ -58,3 +58,6 @@
 ## Reproducibility discipline
 
 Every claimed numeric result should point to a committed CSV under `research/results/` or be explicitly labeled analytic/exploratory. Default scripts expose replication-count environment variables where appropriate. Publication-grade use requires rerunning with larger Monte Carlo counts and recording software/environment hashes.
+
+| Robust geometry falsification | ROBUST_CAUSAL_GEOMETRY.md | geometry_disagreement_diagnostic.py | tests whether disagreement among operational spectra flags misspecified completed geometry |
+| Task-weighted calibration | ROBUST_CAUSAL_GEOMETRY.md | task_weighted_calibration.py | tests whether causal-leverage-weighted calibration tracks spectral distortion better than global calibration |
