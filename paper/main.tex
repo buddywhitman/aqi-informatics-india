@@ -126,6 +126,15 @@ reported in standard deviations of $\tilde Y$ and benchmarked against the observ
 \end{algorithmic}
 \end{algorithm}
 
+\section{BEYOND SENSITIVITY: WHEN CAN $b$ BE LEARNED?}\label{sec:prox}
+The law leaves $b$ unidentified. Two routes learn it, and they fail differently.
+\textbf{Joint model.} Treat $(Z,T,Y)$ as emissions of the chain (a Markov-switching regression with a common $\theta$) and maximize the likelihood by EM. When the regime model is correct this is essentially unbiased and has the smallest variance in our simulations, even when $Z$ is uninformative (App.~\ref{app:ext}); the price of the modular, two-stage posterior used above is exactly the law. But it inherits the regime model: if the latent confounder is a continuous AR(1) process, a $K{=}2$ joint fit is as biased as posterior-DML (about $+0.8$ on $\theta{=}1$).
+\textbf{Proximal route.} Suppose a negative-control outcome $W=cS+\ell T+e$ is available ($c\neq0$; $\ell=0$ means $T$ does not cause $W$), and $Z\perp(U,V,e)\mid S$.
+\begin{proposition}[Proximal identification, linear case]\label{prop:prox}
+Under the linear model of Sec.~\ref{sec:setting}, the 2SLS regression of $\tilde Y$ on $(\tilde T,\tilde W)$ with instruments $(\tilde T,\tilde\gamma)$, where tildes denote cross-fitted residuals on $X$, converges to $(\theta-\ell b/c,\;b/c)$. Hence $\ell=0$ identifies $\theta$ and $b$ without any model for the latent state, and for $\ell\neq0$ the bias is $-\ell\,\hat\beta_W$, computable for any hypothesized leakage $\ell$.
+\end{proposition}
+This is the linear special case of proximal causal inference \citep{miao2018identifying,tchetgen2020introduction}; we claim no novelty for the identification argument. What the regime setting adds is (i) the posterior $\hg$ is a valid instrument when $W$ is an external variable, but \emph{not} when $W$ is a lagged outcome, because a smoothed posterior uses past $Z$ that also drives $W$'s error (we found a bias of about $0.2$ that persists at $N=40{,}000$; raw $Z_t$ is valid), and (ii) in a continuous-latent stress test, proximal 2SLS has bias below $0.03$ where posterior-DML and the joint MLE are off by $0.8$--$0.9$ (Table~\ref{tab:ext}). The law still describes the failure: replacing $S$ by the continuous state $u$ and $v$ by $\Var(u\mid X,\hg)$ predicts the bias within 4\% ($0.75$ vs.\ $0.77$ and $0.89$ vs.\ $0.90$). The cost is variance (RMSE $0.02$--$0.16$ vs.\ $0.01$--$0.03$ for the correct joint model) and reliance on a valid negative control; a leaking control ($\ell=0.3$) gives bias $-0.45=-\ell b/c$, as predicted. We tried the lagged outcome $Y_{t-h}$ as a self-contained negative control: it works for iid shocks and small $\Delta_T$ but is not robust to autocorrelated shocks (bias $0.07$--$0.21$), so we do not recommend it. On the four cities we do not apply the proximal estimator: the available proxies (meteorology) also affect PM$_{2.5}$ directly, so the exclusion restrictions fail.
+
 \section{EXPERIMENTS}\label{sec:exp}
 \textbf{Setup.} All experiments use \texttt{src/bias\_law/} and share these ingredients unless noted: a persistent Markov chain (stay probability 0.9), 2-d Gaussian proxies with separation $\Delta_Z$, two exogenous controls, $N=3000$, unit-variance noises, $\Delta_g=3$. The HMM is fitted by EM on the same sample (smoother or filter), cross-fitting uses 5 purged blocks with $\tau=24$, and nuisances are linear or gradient boosting. Reported biases are means over 12 replications per cell with $\theta=1$; the law is evaluated with the \emph{observable} plug-ins unless stated.
 
@@ -338,6 +347,14 @@ and $\hth-\theta=\sum_t\tilde T_t(\tilde Y_t-\theta\tilde T_t)/\sum_t\tilde T_t^
 \emph{Proof.} $\E[\tilde T\tilde Y]=\E[\tilde T\,\theta(S)T]+ab\,v$; expanding with $\tilde T=a\tilde D+V$ gives $\E[\tilde T\theta(S)T]=a\bar m(\theta_1-\theta_0)v+a^2\theta_1v+\sigma^2\bar\theta$, using $\E[\tilde D\,\theta(S)]=(\theta_1-\theta_0)v$ and $\E[V^2\theta(S)]=\sigma^2\bar\theta$. Subtract $\bar\theta(a^2v+\sigma^2)$. $\square$ The oracle-state estimator ($v=0$) converges to $\bar\theta$.
 
 \paragraph{$K>2$.} Theorem~\ref{thm:law} holds with matrix $\Sigma_N$ and $|B|\le\sqrt{b^\top\Sigma b}/(2\sigma)$; the hump persists along any direction $a=s\,a_0$. Hard-versus-soft monotonicity (Prop.~\ref{prop:info}) holds in the Loewner order but $|B|$ need not be monotone in $\Sigma$ for $K>2$.
+
+\section{EXTENDED COMPARISON OF ESTIMATORS}\label{app:ext}
+Bias (RMSE) of $\hat\theta-\theta$ with $\theta{=}1$ (ATE target for the heterogeneous row), $N{=}3000$, 12 replications ($\Delta_g{=}3$, $\Delta_Z{=}0.5$, persistence $0.9$; continuous rows: 12 replications, AR(1) coefficient $0.97$). Posterior-DML uses cross-fitted nuisances on $(X,\hg)$. Code: \texttt{src/bias\_law/ext\_*.py}; raw output \texttt{reports/bias\_law/x[1-5]*.csv}. With $Z$ uninformative ($\Delta_Z{=}0$) and $\Delta_g{=}3$ the joint MLE is still unbiased for every $\Delta_T\in\{0.5,\dots,4\}$ (bias $|\cdot|\le0.02$) because the mixture in $(T,Y)$ is identifiable under Gaussianity; non-identification without proxies therefore holds only without parametric assumptions on the mixture.
+\begin{table}[h]
+\caption{Estimator comparison under misspecification.}\label{tab:ext}
+\centering\small
+\resizebox{\columnwidth}{!}{\input{generated/tab_ext.tex}}
+\end{table}
 
 \section{EXPERIMENTAL DETAILS}\label{app:exp}
 \paragraph{Learned-HMM grid.} $K=2$: $\Delta_Z\in\{0.5,0.8,1.2\}$, $\Delta_T\in\{0.25,0.5,1,2,4,8,16,32\}$, 12 replications per cell, $N=3000$, persistence 0.9, $\Delta_g=3$, $\sigma=1$. The HMM is fitted once per replication (Gaussian emissions, diagonal covariance, EM); smoothing and filtering posteriors are both used. Predicted vs.\ observed peak (value of $\Delta_T$ at the maximum measured bias, grid-limited): $\Delta_Z=0.5$: 4.0 vs.\ 4.0; $\Delta_Z=0.8$: 6.7 vs.\ 8; $\Delta_Z=1.2$: 14.1 vs.\ 16 (linear nuisances, smoother); predicted peak heights 0.375/0.224/0.106 vs.\ observed 0.392/0.226/0.117. \texttt{reports/bias\_law/e1\_peak\_check.csv}.

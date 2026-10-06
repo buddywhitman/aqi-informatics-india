@@ -1,0 +1,22 @@
+\begin{tabular}{llccc}
+\toprule
+Scenario & $\Delta_T$ & Posterior-DML & Joint MLE & Proximal 2SLS \\
+\midrule
+HMM correctly specified & 1 & +0.20 (0.20) & +0.00 (0.02) & -0.01 (0.02) \\
+HMM correctly specified & 4 & +0.40 (0.40) & +0.00 (0.02) & +0.02 (0.06) \\
+nonlinear $f(X)$ (GBM nuisances) & 1 & +0.16 (0.17) & -0.01 (0.01) & -0.00 (0.04) \\
+nonlinear $f(X)$ (GBM nuisances) & 4 & +0.37 (0.37) & -0.00 (0.01) & -0.03 (0.06) \\
+heavy-tailed ($t_3$) proxy noise & 1 & +0.15 (0.16) & +0.01 (0.02) & +0.00 (0.04) \\
+heavy-tailed ($t_3$) proxy noise & 4 & +0.32 (0.32) & -0.00 (0.01) & -0.04 (0.05) \\
+true $K{=}3$, fitted $K{=}2$ & 1 & +0.46 (0.47) & -0.00 (0.02) & -0.01 (0.05) \\
+true $K{=}3$, fitted $K{=}2$ & 4 & +0.56 (0.57) & +0.00 (0.01) & +0.06 (0.16) \\
+heterogeneous $\theta(S)$ (ATE target) & 1 & +0.26 (0.26) & -0.01 (0.03) & -0.02 (0.06) \\
+heterogeneous $\theta(S)$ (ATE target) & 4 & +0.66 (0.66) & -0.00 (0.02) & -0.01 (0.08) \\
+negative control leaks ($W\ni0.3T$) & 1 & +0.21 (0.21) & +0.01 (0.03) & -0.45 (0.45) \\
+negative control leaks ($W\ni0.3T$) & 4 & +0.39 (0.39) & -0.00 (0.01) & -0.46 (0.47) \\
+continuous AR(1) latent, SNR 0.5 & 1 & +0.83 (0.84) & +0.79 (0.80) & -0.02 (0.04) \\
+continuous AR(1) latent, SNR 1 & 1 & +0.77 (0.78) & +0.79 (0.79) & -0.02 (0.04) \\
+continuous AR(1) latent, SNR 0.5 & 2 & +0.90 (0.90) & +0.89 (0.89) & -0.03 (0.08) \\
+continuous AR(1) latent, SNR 1 & 2 & +0.87 (0.88) & +0.88 (0.89) & -0.02 (0.06) \\
+\bottomrule
+\end{tabular}
