@@ -397,3 +397,10 @@ At curvature 1 and perturbation .01, relative linearization error is ~1% for $\l
 
 ### R78. Integrated Markov latent-state validation
 A new DGP now combines Markov persistence, imperfect emission-based filtering, state-specific treatment information/effects, generated soft states, oracle/proxy information spectra, and multiple scientific targets. It compares actual proxy-versus-oracle target displacement against the score-operator prediction in a genuine generated-state ratio estimator. This is the first nontrivial integrated validation of the proposed operator framework. Results pending automated execution.
+
+
+### R79. Integrated Markov operator match is exact algebra, not independent validation
+In the generated-state Markov slope experiment, proxy-versus-oracle displacement is predicted to numerical precision (mean absolute discrepancy ~2e-13). This initially looks spectacular but is algebraically forced: with $J_p\theta_p=S_p$ and $b=S_p-J_p\theta_o$, $\theta_p-\theta_o=J_p^{-1}b$ exactly. I have explicitly downgraded this from validation to an exact decomposition. The experiment still reproduces phantom resolution (mean proxy/oracle lambda-min ratio ~4.3), but it cannot validate causal interpretation.
+
+### R80. Oracle-estimator reliability is not the same as causal validity
+A new nonlinear-outcome/misspecification stress test keeps the linear moment estimator but makes the structural treatment response nonlinear. The operator can remain exact for proxy-versus-oracle linear-projection displacement even if the oracle linear projection itself differs from the structural effect. This separates three questions that must not be conflated: proxy-vs-oracle reliability, oracle estimand identification, and scientific-target validity.
