@@ -61,6 +61,11 @@ Combined with R9, this yields a genuine representation paradox: a generative mod
 
 This appears to motivate a new object: **task-sufficient latent abstraction**, where states are distinguished only to the extent that doing so changes the downstream functional enough to justify the information cost.
 
+### R12. Task abstraction has a sharp bias-variance frontier; coarsening is not universally beneficial
+To prevent the coarsening story from becoming one-sided, a held-out experiment introduces genuine within-pair causal heterogeneity $\delta$ and evaluates pooled coefficients against all four true microstate effects. With weak-state information varied independently, task-aware coarsening reduces total microstate-effect error by 65.1% at $\delta=0$, 58.7% at $\delta=0.1$, 38.3% at $\delta=0.25$, and only 9.6% at $\delta=0.5$. At $\delta=1$, coarsening is worse by 55.8%; at $\delta=2$, worse by 174.7%.
+
+This is the necessary counterweight to R9-R11: the optimal abstraction is neither maximally fine nor maximally coarse. It lies on a **task-specific bias-information frontier**. Merging is beneficial only while the information gained by pooling outweighs the task heterogeneity erased by the merge. Any principled method therefore needs an explicit approximation-bias term, not merely a conditioning penalty.
+
 ## Reproduction
 
 Run:
@@ -72,6 +77,7 @@ python research/task_aware_state_coarsening.py
 python research/data_driven_task_coarsening.py
 python research/crossfit_task_coarsening.py
 python research/weak_overlap_refinement_paradox.py
+python research/abstraction_tradeoff.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
