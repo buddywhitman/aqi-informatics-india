@@ -39,7 +39,14 @@ A deliberately simple four-microstate experiment separates **representation fit*
 
 This suggests a potentially broad new principle: **latent-state complexity should be selected jointly with downstream identifiability, not solely by emission likelihood/state-prediction fit.** The real-data BIC/K sensitivity in R8 points in the same direction, but does not establish ground truth.
 
-### R10. State-refinement paradox under local weak overlap: finer can become inconsistent while coarser stays root-N
+### R10. A simple data-driven task-aware coarsener nearly recovers the oracle macro-representation
+The coarsening result is not limited to knowing the true grouping. In a separate experiment, a K=4 Gaussian mixture first recovers the observational microstates (mean ARI about 0.99). State-specific residual slopes and standard errors are then estimated, and the four states are paired into two macro-states by minimizing within-pair Wald discrepancy. This uses downstream effect similarity, not the true macro labels.
+
+At N=400/800/1600, the method identifies the true causal pairing in 89.0%/94.8%/98.8% of 500 replications. Mean causal error is 0.127/0.085/0.063, essentially matching the oracle macro-state estimator (0.128/0.085/0.063), while the fully refined K=4 estimator has error 0.597/0.459/0.327. Task-aware coarsening beats the refined estimator in 95.0%/97.6%/95.6% of replications.
+
+This is only a proof-of-concept algorithm: using the same data to estimate slopes and choose merges can induce selection bias, and a publishable method should cross-fit the merge decision. But it demonstrates that the representation paradox is actionable rather than merely diagnostic.
+
+### R11. State-refinement paradox under local weak overlap: finer can become inconsistent while coarser stays root-N
 This is the strongest theoretical/simulation finding so far. Consider four **perfectly observed** and observationally distinguishable microstates. States 0/1 share causal effect $\theta_A$ and states 2/3 share $\theta_B$, but one microstate in each pair has residual treatment standard deviation $\sigma_N=N^{-\alpha}$. If all four microstate slopes are estimated separately and then occupancy-averaged, the weak-state slope has standard deviation of order
 $(N\sigma_N^2)^{-1/2}=N^{\alpha-1/2}.$
 Thus:
@@ -62,6 +69,7 @@ python research/run_extended_reliability_studies.py
 python research/frozen_sensor_sensitivity.py
 python research/latent_state_count_sensitivity.py
 python research/task_aware_state_coarsening.py
+python research/data_driven_task_coarsening.py
 python research/weak_overlap_refinement_paradox.py
 ```
 
