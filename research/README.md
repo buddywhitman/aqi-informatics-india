@@ -294,3 +294,10 @@ The exact directional-operator calculation makes the looseness concrete. With in
 
 ### R50. Typical versus worst-case reliability
 New automated experiments sample random perturbation orientations and scientific contrasts as dimension and condition number grow. They quantify how loose the global $\lambda_{\min}$ bound is for typical perturbations and how much tighter the exact contrast-specific sensitivity $\|J^{-1}a\|$ can be. This tests whether worst-case conditioning becomes increasingly uninformative in higher-dimensional latent-state models. Results pending automated execution.
+
+
+### R51. Typical lambda-min pessimism grows with dimension and anisotropy, but not explosively
+Random-orientation Monte Carlo shows the global worst-case bound is usually looser than realized operator amplification. At K=50 and condition number 10,000, the median bound/exact ratio is about **3.70**, mean 3.91, 90th percentile 5.46, and 99th percentile 7.46. At K=3 the median remains about 1.46 even at condition number 10,000, but rare orientations can make the bound >10x loose. Thus the spectacular 156x constructed gap is possible but not typical; the honest empirical claim is that worst-case conditioning is systematically conservative and increasingly unrepresentative in higher-dimensional anisotropic models.
+
+### R52. Scientific-target subspace reliability
+A new exact formulation replaces global $\|J^{-1}\|=1/\lambda_{\min}$ with $\|AJ^{-1}\|$ when the scientific estimand is a contrast vector/subspace $A\theta$. Weak causal directions lying in the null space of $A$ should not determine reliability. This yields a hierarchy from global worst-case, to target-subspace, to fixed-contrast, to realized $a^\top J^{-1}b$ reliability. Automated experiments are now quantifying the gap when scientific targets align with strong, weak, or random information subspaces.
