@@ -404,3 +404,10 @@ In the generated-state Markov slope experiment, proxy-versus-oracle displacement
 
 ### R80. Oracle-estimator reliability is not the same as causal validity
 A new nonlinear-outcome/misspecification stress test keeps the linear moment estimator but makes the structural treatment response nonlinear. The operator can remain exact for proxy-versus-oracle linear-projection displacement even if the oracle linear projection itself differs from the structural effect. This separates three questions that must not be conflated: proxy-vs-oracle reliability, oracle estimand identification, and scientific-target validity.
+
+
+### R81. Proxy fidelity can accidentally improve scientific error by canceling oracle misspecification
+Total error decomposes as $(\theta_p-\theta^*)=(\theta_p-\theta_o)+(\theta_o-\theta^*)$. The two components can cancel. Therefore better proxy-to-oracle fidelity need not monotonically improve scientific validity if the oracle estimator is itself misspecified. All future integrated experiments are now required to report representation fidelity, proxy-oracle fidelity, oracle-target error, and final scientific error separately.
+
+### R82. Operational reliability without oracle b can be framed as a perturbation-set support function
+For target sensitivity $c=a^\top J^{-1}$ and uncertain representation perturbation $b\in\mathcal B$, worst-case target bias is $\sup_{b\in\mathcal B}|cb|$. L2, coordinate-box, and ellipsoidal uncertainty sets yield closed-form bounds. This offers a conservative operational route when $b$ cannot be point identified: validation data or sensitivity assumptions define $\mathcal B$, and downstream information geometry maps it into a target-specific bias bound. A new experiment measures how much directional uncertainty sets tighten the bound relative to isotropic norm balls.
