@@ -356,3 +356,13 @@ The independent-fold simulation confirms the rate argument. With representation 
 
 ### R67. Representation orthogonality could relax the accuracy requirement from N^-1/2 to N^-1/4
 A new methodological direction asks whether the causal score can be made Neyman-orthogonal not only to ordinary nuisances but also to admissible perturbations of the generated latent posterior. If first-order representation sensitivity $O(\epsilon_N)$ can be canceled so the leading term is $O(\epsilon_N^2)$, strong-information root-N inference would require only $\epsilon_N=o(N^{-1/4})$ instead of $o(N^{-1/2})$. A toy Taylor-debiasing experiment now tests the epsilon-versus-epsilon-squared scaling. This is proof-of-concept only; operational latent-state orthogonality remains an open problem.
+
+
+### R68. First-order representation debiasing achieves the predicted epsilon-squared scaling in a toy moment
+The automated Taylor experiment confirms naive target error ~0.04517 epsilon, while subtracting the oracle first derivative leaves residual error ~0.00030 epsilon^2. At epsilon=.1, error falls from ~4.51e-3 to ~3.0e-6, about **1,500x smaller**. This is deliberately favorable and not yet operational, but it verifies the mathematical possibility behind representation orthogonality.
+
+### R69. Operational correction requires information about the latent perturbation tangent
+A new augmented-moment toy replaces numerical Taylor correction with explicit correction moments for a known perturbation direction. It tests robustness to misspecifying the correction coefficient. This sharpens the methodological obstacle: unlike ordinary nuisance orthogonality, latent representation error is not generally observable, so first-order correction needs validation data, repeated proxies, a structural perturbation model, or another identifying restriction.
+
+### R70. Partial representation orthogonality
+A new experiment corrects only a known subspace of representation perturbations and leaves the orthogonal remainder untouched. This tests whether useful robustness can be obtained without modeling the entire latent error process, and whether uncorrected weak-information directions dominate residual bias.
