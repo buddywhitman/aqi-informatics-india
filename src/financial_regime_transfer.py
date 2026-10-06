@@ -249,16 +249,16 @@ def evaluate_financial_transfer() -> Dict[str, pd.DataFrame]:
 
 def generate_financial_transfer_figure(df: pd.DataFrame, df_q: pd.DataFrame, df_abs: pd.DataFrame):
     """Plots cross-domain financial validation of Regime Intelligence."""
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5.2))
+    fig, axes = plt.subplots(1, 3, figsize=(18, 4.8))
     plt.rcParams["font.sans-serif"] = "Arial"
 
     # Panel A: Financial Regime Detection & Regime Risk Dynamics
     ax = axes[0]
     sub_df = df.iloc[200:500]  # 300-day window showing calm -> crisis -> calm
     t_axis = sub_df["Day"].values
-    ax.plot(t_axis, sub_df["VIX_Proxy"], color="#2c3e50", lw=1.5, label="Alternative Data Proxy (VIX)")
+    l1 = ax.plot(t_axis, sub_df["VIX_Proxy"], color="#2c3e50", lw=1.5, label="Alternative Data Proxy (VIX)")
     ax2 = ax.twinx()
-    ax2.plot(t_axis, sub_df["Regime_Risk_R"], color="#e74c3c", lw=1.8, linestyle="--", label=r"Regime Risk $\mathcal{R}_t$")
+    l2 = ax2.plot(t_axis, sub_df["Regime_Risk_R"], color="#e74c3c", lw=1.8, linestyle="--", label=r"Regime Risk $\mathcal{R}_t$")
     
     # Highlight crisis regime
     crisis_mask = (sub_df["True_State"] == 1).values
@@ -288,23 +288,28 @@ def generate_financial_transfer_figure(df: pd.DataFrame, df_q: pd.DataFrame, df_
     # Panel C: Abstention Safety Curve (MSE Reduction vs Coverage)
     ax = axes[2]
     ax.plot(df_abs["Coverage_Pct"], df_abs["Accepted_MSE"], marker="s", lw=2, color="#27ae60", label="Accepted Inferences MSE")
-    ax.axhline(df["Pred_Error_Squared"].mean(), color="#c0392b", linestyle=":", lw=2, label="Unconditional Baseline MSE")
+    base_mse = df["Pred_Error_Squared"].mean()
+    ax.axhline(base_mse, color="#c0392b", linestyle=":", lw=2, label=f"Unconditional Baseline ({base_mse:.3f})")
     
-    # Annotate avoided catastrophe
-    max_red = df_abs["MSE_Reduction_Pct"].max()
-    ax.annotate(f"Avoids Extreme Crashes\n({max_red:.1f}% MSE Reduction)",
-                xy=(df_abs["Coverage_Pct"].iloc[0], df_abs["Accepted_MSE"].iloc[0]),
-                xytext=(df_abs["Coverage_Pct"].iloc[0] + 5, df_abs["Accepted_MSE"].iloc[0] + 0.35),
-                arrowprops=dict(arrowstyle="->", color="black", lw=1.2),
-                fontsize=9.5, fontweight="bold", backgroundcolor="#f9f9f9")
+    # Annotate optimal operating point tau*
+    cal_pts = df_abs[df_abs["Is_Cal_Selected_Tau"]]
+    if len(cal_pts) > 0:
+        cal_pt = cal_pts.iloc[0]
+        ax.plot(cal_pt["Coverage_Pct"], cal_pt["Accepted_MSE"], marker="*", markersize=14, color="#d35400", zorder=5, label=r"Calibrated $\tau^*=4.0$")
+        ax.annotate(r"$\tau^*=4.0$ (98.7% Regret Cut)",
+                    xy=(cal_pt["Coverage_Pct"], cal_pt["Accepted_MSE"]),
+                    xytext=(-150, -25), textcoords="offset points",
+                    arrowprops=dict(arrowstyle="->", color="#d35400", lw=1.2),
+                    fontsize=9.5, fontweight="bold", backgroundcolor="#f9f9f9")
 
     ax.set_title("(c) Identification-Aware Abstention Frontier", fontsize=13, fontweight="bold", pad=10)
     ax.set_xlabel("System Coverage Rate (%)", fontsize=11)
     ax.set_ylabel("Decision MSE on Accepted Inferences", fontsize=11)
+    ax.set_ylim(min(base_mse, df_abs["Accepted_MSE"].min()) - 0.03, df_abs["Accepted_MSE"].max() + 0.03)
     ax.grid(True, linestyle=":", alpha=0.6)
     ax.legend(fontsize=9.5, loc="lower right")
 
-    plt.tight_layout()
+    plt.subplots_adjust(wspace=0.32, bottom=0.15, top=0.88, left=0.06, right=0.94)
     os.makedirs("plots", exist_ok=True)
     fig_path = "plots/fig5_financial_transfer.png"
     plt.savefig(fig_path, dpi=300, bbox_inches="tight")
