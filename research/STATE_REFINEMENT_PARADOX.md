@@ -64,7 +64,7 @@ At N=800 over 500 replications:
 - oracle macro-state error = 0.085;
 - task coarsening beats refinement = 97.6%.
 
-This proof-of-concept is selection-biased because grouping and effect estimation use the same sample. A rigorous method should cross-fit state merging or use sample splitting.
+A stricter validation in `research/crossfit_task_coarsening.py` uses sample splitting: the training half fits the K=4 representation, estimates microstate slopes/SEs, and selects the merge; held-out outcomes are used only to estimate the final effects. At N=800/1600/3200 (300 replications each), held-out microstate ARI remains about 0.99, the true causal pairing is selected in 93.0%/94.0%/97.3%, and mean held-out error drops from 0.642/0.435/0.338 (refined) to 0.129/0.089/0.064 (coarsened). Coarsening wins in 95-96% of replications. This addresses direct outcome reuse, though valid post-selection confidence intervals remain open.
 
 ## 5. Connection to the directional reliability finding
 
