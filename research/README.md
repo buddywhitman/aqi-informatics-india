@@ -248,3 +248,12 @@ This strengthens the impossibility result: without restrictions on downstream le
 
 ### R38. Representation evaluation should be a task-conditioned Pareto problem, not a universal leaderboard
 A new experiment constructs multiple error profiles and downstream leverage tasks, then evaluates the full risk matrix and Pareto frontier. The goal is to test whether globally best calibration can be dominated for relevant task families and whether specialist representations occupy different non-dominated regions. This is being run automatically; no numeric claim is made until outputs are committed.
+
+
+### R39. Global representation leaderboards can be entirely Pareto-incomplete
+The automated task-family experiment yields five representations and four downstream leverage tasks; **all five are Pareto non-dominated**. The globally best-calibrated representation has error 0.00835 overall and performs well on left/right tasks (~0.00326), but its center-task error is 0.02895. A center specialist with worse global error (0.01162) achieves 0.00247 on that task, an **11.7x improvement**. Thus even within a fixed finite task family, global calibration can select a representation far from optimal for a relevant downstream functional.
+
+The appropriate comparison object is a task-conditioned risk vector/Pareto frontier. A scalar ranking requires an explicit task distribution, minimax criterion, or other declared utility.
+
+### R40. Minimax task-family selection
+A follow-up experiment compares the globally best representation, average-task selection, minimax worst-task selection, and per-task oracle as the declared task family expands. This operationalizes the decision-theoretic consequence of R39. Results are generated automatically; no numerical claim is recorded until committed.
