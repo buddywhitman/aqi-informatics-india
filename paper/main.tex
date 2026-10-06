@@ -1097,6 +1097,10 @@ When $\Delta \theta^* = \theta_1^* - \theta_0^* \neq 0$, the temporal persistenc
 \section{Empirical Sensitivity Analyses and Data Provenance}
 \label{app:empirical_sensitivity}
 
+\subsection{Time-Grid Audit and Corrected-Hourly Sensitivity}
+A post-hoc provenance audit found that the legacy processed panel used by the OR-DML city stress test rounded OpenAQ half-hour timestamps to the nearest hour; ties-to-even behavior collapsed adjacent observations onto an effectively two-hour grid. We retain those results for reproducibility but do not treat them as causal validation. Reconstructing a true-hourly grid changes the posterior-adjusted sensitivity estimates materially: Delhi $\hat\theta=0.370$ (95\% interval $[0.292,0.436]$, $N=9{,}024$), Mumbai $2.235$ ($[-0.659,4.890]$, $N=8{,}113$), Bengaluru $0.013$ ($[-0.105,0.135]$, $N=7{,}775$), and Kolkata $1.790$ ($[-0.740,4.602]$, $N=2{,}322$). Kolkata has only 16 distinct $\mathrm{NO}_2$ values. Removing frozen-sensor runs changes Mumbai to $0.308$ with a wide interval and reduces its usable sample to $6{,}256$. The exact reconstruction and audit outputs are in \texttt{src/bias\_law/real\_cities\_sensitivity.py} and \texttt{reports/bias\_law/x23\_real\_hourly\_fix.csv}. These discrepancies are a reason to demote the real-data analysis to a stress test, not evidence for the synthetic/oracle identification claims.
+
+
 \subsection{Meteorological Regime Characteristics across Megacities}
 \label{app:regime_profiles}
 Table~\ref{tab:regime_profiles} details the empirical regime profiles uncovered by the Gaussian HMM across all four megacities. Across all airsheds, the inferred regimes correspond directly to distinct synoptic meteorological states: cooler, high-humidity, low-wind nocturnal/winter inversion states versus warmer, lower-humidity daytime convective dispersion states.
