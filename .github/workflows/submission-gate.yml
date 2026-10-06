@@ -1,5 +1,4 @@
 name: AISTATS submission gate
-# Final audited gate: supplement is built before artifact synchronization checks.
 on:
   pull_request:
     branches: [master]
