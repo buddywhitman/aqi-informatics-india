@@ -86,6 +86,18 @@ The two-task experiment already has crossing optimal partitions: Task A needs $(
 
 This exact construction implies that a compact universal task-sufficient abstraction need not exist. The natural architecture is a rich shared latent substrate with **task-specific quotient heads**, not a single globally coarsened state space. The set-theoretic result is elementary; its potential significance here is the interaction with weak-overlap causal estimation and the statistical cost of fine target parameterization.
 
+### R17. Information-theoretic causal resolution limit: a perfectly observed state can have an asymptotically undetectable causal effect
+The local weak-overlap sequence yields a stronger result than estimator divergence. In a perfectly observed microstate with residual treatment SD $\sigma_N=N^{-\alpha}$, compare two effect models separated by $\delta_N=N^{-\beta}$. Their expected KL divergence is
+$E\,KL = C N^{1-2\alpha-2\beta}.$
+Hence the exact detection boundary is $\alpha+\beta=1/2$. Below it, causal heterogeneity is asymptotically detectable; on it, testing remains local/nontrivial; above it, KL and total variation vanish, so **no test can reliably distinguish the two causal-effect models**. Most strikingly, for $\alpha>1/2$, even a constant nonzero effect difference ($\beta=0$) becomes asymptotically invisible despite perfect state labels.
+
+At N=25,600 with $\alpha=.6,\beta=0$, the analytic noncentrality is only 0.256 and two-sided 5% Wald power is about 5.76%; at $\alpha=.75$, power is 5.04%, essentially test size. Meanwhile the latent state itself is assumed perfectly observed. This creates a sharp mismatch between **observational state resolution** and **causal resolution**: the data can tell us exactly which state we are in while containing asymptotically zero information about whether that state's causal effect differs.
+
+This is the strongest impossibility result found on the branch so far. It implies that beyond the causal-resolution boundary, demanding a distinct effect parameter for every real latent microstate is not merely inefficient; the distinction is statistically unlearnable from the observational experiment.
+
+### R18. Crossing task abstractions imply an exponential universal-compression gap
+The two-task experiment's optimal partitions cross. Generalizing to an $m$-bit latent state and $m$ tasks where task $j$ depends only on bit $j$, each task individually needs only 2 abstract states, while any single deterministic abstraction sufficient for all tasks must preserve all $2^m$ fine states. This exact construction does not by itself establish novelty, but combined with R17 it implies a severe statistical tension: a universal fine target parameterization may preserve every possible task distinction while forcing estimation of distinctions that individual tasks neither need nor can identify under weak overlap. Task-specific target heads avoid that unnecessary resolution cost.
+
 ## Reproduction
 
 Run:
