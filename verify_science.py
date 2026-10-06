@@ -14,6 +14,7 @@ Asserts:
   7. Regularization monotonicity: Tr((J + lambda I)^-1) is strictly decreasing in lambda
   8. Temporal causality / no-leakage: training fold indices are strictly disjoint from test/embargo folds
   9. Held-out representation evaluation: representation zoo evaluated strictly out-of-sample
+ 10. Corrected factorial interaction: joint difficulty ranks error materially better than either constituent alone
 """
 
 import sys
