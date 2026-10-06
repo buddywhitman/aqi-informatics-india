@@ -7,7 +7,7 @@ from retry_requests import retry
 from datetime import datetime, timedelta
 
 # Configuration
-OPENAQ_API_KEY = "853598fc71cb58e85940ebe98ff95ff83d7a1e89361b7e777d8196624716d2f2"
+OPENAQ_API_KEY = os.environ.get("OPENAQ_API_KEY", "")
 RAW_DATA_PATH = "data/raw"
 
 # Selected Stations

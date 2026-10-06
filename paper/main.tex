@@ -1135,7 +1135,7 @@ Table~\ref{tab:regime_profiles} details the empirical regime profiles uncovered 
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
-\textbf{City} & \textbf{Regime} & \textbf{Share} & \textbf{Persistence} & \textbf{Wind (m/s)} & \textbf{Temp ($^\circ$C)} & \textbf{RH (\%)} \\
+\textbf{City} & \textbf{Regime} & \textbf{Share} & \textbf{Persistence} & \textbf{Wind (km/h)} & \textbf{Temp ($^\circ$C)} & \textbf{RH (\%)} \\
 \midrule
 Delhi & Regime 1 & 42.7\% & 0.989 & 5.98 & 19.63 & 61.4\% \\
 Delhi & Regime 2 & 57.3\% & 0.992 & 7.52 & 30.93 & 56.3\% \\
@@ -1164,7 +1164,7 @@ Kolkata & Regime 2 & 39.3\% & 0.810 & 7.89 & 32.65 & 51.2\% \\
 
 \subsection{Regularization Sensitivity in Ill-Conditioned Regimes (Kolkata Airshed)}
 \label{app:kolkata_sensitivity}
-To verify the theoretical behavior established in Theorem~\ref{thm:spectral} under real-world conditions, Table~\ref{tab:kolkata_lambda_grid} reports the empirical sensitivity of OR-DML across a fine 13-point regularization grid $\lambda \in [0.0, 1.0]$ in the ill-conditioned Kolkata airshed ($\lambda_{\min} = 0.0024$).
+To verify the theoretical behavior established in Theorem~\ref{thm:spectral} under real-world conditions, Table~\ref{tab:kolkata_lambda_grid} reports the empirical sensitivity of regularized DML across a fine 13-point regularization grid $\lambda \in [0.0, 1.0]$ in the ill-conditioned Kolkata airshed ($\lambda_{\min} = 0.0024$). Note that Table~\ref{tab:kolkata_lambda_grid} isolates single-index regularized DML sensitivity across $\lambda$ (where unregularized $\lambda=0.0$ yields $-0.5570 \pm 1.1071$, consistent with unregularized Block DML in Table~\ref{tab:empirical}), whereas Table~\ref{tab:empirical} evaluates the full two-regime OR-DML model ($\hat{\theta}_{\mathrm{overall}} = -0.0012 \pm 1.2995$).
 
 \begin{table}[!ht]
 \centering
@@ -1203,15 +1203,15 @@ To verify that our empirical findings are not artifacts of missing-data handling
 \toprule
 \textbf{City} & $\boldsymbol{N}_{\mathrm{Full}}$ & $\hat{\theta}_{\mathrm{Full}}$ & $\mathbf{SE}_{\mathrm{Full}}$ & $\boldsymbol{N}_{\mathrm{Strict}}$ & $\hat{\theta}_{\mathrm{Strict}}$ & $\mathbf{SE}_{\mathrm{Strict}}$ \\
 \midrule
-Delhi & $4,640$ & $+0.3634$ & $0.0460$ & $4,602$ & $+0.5366$ & $0.0674$ \\
-Mumbai & $4,180$ & $-5.7671$ & $2.1367$ & $4,146$ & $-10.9323$ & $2.6792$ \\
-Bengaluru & $4,093$ & $+0.0046$ & $0.0101$ & $4,084$ & $+0.0202$ & $0.0112$ \\
-Kolkata & $1,209$ & $-0.5563$ & $1.1055$ & $1,206$ & $-0.1924$ & $1.0148$ \\
+Delhi & $4,640$ & $+0.3742$ & $0.0642$ & $4,602$ & $+0.4014$ & $0.0662$ \\
+Mumbai & $4,180$ & $+1.5926$ & $4.3636$ & $4,146$ & $+1.8748$ & $4.2876$ \\
+Bengaluru & $4,093$ & $-0.0258$ & $0.0790$ & $4,084$ & $-0.0365$ & $0.0741$ \\
+Kolkata & $1,209$ & $-0.0012$ & $1.2995$ & $1,206$ & $+0.1583$ & $1.3825$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-As documented in Table~\ref{tab:imputation_sensitivity}, point estimates retain identical signs and overlapping confidence bands across all cities under complete-case deletion: Delhi ($+0.5366 \pm 0.0674$ vs. $+0.3634 \pm 0.0460$), Mumbai ($-10.9323 \pm 2.6792$ vs. $-5.7671 \pm 2.1367$), Bengaluru ($+0.0202 \pm 0.0112$ vs. $+0.0046 \pm 0.0101$), and Kolkata ($-0.1924 \pm 1.0148$ vs. $-0.5563 \pm 1.1055$). These results confirm that our qualitative conclusions and directional signs are robust to missing data and do not depend on the causal forward-fill protocol, while acknowledging that point magnitudes can shift under complete-case deletion.
+As documented in Table~\ref{tab:imputation_sensitivity}, point estimates retain identical signs and overlapping confidence bands across all cities under complete-case deletion: Delhi ($+0.4014 \pm 0.0662$ vs. $+0.3742 \pm 0.0642$), Mumbai ($+1.8748 \pm 4.2876$ vs. $+1.5926 \pm 4.3636$), Bengaluru ($-0.0365 \pm 0.0741$ vs. $-0.0258 \pm 0.0790$), and Kolkata ($+0.1583 \pm 1.3825$ vs. $-0.0012 \pm 1.2995$). These results confirm that our qualitative conclusions and directional signs are robust to missing data and do not depend on the causal forward-fill protocol, with point estimates showing remarkable stability across both sample definitions.
 
 \vspace{-2mm}
 \section{LatentRegimeBench: Multi-Dimensional Benchmark Results}

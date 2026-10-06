@@ -2,8 +2,8 @@ import os
 from openaq import OpenAQ
 import pandas as pd
 
-# Use the API key provided by the user
-OPENAQ_API_KEY = "853598fc71cb58e85940ebe98ff95ff83d7a1e89361b7e777d8196624716d2f2"
+# Use the API key provided via environment variable
+OPENAQ_API_KEY = os.environ.get("OPENAQ_API_KEY", "")
 
 def get_location_ids(client, city_name, lat, lon):
     try:
