@@ -292,35 +292,14 @@ Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigoro
 
 \paragraph{The Difficulty Frontier and Operational Surrogate Bridge.}
 Theorem~\ref{thm:graceful} demonstrates that asymptotic bias scales with theoretical ratio $\mathcal{D}_{\mathrm{causal}} \equiv \varepsilon_\gamma / \lambda_{\min}(\boldsymbol{J})$, where $\varepsilon_\gamma \equiv \E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$ is evaluated in simulation via $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1$. Because true states are unobserved in deployment, we bridge unobservable $\mathcal{D}_{\mathrm{causal}}$ to computable operational index $\mathcal{D}_{\mathrm{operational}}(t) \equiv H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$ via the following result under spectral comparability:
-\begin{assumption}[Two-Sided Spectral Comparability]
-\label{ass:spectral_comparability}
-There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\underline{c}_J \le \frac{\lambda_{\min}(\boldsymbol{J}_t)}{\lambda_{\min}(\boldsymbol{J})} \le \overline{c}_J$ almost surely for all evaluation windows $t \ge w$.
-\end{assumption}
+\paragraph{Operational surrogate.} Under Bayesian calibration in binary regimes, posterior $L_1$ state error is bounded by posterior entropy; under two-sided spectral comparability this yields an observable entropy/conditioning surrogate for the unobservable proxy-error ratio. The precise assumption, Proposition~\ref{prop:bridge}, and constants are deferred to Appendix~\ref{app:bridge_full}. Importantly, phantom resolution shows why spectral comparability must be checked rather than assumed.
 
-\begin{proposition}[Surrogate Entropy-Difficulty Bridge]
-\label{prop:bridge}
-Under correct posterior specification (Bayesian calibration) in binary regimes ($K=2$), for causal forward-filtered posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ with filtration $\mathcal{F}_t = \sigma(Z_{1:t})$, the posterior error satisfies $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$.
-We define the difficulty hierarchy: $\mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$, $\mathcal{D}_{\mathrm{global}}^H(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})}$, and $\mathcal{D}_{\mathrm{operational}}(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
-(i) Causal difficulty is unconditionally bounded in population by global entropy: $\mathcal{D}_{\mathrm{causal}} \le C_K \E\left[ \mathcal{D}_{\mathrm{global}}^H(t) \right]$.
-(ii) Under Assumption~\ref{ass:spectral_comparability}, the deployable index satisfies:
-\begin{equation}
-\label{eq:bridge_bound}
-    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)] \le \frac{C_K \overline{c}_J}{\underline{c}_J} \E[\mathcal{D}_{\mathrm{global}}^H(t)].
-\end{equation}
-In simulation benchmarks where $H_t$ is observed, $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N} / \lambda_{\min}(\boldsymbol{J})$ converges to $\mathcal{D}_{\mathrm{causal}}$ with $\mathcal{O}_P(N^{-1/2})$ error for population posteriors $\boldsymbol{\gamma}_t(\boldsymbol{\Lambda}^*)$ (preserved under $\sqrt{N}$-consistent $\hat{\boldsymbol{\Lambda}}$).
-\end{proposition}
 \textbf{Interpretation.} Proposition~\ref{prop:bridge} grounds deployable monitoring by turning an unobservable theoretical difficulty into an observable surrogate upper bound, establishing that posterior entropy bounds proxy error under Bayesian calibration.
 
 \textbf{Intuition.} When treatments are collinear or regimes overlap, $\lambda_{\min}(\boldsymbol{J}) \to 0$ causes the unregularized covariance to blow up. Introducing a spectral ridge penalty $\lambda > 0$ bounds the effective condition number, trading finite-sample regularization bias for bounded estimation variance.
 
-\begin{theorem}[Leading-Order Risk Bound under Long-Run Covariance Approximation]
-\label{thm:spectral}
-Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ be the spectrally regularized OR-DML estimator, and let $\boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\boldsymbol{S}$. Under Theorem~\ref{thm:graceful}, the regularized estimand satisfies the exact deterministic identity $\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right)$, where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, under long-run score covariance $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$, expected squared estimation error satisfies the leading-order risk bound:
-\begin{equation}
-    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \frac{(C \varepsilon_\gamma + \lambda M_\theta)^2 + N^{-1}\mathrm{Tr}(\boldsymbol{\Omega})}{(\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} + \mathcal{O}(N^{-1}),
-\end{equation}
-accounting for stochastic expansion $\E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 = \frac{1}{N}\mathrm{Tr}((\boldsymbol{J}+\lambda\boldsymbol{I})^{-1}\boldsymbol{\Omega}(\boldsymbol{J}+\lambda\boldsymbol{I})^{-1}) + o(N^{-1})$ and deterministic shrinkage (Appendix~\ref{app:proof_thm4}), sharpening to $\mathcal{O}(N^{-3/2})$ under $\varepsilon_\gamma + \lambda = \mathcal{O}(N^{-1/2})$. In practice, plug-in surrogate $\hat{R}(\lambda)$ yields $\hat{\lambda}^*_{\mathrm{emp}} = \arg\min_{\lambda \in [0, \bar{\lambda}]} \hat{R}(\lambda)$ (Appendix~\ref{app:adaptive_lambda_derivation}, where $\lambda = 0.10$ achieves an empirical $23.0\times$ risk reduction in ill-conditioned benchmarks with $85.0\%$ coverage), distinct from vanishing penalty $\lambda = o(N^{-1/2})$ for centered inference.
-\end{theorem}
+\paragraph{Regularization.} Spectral ridge replaces the unstable inverse by $(J+\lambda I)^{-1}$ and trades shrinkage bias against long-run variance. The exact deterministic decomposition and leading-order risk bound are Theorem~\ref{thm:spectral} in Appendix~\ref{app:spectral_full}; this regularization controls numerical/statistical instability but cannot restore identification lost to an uninformative latent representation.
+
 \textbf{Interpretation.} Regularization provides finite-sample variance control when overlap is weak, but cannot manufacture causal information that is absent from the proxy distribution.
 
 \begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
@@ -1366,6 +1345,37 @@ Fine latent states may remain necessary for nuisance adjustment even when estima
 The sensor study reinforces the need for separate diagnostics. Delhi has favorable generated-state conditioning but rejects all three reported immediate pre-treatment placebos. Mumbai becomes more certain in posterior entropy after removing long frozen-$\mathrm{NO}_2$ runs while its conditioning worsens and its regime decomposition changes materially. Kolkata remains near-singular after cleaning. These observations are not oracle validation of phantom resolution; they show that representation certainty, downstream information, data quality, temporal falsification, and scientific identification are distinct axes.
 
 
+
+\section{Deferred Operational-Surrogate Result}
+\label{app:bridge_full}
+\begin{assumption}[Two-Sided Spectral Comparability]
+\label{ass:spectral_comparability}
+There exist constants $0 < \underline{c}_J \le \overline{c}_J < \infty$ such that rolling Gram matrices $\boldsymbol{J}_t$ satisfy $\underline{c}_J \le \frac{\lambda_{\min}(\boldsymbol{J}_t)}{\lambda_{\min}(\boldsymbol{J})} \le \overline{c}_J$ almost surely for all evaluation windows $t \ge w$.
+\end{assumption}
+
+\begin{proposition}[Surrogate Entropy-Difficulty Bridge]
+\label{prop:bridge}
+Under correct posterior specification (Bayesian calibration) in binary regimes ($K=2$), for causal forward-filtered posteriors $\boldsymbol{\gamma}_t = P(S_t \in \cdot \mid \mathcal{F}_t)$ with filtration $\mathcal{F}_t = \sigma(Z_{1:t})$, the posterior error satisfies $\E[\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \mid \mathcal{F}_t] = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t)$, where $C_K \le 1/\ln 2 \approx 1.4427$.
+We define the difficulty hierarchy: $\mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$, $\mathcal{D}_{\mathrm{global}}^H(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})}$, and $\mathcal{D}_{\mathrm{operational}}(t) \equiv \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
+(i) Causal difficulty is unconditionally bounded in population by global entropy: $\mathcal{D}_{\mathrm{causal}} \le C_K \E\left[ \mathcal{D}_{\mathrm{global}}^H(t) \right]$.
+(ii) Under Assumption~\ref{ass:spectral_comparability}, the deployable index satisfies:
+\begin{equation}
+\label{eq:bridge_bound}
+    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)] \le \frac{C_K \overline{c}_J}{\underline{c}_J} \E[\mathcal{D}_{\mathrm{global}}^H(t)].
+\end{equation}
+In simulation benchmarks where $H_t$ is observed, $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N} / \lambda_{\min}(\boldsymbol{J})$ converges to $\mathcal{D}_{\mathrm{causal}}$ with $\mathcal{O}_P(N^{-1/2})$ error for population posteriors $\boldsymbol{\gamma}_t(\boldsymbol{\Lambda}^*)$ (preserved under $\sqrt{N}$-consistent $\hat{\boldsymbol{\Lambda}}$).
+\end{proposition}
+
+\section{Deferred Spectral-Regularization Risk Bound}
+\label{app:spectral_full}
+\begin{theorem}[Leading-Order Risk Bound under Long-Run Covariance Approximation]
+\label{thm:spectral}
+Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ be the spectrally regularized OR-DML estimator, and let $\boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\boldsymbol{S}$. Under Theorem~\ref{thm:graceful}, the regularized estimand satisfies the exact deterministic identity $\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right)$, where $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Furthermore, under long-run score covariance $\boldsymbol{\Omega} = \lim_{N \to \infty} \Var(N^{-1/2}\sum_t \boldsymbol{\Psi}_t)$, expected squared estimation error satisfies the leading-order risk bound:
+\begin{equation}
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le \frac{(C \varepsilon_\gamma + \lambda M_\theta)^2 + N^{-1}\mathrm{Tr}(\boldsymbol{\Omega})}{(\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} + \mathcal{O}(N^{-1}),
+\end{equation}
+accounting for stochastic expansion $\E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 = \frac{1}{N}\mathrm{Tr}((\boldsymbol{J}+\lambda\boldsymbol{I})^{-1}\boldsymbol{\Omega}(\boldsymbol{J}+\lambda\boldsymbol{I})^{-1}) + o(N^{-1})$ and deterministic shrinkage (Appendix~\ref{app:proof_thm4}), sharpening to $\mathcal{O}(N^{-3/2})$ under $\varepsilon_\gamma + \lambda = \mathcal{O}(N^{-1/2})$. In practice, plug-in surrogate $\hat{R}(\lambda)$ yields $\hat{\lambda}^*_{\mathrm{emp}} = \arg\min_{\lambda \in [0, \bar{\lambda}]} \hat{R}(\lambda)$ (Appendix~\ref{app:adaptive_lambda_derivation}, where $\lambda = 0.10$ achieves an empirical $23.0\times$ risk reduction in ill-conditioned benchmarks with $85.0\%$ coverage), distinct from vanishing penalty $\lambda = o(N^{-1/2})$ for centered inference.
+\end{theorem}
 
 \section{Full OR-DML Algorithm}
 \label{app:algorithm_full}
