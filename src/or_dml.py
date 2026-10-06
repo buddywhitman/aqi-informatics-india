@@ -95,19 +95,19 @@ class LatentRegimeHMM:
             log_alpha = np.zeros((N, K))
             log_alpha[0] = np.log(np.maximum(self.pi, 1e-12)) + log_B[0]
             for t in range(1, N):
-                log_alpha[t] = logsumexp(log_alpha[t-1][:, None] + log_A, axis=0) + log_B[t]
+                log_alpha[t] = np.logaddexp.reduce(log_alpha[t-1][:, None] + log_A, axis=0) + log_B[t]
             
             log_beta = np.zeros((N, K))
             log_beta[-1] = 0.0
             for t in range(N - 2, -1, -1):
-                log_beta[t] = logsumexp(log_A + (log_B[t+1] + log_beta[t+1])[None, :], axis=1)
+                log_beta[t] = np.logaddexp.reduce(log_A + (log_B[t+1] + log_beta[t+1])[None, :], axis=1)
             
             log_gamma = log_alpha + log_beta
-            log_gamma -= logsumexp(log_gamma, axis=1, keepdims=True)
+            log_gamma -= np.logaddexp.reduce(log_gamma, axis=1, keepdims=True)
             gamma = np.exp(log_gamma)
             
             log_xi = log_alpha[:-1][:, :, None] + log_A[None, :, :] + (log_B[1:] + log_beta[1:])[:, None, :]
-            log_xi -= logsumexp(log_xi, axis=(1, 2), keepdims=True)
+            log_xi -= np.logaddexp.reduce(np.logaddexp.reduce(log_xi, axis=2, keepdims=True), axis=1, keepdims=True)
             xi_sum = np.sum(np.exp(log_xi), axis=0)
             
             self.pi = gamma[0] / np.sum(gamma[0])
@@ -121,7 +121,7 @@ class LatentRegimeHMM:
                 diff = Z - self.means[k]
                 self.covs[k] = np.sum(gamma_k * (diff ** 2), axis=0) / sum_gk + 1e-4
             
-            current_ll = logsumexp(log_alpha[-1])
+            current_ll = np.logaddexp.reduce(log_alpha[-1])
             if abs(current_ll - log_likelihood_old) < self.tol:
                 break
             log_likelihood_old = current_ll
@@ -148,20 +148,20 @@ class LatentRegimeHMM:
         log_alpha = np.zeros((N, K))
         log_alpha[0] = np.log(np.maximum(self.pi, 1e-12)) + log_B[0]
         for t in range(1, N):
-            log_alpha[t] = logsumexp(log_alpha[t-1][:, None] + log_A, axis=0) + log_B[t]
+            log_alpha[t] = np.logaddexp.reduce(log_alpha[t-1][:, None] + log_A, axis=0) + log_B[t]
             
         if mode == 'filter':
             # Online filtering distribution P(S_t | Z_1:t)
-            log_filter = log_alpha - logsumexp(log_alpha, axis=1, keepdims=True)
+            log_filter = log_alpha - np.logaddexp.reduce(log_alpha, axis=1, keepdims=True)
             return np.exp(log_filter)
         elif mode == 'smooth':
             # Retrospective smoothing distribution P(S_t | Z_1:N)
             log_beta = np.zeros((N, K))
             log_beta[-1] = 0.0
             for t in range(N - 2, -1, -1):
-                log_beta[t] = logsumexp(log_A + (log_B[t+1] + log_beta[t+1])[None, :], axis=1)
+                log_beta[t] = np.logaddexp.reduce(log_A + (log_B[t+1] + log_beta[t+1])[None, :], axis=1)
             log_gamma = log_alpha + log_beta
-            log_gamma -= logsumexp(log_gamma, axis=1, keepdims=True)
+            log_gamma -= np.logaddexp.reduce(log_gamma, axis=1, keepdims=True)
             return np.exp(log_gamma)
         else:
             raise ValueError(f"Unknown mode '{mode}'. Choose 'smooth' or 'filter'.")

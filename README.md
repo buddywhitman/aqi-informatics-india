@@ -60,7 +60,7 @@ We study causal estimation under latent Markov confounding and characterize how 
 The primary estimator is implemented in [`src/or_dml.py`](./src/or_dml.py):
 * **Class**: `OverlapAwareRegimeDML`
 * **Posterior Modes**: Supports causal forward filtering ($\boldsymbol{\gamma}_t = P(S_t \mid \mathcal{F}_t)$) and retrospective smoothing ($\boldsymbol{\gamma}_t = P(S_t \mid Z_{1:N})$).
-* **Nuisance Estimation**: LightGBM or ridge regressors cross-fitted with purged temporal blocks and an embargo buffer $\tau^* \ge C \log N$.
+* **Nuisance Estimation**: Ridge regressors or Gradient Boosting regressors cross-fitted with purged temporal blocks and temporal embargo buffers.
 * **Inversion**: Spectrally regularized coupled Jacobian inversion $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$.
 * **Conditioning Diagnostics**: Automatically computes $\lambda_{\min}(\hat{\boldsymbol{J}})$, condition number $\kappa(\hat{\boldsymbol{J}})$, and sample state occupancy.
 
@@ -78,7 +78,7 @@ source .venv/bin/activate       # On Linux/macOS
 
 # Install dependencies
 pip install --upgrade pip
-pip install -r src/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 2. End-to-End Pipeline Execution

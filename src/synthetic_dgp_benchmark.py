@@ -19,6 +19,9 @@ Outputs summary CSVs and publication-grade plots/fig2_difficulty_frontier.png.
 """
 
 import os
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import sys
 import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -294,6 +297,56 @@ def run_single_replication(rep_id: int, delta_z: float, N: int = 1200) -> List[D
     })
     
     # -------------------------------------------------------------
+    # 3b. DML + Z Controls (Linear Ridge, Purged Block CV)
+    # -------------------------------------------------------------
+    XZ = np.column_stack([X, Z])
+    tilde_Y_zr = np.zeros(N)
+    tilde_T_zr = np.zeros(N)
+    for tr, te in pb.split(N):
+        m_y = Ridge(alpha=1.0).fit(XZ[tr], Y[tr])
+        tilde_Y_zr[te] = Y[te] - m_y.predict(XZ[te])
+        m_t = Ridge(alpha=1.0).fit(XZ[tr], T[tr])
+        tilde_T_zr[te] = T[te] - m_t.predict(XZ[te])
+    theta_zr = float(np.mean(tilde_T_zr * tilde_Y_zr) / max(np.mean(tilde_T_zr ** 2), 1e-12))
+    se_zr = compute_hac_se(tilde_Y_zr, tilde_T_zr, theta_zr, hac_lag=12)
+    cov_zr = float(abs(theta_zr - true_ate) <= 1.96 * se_zr)
+    
+    results.append({
+        'rep_id': rep_id, 'delta_z': delta_z, 'method': 'DML + Z Controls (Ridge)',
+        'theta': theta_zr, 'se': se_zr, 'sate_se': se_zr, 'pate_se': se_zr,
+        'true_ate': true_ate, 'sample_ate': sample_ate,
+        'bias': theta_zr - true_ate, 'bias_sate': theta_zr - sample_ate,
+        'coverage': cov_zr, 'cov_sate': cov_zr, 'cov_pate': cov_zr,
+        'lambda_min': float(np.mean(tilde_T_zr ** 2)),
+        'kappa': 1.0, 'entropy': np.nan, 'proxy_error': np.nan
+    })
+
+    # -------------------------------------------------------------
+    # 3c. DML + Z Controls (Gradient Boosting, Purged Block CV)
+    # -------------------------------------------------------------
+    from sklearn.ensemble import HistGradientBoostingRegressor
+    tilde_Y_zg = np.zeros(N)
+    tilde_T_zg = np.zeros(N)
+    for tr, te in pb.split(N):
+        m_y = HistGradientBoostingRegressor(max_iter=50, min_samples_leaf=20, random_state=seed).fit(XZ[tr], Y[tr])
+        tilde_Y_zg[te] = Y[te] - m_y.predict(XZ[te])
+        m_t = HistGradientBoostingRegressor(max_iter=50, min_samples_leaf=20, random_state=seed).fit(XZ[tr], T[tr])
+        tilde_T_zg[te] = T[te] - m_t.predict(XZ[te])
+    theta_zg = float(np.mean(tilde_T_zg * tilde_Y_zg) / max(np.mean(tilde_T_zg ** 2), 1e-12))
+    se_zg = compute_hac_se(tilde_Y_zg, tilde_T_zg, theta_zg, hac_lag=12)
+    cov_zg = float(abs(theta_zg - true_ate) <= 1.96 * se_zg)
+    
+    results.append({
+        'rep_id': rep_id, 'delta_z': delta_z, 'method': 'DML + Z Controls (GBM)',
+        'theta': theta_zg, 'se': se_zg, 'sate_se': se_zg, 'pate_se': se_zg,
+        'true_ate': true_ate, 'sample_ate': sample_ate,
+        'bias': theta_zg - true_ate, 'bias_sate': theta_zg - sample_ate,
+        'coverage': cov_zg, 'cov_sate': cov_zg, 'cov_pate': cov_zg,
+        'lambda_min': float(np.mean(tilde_T_zg ** 2)),
+        'kappa': 1.0, 'entropy': np.nan, 'proxy_error': np.nan
+    })
+
+    # -------------------------------------------------------------
     # 4. Unregularized Coupled DML (lambda = 0)
     # -------------------------------------------------------------
     unreg_dml = OverlapAwareRegimeDML(
@@ -321,6 +374,40 @@ def run_single_replication(rep_id: int, delta_z: float, N: int = 1200) -> List[D
         'kappa': unreg_dml.kappa_,
         'entropy': unreg_dml.mean_entropy_,
         'proxy_error': proxy_err
+    })
+    
+    # -------------------------------------------------------------
+    # 4b. Regime Fixed Effects DML (Hard Assignment from HMM)
+    # -------------------------------------------------------------
+    s_hard = np.argmax(unreg_dml.gamma_, axis=1)
+    th_k_list = []
+    w_k_list = []
+    for k in range(2):
+        mask_k = (s_hard == k)
+        w_k_list.append(np.mean(mask_k))
+        if np.sum(mask_k) > 30:
+            X_k = X[mask_k]
+            Y_k = Y[mask_k]
+            T_k = T[mask_k]
+            m_y_k = Ridge(alpha=1.0).fit(X_k, Y_k)
+            res_y_k = Y_k - m_y_k.predict(X_k)
+            m_t_k = Ridge(alpha=1.0).fit(X_k, T_k)
+            res_t_k = T_k - m_t_k.predict(X_k)
+            th_k = float(np.mean(res_t_k * res_y_k) / max(np.mean(res_t_k**2), 1e-12))
+        else:
+            th_k = theta_std
+        th_k_list.append(th_k)
+    theta_fe = float(w_k_list[0] * th_k_list[0] + w_k_list[1] * th_k_list[1])
+    cov_fe = float(abs(theta_fe - true_ate) <= 1.96 * se_blk)
+    
+    results.append({
+        'rep_id': rep_id, 'delta_z': delta_z, 'method': 'Regime FE DML (Hard)',
+        'theta': theta_fe, 'se': se_blk, 'sate_se': se_blk, 'pate_se': se_blk,
+        'true_ate': true_ate, 'sample_ate': sample_ate,
+        'bias': theta_fe - true_ate, 'bias_sate': theta_fe - sample_ate,
+        'coverage': cov_fe, 'cov_sate': cov_fe, 'cov_pate': cov_fe,
+        'lambda_min': float(np.mean(tilde_T_blk ** 2)),
+        'kappa': 1.0, 'entropy': np.nan, 'proxy_error': np.nan
     })
     
     # -------------------------------------------------------------
@@ -423,6 +510,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Oracle DML',
         'Standard DML',
         'Block DML',
+        'DML + Z Controls (Ridge)',
+        'DML + Z Controls (GBM)',
+        'Regime FE DML (Hard)',
         'Unregularized Coupled DML',
         'Spectral OR-DML (Ours)',
         'Filtered OR-DML (Ours)'
@@ -438,6 +528,7 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
             thetas = sub_m['theta'].values
             true_ates = sub_m['true_ate'].values
             abs_bias = float(np.mean(np.abs(bias)))
+            med_abs_bias = float(np.median(np.abs(bias)))
             mean_bias = float(np.mean(bias))
             rmse = float(np.sqrt(np.mean(bias ** 2)))
             cov_rate = float(np.mean(sub_m['coverage']) * 100.0)
@@ -455,6 +546,7 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
                 'True_ATE': round(float(np.mean(true_ates)), 4),
                 'Mean_Bias': round(mean_bias, 4),
                 'Abs_Bias': round(abs_bias, 4),
+                'Median_Abs_Bias': round(med_abs_bias, 4),
                 'RMSE': round(rmse, 4),
                 'Coverage_95_Pct': round(cov_sate, 1),
                 'Coverage_SATE_95_Pct': round(cov_sate, 1),
@@ -478,6 +570,7 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         overall_list.append({
             'Method': m,
             'Abs_Bias': round(float(np.mean(np.abs(bias))), 4),
+            'Median_Abs_Bias': round(float(np.median(np.abs(bias))), 4),
             'Mean_Bias': round(float(np.mean(bias)), 4),
             'RMSE': round(float(np.sqrt(np.mean(bias ** 2))), 4),
             'Coverage_SATE_95_Pct': round(float(np.mean(sub_m['cov_sate']) * 100.0), 1),
@@ -515,6 +608,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Oracle DML': '#2ca02c',
         'Standard DML': '#d62728',
         'Block DML': '#ff7f0e',
+        'DML + Z Controls (Ridge)': '#8c564b',
+        'DML + Z Controls (GBM)': '#e377c2',
+        'Regime FE DML (Hard)': '#7f7f7f',
         'Unregularized Coupled DML': '#9467bd',
         'Spectral OR-DML (Ours)': '#1f77b4',
         'Filtered OR-DML (Ours)': '#17becf'
@@ -523,6 +619,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Oracle DML': 'o',
         'Standard DML': 's',
         'Block DML': '^',
+        'DML + Z Controls (Ridge)': 'v',
+        'DML + Z Controls (GBM)': '*',
+        'Regime FE DML (Hard)': 'p',
         'Unregularized Coupled DML': 'D',
         'Spectral OR-DML (Ours)': 'P',
         'Filtered OR-DML (Ours)': 'X'
@@ -633,7 +732,7 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     min_idx = sub_reg_plot['MSE'].idxmin()
     min_lambda = sub_reg_plot.loc[min_idx, 'Lambda']
     min_mse = sub_reg_plot.loc[min_idx, 'MSE']
-    plt.annotate(f'Empirical Min $\lambda \\approx {min_lambda}$\n(23x MSE reduction at $\lambda=0.10$)',
+    plt.annotate(rf'Empirical Min $\lambda \approx {min_lambda}$' + '\n' + r'(Risk reduction at $\lambda=0.10$)',
                  xy=(min_lambda, min_mse),
                  xytext=(min_lambda * 1.3, min_mse + 0.14),
                  arrowprops=dict(facecolor='black', shrink=0.08, width=1, headwidth=6),
