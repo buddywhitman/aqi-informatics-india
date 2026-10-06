@@ -134,6 +134,15 @@ This gives a simple **causal resolution budget**: representation granularity, ov
 
 This is especially relevant to learned latent representations: model capacity/data can increase the number of statistically real states even when every state has good local overlap, while the downstream demand for one effect per state outruns the available sample information.
 
+### R24. Sequential resolution budget: persistence matters only through dependence of the causal score
+The growing-state/weak-overlap boundary extends to dependent sequences when the **relevant score/influence process** loses effective sample size. If score dependence has long-run variance inflation of order $N^\eta$, then effective information is $N^{1-\eta}$ and the unified boundary becomes
+$\boxed{\eta+\kappa+2\alpha+2\beta=1.}$
+Here $\eta$ is a dependence tax, $\kappa$ a granularity tax, $2\alpha$ an overlap/treatment-information tax, and $2\beta$ an effect-resolution tax.
+
+A crucial negative clarification emerged while designing the simulation: **persistent latent states alone do not automatically impose the $\eta$ tax.** If treatment residuals are serially independent and mean-zero, multiplying them by a persistent outcome error can destroy score autocovariance. The dependence term belongs to the actual orthogonal score/influence sequence, not to state persistence as a descriptive property. The committed simulation therefore correlates both treatment residuals and outcome innovations so that the score itself has persistent covariance. This prevents overclaiming that Markov persistence by itself reduces causal effective sample size.
+
+The budget is thus a diagnostic decomposition of *causal score information*, not a formula obtained from HMM transition persistence alone.
+
 ## Reproduction
 
 Run:
