@@ -1434,4 +1434,29 @@ Fine latent states may remain necessary for nuisance adjustment even when estima
 The sensor study reinforces the need for separate diagnostics. Delhi has favorable generated-state conditioning but rejects all three reported immediate pre-treatment placebos. Mumbai becomes more certain in posterior entropy after removing long frozen-$\mathrm{NO}_2$ runs while its conditioning worsens and its regime decomposition changes materially. Kolkata remains near-singular after cleaning. These observations are not oracle validation of phantom resolution; they show that representation certainty, downstream information, data quality, temporal falsification, and scientific identification are distinct axes.
 
 
+
+\section{Audited Residual-Confounding Sensitivity Law}
+\label{app:biaslaw}
+This appendix records the complementary result audited on the \texttt{v2-bias-law} lineage. It is deliberately separated from the identification results above because it quantifies residual confounding rather than eliminating it.
+
+\begin{proposition}[Posterior residual-confounding identity]
+Suppose after partialling out the fitted nuisance functions the binary latent state enters treatment with shift $\Delta_T$, enters the outcome baseline with shift $\Delta_g$, and the treatment innovation has variance $\sigma^2$. Let $v=\E\{\Var(S\mid X,\hat\gamma)\}$. Under the stated linear residual model,
+\[
+\plim(\hat\theta-\theta)=
+\frac{\Delta_T\Delta_g v}{\Delta_T^2v+\sigma^2}.
+\]
+For a $(K-1)$-dimensional state indicator with treatment-shift vector $a$, outcome-shift vector $b$, and residual state covariance $\Sigma$, the corresponding expression is
+\[
+\frac{a^\top\Sigma b}{a^\top\Sigma a+\sigma^2}.
+\]
+\end{proposition}
+\begin{proof}
+Write the residualized treatment as $\widetilde T=\Delta_T(S-\E[S\mid X,\hat\gamma])+V$ and the residualized outcome as $\widetilde Y=\theta\widetilde T+\Delta_g(S-\E[S\mid X,\hat\gamma])+U$. Taking the population residual regression coefficient gives $\theta+\Cov(\widetilde T,\Delta_g(S-\E[S\mid X,\hat\gamma]))/\Var(\widetilde T)$, which yields the scalar identity; the vector form follows by the same covariance calculation.
+\end{proof}
+
+Differentiating shows $|B|$ is non-monotone in $|\Delta_T|$ and is maximized at $|\Delta_T|=\sigma/\sqrt v$, with $\sup_{\Delta_T}|B|=|\Delta_g|\sqrt v/(2\sigma)$. This explains why empirical score conditioning alone cannot be treated as a monotone reliability certificate. The associated robustness value solves the identity for the smallest latent outcome shift capable of explaining the reported effect.
+
+\paragraph{Audit qualifications.}
+The posterior plug-in $\hat v=\E[\hat\gamma(1-\hat\gamma)]$ equals posterior uncertainty under correct calibration but need not equal realized residual-state error under misspecified emissions. In the committed misspecification experiment it is therefore treated as a lower-bound/optimistic diagnostic rather than an exact estimate. Fold-wise versus global HMM fitting is empirically nearly indistinguishable in the audited simulation, but this is evidence rather than a proof of independence. The isolated-switch approximation and learned-HMM rate are retained only with the assumptions and remainder qualifications documented in \texttt{docs/V2\_CHANGELOG.md}; no stronger claim is imported into the main paper.
+
 \end{document}
