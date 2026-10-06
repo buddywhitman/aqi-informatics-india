@@ -411,3 +411,12 @@ Total error decomposes as $(\theta_p-\theta^*)=(\theta_p-\theta_o)+(\theta_o-\th
 
 ### R82. Operational reliability without oracle b can be framed as a perturbation-set support function
 For target sensitivity $c=a^\top J^{-1}$ and uncertain representation perturbation $b\in\mathcal B$, worst-case target bias is $\sup_{b\in\mathcal B}|cb|$. L2, coordinate-box, and ellipsoidal uncertainty sets yield closed-form bounds. This offers a conservative operational route when $b$ cannot be point identified: validation data or sensitivity assumptions define $\mathcal B$, and downstream information geometry maps it into a target-specific bias bound. A new experiment measures how much directional uncertainty sets tighten the bound relative to isotropic norm balls.
+
+
+### R83. Validation data can operationalize representation-perturbation bounds
+A new experiment assumes a small adjudicated subset where true/high-quality latent labels make score-perturbation contributions observable. Simultaneous coordinate uncertainty bounds are propagated through $a^\top J^{-1}$ to obtain a target-specific upper bound on representation bias. The study varies validation size from 50 to 5,000 to quantify how much labeled-state information is needed before the bound becomes useful rather than vacuous.
+
+### R84. Causal reliability implies target-aware validation design
+If coordinate-j perturbation variance is $v_j$ and target sensitivity is $c_j=(a^\top J^{-1})_j$, propagated validation variance is approximately $\sum_j c_j^2v_j/m_j$. Under fixed labeling budget, optimal allocation satisfies
+$$m_j\propto |c_j|\sqrt{v_j}.$$
+Thus the most useful states to validate are not necessarily the most frequent or most uncertain: validation should concentrate where representation uncertainty and causal sensitivity jointly matter. An automated experiment compares equal, frequency, raw-uncertainty and target-sensitive allocations.
