@@ -275,29 +275,62 @@ def run_city_semisynthetic_single(rep_id: int,
     # ---------------------------------------------------------
     # 7. Regime FE DML (Hard Assignment)
     # ---------------------------------------------------------
-    s_hard = np.argmax(or_dml.gamma_, axis=1)
-    th_fe_list = []
-    w_fe_list = []
-    for k in range(2):
-        mask_k = (s_hard == k)
-        w_fe_list.append(np.mean(mask_k))
-        if np.sum(mask_k) > 20:
-            X_k = X[mask_k]
-            Y_k = Y[mask_k]
-            T_k = T[mask_k]
-            m_y_k = Ridge(alpha=1.0).fit(X_k, Y_k)
-            res_y = Y_k - m_y_k.predict(X_k)
-            m_t_k = Ridge(alpha=1.0).fit(X_k, T_k)
-            res_t = T_k - m_t_k.predict(X_k)
-            th_fe_list.append(float(np.mean(res_t * res_y) / max(np.mean(res_t**2), 1e-12)))
-        else:
-            th_fe_list.append(0.0)
-    ate_fe = float(w_fe_list[0] * th_fe_list[0] + w_fe_list[1] * th_fe_list[1])
+    hard_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_lambda=0.0, reg_alpha=0.0,
+        regime_assignment='hard', posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0), random_state=seed
+    )
+    hard_dml.fit(Y, T, X, Z)
+    ate_fe = hard_dml.ate_
+    se_fe = hard_dml.sate_se_
+    cov_fe = float(abs(ate_fe - true_ate) <= 1.96 * se_fe)
     
     results.append({
         'rep_id': rep_id, 'city': city_name, 'N': N, 'method': 'Regime FE DML (Hard)',
-        'ate': ate_fe, 'bias': ate_fe - true_ate, 'se': np.nan, 'coverage': np.nan,
-        'lambda_min': or_dml.lambda_min_, 'lambda_param': 0.0
+        'ate': ate_fe, 'bias': ate_fe - true_ate, 'se': se_fe, 'coverage': cov_fe,
+        'lambda_min': hard_dml.lambda_min_, 'lambda_param': 0.0
+    })
+    
+    # ---------------------------------------------------------
+    # 8. Decoupled Soft OR-DML
+    # ---------------------------------------------------------
+    dec_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_alpha=0.05, solve_mode='decoupled',
+        weighting_mode='matched', regime_assignment='soft',
+        posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0), random_state=seed
+    )
+    dec_dml.fit(Y, T, X, Z)
+    ate_dec = dec_dml.ate_
+    se_dec = dec_dml.sate_se_
+    cov_dec = float(abs(ate_dec - true_ate) <= 1.96 * se_dec)
+    
+    results.append({
+        'rep_id': rep_id, 'city': city_name, 'N': N, 'method': 'Decoupled Soft OR-DML',
+        'ate': ate_dec, 'bias': ate_dec - true_ate, 'se': se_dec, 'coverage': cov_dec,
+        'lambda_min': dec_dml.lambda_min_, 'lambda_param': 0.05
+    })
+    
+    # ---------------------------------------------------------
+    # 9. HMM(Z, T) OR-DML (Conditioned on treatment and meteorology)
+    # ---------------------------------------------------------
+    zt_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_alpha=0.05, condition_on_treatment=True,
+        posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0), random_state=seed
+    )
+    zt_dml.fit(Y, T, X, Z)
+    ate_zt = zt_dml.ate_
+    se_zt = zt_dml.sate_se_
+    cov_zt = float(abs(ate_zt - true_ate) <= 1.96 * se_zt)
+    
+    results.append({
+        'rep_id': rep_id, 'city': city_name, 'N': N, 'method': 'HMM(Z, T) OR-DML',
+        'ate': ate_zt, 'bias': ate_zt - true_ate, 'se': se_zt, 'coverage': cov_zt,
+        'lambda_min': zt_dml.lambda_min_, 'lambda_param': 0.05
     })
     
     return results

@@ -11,12 +11,13 @@ Causal inference from dependent observational time series is complicated when an
 We study causal estimation under latent Markov confounding and characterize how latent-state uncertainty and regime overlap propagate into causal estimation error. We develop a regime-aware orthogonal estimator that combines probabilistic state inference, temporally purged cross-fitting, and regularized inversion of the cross-regime score Jacobian.
 
 ### Key Theoretical Contributions
-1. **Non-Identification under Unconstrained Overlap (Theorem 1)**: Proves that when proxies contain zero information distinguishing latent regimes, regime-specific causal effects cannot be point-identified from observables.
-2. **Graceful Degradation Error Bound (Theorem 3)**: Separates posterior proxy recovery error $\varepsilon_\gamma$ from downstream task conditioning $\lambda_{\min}(\boldsymbol{J})$, establishing the multiplicative error bound:
+1. **Decomposition of Omitted Regime Bias & Frisch-Waugh Singularity (Theorem 1 & Corollary 1)**: Proves that cross-sectional residualization on observed controls $X_t$ fails to purge latent regime variation and actively amplifies omitted confounding as residual treatment variance $\E[\tilde{T}_t^2]$ is attenuated toward its lower bound.
+2. **Non-Identification under Unconstrained Overlap (Theorem 2)**: Proves that when proxies contain zero information distinguishing latent regimes (under memoryless transitions $p=0.5$ or static proxy evaluation), regime-specific causal effects cannot be point-identified from observables.
+3. **Graceful Degradation Error Bound (Theorem 3)**: Separates posterior proxy recovery error $\varepsilon_\gamma$ from downstream task conditioning $\lambda_{\min}(\boldsymbol{J})$, establishing the multiplicative error bound:
    $$\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}).$$
-3. **Surrogate Entropy-Difficulty Bridge (Proposition 1)**: Proves that under Bayesian calibration, posterior entropy bounds proxy error in binary regimes ($\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \le C_K H(\boldsymbol{\gamma}_t)$), yielding the deployable operational difficulty index $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
-4. **Spectral Regularization & Leading-Order Risk Bound (Theorem 4)**: Establishes that ridge-regularized coupled inversion $(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ trades finite-sample bias for bounded variance, sharpening risk when $\lambda_{\min}(\boldsymbol{J}) \to 0$. We develop an adaptive 1D convex plug-in risk minimizer $\hat{\lambda}^*_{\mathrm{risk}} = \arg\min_{\lambda \ge 0} \hat{R}(\lambda)$.
-5. **Dependent Asymptotic Normality & Delta-Method Variance (Theorem 5 & Proposition 2)**: Establishes centered asymptotic normality under purged block cross-fitting with embargo buffers $\tau^* \ge C \log N$, and derives the joint delta-method HAC sandwich covariance accounting for Markov persistence inflation ($\frac{1+\rho}{1-\rho} \approx 15.7\times$).
+4. **Surrogate Entropy-Difficulty Bridge (Proposition 1)**: Proves that under Bayesian calibration in binary regimes, posterior entropy bounds proxy error ($\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \le C_K H(\boldsymbol{\gamma}_t)$), yielding the deployable operational difficulty index $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
+5. **Spectral Regularization & Leading-Order Risk Bound (Theorem 4)**: Establishes that ridge-regularized coupled inversion $(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ trades finite-sample bias for bounded variance, sharpening risk when $\lambda_{\min}(\boldsymbol{J}) \to 0$. We develop an adaptive 1D convex plug-in risk minimizer $\hat{\lambda}^*_{\mathrm{risk}} = \arg\min_{\lambda \ge 0} \hat{R}(\lambda)$.
+6. **Dependent Asymptotic Normality & Centering Breakdown (Theorem 5 & Proposition 2)**: Establishes centered asymptotic normality under purged block cross-fitting with embargo buffers $\tau^* \ge C \log N$ when $\varepsilon_\gamma = o(N^{-1/2})$, proves that fixed proxy overlap ($\varepsilon_\gamma = \mathcal{O}(1)$) induces non-vanishing score mean shifts that break nominal centering, and derives the joint delta-method HAC sandwich covariance accounting for Markov persistence inflation ($\frac{1+\rho}{1-\rho} \approx 15.7\times$).
 
 ---
 
@@ -36,27 +37,33 @@ To ensure full transparency and scientific provenance, the evolution of this res
 
 Our investigations reveal decisive insights into the mechanics of sequential causal estimation under latent confounding, avoiding cherry-picked narratives:
 
-### 1. The Multicollinearity Trade-Off in Soft vs. Hard Weighting
-* **The Mechanism**: In soft regime estimation (OR-DML), posterior beliefs $\gamma_{tk} \in (0, 1)$ induce off-diagonal Gram cross-terms $J_{01} = \frac{1}{N}\sum_t \gamma_{t0}\gamma_{t1}\tilde{T}_{t0}\tilde{T}_{t1} > 0$. When regimes exhibit substantial baseline shifts ($g_1 - g_0 = 30$, $b_1 - b_0 = 4$), even slight posterior misclassification leaks a large product into the score vector. Hard clustering (`Regime FE DML`) sets hard indicator assignments $\hat{S}_t \in \{0, 1\}$, forcing $\gamma_{t0}\gamma_{t1} \equiv 0$ and diagonalizing $\boldsymbol{J}$ by decree.
-* **The Trade-Off**: Hard clustering achieves lower finite-sample point bias on continuous mixture benchmarks (Hard FE bias $2.81$ vs. Soft OR-DML $3.71$). However, hard clustering **destroys asymptotic distribution theory**, invalidates sandwich covariance under temporal dependence, and exhibits poor coverage. OR-DML preserves Bayesian belief uncertainty and admits valid delta-method HAC sandwich inference, resolving Gram ill-conditioning via spectral shrinkage $\lambda > 0$.
+### 1. Honest Baseline Comparisons & Diagnostic Framing
+* **11-Method Monte Carlo Benchmark (`reports/or_dml_benchmark_summary.csv`)**: Across 500 replications ($\Delta_Z \in [0.2, 4.0]$), when regimes separate cleanly ($\Delta_Z \ge 2.0$), regime-aware methods eliminate omitted confounding: post-clustering Hard FE (median bias 0.064) and HMM$(Z, T)$ (median bias 0.045) match or outperform Spectral OR-DML (0.075) and Oracle DML (0.042), achieving 87–94% coverage.
+* **Low-Observability Breakdown ($\Delta_Z \le 1.0$)**: Under weak separation, all estimators suffer severe proxy-induced bias (Hard FE bias 2.95, Decoupled Soft 3.56, Spectral OR-DML 4.25, HMM$(Z, T)$ 1.20). Crucially, proxy-induced size distortion causes both Hard FE and OR-DML to collapse to 0.0% coverage (Frontier B null test confirms anti-conservative inference).
+* **Diagnostic Reframe**: Rather than claiming to be an unconditionally dominating point estimator, OR-DML functions primarily as a **principled diagnostic and selective causal abstention framework**: when $\mathcal{D}_t$ surges, systems abstain rather than delivering spurious inferences.
+* **Real-Data Megacity Semi-Synthetic Benchmark (`reports/megacity_semisynthetic_summary.csv`)**: On real meteorological covariates with injected ground truth, Hard FE exhibits bias 2.48–3.56 and 0% coverage in Mumbai and Bengaluru when real-data proxy errors violate clean clustering assumptions, disproving unconditional dominance of hard clustering.
 
 ### 2. Empirical Validation of Theorem 4 (Adaptive Spectral Regularization)
-* When $\lambda_{\min}(\boldsymbol{J}) \le 0.015$ and condition number $\kappa(\boldsymbol{J}) \ge 70$, unregularized coupled estimation suffers variance explosion ($\Var = 0.032 - 0.045$, $\text{RMSE} > 0.25$, coverage dropping to $40\%$).
-* Spectral OR-DML with adaptive plug-in penalty $\hat{\lambda}^*_{\mathrm{risk}} \in [0.01, 0.05]$ reduces estimation variance by **$2.8\times$ to $9.8\times$**, halving RMSE and lifting empirical coverage to $80\%$, confirming the theoretical leading-order risk bound.
+* In ill-conditioned environments ($\lambda_{\min}(\boldsymbol{J}) \le 0.015$, condition number $\kappa(\boldsymbol{J}) \ge 70$), unregularized coupled estimation suffers variance explosion ($\Var = 0.032 - 0.045$, $\text{RMSE} > 0.25$).
+* Spectral OR-DML with adaptive plug-in penalty $\hat{\lambda}^*_{\mathrm{risk}} \in [0.01, 0.05]$ reduces estimation variance by **$2.8\times$ to $9.8\times$**, halving RMSE and confirming the theoretical leading-order risk bound.
 
-### 3. Empirical Validation of Theorem 3 (Graceful Degradation)
-* Across controlled representation perturbations with correctly specified regime-aware residualization, causal estimation error scales monotonically with proxy recovery error $\varepsilon_\gamma$:
-  * Pearson correlation: **$r = 0.9614$** ($p < 10^{-250}$).
-  * Spearman rank correlation: **$\rho = 0.9870$**.
-* This proves that Theorem 3 holds strictly once regime mean shifts are prevented from contaminating nuisance residuals.
+### 3. Factorial Mechanism Validation (Theorem 3)
+* Across 4,900 independently controlled Markov runs in a 7×7 factorial design where task conditioning is varied through residual treatment innovation variance after regime-aware nuisance residualization:
+  * Spearman correlation of causal $L_2$ error with $\mathcal{D}_{\mathrm{causal}} = \varepsilon_\gamma / \lambda_{\min}(\boldsymbol{J})$: **$\rho = 0.995$** (cell-mean $\rho = 0.996$).
+  * Spearman correlation with proxy error $\varepsilon_\gamma$ alone: $\rho = 0.626$.
+  * Spearman correlation with $1/\lambda_{\min}$ alone: $\rho = 0.521$.
+* Confirms that causal estimation degradation is strictly an interactive phenomenon governed by both latent uncertainty and task geometry.
 
 ### 4. Selective Estimation & Abstention Frontier (Frontier A)
 * Using the coupled task difficulty index $\mathcal{D}_t = \bar{H}/\lambda_{\min}(\boldsymbol{J})$ as a rejection threshold, selective causal estimation reduces estimation error by **$23.8\times$** ($3.286$ at 100% coverage $\to 0.138$ at 50% coverage).
 * Crucially, filtering by task conditioning alone ($1/\lambda_{\min}$) achieves **zero error reduction**, proving that reliable selective inference requires joint representation uncertainty and task geometry.
 
-### 5. Real-Data-Calibrated Megacity Semi-Synthetic Benchmark (`EXP-13`)
-* Evaluated on $>14,000$ real hourly meteorological covariates from Delhi, Mumbai, Bengaluru, and Kolkata with calibrated latent transition dynamics and injected ground-truth causal effects ($\theta_0^* = 0.50, \theta_1^* = 2.00$).
-* Confirms estimator behavior across diverse empirical airsheds: Delhi Basin ($\lambda_{\min} = 111.8$) separates cleanly; Mumbai Coastal ($\lambda_{\min} = 0.32$) exhibits severe collinearity requiring spectral stabilization; Bengaluru Plateau ($\lambda_{\min} = 4.22$) demonstrates well-conditioned regime contrasts.
+### 5. Transparent Empirical Megacity Sensor Network Findings
+* **Temporal Cadence**: Analysis is performed on $>14,000$ observational records across Delhi, Mumbai, Bengaluru, and Kolkata (Feb 2025–Jun 2026) with a median cadence of 2.0 hours.
+* **Delhi Basin ($\lambda_{\min} = 111.8$)**: Decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.7038 \pm 0.0513$, winter inversion, $p<0.0001$) and Regime 2 ($+0.1281 \pm 0.0743$, clearance, $p=0.0845$). Pre-treatment placebos at $h \in \{-6, -3, -1\}$ reject nullity ($p<0.01$), identifying these curves as exposure-response diagnostics rather than validated causal impulse responses.
+* **Mumbai Coastal ($\lambda_{\min} = 0.23, \kappa = 2.09$)**: Under verified `hmmlearn`, separates Regime 1 (Coastal Stagnation, $-13.3873 \pm 9.9264, p=0.1774$) from Regime 2 (Ventilation Breeze, $+6.9702 \pm 4.5945, p=0.1292$).
+* **Bengaluru Plateau ($\lambda_{\min} = 4.29, \kappa = 1.68$)**: Separates Regime 1 (Nocturnal Inversion, $+0.0875 \pm 0.1527, p=0.5667$) from Regime 2 (Afternoon Dispersion, $-0.1528 \pm 0.0691, p=0.0271$).
+* **Kolkata Airshed ($\lambda_{\min} = 0.0024$)**: Sensor telemetry displays low variance ($\Var=0.156$) with 31 unique values; unregularized estimates explode ($\text{SE}=1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$), with regularized condition number $\kappa(\hat{\boldsymbol{J}}+\lambda\boldsymbol{I})$ contracting monotonically from 1.28 to 1.00.
 
 ---
 

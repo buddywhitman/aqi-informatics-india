@@ -379,34 +379,31 @@ def run_single_replication(rep_id: int, delta_z: float, N: int = 1200) -> List[D
     # -------------------------------------------------------------
     # 4b. Regime Fixed Effects DML (Hard Assignment from HMM)
     # -------------------------------------------------------------
-    s_hard = np.argmax(unreg_dml.gamma_, axis=1)
-    th_k_list = []
-    w_k_list = []
-    for k in range(2):
-        mask_k = (s_hard == k)
-        w_k_list.append(np.mean(mask_k))
-        if np.sum(mask_k) > 30:
-            X_k = X[mask_k]
-            Y_k = Y[mask_k]
-            T_k = T[mask_k]
-            m_y_k = Ridge(alpha=1.0).fit(X_k, Y_k)
-            res_y_k = Y_k - m_y_k.predict(X_k)
-            m_t_k = Ridge(alpha=1.0).fit(X_k, T_k)
-            res_t_k = T_k - m_t_k.predict(X_k)
-            th_k = float(np.mean(res_t_k * res_y_k) / max(np.mean(res_t_k**2), 1e-12))
-        else:
-            th_k = theta_std
-        th_k_list.append(th_k)
-    theta_fe = float(w_k_list[0] * th_k_list[0] + w_k_list[1] * th_k_list[1])
+    hard_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_lambda=0.0, reg_alpha=0.0,
+        regime_assignment='hard',
+        posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0),
+        random_state=seed
+    )
+    hard_dml.fit(Y, T, X, Z)
+    theta_fe = hard_dml.ate_
+    se_fe_sate = hard_dml.sate_se_
+    se_fe_pate = hard_dml.pate_se_
+    cov_fe_sate = float(abs(theta_fe - sample_ate) <= 1.96 * se_fe_sate)
+    cov_fe_pate = float(abs(theta_fe - true_ate) <= 1.96 * se_fe_pate)
     
     results.append({
         'rep_id': rep_id, 'delta_z': delta_z, 'method': 'Regime FE DML (Hard)',
-        'theta': theta_fe, 'se': np.nan, 'sate_se': np.nan, 'pate_se': np.nan,
+        'theta': theta_fe, 'se': se_fe_pate, 'sate_se': se_fe_sate, 'pate_se': se_fe_pate,
         'true_ate': true_ate, 'sample_ate': sample_ate,
         'bias': theta_fe - true_ate, 'bias_sate': theta_fe - sample_ate,
-        'coverage': np.nan, 'cov_sate': np.nan, 'cov_pate': np.nan,
-        'lambda_min': float(np.mean(tilde_T_blk ** 2)),
-        'kappa': 1.0, 'entropy': np.nan, 'proxy_error': np.nan
+        'coverage': cov_fe_sate, 'cov_sate': cov_fe_sate, 'cov_pate': cov_fe_pate,
+        'lambda_min': hard_dml.lambda_min_,
+        'kappa': hard_dml.kappa_,
+        'entropy': hard_dml.mean_entropy_,
+        'proxy_error': proxy_err
     })
     
     # -------------------------------------------------------------
@@ -468,6 +465,69 @@ def run_single_replication(rep_id: int, delta_z: float, N: int = 1200) -> List[D
         'proxy_error': proxy_err_filt
     })
     
+    # -------------------------------------------------------------
+    # 7. Decoupled Soft OR-DML (Matched weights, decoupled solve)
+    # -------------------------------------------------------------
+    dec_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_alpha=0.05,
+        solve_mode='decoupled',
+        weighting_mode='matched',
+        regime_assignment='soft',
+        posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0),
+        random_state=seed
+    )
+    dec_dml.fit(Y, T, X, Z)
+    theta_dec = dec_dml.ate_
+    se_dec_sate = dec_dml.sate_se_
+    se_dec_pate = dec_dml.pate_se_
+    cov_dec_sate = float(abs(theta_dec - sample_ate) <= 1.96 * se_dec_sate)
+    cov_dec_pate = float(abs(theta_dec - true_ate) <= 1.96 * se_dec_pate)
+    
+    results.append({
+        'rep_id': rep_id, 'delta_z': delta_z, 'method': 'Decoupled Soft OR-DML',
+        'theta': theta_dec, 'se': se_dec_pate, 'sate_se': se_dec_sate, 'pate_se': se_dec_pate,
+        'true_ate': true_ate, 'sample_ate': sample_ate,
+        'bias': theta_dec - true_ate, 'bias_sate': theta_dec - sample_ate,
+        'coverage': cov_dec_sate, 'cov_sate': cov_dec_sate, 'cov_pate': cov_dec_pate,
+        'lambda_min': dec_dml.lambda_min_,
+        'kappa': dec_dml.kappa_,
+        'entropy': dec_dml.mean_entropy_,
+        'proxy_error': proxy_err
+    })
+    
+    # -------------------------------------------------------------
+    # 8. HMM(Z, T) OR-DML (Conditioned on treatment and meteorology)
+    # -------------------------------------------------------------
+    zt_dml = OverlapAwareRegimeDML(
+        n_regimes=2, n_splits=4, embargo_tau=12,
+        reg_alpha=0.05,
+        condition_on_treatment=True,
+        posterior_mode='smooth',
+        nuisance_model=Ridge(alpha=1.0),
+        random_state=seed
+    )
+    zt_dml.fit(Y, T, X, Z)
+    theta_zt = zt_dml.ate_
+    se_zt_sate = zt_dml.sate_se_
+    se_zt_pate = zt_dml.pate_se_
+    cov_zt_sate = float(abs(theta_zt - sample_ate) <= 1.96 * se_zt_sate)
+    cov_zt_pate = float(abs(theta_zt - true_ate) <= 1.96 * se_zt_pate)
+    proxy_err_zt, _ = compute_aligned_proxy_error(zt_dml.gamma_, gamma_oracle)
+    
+    results.append({
+        'rep_id': rep_id, 'delta_z': delta_z, 'method': 'HMM(Z, T) OR-DML',
+        'theta': theta_zt, 'se': se_zt_pate, 'sate_se': se_zt_sate, 'pate_se': se_zt_pate,
+        'true_ate': true_ate, 'sample_ate': sample_ate,
+        'bias': theta_zt - true_ate, 'bias_sate': theta_zt - sample_ate,
+        'coverage': cov_zt_sate, 'cov_sate': cov_zt_sate, 'cov_pate': cov_zt_pate,
+        'lambda_min': zt_dml.lambda_min_,
+        'kappa': zt_dml.kappa_,
+        'entropy': zt_dml.mean_entropy_,
+        'proxy_error': proxy_err_zt
+    })
+    
     return results
 
 
@@ -514,7 +574,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Regime FE DML (Hard)',
         'Unregularized Coupled DML',
         'Spectral OR-DML (Ours)',
-        'Filtered OR-DML (Ours)'
+        'Filtered OR-DML (Ours)',
+        'Decoupled Soft OR-DML',
+        'HMM(Z, T) OR-DML'
     ]
     
     for delta in delta_grid:
@@ -613,7 +675,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Regime FE DML (Hard)': '#7f7f7f',
         'Unregularized Coupled DML': '#9467bd',
         'Spectral OR-DML (Ours)': '#1f77b4',
-        'Filtered OR-DML (Ours)': '#17becf'
+        'Filtered OR-DML (Ours)': '#17becf',
+        'Decoupled Soft OR-DML': '#bcbd22',
+        'HMM(Z, T) OR-DML': '#008080'
     }
     markers = {
         'Oracle DML': 'o',
@@ -624,7 +688,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
         'Regime FE DML (Hard)': 'p',
         'Unregularized Coupled DML': 'D',
         'Spectral OR-DML (Ours)': 'P',
-        'Filtered OR-DML (Ours)': 'X'
+        'Filtered OR-DML (Ours)': 'X',
+        'Decoupled Soft OR-DML': 'h',
+        'HMM(Z, T) OR-DML': '<'
     }
     
     # Panel (a): Absolute Bias vs Delta_Z
@@ -706,9 +772,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
     ax_d.set_title(r'(d) Calibration vs. $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$', fontweight='bold')
     ax_d.legend(frameon=True, fontsize=7.5, loc='upper left')
     
-    fig.legend(handles=handles_methods, loc='upper center', bbox_to_anchor=(0.38, 1.02), ncol=7, framealpha=0.95, fontsize=8.5)
+    fig.legend(handles=handles_methods, loc='upper center', bbox_to_anchor=(0.50, 1.05), ncol=6, framealpha=0.95, fontsize=7.5)
     
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    plt.tight_layout(rect=[0, 0, 1, 0.92])
     fig_path = "plots/fig2_difficulty_frontier.png"
     plt.savefig(fig_path, dpi=300, bbox_inches='tight')
     plt.close()

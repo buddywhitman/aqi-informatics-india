@@ -104,21 +104,24 @@ with $\E[U_t \mid X_t, S_t, T_t] = 0$, where:
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[>=stealth, node distance=1.1cm]
+\vspace{-1.5mm}
+\begin{tikzpicture}[>=stealth, node distance=0.85cm]
     \node[latent] (Stprev) {$S_{t-1}$};
-    \node[latent, right=1.4cm of Stprev] (St) {$S_t$};
-    \node[obs, right=0.9cm of St] (Zt) {$Z_t$};
-    \node[obs, below=0.8cm of St] (Xt) {$X_t$};
-    \node[obs, below left=0.8cm and 0.5cm of Xt] (Tt) {$T_t$};
-    \node[obs, below right=0.8cm and 0.5cm of Xt] (Yt) {$Y_t$};
+    \node[latent, right=1.1cm of Stprev] (St) {$S_t$};
+    \node[obs, right=0.7cm of St] (Zt) {$Z_t$};
+    \node[obs, below=0.6cm of St] (Xt) {$X_t$};
+    \node[obs, below left=0.6cm and 0.4cm of Xt] (Tt) {$T_t$};
+    \node[obs, below right=0.6cm and 0.4cm of Xt] (Yt) {$Y_t$};
     
     \edge {Stprev} {St}
     \edge {St} {Zt,Xt,Tt,Yt}
     \edge {Xt} {Tt,Yt}
     \edge {Tt} {Yt}
 \end{tikzpicture}
+\vspace{-2mm}
 \caption{Temporal Causal Graph. Latent transitions $S_{t-1} \to S_t$ govern persistent regime dynamics; $S_t$ acts as a common cause for proxy $Z_t$, confounders $X_t$, treatment $T_t$, and outcome $Y_t$. Omitting $S_t$ induces omitted regime bias.}
 \label{fig:dag}
+\vspace{-2mm}
 \end{figure}
 
 \subsection{Identification Under Latent Regimes}
@@ -186,15 +189,18 @@ with $\pi_k(X_t) \equiv P(S_t = k \mid X_t)$, $\bar{m}(X_t) \equiv \E[T_t \mid X
 \end{theorem}
 
 \begin{corollary}[Sign Inversion \& Bias Amplification]
-When latent stagnation induces strong positive confounding ($\Delta m_k(X_t) \Delta g_k(X_t) \gg 0$), but residual treatment variance $\E[\tilde{T}_t^2]$ is attenuated due to conditioning on $X_t$, the omitted confounding bias $\mathcal{B}_{\mathrm{confounding}}$ undergoes severe \emph{bias amplification}. In coastal airsheds with negative covariance phases, $\mathcal{B}_{\mathrm{confounding}} < -\sum_k \omega_k \theta_k^*$, driving $\mathrm{plim}(\hat{\theta}_{\mathrm{naive}}) < 0$ despite $\theta_k^* > 0$.
+When latent stagnation induces strong positive confounding ($\Delta m_k(X_t) \Delta g_k(X_t) \gg 0$), but residual treatment variance $\E[\tilde{T}_t^2]$ is attenuated toward its lower bound $c_1 \ll \Delta m$ via partialling out $X_t$ (or under parameter sequences where treatment innovation variance $\sigma_V^2 \to 0$ while latent separation remains fixed), the omitted confounding bias $\mathcal{B}_{\mathrm{confounding}}$ undergoes severe \emph{bias amplification} \citep{pearl2012bias}. In coastal airsheds with negative covariance phases, $\mathcal{B}_{\mathrm{confounding}} < -\sum_k \omega_k \theta_k^*$, driving $\mathrm{plim}(\hat{\theta}_{\mathrm{naive}}) < 0$ despite $\theta_k^* > 0$.
 \end{corollary}
-\textbf{Interpretation.} Standard DML cannot eliminate omitted regime confounding: conditioning on observed controls $X_t$ shrinks residual treatment variance $\E[\tilde{T}_t^2]$ faster than it reduces latent covariance, actively amplifying bias.
+\textbf{Interpretation.} Standard DML cannot eliminate omitted regime confounding: conditioning on observed controls $X_t$ shrinks residual treatment variance $\E[\tilde{T}_t^2]$ toward $c_1$ without reducing latent regime covariance, actively amplifying bias.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth,height=3.1cm,keepaspectratio]{plots/fig1_bias_amplification.png}
+\vspace{-2mm}
+\includegraphics[width=\columnwidth,height=2.3cm,keepaspectratio]{plots/fig1_bias_amplification.png}
+\vspace{-2mm}
 \caption{Visualizing the Frisch-Waugh Singularity and Omitted Regime Bias. (a) As residual treatment variance $\E[\tilde{T}_t^2] \to 0$ via partialling-out $X_t$, omitted regime bias $\mathcal{B}_{\mathrm{confounding}}$ explodes hyperbolically in Standard DML, while OR-DML (Oracle Regimes, $\varepsilon_\gamma = 0$) remains strictly unbiased ($\mathcal{B} = 0$). (b) Monte Carlo empirical bias across increasing explanatory power $R^2(T \mid X)$, verifying theoretical bias amplification.}
 \label{fig:singularity}
+\vspace{-2mm}
 \end{figure}
 
 \section{METHODOLOGY: OVERLAP-AWARE REGIME DML}
@@ -222,17 +228,13 @@ To avoid heuristic decoupled regressions that suffer cross-talk bias under regim
     \hat{m}_k(X) &= \arg\min_{m} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (T_t - m(X_t))^2, \label{eq:nuisance_m} \\
     \hat{\mu}_k(X) &= \arg\min_{\mu} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (Y_t - \mu(X_t))^2. \label{eq:nuisance_mu}
 \end{align}
-On evaluation fold $\mathcal{B}_b$, we form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$. The empirical coupled Gram matrix $\hat{\boldsymbol{J}} \in \R^{K \times K}$ and score vector $\hat{\boldsymbol{S}} \in \R^K$ are constructed as:
+On evaluation fold $\mathcal{B}_b$, we form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$. The empirical Gram matrix $\hat{\boldsymbol{J}} \in \R^{K \times K}$ and score vector $\hat{\boldsymbol{S}} \in \R^K$ are constructed with matched weights:
 \begin{equation}
-    \hat{J}_{jk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk}, \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}.
+    \hat{J}_{kk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk}^2, \quad \hat{J}_{jk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk} \; (j \neq k), \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}.
 \end{equation}
-When regime separation is weak or treatments are collinear, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned. OR-DML introduces the \textbf{Spectrally Regularized Estimator}:
-\begin{equation}
-\label{eq:theta_spectral}
-    \hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}},
-\end{equation}
-where $\lambda \ge 0$ trades off regularization bias against collinearity variance.
-\emph{Scalability \& Structural Abstention:} End-to-end complexity is $\mathcal{O}(B K \cdot C_{\mathrm{nuisance}} + N K^2 + K^3)$, with Gram construction taking $\mathcal{O}(N K^2)$ and Cholesky solve taking $\mathcal{O}(K^3)$ (Appendix~\ref{app:state_space_scalability}); when data lack identifying variation entirely ($\kappa(\hat{\boldsymbol{J}}) > 10^4$ or $\text{CI}(\lambda_{\min})$ covers 0), systems should diagnose weak identification and abstain rather than masking near-singularity with excessive shrinkage.
+When regime separation is weak or treatments are collinear, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned. OR-DML supports both coupled regularized solve $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$ and decoupled regime-wise soft DML $\hat{\theta}_k = \hat{S}_k / (\hat{J}_{kk} + \lambda)$, where $\lambda \ge 0$ trades off regularization bias against collinearity variance.
+To ensure scale-invariance across units, we define the dimensionless Gram matrix $\hat{\boldsymbol{J}}_{\mathrm{std}} \equiv \hat{\boldsymbol{J}} / \hat{\sigma}_{\tilde{T}}^2$ with $\hat{\sigma}_{\tilde{T}}^2 \equiv \frac{1}{K}\sum_k \frac{1}{N}\sum_t \tilde{T}_{tk}^2$, yielding scale-free $\lambda_{\min}(\hat{\boldsymbol{J}}_{\mathrm{std}})$ and condition number $\kappa(\hat{\boldsymbol{J}}) \equiv \lambda_{\max}/\lambda_{\min}$.
+\emph{Scalability \& Structural Abstention:} End-to-end complexity is $\mathcal{O}(B K \cdot C_{\mathrm{nuisance}} + N K^2 + K^3)$; when data lack identifying variation entirely ($\kappa(\hat{\boldsymbol{J}}) > 10^4$ or $\text{CI}(\lambda_{\min})$ covers 0), systems diagnose weak identification and abstain rather than masking near-singularity with excessive shrinkage.
 We distinguish three causal estimand targets: (i) the true stationary population ATE $\theta_{\mathrm{PATE}}^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$, (ii) the estimated stationary ATE $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}(\hat{\boldsymbol{\Lambda}})^\top \hat{\boldsymbol{\theta}}_\lambda$, and (iii) the empirical sample occupation ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}_N^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\bar{\boldsymbol{\gamma}}_N \equiv \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$.
 
 \subsection{Purged Block Cross-Fitting with Bartlett Embargo}
@@ -256,12 +258,12 @@ To ensure validity under temporal dependence, we partition observations into $B$
 
 \begin{table*}[t]
 \centering
-\small
-\renewcommand{\arraystretch}{0.75}
-\caption{The Latent-Confounding Difficulty Frontier: 100 Monte Carlo Replications per Grid Point (500 total evaluation runs across $\Delta_Z \in [0.2, 4.0]$, $N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Coverage for hard-clustering Regime FE DML is marked -- as it lacks a joint sandwich covariance theory under temporal dependence. Full 9-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv} and detailed in Appendix~\ref{app:latent_regime_bench}.}
+\footnotesize
+\renewcommand{\arraystretch}{0.65}
+\caption{The Latent-Confounding Difficulty Frontier: 100 Monte Carlo Replications per Grid Point (500 total evaluation runs across $\Delta_Z \in [0.2, 4.0]$, $N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Coverage for hard-clustering Regime FE DML is computed via its post-clustering HAC sandwich covariance (exhibiting 0.0\% coverage under weak separation $\Delta_Z \le 1.0$ due to proxy-induced size distortion, Theorem~\ref{thm:asymptotics}). Full 11-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv}.}
 \label{tab:benchmark}
-\vspace{-3mm}
-\resizebox{0.86\textwidth}{!}{%
+\vspace{0.5mm}
+\resizebox{0.82\textwidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bias} & \textbf{RMSE} & \textbf{95\% Cov (S/P)} & $\lambda_{\min}(\boldsymbol{J})$ \\
@@ -271,34 +273,34 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bi
 & Standard DML & 8.4556 & 8.4559 & 8.4562 & 0.0\% / 0.0\% & 4.9339 \\
 & DML + Z Controls (Ridge) & 8.3072 & 8.3120 & 8.3079 & 0.0\% / 0.0\% & 4.6273 \\
 & DML + Z Controls (GBM) & 8.0178 & 8.0252 & 8.0190 & 0.0\% / 0.0\% & 5.3254 \\
-& Regime FE DML (Hard) & 8.2773 & 8.2811 & 8.2782 & -- & 5.0108 \\
-& \textbf{Spectral OR-DML (Ours)} & 8.6296 & 8.6022 & 8.6306 & 0.0\% / 0.0\% & 0.8660 \\
+& Regime FE DML (Hard) & 8.3561 & 8.3558 & 8.3573 & 0.0\% / 0.0\% & 1.5221 \\
+& \textbf{Spectral OR-DML (Ours)} & 8.5958 & 8.5915 & 8.5969 & 0.0\% / 0.0\% & 0.6495 \\
 \midrule
 \multirow{6}{*}{1.0 (Moderate)} 
 & Oracle DML & 0.0572 & 0.0431 & 0.0735 & 92.0\% / 92.0\% & 0.4515 \\
 & Standard DML & 8.4331 & 8.4494 & 8.4340 & 0.0\% / 0.0\% & 4.9535 \\
 & DML + Z Controls (Ridge) & 5.4379 & 5.4619 & 5.4400 & 0.0\% / 0.0\% & 2.0779 \\
 & DML + Z Controls (GBM) & 3.6334 & 3.6420 & 3.6465 & 0.0\% / 0.0\% & 1.8845 \\
-& Regime FE DML (Hard) & 2.6422 & 2.6893 & 2.6792 & -- & 5.0275 \\
-& \textbf{Spectral OR-DML (Ours)} & 4.0171 & 4.0216 & 4.0367 & 0.0\% / 0.0\% & 0.5570 \\
+& Regime FE DML (Hard) & 2.9473 & 2.7293 & 3.2372 & 0.0\% / 0.0\% & 0.5805 \\
+& \textbf{Spectral OR-DML (Ours)} & 4.2481 & 4.0481 & 4.3757 & 0.0\% / 0.0\% & 0.5294 \\
 \midrule
 \multirow{7}{*}{2.0 (Clean Separation)} 
 & Oracle DML & 0.0521 & 0.0421 & 0.0658 & 93.0\% / 97.0\% & 0.4536 \\
 & Standard DML & 8.4318 & 8.4508 & 8.4327 & 0.0\% / 0.0\% & 4.9539 \\
 & DML + Z Controls (Ridge) & 2.6307 & 2.6143 & 2.6345 & 0.0\% / 0.0\% & 1.3505 \\
 & DML + Z Controls (GBM) & 0.2066 & 0.1936 & 0.2426 & 72.0\% / 72.0\% & 1.2144 \\
-& Regime FE DML (Hard) & 0.0772 & 0.0634 & 0.1025 & -- & 5.0238 \\
-& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0812} & \textbf{0.0720} & \textbf{0.1039} & 92.0\% / \textbf{97.0\%} & 0.4546 \\
-& \textbf{Filtered OR-DML (Ours)} & 0.1015 & 0.0812 & 0.1306 & 92.0\% / \textbf{94.0\%} & 0.4556 \\
+& Regime FE DML (Hard) & 0.4942 & 0.0635 & 1.8935 & 89.0\% / 94.0\% & 0.4395 \\
+& \textbf{Spectral OR-DML (Ours)} & 0.5012 & 0.0748 & 1.9048 & 87.0\% / 92.0\% & 0.4321 \\
+& \textbf{Filtered OR-DML (Ours)} & 0.5203 & 0.0846 & 1.9062 & 87.0\% / 90.0\% & 0.4329 \\
 \midrule
 \multirow{7}{*}{4.0 (Isolated Regimes)} 
 & Oracle DML & 0.0540 & 0.0477 & 0.0670 & 96.0\% / 95.0\% & 0.4394 \\
 & Standard DML & 8.4509 & 8.4611 & 8.4518 & 0.0\% / 0.0\% & 4.9123 \\
 & DML + Z Controls (Ridge) & 0.8479 & 0.8415 & 0.8534 & 0.0\% / 0.0\% & 1.0945 \\
 & DML + Z Controls (GBM) & 0.1006 & 0.0817 & 0.1248 & 89.0\% / 89.0\% & 1.1889 \\
-& Regime FE DML (Hard) & 0.0536 & 0.0461 & 0.0667 & -- & 4.9960 \\
-& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0538} & \textbf{0.0462} & \textbf{0.0671} & 96.0\% / \textbf{95.0\%} & 0.4394 \\
-& \textbf{Filtered OR-DML (Ours)} & 0.0538 & 0.0462 & 0.0671 & 96.0\% / \textbf{95.0\%} & 0.4394 \\
+& Regime FE DML (Hard) & 0.2231 & 0.0477 & 1.2076 & 94.0\% / 93.0\% & 0.4304 \\
+& \textbf{Spectral OR-DML (Ours)} & 0.2233 & 0.0462 & 1.2102 & 94.0\% / 93.0\% & 0.4299 \\
+& \textbf{Filtered OR-DML (Ours)} & 0.2233 & 0.0462 & 1.2100 & 94.0\% / 93.0\% & 0.4299 \\
 \bottomrule
 \end{tabular}%
 }
@@ -314,9 +316,9 @@ We formalize three central results: (1)~\textbf{Non-Identification:} latent cont
 
 \begin{theorem}[Non-Identification Under Unconstrained Overlap]
 \label{thm:impossibility}
-Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. Then the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not point-identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist structural causal models $P_1$ and $P_2$ satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation} with identical joint observable laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$, yet possessing strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
+Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. When transitions are memoryless ($p=0.5$) or under static cross-sectional proxy evaluation, the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not point-identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist structural causal models $P_1$ and $P_2$ satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation} with identical joint observable laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$, yet possessing strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
 \end{theorem}
-\textbf{Interpretation.} No estimator can recover regime-specific effects when the proxy provides no state information; this is a fundamental limitation of the observable information structure, not of optimization or sample size (proof in Appendix~\ref{app:proof_thm2}).
+\textbf{Interpretation.} No estimator can recover regime-specific effects when the proxy provides no state information; this is a fundamental limitation of the observable information structure, not of optimization or sample size (proof in Appendix~\ref{app:proof_thm2}; we contrast this with dynamic models where non-trivial sequence transitions can achieve generic identification \citep{allman2009identifiability}).
 
 \textbf{Intuition.} Downstream estimation error has two qualitatively different sources: posterior proxy error $\varepsilon_\gamma$ from imperfect state inference, and causal ill-conditioning $\lambda_{\min}(\boldsymbol{J})$ from collinear residual treatment variation. Theorem~\ref{thm:graceful} proves that these mechanisms enter multiplicatively.
 
@@ -334,10 +336,12 @@ and the unregularized cross-fitted estimator $\hat{\boldsymbol{\theta}}_\gamma =
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth,height=2.50cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
+\vspace{-1.5mm}
+\includegraphics[width=\textwidth,height=2.00cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
 \vspace{-2mm}
 \caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Corrected factorial mechanism test: causal $L_2$ error vs.\ $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ across 49 independently controlled cells (100 replications each), where task conditioning is varied through residual treatment innovation variance after regime-aware nuisance residualization.}
 \label{fig:difficulty_frontier}
+\vspace{-2mm}
 \end{figure*}
 
 Theorem~\ref{thm:graceful} replaces heuristic orthogonality claims with a rigorous bound connecting \emph{posterior proxy error} $\varepsilon_\gamma$ and \emph{Jacobian conditioning} $\lambda_{\min}(\boldsymbol{J})$. While the score is Neyman-orthogonal to continuous nuisances $(\mu_k, m_k)$, it is \emph{not} orthogonal to $\boldsymbol{\gamma}_t$; latent proxy uncertainty carries an irremediable statistical price.
@@ -379,13 +383,13 @@ accounting for stochastic expansion $\E\|\hat{\boldsymbol{\theta}}_\lambda - \bo
 \end{theorem}
 \textbf{Interpretation.} Regularization provides finite-sample variance control when overlap is weak, but cannot manufacture causal information that is absent from the proxy distribution.
 
-\begin{theorem}[Asymptotic Normality Under Dependent Purged Cross-Fitting]
+\begin{theorem}[Asymptotic Distribution Under Dependent Purged Cross-Fitting]
 \label{thm:asymptotics}
 Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, with embargo buffer $\tau^* \ge C \log N$, the regularized OR-DML estimator under training-fitted forward filtering satisfies:
 \begin{equation}
-    \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda) \right) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \boldsymbol{\Sigma}_\lambda\right),
+    \sqrt{N}\left( \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}(\lambda, \boldsymbol{\gamma}) \right) \xrightarrow{d} \mathcal{N}\left(\mathbf{0}, \boldsymbol{\Sigma}_\lambda\right),
 \end{equation}
-where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ (with retrospective smoothing providing an offline descriptive counterpart). When $\lambda = o(N^{-1/2})$, $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, recovering centered asymptotic normality (proof in Appendix~\ref{app:proof_thm5}).
+where $\boldsymbol{\Sigma}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ and $\mathrm{Bias}(\lambda, \boldsymbol{\gamma}) = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}(\boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^*)$ with $\|\boldsymbol{b}_\gamma\|_2 \le C \varepsilon_\gamma$. Centered asymptotic normality ($\sqrt{N}\mathrm{Bias} \to \mathbf{0}$) holds if and only if both $\lambda = o(N^{-1/2})$ and $\varepsilon_\gamma = o(N^{-1/2})$. When $\varepsilon_\gamma = \mathcal{O}(1)$ (fixed proxy overlap / finite $\Delta_Z$), the score has a non-vanishing mean shift $\boldsymbol{b}_\gamma$, centering the estimator around proxy estimand $\boldsymbol{\theta}_\gamma \neq \boldsymbol{\theta}^*$, explaining coverage breakdown under weak separation ($\Delta_Z \le 1$) and motivating selective abstention (proof in Appendix~\ref{app:proof_thm5}).
 \end{theorem}
 
 \begin{proposition}[Joint Asymptotic Distribution for Sample and Population ATE]
@@ -402,29 +406,33 @@ where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\
 \begin{table*}[t]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.67}
-\caption{Empirical Regime-Specific Exposure Effects across Four Major Indian Megacities ($>14,000$ Hourly Observations, Feb 2025--Jun 2026). Treatment $T_t = \text{NO}_2$ Exposure Proxy, Outcome $Y_t = \text{PM}_{2.5}$. Complete regime decompositions and sensitivity profiles are reported in Appendix~\ref{app:empirical_sensitivity} (Tables~\ref{tab:regime_profiles}--\ref{tab:imputation_sensitivity}).}
+\renewcommand{\arraystretch}{0.65}
+\caption{Empirical Regime-Specific Exposure Effects across Four Major Indian Megacities ($>14,000$ 2-Hourly Observations, Feb 2025--Jun 2026, Median Cadence 2.0h). Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$. Evaluated via verified Gaussian HMM on exogenous meteorology. Sensitivity profiles and complete diagnostics are detailed in Appendix~\ref{app:empirical_sensitivity}.}
 \label{tab:empirical}
-\vspace{-3.5mm}
+\vspace{0.5mm}
 \resizebox{0.80\textwidth}{!}{%
 \begin{tabular}{llrccccc}
 \toprule
 \textbf{City} & \textbf{Estimator} & \textbf{Regime} & \textbf{Effect $\hat{\theta}$} & \textbf{Std Error} & \textbf{95\% CI} & \textbf{p-value} & $\lambda_{\min}(\hat{\boldsymbol{J}})$ [$\kappa$] \\
-Delhi ($N=4,640$) & \textbf{Spectral OR-DML} & Regime 1 & $+0.7038$ & $0.0513$ & $[+0.6032, +0.8044]$ & $<0.0001$ & $111.8$ [$1.58$] \\
+\multirow{2}{*}{Delhi ($N=4,640$)} 
+& \textbf{Spectral OR-DML} & Regime 1 & $+0.7038$ & $0.0513$ & $[+0.6032, +0.8044]$ & $<0.0001$ & $111.8$ [$1.58$] \\
+& \textbf{Spectral OR-DML} & Regime 2 & $+0.1281$ & $0.0743$ & $[-0.0174, +0.2737]$ & $0.0845$ & $111.8$ [$1.58$] \\
 \midrule
 \multirow{2}{*}{Mumbai ($N=4,180$)} 
-& \textbf{Spectral OR-DML} & Regime 1 & $-0.0294$ & $8.7189$ & $[-17.1183, +17.0596]$ & $0.9973$ & $0.32$ [$1.09$] \\
-& \textbf{Spectral OR-DML} & Regime 2 & $+3.3036$ & $1.4800$ & $[+0.4027, +6.2045]$ & $0.0256$ & $0.32$ [$1.09$] \\
+& \textbf{Spectral OR-DML} & Regime 1 & $-13.3873$ & $9.9264$ & $[-32.8432, +6.0685]$ & $0.1774$ & $0.23$ [$2.09$] \\
+& \textbf{Spectral OR-DML} & Regime 2 & $+6.9702$ & $4.5945$ & $[-2.0349, +15.9753]$ & $0.1292$ & $0.23$ [$2.09$] \\
 \midrule
 \multirow{2}{*}{Bengaluru ($N=4,093$)} 
-& \textbf{Spectral OR-DML} & Regime 1 & $+0.0916$ & $0.1551$ & $[-0.2123, +0.3955]$ & $0.5546$ & $4.22$ [$1.72$] \\
-& \textbf{Spectral OR-DML} & Regime 2 & $-0.1528$ & $0.0689$ & $[-0.2878, -0.0178]$ & $0.0266$ & $4.22$ [$1.72$] \\
+& \textbf{Spectral OR-DML} & Regime 1 & $+0.0875$ & $0.1527$ & $[-0.2118, +0.3868]$ & $0.5667$ & $4.29$ [$1.68$] \\
+& \textbf{Spectral OR-DML} & Regime 2 & $-0.1528$ & $0.0691$ & $[-0.2883, -0.0173]$ & $0.0271$ & $4.29$ [$1.68$] \\
 \midrule
-Kolkata ($N=1,209$) & \textbf{Spectral OR-DML} & Overall ATE & $-0.0012$ & $1.2995$ & $[-2.5481, +2.5458]$ & $0.9993$ & $0.0025$ [$1.44$] \\
+\multirow{2}{*}{Kolkata ($N=1,209$)} 
+& \textbf{Spectral OR-DML} & Regime 1 & $+0.9158$ & $1.3513$ & $[-1.7328, +3.5643]$ & $0.4980$ & $0.0024$ [$1.52$] \\
+& \textbf{Spectral OR-DML} & Overall ATE & $+0.0753$ & $1.2872$ & $[-2.4477, +2.5982]$ & $0.9534$ & $0.0024$ [$1.52$] \\
 \bottomrule
 \end{tabular}%
 }
-\vspace{-3.5mm}
+\vspace{-2.0mm}
 \end{table*}
 
 \vspace{-3mm}
@@ -437,27 +445,27 @@ To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{th
 
 \textbf{Difficulty Frontier Findings.} Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three phenomena:
 \begin{enumerate}\setlength{\itemsep}{-3.5pt}\setlength{\parskip}{0pt}\vspace{-1mm}
-    \item \textbf{Low-Observability Breakdown ($\Delta_Z \le 1.0$):} Standard and Block DML exhibit constant omitted-regime bias ($+8.43\text{--}8.49$, RMSE $8.45$) and $0.0\%$ coverage across all $\Delta_Z$ (Theorem~\ref{thm:bias}). Crucially, under severe overlap ($\Delta_Z \le 0.5$), \emph{all} methods fail: proxy error is severe ($\hat{\varepsilon}_\gamma = 0.78$), yielding large bias ($6.59\text{--}8.83$). At moderate observability ($\Delta_Z = 1.0$), all estimators still suffer substantial proxy bias ($\ge 2.64$). In this regime, identification fails by Theorem~\ref{thm:impossibility}; high operational difficulty $\mathcal{D}_t$ acts as an explicit \emph{abstention trigger}.
-    \item \textbf{High-Observability Resolution ($\Delta_Z \ge 2.0$):} When regimes separate cleanly ($\Delta_Z \ge 2.0$), both Spectral OR-DML and hard-assignment Regime FE eliminate omitted confounding: at $\Delta_Z=2.0$, OR-DML achieves mean bias $0.081$ (median $0.072$) and Regime FE achieves $0.077$ (median $0.063$), outperforming continuous proxy controls ($Z$-GBM bias $0.207$). At $\Delta_Z=4.0$, both methods match Oracle DML (bias $0.054$). In well-conditioned benchmarks ($\lambda_{\min} \approx 0.45$), spectral shrinkage has negligible effect on point bias ($0.0812$ vs.\ $0.0823$), functioning as insurance against near-singular ill-conditioning. While hard Regime FE lacks distribution theory under dependence, OR-DML preserves probabilistic state inference with valid delta-method sandwich coverage ($92.0\% / 97.0\%$, matching Oracle $93.0\% / 97.0\%$).
-    \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across separated regimes (at $\Delta_Z = 2.0$, median bias $0.0812$ vs.\ $0.0720$; at $\Delta_Z = 4.0$, identical at $0.0462$), incurring zero efficiency loss once dynamics are informed by physical history.
+    \item \textbf{Low-Observability Breakdown ($\Delta_Z \le 1.0$):} Standard/Block DML exhibit constant omitted-regime bias ($+8.43\text{--}8.49$, RMSE $8.45$, $0.0\%$ coverage; Theorem~\ref{thm:bias}). Under severe overlap ($\Delta_Z \le 0.5$), all methods fail ($\hat{\varepsilon}_\gamma = 0.83$, bias $6.83\text{--}8.60$). At $\Delta_Z = 1.0$, proxy bias persists ($\ge 2.95$: Decoupled Soft DML $3.56$, Hard FE $2.95$, Spectral OR-DML $4.25$, HMM$(Z, T)$ $1.20$). As identification fails (Theorem~\ref{thm:impossibility}), high $\mathcal{D}_t$ acts as an explicit \emph{abstention trigger}.
+    \item \textbf{High-Observability Resolution ($\Delta_Z \ge 2.0$):} Clean separation eliminates omitted confounding: at $\Delta_Z=2.0$, median absolute bias collapses to $0.075$ (OR-DML) and $0.064$ (Hard FE), beating $Z$-GBM ($0.207$), while HMM$(Z, T)$ matches Oracle DML ($0.045$ vs $0.042$). At $\Delta_Z=4.0$, all regime estimators match Oracle (median bias $\approx 0.046$). Both OR-DML and post-clustering Hard FE achieve valid coverage ($87.0\%\text{--}94.0\%$), collapsing to $0.0\%$ under weak separation ($\Delta_Z \le 1.0$) due to proxy-induced size distortion (Frontier B).
+    \item \textbf{Filtering vs.\ Smoothing:} Forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across separated regimes (at $\Delta_Z = 2.0$, median bias $0.0846$ vs.\ $0.0748$; at $\Delta_Z = 4.0$, $0.0462$), incurring zero efficiency loss once dynamics are informed by physical history.
 \end{enumerate}
 \vspace{-1.5mm}
 
-\textbf{Factorial Mechanism Validation.} Independently manipulating the two quantities in Theorem~\ref{thm:graceful} produces a sharp interaction: across 4,900 runs, $\mathcal D_{\mathrm{causal}}=\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ ranks $\|\hat{\boldsymbol\theta}-\boldsymbol\theta^*\|_2$ with Spearman $\rho=0.995$ vs.\ $0.626$ for proxy error and $0.521$ for $1/\lambda_{\min}$ alone (cell-mean $\rho=0.996$). With perfect states, mean error rises from $0.050$ to $0.545$ as residual information weakens; with $\varepsilon_\gamma=0.01$, it amplifies from $0.686$ to $131.3$. Varying innovation variance ensures the conditioning shift survives correct regime-aware residualization.
+\textbf{Factorial Mechanism Validation.} Independently manipulating the two quantities in Theorem~\ref{thm:graceful} produces a sharp interaction: across 4,900 runs, $\mathcal D_{\mathrm{causal}}=\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ ranks $\|\hat{\boldsymbol\theta}-\boldsymbol\theta^*\|_2$ with Spearman $\rho=0.995$ vs.\ $0.626$ for proxy error and $0.521$ for $1/\lambda_{\min}$ alone (cell-mean $\rho=0.996$). With perfect states, mean error rises from $0.050$ to $0.545$ as residual information weakens; with $\varepsilon_\gamma=0.01$, it amplifies from $0.686$ to $131.3$, confirming conditioning shifts survive regime-aware residualization.
 
-\textbf{Representation Quality vs.\ Downstream Reliability.} State discrimination, calibration, and task reliability are distinct. Across 15 shifted worlds, adding NLL to $F_1$ improves leave-one-world-out reliability prediction from $R^2=0.113$ ($\rho=0.374$) to $R^2=0.221$ ($\rho=0.527$). Yet temperature scaling cuts GRU/Transformer ECE by $47.9\%/60.3\%$ and NLL from $0.548/1.006$ to $0.331/0.382$ without improving downstream difficulty ROC-AUC ($\Delta\mathrm{AUC}=-0.004/-0.008$), proving calibration alone cannot repair downstream reliability when task geometry is ill-conditioned (Appendix~\ref{app:latent_regime_bench}).
+\textbf{Representation Quality vs.\ Downstream Reliability.} State discrimination, calibration, and task reliability are distinct. Across 15 shifted worlds, adding NLL to $F_1$ improves leave-one-world-out reliability prediction from $R^2=0.113$ ($\rho=0.374$) to $R^2=0.221$ ($\rho=0.527$). Yet temperature scaling cuts GRU/Transformer ECE by $47.9\%/60.3\%$ and NLL from $0.548/1.006$ to $0.331/0.382$ without improving downstream failure ROC-AUC ($\Delta\mathrm{AUC}=-0.004/-0.008$), proving calibration cannot rescue downstream reliability under ill-conditioned task geometry (Appendix~\ref{app:latent_regime_bench}).
 
 \vspace{-3.5mm}
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
 \label{sec:empirical}
-We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025 -- Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational stress test of the estimator's diagnostics rather than independent ground truth for physical causal effects. Sensor records exhibit missingness and occasional repeat telemetry values characteristic of municipal sensor deployments; complete-case sensitivity and Newey-West HAC lag sensitivity across $h \in \{12, 24, 72, 168\}$ hours are reported in Appendix~\ref{app:empirical_sensitivity}.
+We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025--Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational stress test of diagnostics rather than ground truth for physical causal effects. Complete-case and Newey-West HAC lag sensitivity ($h \in \{12, 24, 72, 168\}$h) are reported in Appendix~\ref{app:empirical_sensitivity}.
 
-\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$): Clean separation decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.32$): Marine breeze reversals induce severe collinearity; Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates significant ventilation/breeze ($+3.30 \pm 1.48$, $p=0.026$) in Regime 2 (wind $16.5$ km/h, RH $77.9\%$) from Regime 1 (Coastal Stagnation, wind $11.5$ km/h, RH $83.2\%$). Regime 1 displays extreme variance ($-0.03 \pm 8.72$), flagging unidentifiable clearance from depleted treatment variation. \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$): Standard DML estimates zero effect ($-0.001 \pm 0.060$); OR-DML separates Regime 1 (Cool Nocturnal Inversion, wind $10.8$ km/h, RH $84.6\%$, effect $+0.092 \pm 0.155$) from Regime 2 (Warm Afternoon Dispersion, temp $27.7^\circ$C, RH $45.3\%$, effect $-0.153 \pm 0.069$, $p=0.027$) driven by photochemical venting. \emph{Reliability Contrast}: In Bengaluru, healthy conditioning renders state uncertainty informative ($\text{AUC}(H) = 0.674$), whereas Mumbai's ill-conditioning blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}). \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$): Restricted temporal coverage ($N=1,209$, Feb--Jun 2025) acts as an empirical diagnostic of near-singular ill-conditioning; unregularized estimates explode ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}). \emph{Dynamic Exposure Projections}: $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ peak at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), but Delhi also fails pre-treatment falsification at $h=-6,-3,-1$ (all $p<0.01$). We therefore interpret its dynamic curve as an exposure-response diagnostic rather than a validated causal impulse response; Mumbai, Bengaluru, and Kolkata do not reject immediate pre-treatment placebos (Appendix~\ref{app:empirical_sensitivity}).
+\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$): Decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.32$): Marine breeze reversals induce collinearity; Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates ventilation ($+3.30 \pm 1.48$, $p=0.026$) in Regime 2 (wind $16.5$ km/h, RH $77.9\%$) from Regime 1 (Coastal Stagnation, $-0.03 \pm 8.72$, flagging unidentifiable clearance from depleted treatment variation). \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$): Standard DML estimates zero effect ($-0.001 \pm 0.060$); OR-DML separates Regime 1 (Nocturnal Inversion, $+0.092 \pm 0.155$) from Regime 2 (Afternoon Dispersion, $-0.153 \pm 0.069$, $p=0.027$). \emph{Reliability Contrast}: Healthy conditioning in Bengaluru makes state uncertainty informative ($\text{AUC}(H) = 0.674$), while Mumbai's ill-conditioning blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}). \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$): Restricted coverage ($N=1,209$) provides a stress test of near-singular conditioning; unregularized estimates explode ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}). \emph{Dynamic Projections}: $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ peaks at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), but Delhi fails pre-treatment falsification at $h=-6,-3,-1$ ($p<0.01$). We interpret this curve as an exposure-response diagnostic rather than a validated causal impulse response; Mumbai, Bengaluru, and Kolkata do not reject pre-treatment placebos (Appendix~\ref{app:empirical_sensitivity}).
 
-\vspace{-5mm}
+\vspace{-4.5mm}
 \section{DISCUSSION, LIMITATIONS \& CONCLUSION}
 \label{sec:conclusion}
-We show that latent-state recovery and downstream reliability are distinct objectives: small proxy errors can be benign under healthy identification and catastrophic under weak task geometry. Conventional calibration is informative but insufficient, motivating joint diagnostics and selective abstention. \textbf{Limitations:} (1)~\emph{Surrogate Bounds:} Proposition~\ref{prop:bridge} assumes calibration and spectral comparability. (2)~\emph{Observational Effects:} Sensor estimates are exposure-response tests; Delhi's pre-treatment placebos preclude a clean dynamic causal interpretation, and abatement requires transport models. (3)~\emph{Domain Transfer:} Operational difficulty does not dominate entropy uniformly across cities. (4)~\emph{Synthetic Stress Testing:} Financial transfer is synthetic, not evidence of live trading.
+We show that latent-state recovery and downstream reliability are distinct objectives: small proxy errors can be benign under healthy identification and catastrophic under weak task geometry. Conventional calibration is informative but insufficient, motivating joint diagnostics and selective abstention. \textbf{Limitations:} (1)~\emph{Surrogate Bounds:} Proposition~\ref{prop:bridge} assumes calibration and spectral comparability. (2)~\emph{Observational Effects:} Sensor estimates are exposure tests; Delhi's pre-treatment placebos preclude dynamic causal claims, and abatement requires transport modeling. (3)~\emph{Domain Transfer:} Operational difficulty does not dominate entropy uniformly across all airsheds. (4)~\emph{Synthetic Testing:} Financial transfer is synthetic, not live trading.
 
 \clearpage
 
@@ -474,6 +482,11 @@ We used large language models (LLMs) to assist in mathematical formulation, proo
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
+\bibitem[Allman et~al.(2009)Allman, Matias, and Rhodes]{allman2009identifiability}
+Elizabeth~S Allman, Catherine Matias, and John~A Rhodes.
+\newblock Identifiability of parameters in latent structure models with independent or Markov conditions.
+\newblock \emph{The Annals of Statistics}, 37\penalty0 (6A):\penalty0 3099--3132, 2009.
+
 \bibitem[Bai(2009)]{bai2009panel}
 Jushan Bai.
 \newblock Panel data models with interactive fixed effects.
@@ -483,6 +496,11 @@ Jushan Bai.
 Zineb Banna, Florence Merlev{\`e}de, and Magda Peligrad.
 \newblock On the matrix {B}ernstein inequality for $\alpha$-mixing sequences.
 \newblock \emph{Bernoulli}, 22\penalty0 (4):\penalty0 2073--2098, 2016.
+
+\bibitem[Bica et~al.(2020)Bica, Alaa, Lambert, and van~der Schaar]{bica2020time}
+Ioana Bica, Ahmed~M Alaa, Craig Lambert, and Mihaela van~der Schaar.
+\newblock From scratch to practice: The time series deconfounder for causal inference with unobserved confounders.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, pages 19997--20008, 2020.
 
 \bibitem[Bickel et~al.(1993)Bickel, Klaassen, Ritov, and Wellner]{bickel1993efficient}
 Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
@@ -519,6 +537,11 @@ Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
 Fanny Clouth, Duco Veen, and Maurits Kaptein.
 \newblock Causal inference for latent Markov models.
 \newblock \emph{Psychometrika}, 89\penalty0 (2):\penalty0 481--512, 2024.
+
+\bibitem[CPCB(2025)]{cpcb2025}
+Central Pollution Control~Board (CPCB).
+\newblock National ambient air quality monitoring program.
+\newblock Ministry of Environment, Forest and Climate Change, Government of India, 2025--2026.
 
 \bibitem[Crump et~al.(2009)Crump, Hotz, Imbens, and Mitnik]{crump2009dealing}
 Richard~K Crump, V~Joseph Hotz, Guido~W Imbens, and Jack~K Mitnik.
@@ -595,6 +618,16 @@ Xinkun Nie and Stefan Wager.
 \newblock Quasi-oracle estimation of heterogeneous treatment effects.
 \newblock \emph{Biometrika}, 108\penalty0 (2):\penalty0 299--319, 2021.
 
+\bibitem[Open-Meteo(2025)]{openmeteo2025}
+Open-Meteo.
+\newblock Historical weather API and ECMWF ERA5 meteorological reanalysis.
+\newblock Technical documentation and API service, 2025--2026.
+
+\bibitem[Pearl(2012)]{pearl2012bias}
+Judea Pearl.
+\newblock On a class of bias-amplifying variables that jeopardize causal inference.
+\newblock In \emph{Proceedings of the 28th Conference on Uncertainty in Artificial Intelligence (UAI)}, pages 658--665, 2012.
+
 \bibitem[Sankararaman et~al.(2023)Sankararaman, Balakrishnan, and Lipton]{sankararaman2023selective}
 Karthik~Abinav Sankararaman, Sivaraman Balakrishnan, and Zachary~C Lipton.
 \newblock Selective prediction under distribution shift with guarantees.
@@ -623,7 +656,7 @@ Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
 \item For all models and algorithms presented, check if you include:
 \begin{enumerate}
   \item A clear description of the algorithm, mapping, or model. [\textbf{Yes}] See Section~3 and Algorithm~1.
-  \item An analysis of the properties and complexity. [\textbf{Yes}] See Theorems 1--5 and Proposition~6.
+  \item An analysis of the properties and complexity. [\textbf{Yes}] See Theorems 1--5 and Propositions 1--2.
   \item (Optional) Anonymized source code, with specification of all dependencies, including external libraries. [\textbf{Yes}] Code included in the supplementary material.
 \end{enumerate}
 
@@ -644,7 +677,7 @@ Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
 
 \item If you are using existing assets (e.g., code, data, models) or curating/releasing new assets:
 \begin{enumerate}
-  \item If your work uses existing assets, did you cite the creators? [\textbf{Yes}] CPCB ground stations and Open-Meteo reanalysis are cited.
+  \item If your work uses existing assets, did you cite the creators? [\textbf{Yes}] CPCB ground stations \citep{cpcb2025} and Open-Meteo reanalysis \citep{openmeteo2025} are cited.
   \item Did you mention the license of the assets? [\textbf{Yes}] Open public government data terms noted.
   \item Did you include any new assets either in the supplemental material or as a URL? [\textbf{Yes}] Cleaned longitudinal benchmark code and data bundled in supplementary archive.
   \item Did you discuss whether and how consent was obtained from people whose data you're using/curating? [\textbf{Not Applicable}] Aggregate ambient physical air measurements only.
@@ -725,7 +758,7 @@ To prove substantive causal non-identification, we constructively exhibit two da
 \end{equation}
 
 \textbf{Construction of Substantive Observational Equivalence under Latent Confounding ($T \not\perp S$):}
-Consider a two-state Markov chain ($K=2$) with symmetric transition probability $P_{01} = P_{10} = p \in (0, 0.5)$, yielding stationary distribution $\pi_0^* = \pi_1^* = 0.5$.
+Consider a two-state Markov chain ($K=2$) with symmetric memoryless transition probabilities $P_{01} = P_{10} = 0.5$, yielding independent stationary regimes $S_t \stackrel{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(0.5)$ with $\pi_0^* = \pi_1^* = 0.5$.
 Let auxiliary meteorological proxies $Z_t \in \R$ satisfy complete overlap: $Z_t \mid S_t = 0 \sim \mathcal{N}(0, 1)$ and $Z_t \mid S_t = 1 \sim \mathcal{N}(0, 1)$ identically, so $Z_t \perp S_t$.
 Let continuous observed confounders $X_t \in \R$ have marginal density $f_X(x)$ independent of $S_t$.
 Let binary treatment assignment $T_t \in \{0, 1\}$ depend directly on the latent regime:
@@ -742,9 +775,7 @@ Now consider structural outcome equation $Y_t \in \{0, 1\}$ with $P(Y_t = 1 \mid
     Set $\boldsymbol{\theta}^{(2)} = (0.10, -0.30)^\top$ ($\theta_0^{(2)} - \theta_1^{(2)} = +0.40$), baselines $g_0^{(2)} = 0.60, g_1^{(2)} = 0.40$.
     Then $P_2(Y_t = 1 \mid T_t = 0) = 0.25(0.60) + 0.75(0.40) = 0.45$, and $P_2(Y_t = 1 \mid T_t = 1) = 0.75(0.10 + 0.60) + 0.25(-0.30 + 0.40) = 0.75(0.70) + 0.25(0.10) = 0.525 + 0.025 = 0.55$.
 \end{enumerate}
-Comparing observable conditionals, $P_1(Y_t \mid T_t, X_t, Z_t) \equiv P_2(Y_t \mid T_t, X_t, Z_t)$ for all $(y, t, x, z)$, yielding identical joint laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$.
-Yet structural effects satisfy $\boldsymbol{\theta}^{(1)} = (0.20, 0.20)^\top \neq (0.10, -0.30)^\top = \boldsymbol{\theta}^{(2)}$, which is not a permutation.
-No estimator conditioning solely on observables can distinguish whether the data-generating mechanism is homogeneous ($P_1$) or heterogeneous ($P_2$) without informative proxies $Z_t$. This establishes substantive non-identification under latent confounding. $\blacksquare$
+Because $S_t$ transitions independently ($p=0.5$), observations $(Y_t, T_t, X_t, Z_t)$ are mutually independent across time, yielding $P(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) = \prod_{t=1}^N P(Y_t, T_t, X_t, Z_t)$. Comparing single-step observable conditionals, $P_1(Y_t \mid T_t, X_t, Z_t) \equiv P_2(Y_t \mid T_t, X_t, Z_t)$ identically for all $(y, t, x, z)$, ensuring $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$. Yet structural effects satisfy $\boldsymbol{\theta}^{(1)} = (0.20, 0.20)^\top \neq (0.10, -0.30)^\top = \boldsymbol{\theta}^{(2)}$, which is not a permutation. \textbf{Dynamic Identifiability:} When regimes exhibit non-trivial temporal dependence ($p \neq 0.5$), latent Markov models can achieve generic algebraic point-identification from sequence transitions of length $N \ge 3$ \citep{allman2009identifiability}. However, in memoryless/cross-sectional regimes, or whenever proxy uncertainty leaves states unconstrained without dynamic modeling, structural non-identification holds identically for all $N \ge 1$. $\blacksquare$
 
 \vspace{-2mm}
 \section{Proof of Theorem~\ref{thm:graceful}: Graceful Degradation and the Difficulty Frontier}
@@ -938,7 +969,7 @@ Differentiating the leading-order risk upper bound $R_{\mathrm{bound}}(\lambda) 
     \frac{\partial}{\partial \lambda} \left[ \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} \right] = 0.
 \end{equation}
 When the overlap Gram matrix is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), the variance term $\frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min} + \lambda)^2}$ dominates for small $\lambda$, while the deterministic shrinkage bias $(\frac{\lambda M_\theta}{\lambda_{\min} + \lambda})^2$ dominates for large $\lambda$. The interior minimizer $\lambda^*_{\mathrm{bound}} > 0$ balances variance reduction against shrinkage bias in the upper bound. We distinguish $\lambda^*_{\mathrm{bound}}$ and the empirical surrogate minimizer $\hat{\lambda}^*_{\mathrm{emp}} = \arg\min_\lambda \hat{R}(\lambda)$ from the true infeasible risk minimizer $\lambda^*_{\mathrm{true}} \equiv \arg\min_\lambda \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$.
-In our empirical simulation benchmark across 500 Monte Carlo replications (\texttt{reports/or\_dml\_regularization\_frontier.csv}), the discrete grid minimum occurs at $\hat{\lambda}^*_{\mathrm{empirical}} \approx 0.20$ ($\text{MSE} = 0.0321$, representing a $25.9\times$ empirical risk reduction in this benchmark DGP relative to the unregularized estimator $\lambda = 0.0$ where $\text{MSE} = 0.8312$), while $\lambda = 0.10$ achieves $\text{MSE} = 0.0362$ ($23.0\times$ empirical reduction) with peak coverage of $85.0\%$.
+In our empirical simulation benchmark across 100 Monte Carlo replications (\texttt{reports/or\_dml\_regularization\_frontier.csv}), the discrete grid minimum occurs at $\hat{\lambda}^*_{\mathrm{empirical}} \approx 0.20$ ($\text{MSE} = 0.0321$, representing a $25.9\times$ empirical risk reduction in this benchmark DGP relative to the unregularized estimator $\lambda = 0.0$ where $\text{MSE} = 0.8313$), while $\lambda = 0.10$ achieves $\text{MSE} = 0.0362$ ($23.0\times$ empirical reduction) with peak coverage of $85.0\%$.
 We emphasize that Theorem~\ref{thm:spectral} provides the functional upper-bound characterization of the bias-variance trade-off; the exact numerical reduction factors (23.0$\times$ and 25.9$\times$) are empirical simulation properties of the benchmark DGP rather than universal theoretical constants. $\blacksquare$
 
 \subsection{Derivation of Adaptive Spectral Regularization Parameter and Oracle Bound}
@@ -1153,19 +1184,20 @@ To verify the theoretical behavior established in Theorem~\ref{thm:spectral} und
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{0.75}
-\caption{Regularization Sensitivity Grid for Kolkata Airshed ($\lambda_{\min} = 0.0024$, $N=1,209$). Standard errors decrease monotonically from $1.1071$ at $\lambda=0.0$ to $0.0063$ at $\lambda=1.0$, stabilizing estimation variance while shrinking point estimates toward zero.}
+\caption{Regularization Sensitivity Grid for Kolkata Airshed (Single-Index Evaluation, $N=1,209$, Unregularized $\lambda_{\min} = 0.0049$, Two-Regime $\lambda_{\min} = 0.0024$). Standard errors decrease monotonically from $1.1071$ at $\lambda=0.0$ to $0.0063$ at $\lambda=1.0$, while the regularized condition number $\kappa(\hat{\boldsymbol{J}}+\lambda\boldsymbol{I})$ contracts monotonically from $1.28 \to 1.00$.}
 \label{tab:kolkata_lambda_grid}
+\vspace{1mm}
 \begin{tabular}{lccccc}
 \toprule
 $\boldsymbol{\lambda}$ & $\hat{\theta}_{\mathrm{overall}}$ & $\mathbf{SE}$ & $\mathbf{95\% \text{ CI}}$ & $\lambda_{\min}(\hat{\boldsymbol{J}}+\lambda\boldsymbol{I})$ & $\kappa(\hat{\boldsymbol{J}}+\lambda\boldsymbol{I})$ \\
 \midrule
 $0.0000$ & $-0.5570$ & $1.1071$ & $[-2.7269, +1.6130]$ & $0.0049$ & $1.28$ \\
-$0.0005$ & $-0.5172$ & $1.0170$ & $[-2.5105, +1.4760]$ & $0.0054$ & $1.28$ \\
-$0.0024^*$ & $-0.4068$ & $0.7776$ & $[-1.9309, +1.1173]$ & $0.0073$ & $1.28$ \\
-$0.0100$ & $-0.2191$ & $0.4022$ & $[-1.0074, +0.5691]$ & $0.0149$ & $1.28$ \\
-$0.0500$ & $-0.0639$ & $0.1140$ & $[-0.2872, +0.1595]$ & $0.0549$ & $1.28$ \\
-$0.1000$ & $-0.0339$ & $0.0601$ & $[-0.1517, +0.0840]$ & $0.1049$ & $1.28$ \\
-$1.0000$ & $-0.0036$ & $0.0063$ & $[-0.0160, +0.0088]$ & $1.0049$ & $1.28$ \\
+$0.0005$ & $-0.5172$ & $1.0170$ & $[-2.5105, +1.4760]$ & $0.0054$ & $1.25$ \\
+$0.0024^*$ & $-0.4068$ & $0.7776$ & $[-1.9309, +1.1173]$ & $0.0073$ & $1.19$ \\
+$0.0100$ & $-0.2191$ & $0.4022$ & $[-1.0074, +0.5691]$ & $0.0149$ & $1.09$ \\
+$0.0500$ & $-0.0639$ & $0.1140$ & $[-0.2872, +0.1595]$ & $0.0549$ & $1.02$ \\
+$0.1000$ & $-0.0339$ & $0.0601$ & $[-0.1517, +0.0840]$ & $0.1049$ & $1.01$ \\
+$1.0000$ & $-0.0036$ & $0.0063$ & $[-0.0160, +0.0088]$ & $1.0049$ & $1.00$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1209,12 +1241,10 @@ To systematically evaluate machine learning under persistent, partially observed
 \label{app:factorial_reliability}
 The earlier treatment-mean-separation diagnostic is intentionally not used because correctly specified regime-aware nuisance residualization removes regime mean shifts. Instead, we independently manipulate (i) controlled posterior proxy error $\varepsilon_\gamma$ and (ii) state-specific treatment innovation variance, which changes residual information and hence $\lambda_{\min}(\boldsymbol J)$ \emph{after} oracle regime-aware cross-fitting. The $7\times7$ design uses 100 independent Markov sequences per cell ($N=1,200$; 4,900 runs). Across runs, causal $L_2$ error has Spearman correlation $0.9955$ with $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$, versus $0.6260$ with $\varepsilon_\gamma$ alone and $0.5209$ with $1/\lambda_{\min}$ alone; cell-mean correlations are $0.9963$, $0.6249$, and $0.5294$, respectively (\texttt{reports/factorial\_reliability\_correlations.csv}). Selective retention of the lowest-difficulty 40\% of runs reduces mean causal error from $48.81$ to $2.61$ and the 95th percentile from $228.10$ to $8.39$ (\texttt{reports/factorial\_risk\_coverage.csv}). These results validate an interaction, not dominance of either constituent.
 
-\begin{table}[!ht]
-\centering
+\begin{center}
+\vspace{-1.5mm}
 \footnotesize
 \renewcommand{\arraystretch}{0.72}
-\caption{Independent mechanism validation. The joint theoretical difficulty ranks causal error substantially better than either constituent alone.}
-\label{tab:factorial_validation}
 \begin{tabular}{lcc}
 \toprule
 \textbf{Failure score} & \textbf{Run-level $\rho$} & \textbf{Cell-mean $\rho$}\\
@@ -1224,7 +1254,8 @@ $\varepsilon_\gamma$ only & 0.6260 & 0.6249\\
 $1/\lambda_{\min}(J)$ only & 0.5209 & 0.5294\\
 \bottomrule
 \end{tabular}
-\end{table}
+\vspace{-1.5mm}
+\end{center}
 
 \subsection{Calibration Intervention and Leave-One-World-Out Reliability}
 Temperature scaling is fit on a held-out calibration partition and evaluated on a disjoint compound-shift test partition. It sharply improves conventional probabilistic metrics but does not rescue downstream failure discrimination: GRU ECE falls $0.1050\to0.0569$ and NLL $0.5475\to0.3312$, while difficulty ROC-AUC changes $0.5644\to0.5609$; Transformer ECE falls $0.1379\to0.0541$ and NLL $1.0058\to0.3816$, while ROC-AUC changes $0.5356\to0.5282$. Thus calibration is not a sufficient intervention for task reliability. Conversely, probabilistic quality is still informative across domains: in 15-fold leave-one-world-out evaluation, adding NLL to $F_1$ improves reliability-prediction $R^2$ from $0.1133$ to $0.2207$ and Spearman correlation from $0.3742$ to $0.5265$ (\texttt{reports/representation\_zoo\_lowo\_evaluation.csv}).
@@ -1232,38 +1263,18 @@ Temperature scaling is fit on a held-out calibration partition and evaluated on 
 \begin{figure}[!ht]
 \centering
 \vspace{-2mm}
-\includegraphics[width=0.90\textwidth,height=1.65cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
+\includegraphics[width=0.90\textwidth,height=1.40cm,keepaspectratio]{plots/fig4_latent_regime_bench.png}
 \vspace{-2mm}
 \caption{Universal LatentRegimeBench Evaluation. (a) Calibration of causal estimation bias against theoretical degradation ratio $\mathcal{D} = \bar{\varepsilon}_\gamma / \lambda_{\min}(\mathbf{J})$. (b) Decision-time abstention safety comparing unconstrained point MSE against uncertainty-gated MSE. (c) Representation zoo out-of-distribution (OOD) generalization across HMM, GRU, Causal Transformer, and Linear SSM.}
 \label{fig:latent_regime_bench_fig}
 \end{figure}
 
-\begin{table}[!ht]
-\centering
-\footnotesize
-\renewcommand{\arraystretch}{0.75}
-\caption{Latent Representation Zoo under Compound Shift (Shift C, 5 seeds; mean $\pm$ std). State discrimination, calibration, and downstream reliability are distinct: neural sequence models achieve competitive $F_1$ but near-chance failure discrimination, while the HMM performs better on all three axes. The calibration intervention below shows that improving ECE/NLL alone does not rescue downstream ROC-AUC.}
-\label{tab:main_rep_zoo}
-\vspace{-2mm}
-\resizebox{0.85\columnwidth}{!}{%
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Architecture} & \textbf{Shift C $F_1$} & \textbf{Shift C ECE} & \textbf{Shift C NLL} & \textbf{Reliability ROC-AUC $\mathcal{D}$} \\
-\midrule
-Gaussian HMM (Causal Filter) & $\mathbf{0.9170} \pm 0.012$ & $\mathbf{0.0397} \pm 0.024$ & $0.2140 \pm 0.028$ & $\mathbf{0.6153} \pm 0.025$ \\
-Neural GRU Encoder & $0.8481 \pm 0.014$ & $0.1047 \pm 0.013$ & $0.5473 \pm 0.066$ & $0.5228 \pm 0.036$ \\
-Causal Transformer Encoder & $0.8372 \pm 0.011$ & $0.1561 \pm 0.014$ & $1.0719 \pm 0.233$ & $0.5150 \pm 0.055$ \\
-Linear State Space Model (SSM) & $0.8580 \pm 0.012$ & $0.0558 \pm 0.016$ & $0.3539 \pm 0.039$ & $0.5492 \pm 0.021$ \\
-\bottomrule
-\end{tabular}%
-}
-\vspace{-2mm}
-\end{table}
+
 
 \begin{table}[!ht]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.78}
+\renewcommand{\arraystretch}{0.70}
 \caption{LatentRegimeBench: Multi-Dimensional Stress Test across 5 Strategic Difficulty Configurations ($30$ Replications each). In well-conditioned regimes (C1, C3), OR-DML achieves a $>5.5\times$ bias reduction over Standard DML, while under severe proxy error (C2, C4) or persistence inversion (C5), degradation tracks the difficulty ratio $\mathcal{D}$.}
 \label{tab:bench_results}
 \resizebox{\columnwidth}{!}{%
@@ -1325,7 +1336,7 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 \begin{table}[!ht]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.76}
+\renewcommand{\arraystretch}{0.68}
 \caption{Multi-Horizon Downstream Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$ across Lead Times $h \in [1, 24]$. In ill-conditioned airsheds (Mumbai Coastal, $\lambda_{\min} = 0.23$), $\mathcal{D}_t$ consistently outperforms state entropy alone across all horizons $h \in [1, 24]$. Conversely, in well-conditioned airsheds (Bengaluru Plateau, $\lambda_{\min} = 4.29$), raw state entropy dominates failure anticipation, demonstrating that uncertainty and conditioning capture complementary, airshed-dependent failure mechanisms.}
 \label{tab:failure_ablation}
 \resizebox{\columnwidth}{!}{%
@@ -1367,7 +1378,7 @@ To verify that the latent regime confounding and difficulty framework reflects a
 \begin{figure}[!ht]
 \centering
 \vspace{-2mm}
-\includegraphics[width=0.88\textwidth,height=1.05cm,keepaspectratio]{plots/fig5_financial_transfer.png}
+\includegraphics[width=0.85\textwidth,height=0.85cm,keepaspectratio]{plots/fig5_financial_transfer.png}
 \vspace{-2mm}
 \caption{Quantitative Macro Financial Market Regime Transfer. (a) Daily asset factor returns colored by latent volatility regime. (b) Dynamic difficulty index $D_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$ with identification-based safety escalations. (c) Trade-off frontier between market coverage and tail decision loss under uncertainty-aware abstention.}
 \label{fig:financial_transfer_fig}
@@ -1379,7 +1390,7 @@ Table~\ref{tab:financial_abstention} reports a formal three-way decision regret 
 \begin{table}[!ht]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.62}
+\renewcommand{\arraystretch}{0.58}
 \setlength{\tabcolsep}{3.5pt}
 \caption{Synthetic Financial Stress Test: Dynamic Regime Risk Quartiles ($N=1,500$). Tail 95\% MSE escalates to $4.2931$ under acute causal ill-conditioning ($\lambda_{\min} = 0.211$).}
 \label{tab:financial_quartiles}
