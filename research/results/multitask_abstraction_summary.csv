@@ -1,0 +1,4 @@
+N,taskA_correct,taskB_correct,taskA_error,taskB_error
+800,1.0,1.0,0.1242,0.1296
+1600,1.0,1.0,0.0961,0.0968
+3200,1.0,1.0,0.0657,0.0701
