@@ -103,6 +103,16 @@ Combining the previously computed HMM BIC and OR-DML K-sensitivity gives a strik
 
 This does **not** prove that K=4 is causally wrong or that K=2 is correct—the true state count and effects are unknown. But it is exactly the empirical signature predicted by the synthetic resolution-mismatch story: additional latent distinctions can improve the observation model while fragmenting downstream treatment information. It motivates reporting a two-axis model-selection diagnostic: generative fit versus causal effective information, rather than selecting K from likelihood alone.
 
+### R20. Resolution thresholding exposes an estimand-versus-identification distinction: unresolved does not mean zero
+A spectral projection experiment suppresses directions whose nominal resolution $1/\sqrt{N\lambda_j}$ exceeds a chosen scientific scale. When the true target has no component in the suppressed direction, this can remove enormous variance: at N=400, alpha=.5, the unregularized full-vector MSE is about 2.55 while the projected estimator has MSE 0.048. But if the same weak direction carries a true coefficient 0.8, projection has total MSE 0.688, of which 0.640 is pure approximation error from changing the target. Oracle ridge is better (0.298) but still cannot create information that is absent.
+
+This is an important negative result: a causal-resolution spectrum tells us what the data can resolve, **not what the unresolved effect equals**. Hard spectral truncation is legitimate only if the estimand is explicitly redefined/projected or external structure justifies the restriction. Otherwise unsupported contrasts should be reported as weakly identified/partially learned, not silently set to zero.
+
+The result sharpens the framework into three distinct questions:
+1. What fine latent information is required for identification?
+2. Which causal contrasts are resolvable from the data?
+3. Which unresolved contrasts may be constrained/pooled based on scientifically defensible structure?
+
 ## Reproduction
 
 Run:
