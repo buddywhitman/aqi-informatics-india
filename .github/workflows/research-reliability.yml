@@ -46,6 +46,8 @@ jobs:
           python research/robust_target_family_regularization.py
           python research/pretest_target_selection_bias.py
           python research/reliability_budget_decomposition.py
+          python research/representation_accuracy_rate_requirement.py
+          python research/crossfit_representation_rate.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -75,3 +77,5 @@ jobs:
             research/results/robust_target_family_regularization*.csv
             research/results/pretest_target_selection_bias*.csv
             research/results/reliability_budget_decomposition*.csv
+            research/results/representation_accuracy_rate_requirement*.csv
+            research/results/crossfit_representation_rate*.csv
