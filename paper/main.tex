@@ -235,11 +235,12 @@ To avoid heuristic decoupled regressions that suffer cross-talk bias under regim
     \hat{\mu}_k(X) &= \arg\min_{\mu} \sum_{t \in \mathcal{T}_b} \gamma_{tk} (Y_t - \mu(X_t))^2. \label{eq:nuisance_mu}
 \end{align}
 On evaluation fold $\mathcal{B}_b$, we form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$. The empirical Gram matrix $\hat{\boldsymbol{J}} \in \R^{K \times K}$ and score vector $\hat{\boldsymbol{S}} \in \R^K$ are constructed with matched weights:
-\begin{equation}
-    \hat{J}_{kk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk}^2, \quad \hat{J}_{jk} = \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk} \; (j \neq k), \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}.
-\end{equation}
+\begin{align}
+    \hat{J}_{kk} &= \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk}^2, \quad \hat{S}_k = \frac{1}{N}\sum_{t=1}^N \gamma_{tk} \tilde{T}_{tk} \tilde{Y}_{tk}, \label{eq:gram_J} \\
+    \hat{J}_{jk} &= \frac{1}{N}\sum_{t=1}^N \gamma_{tj}\gamma_{tk} \tilde{T}_{tj} \tilde{T}_{tk} \quad (j \neq k). \label{eq:score_S}
+\end{align}
 When regime separation is weak or treatments are collinear, $\lambda_{\min}(\hat{\boldsymbol{J}}) \to 0$, rendering the unregularized solve $\hat{\boldsymbol{J}}^{-1}\hat{\boldsymbol{S}}$ ill-conditioned. OR-DML supports both coupled regularized solve $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$ and decoupled regime-wise soft DML $\hat{\theta}_k = \hat{S}_k / (\hat{J}_{kk} + \lambda)$, where $\lambda \ge 0$ trades off regularization bias against collinearity variance.
-To ensure scale-invariance across units, we define the dimensionless Gram matrix $\hat{\boldsymbol{J}}_{\mathrm{std}} \equiv \hat{\boldsymbol{J}} / \hat{\sigma}_{\tilde{T}}^2$ with $\hat{\sigma}_{\tilde{T}}^2 \equiv \frac{1}{K}\sum_k \frac{1}{N}\sum_t \tilde{T}_{tk}^2$, yielding scale-free $\lambda_{\min}(\hat{\boldsymbol{J}}_{\mathrm{std}})$ and condition number $\kappa(\hat{\boldsymbol{J}}) \equiv \lambda_{\max}/\lambda_{\min}$.
+To ensure scale-invariance across units, the dimensionless Gram matrix is $\hat{\boldsymbol{J}}_{\mathrm{std}} \equiv \hat{\boldsymbol{J}} / \hat{\sigma}_{\tilde{T}}^2$ with $\hat{\sigma}_{\tilde{T}}^2 \equiv \frac{1}{K}\sum_k \frac{1}{N}\sum_t \tilde{T}_{tk}^2$, giving scale-free $\lambda_{\min}(\hat{\boldsymbol{J}}_{\mathrm{std}})$ and condition number $\kappa(\hat{\boldsymbol{J}}) \equiv \lambda_{\max}/\lambda_{\min}$.
 \emph{Scalability \& Structural Abstention:} End-to-end complexity is $\mathcal{O}(B K \cdot C_{\mathrm{nuisance}} + N K^2 + K^3)$; when data lack identifying variation entirely ($\kappa(\hat{\boldsymbol{J}}) > 10^4$ or $\text{CI}(\lambda_{\min})$ covers 0), systems diagnose weak identification and abstain rather than masking near-singularity with excessive shrinkage.
 We distinguish three causal estimand targets: (i) the true stationary population ATE $\theta_{\mathrm{PATE}}^* = \boldsymbol{\pi}^{*\top} \boldsymbol{\theta}^*$, (ii) the estimated stationary ATE $\hat{\theta}_{\mathrm{PATE}} = \hat{\boldsymbol{\pi}}(\hat{\boldsymbol{\Lambda}})^\top \hat{\boldsymbol{\theta}}_\lambda$, and (iii) the empirical sample occupation ATE $\hat{\theta}_{\mathrm{SATE}} = \bar{\boldsymbol{\gamma}}_N^\top \hat{\boldsymbol{\theta}}_\lambda$, where $\bar{\boldsymbol{\gamma}}_N \equiv \frac{1}{N}\sum_{t=1}^N \boldsymbol{\gamma}_t$.
 
@@ -1393,7 +1394,7 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{0.60}
-\caption{Multi-Horizon Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$ across Lead Times $h \in [1, 24]$. In ill-conditioned airsheds (Mumbai, $\lambda_{\min} = 0.23$), $\mathcal{D}_t$ consistently outperforms state entropy across all horizons. In well-conditioned airsheds (Bengaluru, $\lambda_{\min} = 4.29$), raw state entropy dominates, demonstrating that uncertainty and conditioning capture complementary failure mechanisms.}
+\caption{Multi-Horizon Failure Prediction: Task Difficulty $\mathcal{D}_t$ vs.\ State Entropy $H_t$ across Lead Times $h \in [1, 24]$. In variance-depleted airsheds (Mumbai, $\lambda_{\min} = 0.23$), $\mathcal{D}_t$ outperforms state entropy across all horizons. In Bengaluru ($\lambda_{\min} = 4.29$), raw state entropy dominates, demonstrating complementary, airshed-dependent failure mechanisms.}
 \label{tab:failure_ablation}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccccc}
@@ -1426,26 +1427,26 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 }
 \end{table}
 
-In coastal airsheds with severe collinearity (Mumbai, $\lambda_{\min} = 0.2288$), state entropy $H_t$ acts as a coin flip ($\text{ROC-AUC} \approx 0.4855$ at $h=1$), while coupled difficulty $\mathcal{D}_t$ restores failure anticipation across all lead times ($0.5640$ at $h=6$). Conversely, in well-conditioned airsheds (Bengaluru, $\lambda_{\min} = 4.29$), state transitions dominate, rendering raw entropy $H_t$ superior ($\text{ROC-AUC} \approx 0.67$), confirming their complementary domain-dependent roles.\vspace{-1.5mm}
+In coastal airsheds with severe residual variance depletion (Mumbai, $\lambda_{\min} = 0.2288$), state entropy $H_t$ acts as a coin flip ($\text{ROC-AUC} \approx 0.4855$ at $h=1$), while coupled difficulty $\mathcal{D}_t$ restores failure anticipation across all lead times ($0.5640$ at $h=6$). Conversely, in well-conditioned airsheds (Bengaluru, $\lambda_{\min} = 4.29$), state transitions dominate, rendering raw entropy $H_t$ superior ($\text{ROC-AUC} \approx 0.67$), confirming their complementary domain-dependent roles.\vspace{-1.5mm}
 \section{Synthetic Financial Macro Stress Test with Real Covariate Context}
 \label{app:financial_transfer}
 To verify that the latent regime confounding and difficulty framework reflects a general mathematical reality of sequential decision systems under hidden persistent context rather than an idiosyncratic atmospheric feature, we evaluate the Regime Intelligence engine on a synthetic macro financial stress test with real macroeconomic covariate context (daily FRED macroeconomic interest rate, spread, and liquidity indicators; $N=1,500$ daily trading periods; Figure~\ref{fig:financial_transfer_fig}). Regimes reflect low-volatility normal market dynamics versus severe liquidity stress / crisis regimes.
 
 \begin{center}
 \vspace{-2mm}
-\includegraphics[width=0.85\textwidth,height=0.65cm,keepaspectratio]{plots/fig5_financial_transfer.png}\\
+\includegraphics[width=0.85\textwidth,height=0.52cm,keepaspectratio]{plots/fig5_financial_transfer.png}\\
 \vspace{-1.5mm}
-\parbox{0.95\columnwidth}{\footnotesize \refstepcounter{figure}\textbf{Figure~\thefigure:} Quantitative Macro Financial Market Regime Transfer. (a) Daily asset factor returns colored by latent volatility regime. (b) Dynamic difficulty index $D_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$ with identification-based safety escalations. (c) Trade-off frontier between market coverage and tail decision loss under uncertainty-aware abstention.\label{fig:financial_transfer_fig}}
+\parbox{0.95\columnwidth}{\footnotesize \refstepcounter{figure}\textbf{Figure~\thefigure:} Macro Financial Regime Transfer. (a) Factor returns by regime. (b) Dynamic difficulty index $D_t = H(\boldsymbol{\gamma}_t)/\lambda_{\min}(\mathbf{J}_t)$. (c) Coverage vs.\ tail loss frontier under abstention.\label{fig:financial_transfer_fig}}
 \vspace{-2mm}
 \end{center}
 
-We partition the stream into calibration ($N=900$, 60\%) and test ($N=600$, 40\%) splits. Optimal threshold $\tau^* = 4.0$ is fixed out-of-sample on calibration. Table~\ref{tab:financial_quartiles} partitions test periods into dynamic risk quartiles $R_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$. In Q4 (Severe Risk), tail 95\% forecast MSE surges to $4.2931$ (vs.\ $1.7461$ in moderate periods) under acute ill-conditioning ($\lambda_{\min} \to 0.211$).
-Table~\ref{tab:financial_abstention} reports three-way decision regret for the adaptive policy ($D_t \le \tau$) against Always-Active (regret $0.1994$) and Always-Fallback ($\text{MSE} = 11.3749$). The calibration threshold $\tau^* = 4.0$ abstains on $1.0\%$ of periods, slashing decision regret to $0.0025$ ($\mathbf{98.74\%}$ reduction) at $99.0\%$ coverage. At $\tau = 2.5$, regret drops by $\mathbf{95.94\%}$ while avoiding catastrophic fallback loss ($\text{MSE} = 11.3749$).
+We partition into calibration ($N=900$, 60\%) and test ($N=600$, 40\%) splits. Threshold $\tau^* = 4.0$ is fixed out-of-sample on calibration. Table~\ref{tab:financial_quartiles} partitions test periods into risk quartiles $R_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\mathbf{J}_t)$. In Q4 (Severe Risk), tail 95\% forecast MSE surges to $4.2931$ (vs.\ $1.7461$ in moderate periods) under acute ill-conditioning ($\lambda_{\min} \to 0.211$).
+Table~\ref{tab:financial_abstention} reports three-way decision regret for adaptive policy ($D_t \le \tau$) vs.\ Always-Active (regret $0.1994$) and Always-Fallback ($\text{MSE} = 11.3749$). Calibration threshold $\tau^* = 4.0$ abstains on $1.0\%$ of periods, slashing regret to $0.0025$ ($\mathbf{98.74\%}$ reduction) at $99.0\%$ coverage; $\tau = 2.5$ yields $\mathbf{95.94\%}$ reduction while avoiding fallback loss ($\text{MSE} = 11.3749$).
 
 \begin{table}[!ht]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.54}
+\renewcommand{\arraystretch}{0.50}
 \setlength{\tabcolsep}{3.5pt}
 \caption{Synthetic Financial Stress Test: Dynamic Risk Quartiles ($N=1,500$). Tail 95\% MSE escalates to $4.2931$ under causal ill-conditioning ($\lambda_{\min} = 0.211$).}
 \label{tab:financial_quartiles}
