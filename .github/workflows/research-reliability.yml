@@ -58,6 +58,8 @@ jobs:
           python research/nonlinear_reliability_number.py
           python research/integrated_latent_dgp.py
           python research/integrated_latent_nonlinear_outcome.py
+          python research/oracle_validity_decomposition.py
+          python research/operational_b_bounds.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -99,3 +101,5 @@ jobs:
             research/results/nonlinear_reliability_number*.csv
             research/results/integrated_latent_dgp*.csv
             research/results/integrated_latent_nonlinear_outcome*.csv
+            research/results/oracle_validity_decomposition*.csv
+            research/results/operational_b_bounds*.csv
