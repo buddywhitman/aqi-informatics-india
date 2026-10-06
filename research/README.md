@@ -26,11 +26,15 @@ For a correctly specified two-state Gaussian HMM using causal filtering, posteri
 ### R6. The same transition phenomenon appears qualitatively in the four-city sensor data
 Using a standardized two-state HMM on the six exogenous meteorological features, filter-vs-smoother disagreement is sharply concentrated around inferred transitions. In Delhi, mean L1 disagreement is 0.923 within 0-1 hours of an inferred transition versus 0.009 at >=25 hours. Mumbai shows 0.413 versus 0.017. Bengaluru/Kolkata switch much more frequently, so long interior segments are scarce. Because inferred transitions are defined by the same fitted model, this is a descriptive diagnostic, not ground-truth validation.
 
+### R7. Frozen-sensor sensitivity is a material empirical limitation, especially in Mumbai
+Removing complete-analysis rows belonging to NO2 constant-value runs of length >=6 hours leaves Delhi unchanged but removes 885/4,180 Mumbai rows (21.2%), 163/4,093 Bengaluru rows (4.0%), and 110/1,209 Kolkata rows (9.1%). Re-fitting the same smoothed OR-DML specification changes Mumbai's overall estimate from 1.59 to 2.92, regime estimates from (-0.03, 3.30) to (3.86, 2.25), and lambda_min from 0.317 to 0.178. Bengaluru changes little; Kolkata remains extremely ill-conditioned and uncertain. This is not evidence that the filtered estimate is "truer"—removing long constant runs may discard legitimate periods—but it shows that the Mumbai empirical decomposition is materially telemetry-sensitive and should not be treated as a stable physical effect without source-level sensor QA.
+
 ## Reproduction
 
 Run:
 ```bash
 python research/run_extended_reliability_studies.py
+python research/frozen_sensor_sensitivity.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
