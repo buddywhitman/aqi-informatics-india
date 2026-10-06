@@ -113,6 +113,13 @@ The result sharpens the framework into three distinct questions:
 2. Which causal contrasts are resolvable from the data?
 3. Which unresolved contrasts may be constrained/pooled based on scientifically defensible structure?
 
+### R21. Resolution divergence: more data can strengthen evidence that states are different while erasing evidence that their causal effects differ
+A joint local-sequence construction fixes Gaussian emission separation while shrinking within-state residual treatment SD as $N^{-\alpha}$. The generative/state evidence accumulates at order $N$ (BIC penalty only $O(\log N)$), while information for a fixed causal-effect contrast is order $N^{1-2\alpha}$. For $\alpha>1/2$, these move in opposite directions: state-model evidence diverges while causal-effect KL goes to zero.
+
+An exploratory 50-replication simulation makes the contrast concrete. At $\alpha=.75$, mean BIC advantage for the two-state observation model grows from 32.6 at N=400 to 764.0 at N=6400, with state classification error about 6.7% throughout, while causal-contrast test power remains around nominal size (2-8%). At $\alpha=.25$, by contrast, causal power rises from 56% to 100% over the same N range. Thus more data can make us increasingly certain that two latent states are genuinely distinct while providing asymptotically less ability to learn whether their causal effects differ.
+
+This is a stronger statement than generative/causal model-selection disagreement at fixed N: **observational resolution and causal resolution can diverge in opposite asymptotic directions on the same sequence of data-generating processes.**
+
 ## Reproduction
 
 Run:
