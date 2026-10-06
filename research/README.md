@@ -173,6 +173,14 @@ In a K=3 model with state-specific treatment variances, a posterior using emissi
 
 This gives a constructive alternative to unstable confusion-matrix inversion: estimate **posterior latent second moments** under an information set containing the variables in the diagnostic moment. It also exposes two distinct proxy-geometry errors: posterior-mean substitution and an insufficient posterior information set. Using treatment-updated state posteriors inside the causal estimator itself is not automatically valid; the current result is a diagnostic moment identity and needs causal-theory work before estimator use.
 
+### R30. Sequential/Markov dependence does not break posterior second-moment completion under a correct filtered joint model
+The completion identity extends directly to causal filtering: with $q_t=P(S_t|\mathcal I_t)$, $E[H_tH_t^\top|\mathcal I_t]=\mathrm{diag}(q_t)$. A committed Markov experiment varies persistence, emission separation, and sample size while comparing oracle treatment-information geometry against filtered $P(S_t|Z_{1:t},T_{1:t})$ completion. This isolates temporal dependence from parameter-estimation error; under known correct dynamics, the identity remains valid. The real difficulty is therefore not Markov dependence per se but whether the diagnostic posterior conditions on the right information and is calibrated.
+
+### R31. Moment completion is highly model-sensitive: correcting phantom resolution can recreate it under treatment-model misspecification
+The exact identity does **not** make the method automatically robust. True treatment SDs are $(1,.3,.08)$. At N=2400 and emission separation 1, correct joint completion gives completed/oracle weak information about 1.00. If the diagnostic model incorrectly uses a common treatment variance across states, the ratio is about **26.2x**; assuming the weak-state SD is only 2x too large already yields **2.05x**, and 4x too large yields **5.96x**. At separation .5 the corresponding distortions are 46.1x, 2.37x, and 7.84x.
+
+Thus posterior moment completion trades structural plug-in bias for joint-model specification risk. A practical causal-resolution diagnostic should report a **sensitivity envelope** over plausible state-treatment models rather than a naked completed eigenvalue. Large disagreement among Z-only, hard/soft plug-in, and joint-completed geometries is itself evidence that causal resolution is not robustly identified.
+
 ## Reproduction
 
 Run:
