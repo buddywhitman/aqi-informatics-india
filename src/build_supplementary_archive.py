@@ -119,9 +119,11 @@ def build_archive():
 
     all_files = sorted(dict.fromkeys(list(REQUIRED_FILES) + report_files))
 
-    missing_required = [p for p in REQUIRED_FILES if not os.path.isfile(p) or os.path.getsize(p) == 0]
-    if missing_required:
-        raise FileNotFoundError("Required supplementary evidence missing or empty:\n  " + "\n  ".join(missing_required))
+    missing_required = [p for p in REQUIRED_FILES if not os.path.isfile(p)]
+    empty_required = [p for p in REQUIRED_FILES if os.path.isfile(p) and os.path.getsize(p) == 0 and not p.endswith("__init__.py")]
+    if missing_required or empty_required:
+        problems = [f"missing: {p}" for p in missing_required] + [f"empty: {p}" for p in empty_required]
+        raise FileNotFoundError("Required supplementary evidence unavailable:\n  " + "\n  ".join(problems))
 
     # Write an inspectable content manifest for every packaged source artifact.
     checksum_path = "SUPPLEMENT_SHA256SUMS.txt"
