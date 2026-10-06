@@ -26,7 +26,7 @@ def run_scientific_verification():
     print("SCIENTIFIC INVARIANCE AND MATHEMATICAL REASONING VERIFICATION")
     print("=" * 75)
     passed = 0
-    total = 9
+    total = 10
 
     # -------------------------------------------------------------
     # 1. Estimator Normal Equations: ||J * theta - S|| < epsilon
@@ -179,6 +179,20 @@ def run_scientific_verification():
     assert "Reliability_ROC_AUC_D" in df_auc.columns
     assert len(df_auc) >= 4
     print(f"[OK] 9. Out-of-Sample Verification: Representation zoo reports verified ({len(df_auc)} models)")
+    passed += 1
+
+    # -------------------------------------------------------------
+    # 10. Corrected factorial interaction: joint difficulty must dominate constituents
+    # -------------------------------------------------------------
+    df_fac = pd.read_csv("reports/factorial_reliability_correlations.csv")
+    fac = df_fac.iloc[0]
+    rho_d = float(fac["Spearman_Run_Difficulty"])
+    rho_e = float(fac["Spearman_Run_ProxyError"])
+    rho_l = float(fac["Spearman_Run_InvLambda"])
+    assert rho_d > rho_e + 0.20 and rho_d > rho_l + 0.20, (
+        f"Joint difficulty does not materially outperform constituents: D={rho_d}, eps={rho_e}, invlambda={rho_l}"
+    )
+    print(f"[OK] 10. Factorial Interaction: rho(D,error)={rho_d:.3f} > rho(eps,error)={rho_e:.3f}, rho(1/lambda,error)={rho_l:.3f}")
     passed += 1
 
     print("-" * 75)
