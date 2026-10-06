@@ -218,3 +218,12 @@ Negative/non-promising as currently formulated:
 3. Test whether transition-weighted proxy error predicts downstream causal error better than global ECE/NLL/entropy.
 4. Learn lambda from training worlds using directional risk features and evaluate on held-out worlds; do not tune on target causal error.
 5. Stress wrong-K, semi-Markov durations, non-Gaussian emissions, and time-varying transition matrices.
+
+
+### R32. Robust causal geometry: disagreement is a falsification signal
+A new experiment compares posterior-outer, representation-only diagonal completion, and joint state-treatment completion. The hypothesis is deliberately one-sided: large disagreement among these spectra should flag that a nominal completed lambda_min is model-dependent. See research/geometry_disagreement_diagnostic.py.
+
+### R33. Task-weighted calibration
+Global ECE/Brier can miss errors concentrated on observations carrying most causal information. A new experiment weights posterior error by residual-treatment leverage and compares it with ordinary calibration as a predictor of oracle/proxy spectral distortion. See research/task_weighted_calibration.py and research/ROBUST_CAUSAL_GEOMETRY.md.
+
+These studies are prospective until their full Monte Carlo outputs are committed; no favorable numeric claim is made yet.
