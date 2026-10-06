@@ -62,6 +62,9 @@ jobs:
           python research/operational_b_bounds.py
           python research/validation_sample_bounds.py
           python research/validation_design_priority.py
+          python research/sequential_score_dependence.py
+          python research/granularity_adjustment_target.py
+          python research/simultaneous_target_family_inference.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -107,3 +110,6 @@ jobs:
             research/results/operational_b_bounds*.csv
             research/results/validation_sample_bounds*.csv
             research/results/validation_design_priority*.csv
+            research/results/sequential_score_dependence*.csv
+            research/results/granularity_adjustment_target*.csv
+            research/results/simultaneous_target_family_inference*.csv
