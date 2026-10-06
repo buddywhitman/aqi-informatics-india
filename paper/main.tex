@@ -1409,4 +1409,31 @@ $4.0^*$ & $99.0\%$ & $1.0\%$ & $0.1994$ & $0.0025$ & $\mathbf{+98.74\%}$ & $0.84
 }
 \end{table}
 
+\clearpage
+\section{Post-Audit Stress Tests: When Proxy Geometry Misleads}
+\label{app:postaudit}
+This appendix records adversarial tests added after the primary experiments. They are included to delimit the scope of the scalar difficulty diagnostic rather than to retroactively redefine the preregistered headline experiment.
+
+\paragraph{Phantom causal resolution.}
+Let $H_t$ be the one-hot true state and consider the oracle treatment-information matrix $J_{\rm true}=\E[\widetilde T_t^2 H_tH_t^\top]$. In a balanced two-state model with true residual treatment variances $a>b>0$, a symmetric hard classifier that flips labels with probability $p\in(0,1/2)$ yields inferred diagonal information proportional to $((1-p)a+pb,\;pa+(1-p)b)/2$. Hence the smaller inferred information is $[pa+(1-p)b]/2>b/2$: state confusion can \emph{increase} the apparent weakest information direction. At $p=1/2$ the apparent condition number is one even when the oracle condition number $a/b$ is arbitrarily large. In a three-state Monte Carlo with residual treatment standard deviations $(1,.3,.08)$ and emission separation $\Delta_Z=.5$, oracle $\lambda_{\min}\approx.0022$ while soft/hard generated-state values are approximately $.0246/.0457$ (11.4x/21.2x inflation). Thus a large generated-state $\lambda_{\min}$ is not automatically a conservative certificate of oracle causal resolution.
+
+\paragraph{Why posterior means are insufficient for information moments.}
+For one-hot $H_t$ and posterior $q_t=P(S_t\mid\mathcal I_t)$,
+\[
+\E[H_tH_t^\top\mid\mathcal I_t]=\operatorname{diag}(q_t),
+\]
+not $q_tq_t^\top$. For any weight $W_t$ measurable with respect to $\mathcal I_t$,
+$\E[W_tH_tH_t^\top]=\E[W_t\operatorname{diag}(q_t)]$.
+This identity can recover oracle second moments under a correctly specified posterior whose information set contains every state-informative variable entering $W_t$. It is not a free correction: misspecifying the state--treatment model can recreate phantom resolution. We therefore treat completed geometry as a sensitivity diagnostic rather than a point-identified certificate.
+
+\paragraph{Higher-dimensional scope of the scalar ratio.}
+The bound $\|b_\gamma\|/\lambda_{\min}(J)$ is worst-directional. In $K\ge3$, equal-magnitude representation perturbations can have very different consequences depending on their alignment with information eigenvectors. The local displacement is $J^{-1}b_\gamma$; for a scientific contrast $a$, the relevant first-order quantity is $|a^\top J^{-1}b_\gamma|$. This explains why the two-state factorial ratio can rank error extremely well while no task-agnostic scalar representation score is sufficient in general.
+
+\paragraph{Dual resolution.}
+Fine latent states may remain necessary for nuisance adjustment even when estimating a separate causal coefficient for every state is unsupported. If microstates share a scientific effect but differ in treatment/outcome baselines, coarse nuisance adjustment can reintroduce confounding, whereas fine adjustment followed by pooling of task-equivalent effect parameters can retain identification and aggregate treatment information. We therefore distinguish \emph{adjustment resolution} from \emph{target resolution}: retain enough latent detail to remove confounding, but estimate only effect contrasts supported by the scientific question and causal information.
+
+\paragraph{Observational collision tests.}
+The sensor study reinforces the need for separate diagnostics. Delhi has favorable generated-state conditioning but rejects all three reported immediate pre-treatment placebos. Mumbai becomes more certain in posterior entropy after removing long frozen-$\mathrm{NO}_2$ runs while its conditioning worsens and its regime decomposition changes materially. Kolkata remains near-singular after cleaning. These observations are not oracle validation of phantom resolution; they show that representation certainty, downstream information, data quality, temporal falsification, and scientific identification are distinct axes.
+
+
 \end{document}
