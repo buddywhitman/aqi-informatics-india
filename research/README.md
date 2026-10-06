@@ -334,3 +334,18 @@ A new null experiment tests the cost of choosing the reported causal contrast af
 The local synthesis is
 $$\widehat\theta-\theta\approx J^{-1}b_\gamma + J^{-1}\xi/\sqrt N.$$
 For contrast $a$, representation displacement is $|a^\top J^{-1}b_\gamma|$ while sampling variance is $a^\top J^{-1}\Sigma J^{-1}a/N$. This implies a subtle large-data effect: a fixed representation bias can become the dominant inferential bottleneck as N grows because sampling noise shrinks around it. Root-N-valid inference requires the **target-projected** representation perturbation to be $o(N^{-1/2})$, not merely globally small. An automated experiment now maps the representation-limited/sampling-limited phase boundary.
+
+
+### R62. Post-hoc target shopping grows to >3.4x null error; sample splitting removes the inflation
+At N=1,000 under a complete null, selecting the largest absolute effect among K candidates inflates mean absolute error relative to a predeclared coordinate by 1.42x (K=2), 1.97x (K=5), 2.36x (K=10), 2.72x (K=20), 3.16x (K=50), and **3.45x at K=100**. Independent split-sample estimation after selection remains essentially identical to predeclared error (~0.0252). This validates sample splitting as a simple guardrail for data-adaptive target choice in the stylized setting.
+
+### R63. More data can move inference from sampling-limited to representation-limited
+For target-aligned representation bias 0.01, sampling SD falls from 0.1 at N=100 to 0.01 at N=10,000 and 0.00316 at N=100,000. The same fixed representation bias therefore moves from 0.1x sampling noise to parity and then **3.16x sampling noise**. Representation errors orthogonal to the target remain irrelevant in the exact linear construction. This confirms that large data can expose, rather than cure, target-relevant representation bias.
+
+### R64. Weak causal information raises the representation-accuracy rate required for valid inference
+In a stylized direction with information $\lambda_N=N^{-s}$ and target-projected representation score perturbation $b_N=N^{-r}$, representation bias relative to sampling SE scales as $N^{(s+1)/2-r}$. The boundary is
+$$r=(1+s)/2.$$
+Thus strong information ($s=0$) requires faster than $N^{-1/2}$ target-projected representation error, while $s=.5$ requires faster than $N^{-3/4}$, and $s=1$ faster than $N^{-1}$. Consistency of the representation alone is insufficient.
+
+### R65. Cross-fitting cannot remove systematic generated-representation bias
+A new independent-fold simulation tests nominal coverage when representation perturbation is learned on a separate fold. Cross-fitting breaks sample reuse but leaves the systematic $N^{-r}$ perturbation. Coverage should recover only when the perturbation is small relative to the target's sampling scale. This separates orthogonality/cross-fitting protection from latent representation identification error. Automated results pending.
