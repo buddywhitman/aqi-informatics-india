@@ -264,3 +264,10 @@ Automated minimax results confirm the decision-theoretic consequence of the Pare
 
 ### R42. Global-selection regret scaling
 A new automated experiment increases task leverage localization and measures how badly global calibration selection can regret relative to minimax and per-task-oracle selection. This tests whether causal/task regret can grow with leverage heterogeneity rather than being a fixed constructed factor. No numeric claim until outputs are committed.
+
+
+### R43. Regret from global representation selection grows with task leverage heterogeneity
+The automated scaling experiment confirms that global-calibration selection becomes increasingly fragile as downstream leverage localizes. As leverage ratio rises from 10 to 1,000, the globally selected representation's worst-task risk grows from 1.26x to **3.25x** the minimax risk, while its average risk relative to the per-task oracle grows from 1.67x to **8.03x**. Thus the earlier leaderboard failures are not a fixed toy factor: regret systematically increases as downstream tasks concentrate information on regions ignored by the global metric.
+
+### R44. Universal scalar representation ordering requires dominance or task restrictions
+A new exact/adversarial construction formalizes the boundary: if two representations have crossing task-relevant error profiles, a nonnegative leverage task can reverse any global scalar ordering by concentrating on a region where the globally worse representation is locally better. Universal ordering over unrestricted leverage tasks therefore requires essentially pointwise dominance of the relevant error functional, or an explicitly restricted task family. This is elementary decision theory, not claimed as a novel general theorem; its role is to delimit what a causal representation metric can possibly guarantee.
