@@ -335,7 +335,7 @@ and the unregularized cross-fitted estimator $\hat{\boldsymbol{\theta}}_\gamma =
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth,height=2.85cm,keepaspectratio]{plots/fig2_difficulty_frontier.png}
-\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Factorial calibration: Absolute bias $|\hat{\theta} - \theta^*|$ vs.\ theoretical degradation ratio $\bar{\varepsilon}_\gamma / \lambda_{\min}(\boldsymbol{J})$ (Theorem~\ref{thm:graceful}) across 15 factorial grid cells, validating the degradation scaling and highlighting Adversarial Corners A (high $\bar{\varepsilon}_\gamma$, healthy $\lambda_{\min}$) and B (low $\bar{\varepsilon}_\gamma$, weak $\lambda_{\min}$).}
+\caption{The Latent-Confounding Difficulty Frontier across 500 Monte Carlo Replications. (a) Absolute causal bias $|\hat{\theta} - \theta^*|$ vs.\ regime separation $\Delta_Z$. (b) Empirical RMSE. (c) Empirical 95\% CI coverage vs.\ nominal 95\% target. (d) Corrected factorial mechanism test: causal $L_2$ error vs.\ $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$ across 49 independently controlled cells (100 replications each), where task conditioning is varied through residual treatment innovation variance after regime-aware nuisance residualization.}
 \label{fig:difficulty_frontier}
 \end{figure*}
 
