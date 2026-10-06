@@ -163,6 +163,20 @@ def test_wiener_closed_form():
     check('Wiener closed-form smoothing variance matches Kalman smoother (< 2e-3)', max(errs) < 2e-3, f'(max {max(errs):.1e})')
 
 
+def test_changepoint_closed_form():
+    from src.bias_law.ext_joint_proximal import _fwd_bwd
+    Ri = np.linalg.inv(np.array([[1, .2], [.2, 1]])); H = np.array([1, 1.5])
+    errs = []
+    for dz, rho in ((0.75, 0.9), (1.0, 0.95)):
+        rng = np.random.default_rng(1)
+        S, Z, X = gen_states_proxy(40000, 2, dz, rho, rng)
+        mu = np.array([[-dz, -1.5 * dz], [dz, 1.5 * dz]])
+        logB = np.stack([-0.5 * np.einsum('ij,jk,ik->i', Z - mu[k], Ri, Z - mu[k]) for k in range(2)], 1)
+        g, _, _ = _fwd_bwd(logB, np.array([[rho, 1 - rho], [1 - rho, rho]]), np.array([.5, .5]))
+        errs.append(abs(BL.v_changepoint(rho, 4 * dz ** 2 * float(H @ Ri @ H)) / np.mean(g[:, 1] * (1 - g[:, 1])) - 1))
+    check('change-point closed form for v within 15% of exact HMM', max(errs) < 0.15, f'(max rel err {max(errs):.3f})')
+
+
 if __name__ == '__main__':
     test_exact_law_and_hump()
     test_calibration_bound()
@@ -171,6 +185,7 @@ if __name__ == '__main__':
     test_learned_hmm_dependent()
     test_three_state_matrix_law()
     test_wiener_closed_form()
+    test_changepoint_closed_form()
     n_ok = sum(ok for _, ok in RESULTS)
     print(f"\n{n_ok}/{len(RESULTS)} scientific checks passed")
     sys.exit(0 if n_ok == len(RESULTS) else 1)

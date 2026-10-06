@@ -102,3 +102,11 @@ def sensor_information(h, R, snr=1.0):
     import numpy as _np
     h = snr * _np.asarray(h, float)
     return float(h @ _np.linalg.solve(_np.asarray(R, float), h))
+
+
+def v_changepoint(rho, d2):
+    """Change-point approximation (symmetric persistent two-state chain, Gaussian emissions, Mahalanobis separation d^2):
+    v ~ sqrt(8/pi) (1-rho) exp(-d^2/8) / d.  Parameter-free; within ~10% of the exact HMM v for rho in [0.9,0.97], d^2 in [2.8,25]."""
+    import numpy as _np
+    d = _np.sqrt(d2)
+    return float(_np.sqrt(8 / _np.pi) * (1 - rho) * _np.exp(-d2 / 8) / d)
