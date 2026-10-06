@@ -1760,7 +1760,7 @@ Table~\ref{tab:financial_abstention} reports three-way decision regret for adapt
 \caption{Synthetic Financial Stress Test: Dynamic Risk Quartiles ($N=1,500$). Tail 95\% MSE escalates to $4.2931$ under causal ill-conditioning ($\lambda_{\min} = 0.211$).}
 \label{tab:financial_quartiles}
 \vspace{1.5mm}
-\resizebox{\columnwidth}{!}{%
+\resizebox{0.82\textwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Risk Quartile} & \textbf{Mean Risk $R$} & \textbf{Mean Entropy} & $\lambda_{\min}(\mathbf{J})$ & \textbf{Forecast MSE} & \textbf{Tail 95\% MSE} & \textbf{Crisis Share} \\
@@ -1774,14 +1774,14 @@ Q4 (Severe Risk) & $19.164$ & $0.103$ & $0.211$ & $0.9419$ & $4.2931$ & $18.9\%$
 }
 \end{table}
 
-\begin{table*}[t]
+\begin{table}[!ht]
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{0.85}
 \caption{Three-Way Decision Regret on Financial Macro Regimes ($N=600$). Risk-Aware Policy ($D_t \le \tau$) vs.\ Always-Active (Regret $0.1994$) and Always-Fallback ($\text{MSE}=11.3749$).}
 \label{tab:financial_abstention}
 \vspace{1.5mm}
-\resizebox{0.92\textwidth}{!}{%
+\resizebox{0.90\textwidth}{!}{%
 \begin{tabular}{ccccccccc}
 \toprule
 $\boldsymbol{\tau}$ & \textbf{Coverage} & \textbf{Abstain} & \textbf{Active Regret} & \textbf{Policy Regret} & \textbf{Regret Reduction} & \textbf{Policy MSE} & \textbf{Avoided MSE} & \textbf{Policy Tail 95\%} \\
@@ -1795,6 +1795,6 @@ $4.0^*$ & $99.0\%$ & $1.0\%$ & $0.1994$ & $0.0025$ & $\mathbf{+98.74\%}$ & $0.84
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 \end{document}
