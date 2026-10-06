@@ -143,6 +143,18 @@ A crucial negative clarification emerged while designing the simulation: **persi
 
 The budget is thus a diagnostic decomposition of *causal score information*, not a formula obtained from HMM transition persistence alone.
 
+### R25. Phantom causal resolution: representation error can make weak causal geometry look healthy
+A new K=3 experiment reveals a failure mode of proxy-weighted conditioning diagnostics. True residual treatment SDs are $(1,.3,.08)$, so the oracle causal information has condition number about 153-158. When state emissions overlap, inferred states mix high-information observations into the weak state. At N=1200 and emission separation 0.5, the true $\lambda_{\min}$ is about 0.00215, but soft posteriors report 0.0246 (**11.4x inflation**) and hard assignments 0.0457 (**21.2x inflation**). The apparent condition number collapses from 153 to 5.9/4.0. Even at separation 3, soft/hard $\lambda_{\min}$ remain inflated by about 1.54x/1.90x.
+
+Thus representation uncertainty need not merely reduce information; it can **manufacture apparent overlap / causal resolution**. A proxy-weighted $\lambda_{\min}$ is not automatically conservative for oracle conditioning.
+
+### R26. Correcting phantom resolution creates a second inverse problem
+With symmetric hard misclassification rate $p$, observed state-information moments equal a confusion-matrix mixture of oracle moments. Known-confusion deconvolution uses $C^{-1}$, whose operator norm is $1/(1-2p)$. As classification approaches chance, correction becomes singular. In a two-state experiment with a 100x weak-information state, naive inferred $\lambda_{\min}$ is inflated about 49.4x at $p=.49$. Deconfusion removes the mixing bias in expectation but is extremely noisy: even at N=20,000, the corrected weak-information moment is negative in about 47% of runs and has RMSE 0.215 around a true moment near 0.005.
+
+This yields a **double ill-posedness** picture:
+$\text{proxy moments}\xrightarrow{\;C^{-1}\;}\text{latent-state geometry}\xrightarrow{\;J^{-1}\;}\text{causal effects}.$
+First-order errors can be amplified by both the representation-channel inverse and the causal inverse. This provides a sharper mechanism for the original representation-by-task interaction and suggests joint, rather than stagewise, regularization.
+
 ## Reproduction
 
 Run:
