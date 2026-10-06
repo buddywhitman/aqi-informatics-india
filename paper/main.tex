@@ -248,18 +248,8 @@ To ensure validity under temporal dependence, we partition observations into $B$
     \tau^* = \max \left\{ h \ge 1 : \max_{j} \left| \hat{\rho}_j(h) \right| \ge \frac{1.96}{\sqrt{N}} \right\} + 1.
 \end{equation}
 
-\begin{algorithm}[t]
-\caption{Overlap-Aware Regime DML (OR-DML)}
-\label{alg:purged_cv}
-\begin{algorithmic}[1]
-\REQUIRE Series $\{Y_t, T_t, X_t, Z_t\}_{t=1}^N$, blocks $B$, embargo $\tau^*$, penalty $\lambda \ge 0$.
-\STATE Infer posteriors $\boldsymbol{\gamma}_t$ (Mode 1 smoothing or Mode 2 forward filtering).
-\STATE Cross-fit state-weighted nuisances $\hat{m}_k, \hat{\mu}_k$ with embargo buffer $\tau^*$.
-\STATE Form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$.
-\STATE Form Gram $\hat{\boldsymbol{J}} = \frac{1}{N}\sum_t \boldsymbol{\gamma}_t\boldsymbol{\gamma}_t^\top \odot \tilde{\boldsymbol{T}}_t\tilde{\boldsymbol{T}}_t^\top$ and score $\hat{\boldsymbol{S}} = \frac{1}{N}\sum_t \boldsymbol{\gamma}_t \odot \tilde{\boldsymbol{T}}_t \odot \tilde{\boldsymbol{Y}}_t$.
-\STATE Compute $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ and diagnostics $(\lambda_{\min}, \kappa, \bar{H})$.
-\end{algorithmic}
-\end{algorithm}
+\paragraph{Implementation.} OR-DML uses purged block cross-fitting: infer smoothed or causal-filtered state posteriors, fit state-weighted nuisances outside an embargo around each evaluation block, form the coupled Gram/score system, and solve the spectrally regularized normal equations. Pseudocode and implementation details are in Appendix~\ref{app:algorithm_full}.
+
 
 \paragraph{Benchmark summary.} Full estimator-by-separation results, including mean/median bias, RMSE, coverage, and conditioning for all methods and grid points, are reported in Appendix~\ref{app:latent_regime_bench} and \texttt{reports/or\_dml\_benchmark\_summary.csv}. At $\Delta_Z=2$, OR-DML mean/median bias is $0.081/0.072$ versus $0.077/0.063$ for hard Regime FE; at $\Delta_Z=4$, both match the oracle to two decimals. Under severe overlap, all proxy-based methods fail, which is central to our abstention rather than dominance interpretation.
 
@@ -1376,6 +1366,21 @@ Fine latent states may remain necessary for nuisance adjustment even when estima
 The sensor study reinforces the need for separate diagnostics. Delhi has favorable generated-state conditioning but rejects all three reported immediate pre-treatment placebos. Mumbai becomes more certain in posterior entropy after removing long frozen-$\mathrm{NO}_2$ runs while its conditioning worsens and its regime decomposition changes materially. Kolkata remains near-singular after cleaning. These observations are not oracle validation of phantom resolution; they show that representation certainty, downstream information, data quality, temporal falsification, and scientific identification are distinct axes.
 
 
+
+\section{Full OR-DML Algorithm}
+\label{app:algorithm_full}
+\begin{algorithm}[t]
+\caption{Overlap-Aware Regime DML (OR-DML)}
+\label{alg:purged_cv}
+\begin{algorithmic}[1]
+\REQUIRE Series $\{Y_t, T_t, X_t, Z_t\}_{t=1}^N$, blocks $B$, embargo $\tau^*$, penalty $\lambda \ge 0$.
+\STATE Infer posteriors $\boldsymbol{\gamma}_t$ (Mode 1 smoothing or Mode 2 forward filtering).
+\STATE Cross-fit state-weighted nuisances $\hat{m}_k, \hat{\mu}_k$ with embargo buffer $\tau^*$.
+\STATE Form centered residuals $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ and $\tilde{Y}_{tk} = Y_t - \hat{\mu}_k(X_t)$.
+\STATE Form Gram $\hat{\boldsymbol{J}} = \frac{1}{N}\sum_t \boldsymbol{\gamma}_t\boldsymbol{\gamma}_t^\top \odot \tilde{\boldsymbol{T}}_t\tilde{\boldsymbol{T}}_t^\top$ and score $\hat{\boldsymbol{S}} = \frac{1}{N}\sum_t \boldsymbol{\gamma}_t \odot \tilde{\boldsymbol{T}}_t \odot \tilde{\boldsymbol{Y}}_t$.
+\STATE Compute $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ and diagnostics $(\lambda_{\min}, \kappa, \bar{H})$.
+\end{algorithmic}
+\end{algorithm}
 
 \section{Full Difficulty-Frontier Benchmark Table}
 \label{app:benchmark_table}
