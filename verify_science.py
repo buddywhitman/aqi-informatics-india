@@ -177,6 +177,14 @@ def test_changepoint_closed_form():
     check('change-point closed form for v within 15% of exact HMM', max(errs) < 0.15, f'(max rel err {max(errs):.3f})')
 
 
+def test_nn_constant_limit():
+    from src.bias_law.ext_nn_quad import c
+    sp = float(np.sqrt(np.pi / 2))
+    gaps = {d: 1 - c(d) / sp for d in (8, 20, 40)}
+    ok = all(abs(gaps[d] / (np.pi ** 2 / (2 * d * d)) - 1) < 0.15 for d in gaps) and gaps[40] < 0.005
+    check('nearest-neighbour constant -> sqrt(pi/2) with relative gap pi^2/(2 d^2)', ok, f'(gaps {gaps})')
+
+
 if __name__ == '__main__':
     test_exact_law_and_hump()
     test_calibration_bound()
@@ -186,6 +194,7 @@ if __name__ == '__main__':
     test_three_state_matrix_law()
     test_wiener_closed_form()
     test_changepoint_closed_form()
+    test_nn_constant_limit()
     n_ok = sum(ok for _, ok in RESULTS)
     print(f"\n{n_ok}/{len(RESULTS)} scientific checks passed")
     sys.exit(0 if n_ok == len(RESULTS) else 1)

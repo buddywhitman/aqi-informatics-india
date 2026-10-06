@@ -73,3 +73,10 @@ Independent audit found claims not backed by stored results; fixes in `paper/mai
 Still open: M3 replication counts everywhere, M4 degenerate bootstrap CIs (Kolkata unscreened, Bengaluru screened), M8-M9, M11-M13, M15, L-items; no proof of change-point formula, learned-HMM rate or cross-fit independence.
 
 Round 10b: closed M4 (Bengaluru screened CI excludes point estimate; noted), M11 (means), M12 (diag-cov HMM on real data), M13 (complete cases), L5 (block 72, 300 draws), softened Discussion 'exact' wording.
+
+## Round 11 -- change-point constant reconciled; learned-HMM rate and cross-fit argument
+- `ext_nn_quad.py` -> `x20_nn_quad.csv`: nearest-neighbour constant by quadrature, c_NN(d)=sqrt(pi/2)(1-pi^2/(2d^2)+...); 0.91,1.01,1.08,1.12,1.17 at d=3,4,5,6,8; 1.2501 at d=40. This RECONCILES x15 (1.02 at d=4) with the sqrt(pi/2) derivation: the slow O(d^-2) approach, not a different limit. verify_science test added (10/10).
+- `ext_hmm_window.py` -> `x19_hmm_window.csv`: variance-reduced exact-HMM single-switch windows, eps<=1e-3: const 1.19 (d=3), 1.12 (d=4), 1.12 (d=5), SE 0.004. Total exceeds NN by +10% (d=4), +4% (d=5), not bounded. CORRECTION: x16's d=4 value 1.23 was Monte Carlo noise (rare-event tail, ~1500 switches); x16 kept for the eps>=0.01 rows only (windows with eps>=0.03 are not comparable to the stationary chain: blip prior).
+- `ext_hmm_rate.py` -> `x21_hmm_rate.csv`: learned HMM, well-specified emissions: E|gamma_hat-gamma*| slope -0.49 in N, |v_hat-v*| slope -0.55 (N^-1/2). Misspecified diag-covariance HMM (correlated proxies): plateau, v_hat understates v* by ~9% (pseudo-true gap). Prop. (rate) added to App. A with hypotheses H1-H3 (sqrt(N)-consistency of ML, Lipschitz posterior, X uninformative given Z); the projection argument gives CE <= E(gamma_hat-gamma*)^2.
+- `ext_cond_decay.py` -> `x22_cond_decay.csv`: smoothed chain given Z decorrelates geometrically; |corr| < 0.003 at lag 24 in all six designs, supporting the embargo argument. Constants not bounded in general.
+- Not proved: H1-H3 for EM as implemented; remainder terms of the change-point formula; non-NN site contribution.
