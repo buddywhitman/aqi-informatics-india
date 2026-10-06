@@ -70,6 +70,7 @@ python research/frozen_sensor_sensitivity.py
 python research/latent_state_count_sensitivity.py
 python research/task_aware_state_coarsening.py
 python research/data_driven_task_coarsening.py
+python research/crossfit_task_coarsening.py
 python research/weak_overlap_refinement_paradox.py
 ```
 
