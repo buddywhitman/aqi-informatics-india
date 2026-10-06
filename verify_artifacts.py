@@ -159,34 +159,6 @@ def run_verification():
     else:
         print(f"[OK] Verified Hierarchical Model 3 NLL coefficient: {m3_nll_coef}")
 
-    # Check Three Decisive Experiments
-    # Exp 28: Cross-City Transfer
-    df_xfer = pd.read_csv("reports/cross_city_transfer_evaluation.csv")
-    mum_xfer = df_xfer[df_xfer["Test_City"] == "Mumbai"].iloc[0]
-    mum_auc_str = f"{mum_xfer['HeldOut_ROC_AUC_D']:.3f}"
-    if mum_auc_str not in tex_content:
-        failures.append(f"Cross-city transfer Mumbai ROC-AUC {mum_auc_str} not found in paper/main.tex")
-    else:
-        print(f"[OK] Verified Cross-city transfer Mumbai ROC-AUC: {mum_auc_str}")
-
-    # Exp 29: Representation Perturbation
-    df_exp29 = pd.read_csv("reports/experiment29_representation_perturbation.csv")
-    orc_row = df_exp29[df_exp29["Representation_Variant"].str.contains("Oracle")].iloc[0]
-    orc_err_str = f"{orc_row['Mean_Causal_Error_L2']:.3f}"
-    if orc_err_str not in tex_content:
-        failures.append(f"Exp 29 Oracle causal error {orc_err_str} not found in paper/main.tex")
-    else:
-        print(f"[OK] Verified Exp 29 Oracle causal error: {orc_err_str}")
-
-    # Exp 30: Task Conditioning Geometry
-    df_exp30 = pd.read_csv("reports/experiment30_task_conditioning.csv")
-    mid_row = df_exp30[df_exp30["Delta_T_Geometry"] == 1.5].iloc[0]
-    mid_err_str = f"{mid_row['Mean_Causal_Error_L2']:.3f}"
-    if mid_err_str not in tex_content:
-        failures.append(f"Exp 30 Delta_T=1.5 peak causal error {mid_err_str} not found in paper/main.tex")
-    else:
-        print(f"[OK] Verified Exp 30 Peak causal error: {mid_err_str}")
-
     # 5. Statistical Protocol Verification
     # (a) MBB block-length sensitivity invariance
     df_mbb = pd.read_csv("reports/representation_zoo_mbb_sensitivity.csv")

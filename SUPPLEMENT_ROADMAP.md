@@ -59,9 +59,8 @@ Every empirical table and figure in the manuscript is generated deterministicall
 | **Table 7** (LatentRegimeBench Results)| `reports/latent_regime_bench_results.csv` | `src/latent_regime_bench.py` | 5 diagnostic configurations ($N=1,200$, 30 seeds each) |
 | **Table 8** (Zoo Shifts & Reliability)| `reports/representation_zoo_disentangled_shifts.csv` & `reports/representation_zoo_reliability_auc.csv` | `src/train_real_representation_zoo.py` | Panel A: Disentangled shifts; Panel B: Downstream reliability |
 | **Table 9** (Multi-Horizon Forecasting)| `reports/multidomain_failure_forecasting.csv` | `src/train_real_representation_zoo.py` | Worst-decile downstream failure forecasting across $h \in [1, 24]$ |
-| **Table 10** (3 Decisive Experiments)| `reports/experiment30_task_conditioning.csv`, `reports/experiment29_representation_perturbation.csv`, `reports/cross_city_transfer_evaluation.csv` | `src/three_decisive_experiments.py` | Panel A: Task geometry ($2.5\times$ swing); Panel B: Proxy perturbation; Panel C: Cross-city transfer |
-| **Table 11** (Financial Risk Quartiles) | `reports/financial_regime_risk_quartiles.csv` | `src/financial_regime_transfer.py` | Dynamic risk quartiles on macroeconomic trading days ($N=1,500$) |
-| **Table 12** (3-Way Decision Regret) | `reports/financial_abstention_policy.csv` | `src/financial_regime_transfer.py` | Adaptive risk policy slashing regret to 0.0025 at 99% coverage |
+| **Table 10** (Financial Risk Quartiles) | `reports/financial_regime_risk_quartiles.csv` | `src/financial_regime_transfer.py` | Dynamic risk quartiles on macroeconomic trading days ($N=1,500$) |
+| **Table 11** (3-Way Decision Regret) | `reports/financial_abstention_policy.csv` | `src/financial_regime_transfer.py` | Adaptive risk policy slashing regret to 0.0025 at 99% coverage |
 
 ---
 
@@ -75,9 +74,6 @@ python verify_science.py
 
 # 2. Verify all 25+ artifact existence, float-exact agreement, and absence of placeholders:
 python verify_artifacts.py
-
-# 3. Execute the three decisive mechanism experiments:
-python src/three_decisive_experiments.py
 
 # 4. Execute the representation zoo calibration intervention:
 python src/calibration_intervention_zoo.py

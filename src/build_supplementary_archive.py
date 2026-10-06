@@ -33,7 +33,6 @@ REQUIRED_FILES = [
 
     # Canonical Codebase
     "src/or_dml.py",
-    "src/three_decisive_experiments.py",
     "src/calibration_intervention_zoo.py",
     "src/empirical_falsification_checks.py",
     "src/synthetic_dgp_benchmark.py",

@@ -258,7 +258,7 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \centering
 \small
 \renewcommand{\arraystretch}{0.75}
-\caption{The Latent-Confounding Difficulty Frontier: 500 Monte Carlo Replications across Separation Regimes $\Delta_Z \in [0.2, 4.0]$ ($N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Full 9-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv} and detailed in Appendix~\ref{app:latent_regime_bench}.}
+\caption{The Latent-Confounding Difficulty Frontier: 100 Monte Carlo Replications per Grid Point (500 total evaluation runs across $\Delta_Z \in [0.2, 4.0]$, $N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Coverage for hard-clustering Regime FE DML is marked -- as it lacks a joint sandwich covariance theory under temporal dependence. Full 9-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv} and detailed in Appendix~\ref{app:latent_regime_bench}.}
 \label{tab:benchmark}
 \vspace{-3mm}
 \resizebox{0.86\textwidth}{!}{%
@@ -271,7 +271,7 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bi
 & Standard DML & 8.4556 & 8.4559 & 8.4562 & 0.0\% / 0.0\% & 4.9339 \\
 & DML + Z Controls (Ridge) & 8.3072 & 8.3120 & 8.3079 & 0.0\% / 0.0\% & 4.6273 \\
 & DML + Z Controls (GBM) & 8.0178 & 8.0252 & 8.0190 & 0.0\% / 0.0\% & 5.3254 \\
-& Regime FE DML (Hard) & 8.2773 & 8.2811 & 8.2782 & 0.0\% / 0.0\% & 5.0108 \\
+& Regime FE DML (Hard) & 8.2773 & 8.2811 & 8.2782 & -- & 5.0108 \\
 & \textbf{Spectral OR-DML (Ours)} & 8.6296 & 8.6022 & 8.6306 & 0.0\% / 0.0\% & 0.8660 \\
 \midrule
 \multirow{6}{*}{1.0 (Moderate)} 
@@ -279,7 +279,7 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bi
 & Standard DML & 8.4331 & 8.4494 & 8.4340 & 0.0\% / 0.0\% & 4.9535 \\
 & DML + Z Controls (Ridge) & 5.4379 & 5.4619 & 5.4400 & 0.0\% / 0.0\% & 2.0779 \\
 & DML + Z Controls (GBM) & 3.6334 & 3.6420 & 3.6465 & 0.0\% / 0.0\% & 1.8845 \\
-& Regime FE DML (Hard) & 2.6422 & 2.6893 & 2.6792 & 0.0\% / 0.0\% & 5.0275 \\
+& Regime FE DML (Hard) & 2.6422 & 2.6893 & 2.6792 & -- & 5.0275 \\
 & \textbf{Spectral OR-DML (Ours)} & 4.0171 & 4.0216 & 4.0367 & 0.0\% / 0.0\% & 0.5570 \\
 \midrule
 \multirow{7}{*}{2.0 (Clean Separation)} 
@@ -287,7 +287,7 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bi
 & Standard DML & 8.4318 & 8.4508 & 8.4327 & 0.0\% / 0.0\% & 4.9539 \\
 & DML + Z Controls (Ridge) & 2.6307 & 2.6143 & 2.6345 & 0.0\% / 0.0\% & 1.3505 \\
 & DML + Z Controls (GBM) & 0.2066 & 0.1936 & 0.2426 & 72.0\% / 72.0\% & 1.2144 \\
-& Regime FE DML (Hard) & 0.0772 & 0.0634 & 0.1025 & 96.0\% / 96.0\% & 5.0238 \\
+& Regime FE DML (Hard) & 0.0772 & 0.0634 & 0.1025 & -- & 5.0238 \\
 & \textbf{Spectral OR-DML (Ours)} & \textbf{0.0812} & \textbf{0.0720} & \textbf{0.1039} & 92.0\% / \textbf{97.0\%} & 0.4546 \\
 & \textbf{Filtered OR-DML (Ours)} & 0.1015 & 0.0812 & 0.1306 & 92.0\% / \textbf{94.0\%} & 0.4556 \\
 \midrule
@@ -296,7 +296,7 @@ $\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bi
 & Standard DML & 8.4509 & 8.4611 & 8.4518 & 0.0\% / 0.0\% & 4.9123 \\
 & DML + Z Controls (Ridge) & 0.8479 & 0.8415 & 0.8534 & 0.0\% / 0.0\% & 1.0945 \\
 & DML + Z Controls (GBM) & 0.1006 & 0.0817 & 0.1248 & 89.0\% / 89.0\% & 1.1889 \\
-& Regime FE DML (Hard) & 0.0536 & 0.0461 & 0.0667 & 100.0\% / 100.0\% & 4.9960 \\
+& Regime FE DML (Hard) & 0.0536 & 0.0461 & 0.0667 & -- & 4.9960 \\
 & \textbf{Spectral OR-DML (Ours)} & \textbf{0.0538} & \textbf{0.0462} & \textbf{0.0671} & 96.0\% / \textbf{95.0\%} & 0.4394 \\
 & \textbf{Filtered OR-DML (Ours)} & 0.0538 & 0.0462 & 0.0671 & 96.0\% / \textbf{95.0\%} & 0.4394 \\
 \bottomrule
@@ -424,26 +424,25 @@ Kolkata ($N=1,209$) & \textbf{Spectral OR-DML} & Overall ATE & $-0.0012$ & $1.29
 \section{THE LATENT-CONFOUNDING DIFFICULTY FRONTIER}
 \label{sec:experiments}
 
-To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{thm:spectral}, we conduct a comprehensive Monte Carlo evaluation across 500 replications, charting the causal estimation error across the \textbf{Latent-Confounding Difficulty Frontier}.
+To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{thm:spectral}, we conduct a comprehensive Monte Carlo evaluation across 500 evaluation runs (100 replications per grid point), charting causal estimation error across the \textbf{Latent-Confounding Difficulty Frontier}.
 
-\textbf{Experimental Protocol.} \emph{DGPs \& Baselines:} 500 Monte Carlo draws across $\Delta_Z \in \{0.2, \dots, 4.0\}$ ($N=1,200$, $\theta_{\mathrm{ATE}}^* = 1.5278$) comparing Oracle, Standard, and OR-DML. \emph{Representations \& Shifts:} HMM, GRU, Transformer, and SSM under clean and compound shifts. \emph{Reliability Target:} Predicting downstream squared loss via difficulty $\mathcal{D}_t$ across 5 seeds with MBB. \emph{Real-World Test:} $>14,000$ hourly observations across four megacities (with controlled mechanism and cross-city transfer experiments in Appendix~\ref{app:three_decisive}).
+\textbf{Experimental Protocol.} \emph{DGPs \& Baselines:} 100 Monte Carlo draws per grid point across $\Delta_Z \in \{0.2, 0.5, 1.0, 2.0, 4.0\}$ ($N=1,200$, $\theta_{\mathrm{ATE}}^* = 1.5278$) comparing Oracle, Standard DML, Block DML, continuous proxy controls (Ridge and GBM), hard-clustering Regime FE, and OR-DML (Spectral and Filtered). \emph{Representations \& Shifts:} HMM, GRU, Transformer, and SSM under clean and compound shifts. \emph{Reliability Target:} Predicting downstream squared loss via difficulty $\mathcal{D}_t$ across 5 seeds with MBB. \emph{Real-World Test:} $>14,000$ hourly observations across four megacities.
 
 \textbf{Difficulty Frontier Findings.} Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three phenomena:
 \begin{enumerate}\setlength{\itemsep}{-3pt}\setlength{\parskip}{0pt}
-    \item \textbf{Naive Confounding \& Severe Overlap Abstention:} Standard DML exhibits constant omitted-regime bias ($+8.44$, RMSE $8.45$) and $0.0\%$ coverage across all $\Delta_Z$ (Theorem~\ref{thm:bias}). Under severe overlap ($\Delta_Z \le 0.5$), coupled estimation with noisy posteriors ($\hat{\varepsilon}_\gamma = 0.78$) yields biases ($8.63\text{--}8.83$) matching naive pooling. By Theorem~\ref{thm:impossibility}, this regime is unidentifiable; high operational difficulty $\mathcal{D}_t$ acts as an explicit \emph{abstention trigger}.
-    \item \textbf{Graceful Degradation \& Baseline Comparisons:} By Theorem~\ref{thm:graceful}, OR-DML separates proxy error $\varepsilon_\gamma / \lambda_{\min}(\boldsymbol{J})$ from estimation error $\mathcal{O}_P(N^{-1/2})$. While continuous proxy controls ($Z$-Ridge, $Z$-GBM) reduce bias under strong observability ($\Delta_Z=2.0$: bias $0.207$, cov $72\%$), they fail to identify regime-specific effects. Across $\Delta_Z \in [0.2, 4.0]$, Spectral OR-DML drops bias from $8.63$ to $0.054$ (matching Oracle DML $0.054$), achieving $96.0\% / 95.0\%$ coverage.
+    \item \textbf{Low-Observability Breakdown ($\Delta_Z \le 1.0$):} Standard and Block DML exhibit constant omitted-regime bias ($+8.43\text{--}8.49$, RMSE $8.45$) and $0.0\%$ coverage across all $\Delta_Z$ (Theorem~\ref{thm:bias}). Crucially, under severe overlap ($\Delta_Z \le 0.5$), \emph{all} methods fail: proxy error is severe ($\hat{\varepsilon}_\gamma = 0.78$), yielding large bias ($6.59\text{--}8.83$). At moderate observability ($\Delta_Z = 1.0$), all estimators still suffer substantial proxy bias ($\ge 2.64$). In this regime, identification fails by Theorem~\ref{thm:impossibility}; high operational difficulty $\mathcal{D}_t$ acts as an explicit \emph{abstention trigger}.
+    \item \textbf{High-Observability Resolution ($\Delta_Z \ge 2.0$):} When regimes separate cleanly ($\Delta_Z \ge 2.0$), both Spectral OR-DML and hard-assignment Regime FE eliminate omitted confounding: at $\Delta_Z=2.0$, OR-DML achieves mean bias $0.081$ (median $0.072$) and Regime FE achieves $0.077$ (median $0.063$), outperforming continuous proxy controls ($Z$-GBM bias $0.207$). At $\Delta_Z=4.0$, both methods match Oracle DML (bias $0.054$). In well-conditioned benchmarks ($\lambda_{\min} \approx 0.45$), spectral shrinkage has negligible effect on point bias ($0.0812$ vs.\ $0.0823$), functioning as insurance against near-singular ill-conditioning. While hard Regime FE lacks distribution theory under dependence, OR-DML preserves probabilistic state inference with valid delta-method sandwich coverage ($92.0\% / 97.0\%$, matching Oracle $93.0\% / 97.0\%$).
     \item \textbf{Filtering vs.\ Smoothing:} Causal forward filtering ($\boldsymbol{\gamma}_t^{\mathrm{filter}}$) tracks retrospective smoothing ($\boldsymbol{\gamma}_t^{\mathrm{smooth}}$) closely across separated regimes (at $\Delta_Z = 2.0$, median bias $0.0812$ vs.\ $0.0720$; at $\Delta_Z = 4.0$, identical at $0.0462$), incurring zero efficiency loss once dynamics are informed by physical history.
 \end{enumerate}
 
-\textbf{Representation Accuracy vs.\ Downstream Reliability.} To evaluate whether latent representations translate to reliable downstream prediction, we evaluate four models on held-out compound shift (Shift C, $N=1,200$, 5 seeds; Table~\ref{tab:main_rep_zoo} in Appendix~\ref{app:latent_regime_bench}). While neural encoders (GRU, Transformer, SSM) achieve competitive recovery ($F_1 \approx 0.84\text{--}0.86$), uncalibrated posteriors yield near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$), whereas Gaussian HMM causal filtering achieves well-calibrated states ($\text{ECE} = 0.0397$) and statistically informative failure anticipation ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$). In fixed-effects hierarchical regressions across 15 benchmark worlds ($N=60$), classification $F_1$ explains baseline reliability ($\beta_1 = +0.9817 \pm 0.2011, p=0.0002, R^2_{\mathrm{within}} = 0.4313$), while posterior log-loss provides incremental explanatory power ($\Delta R^2_{\mathrm{within}} = +0.0924, \beta_{\mathrm{NLL}} = -0.0653 \pm 0.0295, p=0.0442$, raising $R^2_{\mathrm{within}} \to 0.5237$). Three controlled mechanism experiments (Appendix~\ref{app:three_decisive}) isolate this interaction: holding representation fixed ($\varepsilon_\gamma=0.012$), sweeping task geometry $\Delta_T$ yields a $2.5\times$ swing in causal error ($5.56\to 13.96$), whereas perturbing representation quality under fixed geometry changes error by $<0.4\%$; leave-one-city-out transfer confirms $\mathcal{D}_t$ generalises to ill-conditioned airsheds ($+0.121$ ROC-AUC on Mumbai).
+\textbf{Representation Accuracy vs.\ Downstream Reliability.} To evaluate whether latent representations translate to reliable downstream prediction, we evaluate four models on held-out compound shift (Shift C, $N=1,200$, 5 seeds; Table~\ref{tab:main_rep_zoo} in Appendix~\ref{app:latent_regime_bench}). While neural encoders (GRU, Transformer, SSM) achieve competitive recovery ($F_1 \approx 0.84\text{--}0.86$), uncalibrated posteriors yield near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$), whereas Gaussian HMM causal filtering achieves well-calibrated states ($\text{ECE} = 0.0397$) and statistically informative failure anticipation ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$). In fixed-effects hierarchical regressions across 15 benchmark worlds ($N=60$), classification $F_1$ explains baseline reliability ($\beta_1 = +0.9817 \pm 0.2011, p=0.0002, R^2_{\mathrm{within}} = 0.4313$), while posterior log-loss provides incremental explanatory power ($\Delta R^2_{\mathrm{within}} = +0.0924, \beta_{\mathrm{NLL}} = -0.0653 \pm 0.0295, p=0.0442$, raising $R^2_{\mathrm{within}} \to 0.5237$), with calibration ECE exhibiting consistent negative association ($\Delta R^2_{\mathrm{within}} = 0.0647$).
 
-
-
+\vspace{-3mm}
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
 \label{sec:empirical}
-We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025 -- Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational stress test of the estimator's diagnostics rather than independent ground truth for physical causal effects. Frozen sensor runs ($\ge 6$h identical $\text{NO}_2$) were filtered during quality-assurance pre-processing; standard errors are robust across Newey-West HAC lags $h \in \{12, 24, 72, 168\}$ hours (Appendix~\ref{app:empirical_sensitivity}).
+We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025 -- Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational stress test of the estimator's diagnostics rather than independent ground truth for physical causal effects. Sensor records exhibit missingness and occasional repeat telemetry values characteristic of municipal sensor deployments; complete-case sensitivity and Newey-West HAC lag sensitivity across $h \in \{12, 24, 72, 168\}$ hours are reported in Appendix~\ref{app:empirical_sensitivity}.
 
-\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$): Clean separation decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.32$): Marine breeze reversals induce severe collinearity; Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates significant ventilation/breeze ($+3.30 \pm 1.48$, $p=0.026$) in Regime 2 (wind $16.5$ km/h, RH $77.9\%$) from Regime 1 (Coastal Stagnation, wind $11.5$ km/h, RH $83.2\%$). Regime 1 displays extreme error ($-0.03 \pm 8.72$, 95\% CI $[-17.1, +17.1]$), serving as an \emph{empirical non-identification diagnostic} flagging unidentifiable clearance from depleted treatment variation. \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$): Standard DML estimates zero effect ($-0.001 \pm 0.060$); OR-DML separates Regime 1 (Cool Nocturnal Inversion, wind $10.8$ km/h, RH $84.6\%$, effect $+0.092 \pm 0.155$) from Regime 2 (Warm Afternoon Dispersion, temp $27.7^\circ$C, RH $45.3\%$, effect $-0.153 \pm 0.069$, $p=0.027$) driven by photochemical titration ($\text{NO} + \text{O}_3 \to \text{NO}_2$) and venting. \emph{Reliability Contrast}: In Bengaluru, healthy conditioning renders state uncertainty informative ($\text{AUC}(H) = 0.674$), whereas Mumbai's ill-conditioning blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}). \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$): Restricted temporal coverage ($N=1,209$, Feb--Jun 2025) acts as an empirical diagnostic of near-singular ill-conditioning; unregularized estimates explode ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}). \emph{Dynamic Exposure Projections}: $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ peak at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), while coastal airsheds exhibit breeze reversals.
+\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$): Clean separation decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, winter inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.32$): Marine breeze reversals induce severe collinearity; Standard DML is unstable ($+2.64 \pm 4.42$), while OR-DML isolates significant ventilation/breeze ($+3.30 \pm 1.48$, $p=0.026$) in Regime 2 (wind $16.5$ km/h, RH $77.9\%$) from Regime 1 (Coastal Stagnation, wind $11.5$ km/h, RH $83.2\%$). Regime 1 displays extreme variance ($-0.03 \pm 8.72$), flagging unidentifiable clearance from depleted treatment variation. \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$): Standard DML estimates zero effect ($-0.001 \pm 0.060$); OR-DML separates Regime 1 (Cool Nocturnal Inversion, wind $10.8$ km/h, RH $84.6\%$, effect $+0.092 \pm 0.155$) from Regime 2 (Warm Afternoon Dispersion, temp $27.7^\circ$C, RH $45.3\%$, effect $-0.153 \pm 0.069$, $p=0.027$) driven by photochemical venting. \emph{Reliability Contrast}: In Bengaluru, healthy conditioning renders state uncertainty informative ($\text{AUC}(H) = 0.674$), whereas Mumbai's ill-conditioning blinds raw entropy ($\text{AUC}(H) = 0.486$), requiring coupled index $\mathcal{D}_t$ ($\text{AUC} = 0.531\text{--}0.564$; Table~\ref{tab:failure_ablation}). \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$): Restricted temporal coverage ($N=1,209$, Feb--Jun 2025) acts as an empirical diagnostic of near-singular ill-conditioning; unregularized estimates explode ($\text{SE} = 1.11$), while spectral regularization stabilizes variance ($\text{SE} \to 0.060$ at $\lambda=0.10$; Appendix~\ref{app:empirical_sensitivity}). \emph{Dynamic Exposure Projections}: $Y_{t+h} = \theta_h(S_t) T_t + g_h(X_t, S_t) + U_{t+h}$ peak at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), while coastal airsheds exhibit breeze reversals.
 
 \vspace{-4.5mm}
 \section{DISCUSSION, LIMITATIONS \& CONCLUSION}
@@ -677,8 +676,8 @@ Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
     \item \textbf{Appendix~\ref{app:proof_thm3} (Proof of Theorem~\ref{thm:graceful}):} Graceful degradation bound $\|\boldsymbol{\theta}_\gamma - \boldsymbol{\theta}^*\|_2 \le C\varepsilon_\gamma / \lambda_{\min}(\boldsymbol{J})$ and Surrogate Entropy Bridge (Proposition~\ref{prop:bridge}).
     \item \textbf{Appendix~\ref{app:proof_thm4} (Proof of Theorem~\ref{thm:spectral}):} Spectrally regularized OR-DML risk bound and adaptive empirical penalty selection.
     \item \textbf{Appendix~\ref{app:proof_thm5} \& \ref{app:proof_prop6} (Proof of Theorem~\ref{thm:asymptotics} \& Proposition~\ref{prop:variance}):} Dependent asymptotic normality under purged cross-fitting and joint Delta-method inference for sample and population ATE.
-    \item \textbf{Appendix~\ref{app:empirical_sensitivity} (Empirical Sensitivity \& Provenance):} Sensor quality filtering, Bartlett embargo diagnostics, HAC lag sensitivity, and megacity regime profiles.
-    \item \textbf{Appendix~\ref{app:latent_regime_bench} (LatentRegimeBench, Representation Zoo, and Three Decisive Experiments):} Architectural comparisons (HMM, GRU, Transformer, SSM), multi-horizon failure prediction, and three decisive mechanism experiments (\ref{app:three_decisive}).
+    \item \textbf{Appendix~\ref{app:empirical_sensitivity} (Empirical Sensitivity \& Provenance):} Bartlett embargo diagnostics, HAC lag truncation sensitivity, missingness robustness, and megacity regime profiles.
+    \item \textbf{Appendix~\ref{app:latent_regime_bench} (LatentRegimeBench \& Representation Zoo):} Architectural comparisons (HMM, GRU, Transformer, SSM), multi-horizon failure prediction, and hierarchical reliability regressions.
     \item \textbf{Appendix~\ref{app:financial_transfer} (Multi-Domain Financial Stress Test):} Out-of-sample risk abstention under synthetic macroeconomic regimes with real covariate features.
 \end{itemize}
 
@@ -1187,10 +1186,9 @@ Kolkata & $1,209$ & $-0.0012$ & $1.2995$ & $1,206$ & $+0.1583$ & $1.3825$ \\
 
 As documented in Table~\ref{tab:imputation_sensitivity}, point estimates retain identical signs and overlapping confidence bands across all cities under complete-case deletion: Delhi ($+0.4014 \pm 0.0662$ vs. $+0.3742 \pm 0.0642$), Mumbai ($+1.8748 \pm 4.2876$ vs. $+1.5926 \pm 4.3636$), Bengaluru ($-0.0365 \pm 0.0741$ vs. $-0.0258 \pm 0.0790$), and Kolkata ($+0.1583 \pm 1.3825$ vs. $-0.0012 \pm 1.2995$). These results confirm that our qualitative conclusions and directional signs are robust to missing data and do not depend on the causal forward-fill protocol, with point estimates showing remarkable stability across both sample definitions.
 
-\subsection{Quality Assurance, Frozen Sensor Filtering, and HAC Lag Sensitivity}
+\subsection{HAC Lag Truncation Sensitivity and Temporal Dependence}
 \label{app:hac_frozen_sensitivity}
-To ensure empirical findings are not driven by sensor telemetry failures, we screened the longitudinal records for frozen sensor artifacts: sequences of $\ge 6$ consecutive hours of identical $\text{NO}_2$ readings (characteristic of transmission dropouts where DAC values are held constant) were filtered out during quality assurance. In Mumbai, this removed isolated telemetry flatlines while preserving dynamic variance.
-Furthermore, to evaluate sensitivity to temporal dependence modeling, we evaluated Newey-West HAC standard errors across truncation lags $h \in \{12, 24, 72, 168\}$ hours (spanning diurnal, multi-day synoptic, and weekly cycles). Across all four megacities, estimated standard errors remain remarkably stable across horizons: Delhi $\mathrm{SE} \in [0.051, 0.059]$, Bengaluru $\mathrm{SE} \in [0.069, 0.077]$, Mumbai $\mathrm{SE} \in [1.48, 1.58]$, and Kolkata $\mathrm{SE} \in [1.30, 1.42]$, confirming that statistical inference is robust to the chosen Bartlett lag truncation bandwidth.
+To evaluate the sensitivity of statistical inference to temporal dependence bandwidths, we evaluate Newey-West HAC standard errors across Bartlett truncation lags $h \in \{12, 24, 72, 168\}$ hours (spanning diurnal, multi-day synoptic, and weekly cycles). As lag truncation increases to capture persistent weather autocorrelation, standard errors widen moderately: in Delhi Regime 1, standard errors rise from $0.0513$ ($h=12$) to $0.0734$ ($h=168$); in Bengaluru Regime 2, from $0.0689$ to $0.0931$ ($p$-value widening from $0.027$ to $0.101$); in Mumbai Regime 2, from $1.4800$ to $1.8512$ ($p$-value widening from $0.026$ to $0.073$); and in Kolkata, from $1.2995$ to $1.4510$. This demonstrates that while diurnal point estimates remain stable, inference under weekly persistence yields wider confidence intervals, highlighting the importance of reporting lag-sensitive standard errors rather than assuming i.i.d.\ exchangeability.
 
 \vspace{-2mm}
 \section{LatentRegimeBench: Multi-Dimensional Benchmark Results}
@@ -1327,64 +1325,7 @@ To test prospective reliability at deployment, we strictly utilize prospective i
 }
 \end{table}
 
-In coastal airsheds with severe collinearity (Mumbai, $\lambda_{\min} = 0.2288$), state entropy $H_t$ acts as a coin flip ($\text{ROC-AUC} \approx 0.4855$ at $h=1$), while coupled difficulty $\mathcal{D}_t$ restores failure anticipation across all lead times ($0.5640$ at $h=6$). Conversely, in well-conditioned airsheds (Bengaluru, $\lambda_{\min} = 4.29$), state transitions dominate, rendering raw entropy $H_t$ superior ($\text{ROC-AUC} \approx 0.67$), confirming their complementary domain-dependent roles.
-
-\subsection{Three Decisive Mechanism Experiments: Representation, Task Geometry, and Cross-City Transfer}
-\label{app:three_decisive}
-To test Theorems~\ref{thm:graceful}--\ref{thm:spectral} and isolate how representation quality and task conditioning interact, we conducted three controlled mechanism experiments ($N=1,200$, 25 seeds each; Table~\ref{tab:three_decisive_exps}).
-
-\textbf{(1) Task Conditioning under Fixed Representation (Panel~A):} Holding representation fixed (calibrated Gaussian HMM, $\varepsilon_\gamma = 0.012$), sweeping treatment geometry $\Delta_T \in [0.4, 10.0]$ yields a $\mathbf{2.5\times}$ swing in causal error ($\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2$ from $5.56$ to $13.96$). Error peaks at the collinear mid-range ($\Delta_T=1.5$, $\lambda_{\min}=0.90$) and declines by $59\%$ under well-separated regimes ($\Delta_T=10.0, \lambda_{\min}=15.05$), proving that task geometry governs downstream error independently of representation fidelity.
-
-\textbf{(2) Representation Perturbation under Fixed Geometry (Panel~B):} Holding geometry fixed $(\Delta_Z=1.5, \Delta_T=3.0, \lambda_{\min}=1.98)$ and varying representation posteriors across nine variants shows that causal error increases monotonically with proxy error $\varepsilon_\gamma$ ($13.402$ for oracle to $13.454$ for uniform), validating Theorem~\ref{thm:graceful}. The small total increment ($+0.39\%$) confirms that under well-conditioned geometry, proxy error is sub-dominant to estimation variance.
-
-\textbf{(3) Cross-City Leave-One-City-Out Transfer (Panel~C):} Evaluating out-of-domain transfer of difficulty thresholds calibrated on three cities to the held-out fourth city confirms that coupled $\mathcal{D}_t$ generalises to ill-conditioned airsheds (+0.121 ROC-AUC on Mumbai where $\lambda_{\min}=0.32$), while raw entropy $H_t$ suffices when conditioning is healthy (Bengaluru, $\lambda_{\min}=4.22$), validating the theoretical diagnostic boundary.
-
-\begin{table}[!ht]
-\centering
-\footnotesize
-\renewcommand{\arraystretch}{0.62}
-\setlength{\tabcolsep}{3.5pt}
-\caption{Three Decisive Mechanism Experiments. Panel~A: Task conditioning geometry under fixed representation ($\Delta_Z=1.5, \varepsilon_\gamma=0.012$, 25 seeds); error swings $2.5\times$ across $\Delta_T$. Panel~B: Representation perturbation under fixed task geometry ($\Delta_Z=1.5, \Delta_T=3.0$, 25 seeds); monotone error validates Theorem~\ref{thm:graceful}. Panel~C: 4-fold leave-one-city-out cross-city transfer; coupled $\mathcal{D}_t$ outperforms raw entropy on ill-conditioned airsheds.}
-\label{tab:three_decisive_exps}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{ccccccc}
-\toprule
-\multicolumn{7}{c}{\textbf{Panel A: Task Conditioning Geometry under Fixed Representation ($\varepsilon_\gamma = 0.012$)}} \\
-$\Delta_T$ & $\varepsilon_\gamma$ & $\lambda_{\min}(\boldsymbol{J})$ & $\kappa(\boldsymbol{J})$ & \textbf{Mean $\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2$} & \textbf{Std} & \textbf{Mean ATE SE} \\
-\midrule
-$0.4$ & $0.012$ & $0.567$ & $1.27$ & $5.559$ & $0.928$ & $0.566$ \\
-$0.8$ & $0.012$ & $0.641$ & $1.23$ & $10.071$ & $0.793$ & $0.480$ \\
-$1.5$ & $0.012$ & $0.898$ & $1.14$ & $\mathbf{13.961}$ & $0.520$ & $0.332$ \\
-$3.0$ & $0.012$ & $1.947$ & $1.05$ & $13.363$ & $0.307$ & $0.172$ \\
-$6.0$ & $0.012$ & $5.880$ & $1.09$ & $8.776$ & $0.117$ & $0.070$ \\
-$10.0$ & $0.012$ & $15.048$ & $1.13$ & $5.724$ & $0.041$ & $0.035$ \\
-\midrule
-\multicolumn{7}{c}{\textbf{Panel B: Representation Perturbation under Fixed Task Geometry ($\Delta_Z = 1.5, \Delta_T = 3.0$)}} \\
-\multicolumn{3}{l}{\textbf{Representation Variant}} & $\varepsilon_\gamma$ & $\bar{H}$ & $\lambda_{\min}(\boldsymbol{J})$ & $\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2$ \\
-\midrule
-\multicolumn{3}{l}{Oracle Ground Truth ($H_t$)} & $0.000$ & $0.000$ & $1.979$ & $13.402$ \\
-\multicolumn{3}{l}{Sharpened HMM ($T=0.35$, overconfident)} & $0.009$ & $0.002$ & $1.977$ & $13.406$ \\
-\multicolumn{3}{l}{Sharpened HMM ($T=0.60$)} & $0.010$ & $0.005$ & $1.975$ & $13.405$ \\
-\multicolumn{3}{l}{Calibrated Gaussian HMM} & $0.012$ & $0.009$ & $1.969$ & $13.405$ \\
-\multicolumn{3}{l}{Noisy Posterior ($\sigma=0.45$)} & $0.012$ & $0.009$ & $1.969$ & $13.405$ \\
-\multicolumn{3}{l}{Smeared HMM ($T=1.80$, underconfident)} & $0.021$ & $0.027$ & $1.944$ & $13.405$ \\
-\multicolumn{3}{l}{Smeared HMM ($T=3.50$, blurred)} & $0.068$ & $0.109$ & $1.795$ & $13.407$ \\
-\multicolumn{3}{l}{Uninformative Uniform Prior} & $1.000$ & $0.693$ & $0.000$ & $13.454$ \\
-\midrule
-\multicolumn{7}{c}{\textbf{Panel C: Leave-One-City-Out Cross-City Transfer (4 Megacities)}} \\
-\textbf{Test City} & $\lambda_{\min}$ & \textbf{Training Cities} & \textbf{ROC-AUC $\mathcal{D}_t$} & \textbf{ROC-AUC $H_t$} & $\boldsymbol{\Delta}$\textbf{ROC-AUC} & $\boldsymbol{\Delta}$\textbf{PR-AUC} \\
-\midrule
-Delhi & $111.8$ & Mumbai+Bengaluru+Kolkata & $0.388$ & $0.311$ & $\mathbf{+0.076}$ & $+0.010$ \\
-Mumbai & $0.32$ & Delhi+Bengaluru+Kolkata & $0.624$ & $0.503$ & $\mathbf{+0.121}$ & $+0.086$ \\
-Bengaluru & $4.22$ & Delhi+Mumbai+Kolkata & $0.355$ & $0.681$ & $-0.325$ & $-0.085$ \\
-Kolkata & $0.0025$ & Delhi+Mumbai+Bengaluru & $0.607$ & $0.666$ & $-0.059$ & $-0.004$ \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
-
-\vspace{-3mm}
+In coastal airsheds with severe collinearity (Mumbai, $\lambda_{\min} = 0.2288$), state entropy $H_t$ acts as a coin flip ($\text{ROC-AUC} \approx 0.4855$ at $h=1$), while coupled difficulty $\mathcal{D}_t$ restores failure anticipation across all lead times ($0.5640$ at $h=6$). Conversely, in well-conditioned airsheds (Bengaluru, $\lambda_{\min} = 4.29$), state transitions dominate, rendering raw entropy $H_t$ superior ($\text{ROC-AUC} \approx 0.67$), confirming their complementary domain-dependent roles.\vspace{-1mm}
 \section{Synthetic Financial Macro Stress Test with Real Covariate Context}
 \label{app:financial_transfer}
 To verify that the latent regime confounding and difficulty framework reflects a general mathematical reality of sequential decision systems under hidden persistent context rather than an idiosyncratic atmospheric feature, we evaluate the Regime Intelligence engine on a synthetic macro financial stress test with real macroeconomic covariate context (daily FRED macroeconomic interest rate, spread, and liquidity indicators; $N=1,500$ daily trading periods; Figure~\ref{fig:financial_transfer_fig}). Regimes reflect low-volatility normal market dynamics versus severe liquidity stress / crisis regimes.

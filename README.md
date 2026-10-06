@@ -29,7 +29,6 @@ We study causal estimation under latent Markov confounding and characterize how 
 │   └── plots/                      # Publication figures embedded in manuscript
 ├── src/                            # Active, self-contained Python codebase
 │   ├── or_dml.py                   # Canonical Overlap-Aware Regime DML (OR-DML) implementation
-│   ├── three_decisive_experiments.py # 3 decisive mechanism experiments (Task Geometry, Representation, City Transfer)
 │   ├── calibration_intervention_zoo.py # Post-hoc Platt/temperature scaling evaluation on Representation Zoo
 │   ├── empirical_falsification_checks.py # Pre-treatment lead placebo falsification suite (h in {-6, -3, -1})
 │   ├── synthetic_dgp_benchmark.py  # 500-draw Monte Carlo difficulty frontier simulation
@@ -60,7 +59,7 @@ We study causal estimation under latent Markov confounding and characterize how 
 The primary estimator is implemented in [`src/or_dml.py`](./src/or_dml.py):
 * **Class**: `OverlapAwareRegimeDML`
 * **Posterior Modes**: Supports causal forward filtering ($\boldsymbol{\gamma}_t = P(S_t \mid \mathcal{F}_t)$) and retrospective smoothing ($\boldsymbol{\gamma}_t = P(S_t \mid Z_{1:N})$).
-* **Nuisance Estimation**: Ridge regressors or Gradient Boosting regressors cross-fitted with purged temporal blocks and temporal embargo buffers.
+* **Nuisance Estimation**: Cross-fitted with purged temporal blocks and temporal embargo buffers (Ridge regressors in the 4-city observational study; Ridge and Gradient Boosting regressors in the synthetic benchmarks).
 * **Inversion**: Spectrally regularized coupled Jacobian inversion $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$.
 * **Conditioning Diagnostics**: Automatically computes $\lambda_{\min}(\hat{\boldsymbol{J}})$, condition number $\kappa(\hat{\boldsymbol{J}})$, and sample state occupancy.
 
@@ -104,16 +103,13 @@ python src/hierarchical_reliability_regression.py
 # Step 6: Run multi-domain transfer and selective abstention policy
 python src/financial_regime_transfer.py
 
-# Step 7: Run three decisive mechanism experiments (Task Geometry, Representation, City Transfer)
-python src/three_decisive_experiments.py
-
-# Step 8: Run post-hoc calibration interventions on representation zoo
+# Step 7: Run post-hoc calibration interventions on representation zoo
 python src/calibration_intervention_zoo.py
 
-# Step 9: Run pre-treatment lead placebo falsification checks
+# Step 8: Run pre-treatment lead placebo falsification checks
 python src/empirical_falsification_checks.py
 
-# Step 10: Generate all publication figures (Figures 1-5)
+# Step 9: Generate all publication figures (Figures 1-5)
 python src/generate_paper_figures.py
 ```
 

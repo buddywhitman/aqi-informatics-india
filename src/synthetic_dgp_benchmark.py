@@ -398,14 +398,13 @@ def run_single_replication(rep_id: int, delta_z: float, N: int = 1200) -> List[D
             th_k = theta_std
         th_k_list.append(th_k)
     theta_fe = float(w_k_list[0] * th_k_list[0] + w_k_list[1] * th_k_list[1])
-    cov_fe = float(abs(theta_fe - true_ate) <= 1.96 * se_blk)
     
     results.append({
         'rep_id': rep_id, 'delta_z': delta_z, 'method': 'Regime FE DML (Hard)',
-        'theta': theta_fe, 'se': se_blk, 'sate_se': se_blk, 'pate_se': se_blk,
+        'theta': theta_fe, 'se': np.nan, 'sate_se': np.nan, 'pate_se': np.nan,
         'true_ate': true_ate, 'sample_ate': sample_ate,
         'bias': theta_fe - true_ate, 'bias_sate': theta_fe - sample_ate,
-        'coverage': cov_fe, 'cov_sate': cov_fe, 'cov_pate': cov_fe,
+        'coverage': np.nan, 'cov_sate': np.nan, 'cov_pate': np.nan,
         'lambda_min': float(np.mean(tilde_T_blk ** 2)),
         'kappa': 1.0, 'entropy': np.nan, 'proxy_error': np.nan
     })
@@ -536,8 +535,9 @@ def run_difficulty_frontier_benchmark(n_replications_per_grid: int = 100, N: int
             kappa_mean = float(np.mean(sub_m['kappa']))
             entropy_mean = float(np.mean(sub_m['entropy']))
             proxy_err_mean = float(np.mean(sub_m['proxy_error']))
-            cov_sate = float(np.mean(sub_m['cov_sate']) * 100.0)
-            cov_pate = float(np.mean(sub_m['cov_pate']) * 100.0)
+            cov_sate = round(float(np.nanmean(sub_m['cov_sate']) * 100.0), 1) if not np.all(np.isnan(sub_m['cov_sate'])) else np.nan
+            cov_pate = round(float(np.nanmean(sub_m['cov_pate']) * 100.0), 1) if not np.all(np.isnan(sub_m['cov_pate'])) else np.nan
+            cov_rate = cov_sate
             
             summary_list.append({
                 'Delta_Z': delta,
