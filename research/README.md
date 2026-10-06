@@ -155,6 +155,14 @@ This yields a **double ill-posedness** picture:
 $\text{proxy moments}\xrightarrow{\;C^{-1}\;}\text{latent-state geometry}\xrightarrow{\;J^{-1}\;}\text{causal effects}.$
 First-order errors can be amplified by both the representation-channel inverse and the causal inverse. This provides a sharper mechanism for the original representation-by-task interaction and suggests joint, rather than stagewise, regularization.
 
+### R27. Self-canceling reliability diagnostics: proxy conditioning can erase the uncertainty warning it is meant to complement
+In a 3,500-run K=3 experiment, the mechanistic oracle difficulty is $\varepsilon_\gamma/\lambda_{\min}(J_{true})$. Entropy alone has Spearman 0.329 and top-20%-failure AUC 0.640; posterior L1 error has AUC 0.671. But the seemingly richer operational score $H/\lambda_{\min}(J_{proxy})$ collapses to Spearman **0.093** and AUC **0.470**, slightly worse than chance. Replacing the contaminated denominator with oracle $\lambda_{\min}(J_{true})$ yields AUC **0.994**.
+
+The mechanism is self-cancellation: worse state separation raises entropy but also inflates proxy $\lambda_{\min}$ through state mixing, so dividing by the proxy geometry suppresses the warning. Eigenvalue inflation itself has AUC 0.944 for the hardest oracle-difficulty cases. This offers a concrete explanation for why coupled entropy/conditioning scores can underperform entropy alone even when the underlying representation-by-task principle is correct.
+
+### R28. Phantom resolution becomes more statistically convincing with more data
+At fixed poor state separation, the oracle $\lambda_{\min}$ stays near 0.00215 while soft-proxy $\lambda_{\min}$ converges near 0.0242, roughly 11x too large. Across-run proxy SD shrinks from 0.0130 at N=300 to 0.00360 at N=4800, so the oracle-proxy discrepancy grows from 1.74 to **6.11 proxy standard deviations**. Thus ordinary resampling/stability checks can become increasingly confident in the wrong optimistic geometry: they estimate sampling uncertainty around a proxy pseudo-parameter, not error relative to the unobserved oracle geometry.
+
 ## Reproduction
 
 Run:
