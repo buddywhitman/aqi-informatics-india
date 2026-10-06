@@ -56,3 +56,38 @@ with b_gamma the downstream score perturbation caused by representation error. T
 - Valid confidence intervals after learned partition selection remain unsolved.
 - If heterogeneity is large, coarsening is harmful; no universal preference for coarse states is justified.
 - Real-data K sensitivity is suggestive only because the true state/effects are unknown.
+
+
+## Update: causal resolution, not state resolution, is the sharper organizing principle
+
+The latest results refine the framework further.
+
+### Information-theoretic resolution boundary
+For a perfectly observed microstate with residual treatment SD N^{-alpha} and effect separation delta_N=N^{-beta}, the expected KL divergence between the two effect models is order
+
+    N^(1-2 alpha-2 beta).
+
+Thus alpha+beta=1/2 is a causal heterogeneity detection boundary. Above it, total variation vanishes and no test can reliably distinguish the effect models even though the state label is known exactly.
+
+### Resolution spectrum
+For a K-dimensional effect vector with score-information matrix J_N, direction v has detectable effect scale
+
+    delta_res(v) ~ 1/sqrt(N v^T J_N v).
+
+Eigenvalues lambda_j(J_N) therefore define a causal resolution spectrum. A useful effect-scale-specific effective rank is
+
+    r_causal(delta) = #{j : N delta^2 lambda_j >> 1}.
+
+A generative model may support K well-separated latent states while the downstream causal effective rank is much smaller.
+
+### Dual resolution
+Fine state detail can still be required in nuisance adjustment. The safe operation is therefore:
+- retain enough latent resolution for identification;
+- adapt the **target/effect resolution** to the causal resolution spectrum.
+
+Hard state-effect merging deletes unsupported contrast directions. Spectral regularization continuously shrinks them. These are discrete and continuous forms of resolution control.
+
+### Multitask consequence
+Different tasks can require crossing effect partitions. Hence a single coarse universal abstraction is generally inadequate. A rich shared latent substrate with task-specific target-resolution heads is more appropriate.
+
+This reframing avoids the incorrect slogan "coarser representations are better." The actual claim is that **the data have a finite, task-dependent causal resolution that can be much lower than their observational latent-state resolution.**
