@@ -103,3 +103,34 @@ A focused search for weak-overlap heterogeneous/subgroup effects found substanti
 This search did **not** surface, in the queried literature, the exact local-sequence result currently derived on this branch: a perfectly observed latent subgroup whose residual treatment variance is N^{-2 alpha}, with causal-effect separation N^{-beta}, yielding KL order N^{1-2 alpha-2 beta} and an information-theoretic heterogeneity-detection boundary alpha+beta=1/2. Absence from this search is not evidence of novelty. A formal literature review should search semiparametric weak identification, local alternatives, subgroup testing under positivity violations, and nonregular inference before any novelty claim.
 
 The dual-resolution principle is also supported by recent work on coarsened exact matching showing that coarse confounder adjustment can leave residual confounding that persists with sample size; this is conceptually consistent with our analytic coarse-adjustment bias construction.
+
+
+## Weak-identification correction after causal-resolution work
+
+The broad inferential phenomena behind the causal-resolution limit are classical weak-identification phenomena, not new:
+- Kaji (Econometrica 2021), _Theory of Weak Identification in Semiparametric Models_, develops local weak-identification embeddings and efficiency theory.
+- Andrews & Cheng (Econometrica 2012), _Estimation and Inference With Weak, Semi-Strong, and Strong Identification_, studies inference across identification-strength regimes.
+- Stock & Wright's GMM weak-identification theory and the wider weak-IV literature establish nonstandard rates and failure of conventional inference.
+- The zero-information-limit literature explicitly studies sequences where Fisher information vanishes and standard inference becomes spurious.
+- Weak-identification-robust confidence sets can be unbounded/wide rather than falsely precise.
+
+Therefore the following are **not** novelty claims by themselves:
+- confidence intervals widening as information vanishes;
+- local alternatives with KL/noncentrality boundaries;
+- weak eigenvalues causing non-root-N rates;
+- spectral regularization of inverse problems.
+
+The candidate contribution must instead be the specific structural connection:
+**latent representation granularity / state refinement -> downstream causal information spectrum -> task-specific target resolution**, including the possibility that generative evidence for finer latent states increases while the corresponding causal contrast enters a weak-identification regime.
+
+## Growing-number-of-subgroups correction
+
+There is established work on simultaneous estimation/testing of many subgroup treatment effects and the familiar fact that finer subgrouping reduces per-group sample size and raises multiplicity/variance. Thus "more subgroups means noisier subgroup estimates" is not novel.
+
+The new granularity calculation on this branch should be treated as a unifying rate law, not an isolated novelty claim:
+    K_N=N^kappa,
+    treatment SD=N^-alpha,
+    effect separation=N^-beta
+implies per-state causal KL order
+    N^(1-kappa-2alpha-2beta).
+The potentially useful contribution is tying the subgroup-growth exponent kappa directly to **learned latent-state resolution** and combining it with overlap and local effect scale in one causal-resolution budget.
