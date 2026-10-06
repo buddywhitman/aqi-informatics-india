@@ -42,12 +42,11 @@ def run_verification():
         "reports/or_dml_regularization_frontier.csv",
         "reports/representation_zoo_hierarchical_regression.csv",
         "reports/representation_zoo_world_evaluations.csv",
-        "reports/cross_city_transfer_evaluation.csv",
-        "reports/experiment29_representation_perturbation.csv",
-        "reports/experiment30_task_conditioning.csv",
         "reports/representation_zoo_calibration_intervention.csv",
         "reports/representation_zoo_lowo_evaluation.csv",
-        "reports/empirical_placebo_falsification.csv"
+        "reports/empirical_placebo_falsification.csv",
+        "reports/factorial_reliability_correlations.csv",
+        "reports/factorial_risk_coverage.csv"
     ]
     for r in required_csvs:
         if not os.path.exists(r) or os.path.getsize(r) == 0:
@@ -143,21 +142,25 @@ def run_verification():
     else:
         print(f"[OK] Verified Delhi Regime 1 Effect: {delhi_r1_str}")
 
-    # Check Hierarchical Multi-World Regression values
-    df_hier = pd.read_csv("reports/representation_zoo_hierarchical_regression.csv")
-    m1_f1 = df_hier[(df_hier["Model"].str.contains("Model 1")) & (df_hier["Predictor"].str.contains("F1"))].iloc[0]
-    m1_f1_coef = f"{m1_f1['Coefficient']:.4f}"
-    if m1_f1_coef not in tex_content:
-        failures.append(f"Hierarchical Model 1 F1 coefficient {m1_f1_coef} not found in paper/main.tex")
-    else:
-        print(f"[OK] Verified Hierarchical Model 1 F1 coefficient: {m1_f1_coef}")
+    # Check corrected factorial mechanism values
+    df_fac = pd.read_csv("reports/factorial_reliability_correlations.csv")
+    fac = df_fac.iloc[0]
+    for col in ["Spearman_Run_Difficulty","Spearman_Run_ProxyError","Spearman_Run_InvLambda"]:
+        val = f"{fac[col]:.3f}"
+        if val not in tex_content:
+            failures.append(f"Factorial reliability value {col}={val} not found in paper/main.tex")
+        else:
+            print(f"[OK] Verified factorial mechanism {col}: {val}")
 
-    m3_nll = df_hier[(df_hier["Model"].str.contains("Model 3")) & (df_hier["Predictor"].str.contains("NLL"))].iloc[0]
-    m3_nll_coef = f"{m3_nll['Coefficient']:.4f}"
-    if m3_nll_coef not in tex_content:
-        failures.append(f"Hierarchical Model 3 NLL coefficient {m3_nll_coef} not found in paper/main.tex")
-    else:
-        print(f"[OK] Verified Hierarchical Model 3 NLL coefficient: {m3_nll_coef}")
+    # Check LOWO reliability prediction values
+    df_lowo = pd.read_csv("reports/representation_zoo_lowo_evaluation.csv")
+    r2_f1 = float(df_lowo[df_lowo["Model"].str.contains("F1 Alone")]["LOWO_R2"].iloc[0])
+    r2_nll = float(df_lowo[df_lowo["Model"].str.contains("F1 \+ NLL", regex=True)]["LOWO_R2"].iloc[0])
+    for val in [f"{r2_f1:.3f}", f"{r2_nll:.3f}"]:
+        if val not in tex_content:
+            failures.append(f"LOWO R2 {val} not found in paper/main.tex")
+        else:
+            print(f"[OK] Verified LOWO R2: {val}")
 
     # 5. Statistical Protocol Verification
     # (a) MBB block-length sensitivity invariance
