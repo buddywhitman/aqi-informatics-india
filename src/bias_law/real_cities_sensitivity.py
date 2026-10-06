@@ -42,11 +42,14 @@ def frozen_mask(x, min_run=6):
     return keep_drop
 
 
-def analyse(Y, T, X, Z, n_boot=300, block=72, seed=0):
+def analyse(Y, T, X, Z, n_boot=300, block=72, seed=0, gamma=None):
     N = len(Y)
-    m = OverlapAwareRegimeDML(n_regimes=2, n_splits=5, embargo_tau=24, reg_alpha=0.05, posterior_mode='smooth',
-                              nuisance_model=Ridge(alpha=1.0), hac_lag=12, random_state=42).fit(Y, T, X, Z)
-    g = m.gamma_
+    if gamma is None:
+        m = OverlapAwareRegimeDML(n_regimes=2, n_splits=5, embargo_tau=24, reg_alpha=0.05, posterior_mode='smooth',
+                                  nuisance_model=Ridge(alpha=1.0), hac_lag=12, random_state=42).fit(Y, T, X, Z)
+        g = m.gamma_
+    else:
+        g = gamma                                           # externally supplied posterior (e.g. best-of-restarts EM)
     F = np.column_stack([X, g[:, 1]])
     tT = np.zeros(N)
     tY = np.zeros(N)

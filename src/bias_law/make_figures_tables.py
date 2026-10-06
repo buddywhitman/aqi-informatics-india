@@ -137,11 +137,7 @@ def table_e7():
     open(os.path.join(GEN, 'tab_e7.tex'), 'w').write('\n'.join(lines))
 
 
-def table_cities_and_fig2():
-    p = os.path.join(R, 'e5_real_city_sensitivity.csv')
-    if not os.path.exists(p):
-        return
-    s = pd.read_csv(p)
+def _cities_tables(s, full_name, comp_name):
     full = [r'\begin{tabular}{llrrrrrrr}', r'\toprule', r'City & screen & $N$ & $\hat\theta$ [90\% CI] & $\hat v$ & $\hat a$ & $\mathrm{Var}(\tilde T)$ & $b^*$ (SD of $\tilde Y$) [90\% CI] & $b^*/|\hat c_Y|$ \\', r'\midrule']
     comp = [r'\begin{tabular}{llrrr}', r'\toprule', r'City & screened & $\hat\theta$ [90\% CI] & $b^*$ (SD) [90\% CI] & $b^*/|\hat c_Y|$ \\', r'\midrule']
     for _, r in s.iterrows():
@@ -151,8 +147,20 @@ def table_cities_and_fig2():
             comp.append(f"{r.city} & {sc} & {r.theta:.2f} [{r.theta_lo:.2f}, {r.theta_hi:.2f}] & {r.b_star_sd:.1f} [{r.b_star_sd_lo:.1f}, {r.b_star_sd_hi:.0f}] & {r.b_star_over_obs:.0f} \\\\")
     full += [r'\bottomrule', r'\end{tabular}']
     comp += [r'\bottomrule', r'\end{tabular}']
-    open(os.path.join(GEN, 'tab_cities_full.tex'), 'w').write('\n'.join(full))
-    open(os.path.join(GEN, 'tab_cities.tex'), 'w').write('\n'.join(comp))
+    open(os.path.join(GEN, full_name), 'w').write('\n'.join(full))
+    open(os.path.join(GEN, comp_name), 'w').write('\n'.join(comp))
+
+
+def table_cities_and_fig2():
+    legacy = os.path.join(R, 'e5_real_city_sensitivity.csv')          # 2-hourly series from the legacy pipeline (round-half-even artifact)
+    fixed = os.path.join(R, 'x23_real_hourly_fix.csv')                # true hourly grid
+    if os.path.exists(legacy):
+        _cities_tables(pd.read_csv(legacy), 'tab_cities_2h_full.tex', 'tab_cities_2h.tex')
+    p = fixed if os.path.exists(fixed) else legacy
+    if not os.path.exists(p):
+        return
+    s = pd.read_csv(p)
+    _cities_tables(s, 'tab_cities_full.tex', 'tab_cities.tex')
     q = s[~s.frozen_screen].reset_index(drop=True)
     fig, ax = plt.subplots(1, 1, figsize=(3.4, 1.9))
     for i, r in q.iterrows():
