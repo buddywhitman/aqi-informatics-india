@@ -36,6 +36,8 @@ jobs:
           python research/representation_metric_impossibility.py
           python research/directional_calibration_spectrum.py
           python research/directional_reliability_operator.py
+          python research/operator_bound_tightness.py
+          python research/contrast_specific_bound.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -55,3 +57,5 @@ jobs:
             research/results/representation_metric_impossibility*.csv
             research/results/directional_calibration_spectrum*.csv
             research/results/directional_reliability_operator*.csv
+            research/results/operator_bound_tightness*.csv
+            research/results/contrast_specific_bound*.csv
