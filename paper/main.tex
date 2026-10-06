@@ -1239,7 +1239,7 @@ To systematically evaluate machine learning under persistent, partially observed
 
 \subsection{Independent Factorial Validation of the Graceful-Degradation Mechanism}
 \label{app:factorial_reliability}
-The earlier treatment-mean-separation diagnostic is intentionally not used because correctly specified regime-aware nuisance residualization removes regime mean shifts. Instead, we independently manipulate (i) controlled posterior proxy error $\varepsilon_\gamma$ and (ii) state-specific treatment innovation variance, which changes residual information and hence $\lambda_{\min}(\boldsymbol J)$ \emph{after} oracle regime-aware cross-fitting. The $7\times7$ design uses 100 independent Markov sequences per cell ($N=1,200$; 4,900 runs). Across runs, causal $L_2$ error has Spearman correlation $0.9955$ with $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$, versus $0.6260$ with $\varepsilon_\gamma$ alone and $0.5209$ with $1/\lambda_{\min}$ alone; cell-mean correlations are $0.9963$, $0.6249$, and $0.5294$, respectively (\texttt{reports/factorial\_reliability\_correlations.csv}). Selective retention of the lowest-difficulty 40\% of runs reduces mean causal error from $48.81$ to $2.61$ and the 95th percentile from $228.10$ to $8.39$ (\texttt{reports/factorial\_risk\_coverage.csv}). These results validate an interaction, not dominance of either constituent.
+The earlier treatment-mean-separation diagnostic is intentionally not used because correctly specified regime-aware nuisance residualization removes regime mean shifts. Instead, we independently manipulate (i) controlled posterior proxy error $\varepsilon_\gamma$ and (ii) state-specific treatment innovation variance, which changes residual information and hence $\lambda_{\min}(\boldsymbol J)$ \emph{after} oracle regime-aware cross-fitting. The $7\times7$ design uses 100 independent Markov sequences per cell ($N=1,200$; 4,900 runs). Across runs, causal $L_2$ error has Spearman correlation $0.9955$ with $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol J)$, versus $0.6260$ with $\varepsilon_\gamma$ alone, $0.5209$ with $1/\lambda_{\min}$ alone, and $0.5355$ with an additive combination $\varepsilon_\gamma + 1/\lambda_{\min}(\boldsymbol J)$; cell-mean correlations are $0.9963$, $0.6249$, $0.5294$, and $0.5483$, respectively (\texttt{reports/factorial\_reliability\_correlations.csv}). Selective retention of the lowest-difficulty 40\% of runs reduces mean causal error from $48.81$ to $2.61$ and the 95th percentile from $228.10$ to $8.39$ (\texttt{reports/factorial\_risk\_coverage.csv}). These results validate an interaction, not dominance of either constituent.
 
 \begin{center}
 \vspace{-1.5mm}
@@ -1252,6 +1252,7 @@ The earlier treatment-mean-separation diagnostic is intentionally not used becau
 $\varepsilon_\gamma/\lambda_{\min}(J)$ & \textbf{0.9955} & \textbf{0.9963}\\
 $\varepsilon_\gamma$ only & 0.6260 & 0.6249\\
 $1/\lambda_{\min}(J)$ only & 0.5209 & 0.5294\\
+Additive: $\varepsilon_\gamma + 1/\lambda_{\min}(J)$ & 0.5355 & 0.5483\\
 \bottomrule
 \end{tabular}
 \vspace{-1.5mm}

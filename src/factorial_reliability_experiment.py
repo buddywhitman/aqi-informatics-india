@@ -60,6 +60,7 @@ def run(n_reps=100,N=1200):
                 lmin,err=evaluate_cell(H,theta,ty,tt,eps)
                 rows.append((rep,sigma1,eps,lmin,err,eps/max(lmin,1e-12)))
     raw=pd.DataFrame(rows,columns=["Replication","Residual_SD_State1","Proxy_Error_Eps","Lambda_Min_J","Causal_Error_L2","Difficulty_Ratio"])
+    raw["Additive_Strawman"] = raw.Proxy_Error_Eps + (1.0 / np.maximum(raw.Lambda_Min_J, 1e-12))
     os.makedirs("reports",exist_ok=True); raw.to_csv("reports/factorial_reliability_raw.csv",index=False)
     summary=raw.groupby(["Residual_SD_State1","Proxy_Error_Eps"],as_index=False).agg(
         Mean_Lambda_Min=("Lambda_Min_J","mean"),Mean_Causal_Error_L2=("Causal_Error_L2","mean"),
@@ -67,14 +68,17 @@ def run(n_reps=100,N=1200):
         Mean_Difficulty_Ratio=("Difficulty_Ratio","mean"))
     summary.to_csv("reports/factorial_reliability_summary.csv",index=False)
     cell=summary.copy(); cell["Inv_Lambda"]=1.0/cell.Mean_Lambda_Min
+    cell["Additive_Strawman"]=cell.Proxy_Error_Eps + cell.Inv_Lambda
     corr=pd.DataFrame([{
         "N_Replications":n_reps,"N_Cells":len(summary),"N_Runs":len(raw),
         "Spearman_Run_Difficulty":spearmanr(raw.Causal_Error_L2,raw.Difficulty_Ratio).statistic,
         "Spearman_Run_ProxyError":spearmanr(raw.Causal_Error_L2,raw.Proxy_Error_Eps).statistic,
         "Spearman_Run_InvLambda":spearmanr(raw.Causal_Error_L2,1.0/raw.Lambda_Min_J).statistic,
+        "Spearman_Run_Additive":spearmanr(raw.Causal_Error_L2,raw.Additive_Strawman).statistic,
         "Spearman_Cell_Difficulty":spearmanr(cell.Mean_Causal_Error_L2,cell.Mean_Difficulty_Ratio).statistic,
         "Spearman_Cell_ProxyError":spearmanr(cell.Mean_Causal_Error_L2,cell.Proxy_Error_Eps).statistic,
-        "Spearman_Cell_InvLambda":spearmanr(cell.Mean_Causal_Error_L2,cell.Inv_Lambda).statistic}])
+        "Spearman_Cell_InvLambda":spearmanr(cell.Mean_Causal_Error_L2,cell.Inv_Lambda).statistic,
+        "Spearman_Cell_Additive":spearmanr(cell.Mean_Causal_Error_L2,cell.Additive_Strawman).statistic}])
     corr.to_csv("reports/factorial_reliability_correlations.csv",index=False)
     risk=[]
     for coverage in [1.0,0.8,0.6,0.4,0.2]:
