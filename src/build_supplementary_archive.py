@@ -19,7 +19,7 @@ BASE_DIR = "AISTATS2027_OR_DML_Supplementary_Material"
 
 REQUIRED_FILES = [
     # Documentation & Manifests
-    "README.md",
+    "SUPPLEMENT_README.md",
     "SUPPLEMENT_ROADMAP.md",
     "experiments_manifest.json",
     "verify_science.py",
