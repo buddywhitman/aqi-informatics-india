@@ -176,7 +176,7 @@ pdflatex -interaction=nonstopmode main.tex
 pdflatex -interaction=nonstopmode main.tex
 ```
 
-* **Page Budget**: Strictly 8 pages of main text; exactly 24 pages total (`\@abspage@last{24}`) including AI statement, references, checklist, and Appendices A–I.
+* **Page Budget**: Strictly 8 pages of main text; exactly 27 pages total including AI statement, references (83 verified citations), checklist, and Appendices A–I.
 * **Compilation Status**: 0 errors, 0 warnings.
 
 ### 5. Packaging Supplementary Material
@@ -184,7 +184,7 @@ pdflatex -interaction=nonstopmode main.tex
 ```bash
 python src/build_supplementary_archive.py
 ```
-Packages all 98 canonical files into `AISTATS2027_OR_DML_Supplementary_Material.zip` (9.35 MB).
+Packages all 103 canonical files into `AISTATS2027_OR_DML_Supplementary_Material.zip` (9.62 MB).
 
 ---
 

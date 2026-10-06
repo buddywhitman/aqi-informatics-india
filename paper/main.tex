@@ -62,25 +62,25 @@
 \aistatsaddress{ Anonymous Institution(s) }]
 
 \begin{abstract}
-Causal inference from dependent observational time series is complicated when an unobserved, persistent state jointly affects treatment assignment and outcomes. Standard Double Machine Learning (DML) controls for observed covariates through orthogonal residualization, but does not by itself resolve confounding induced by an imperfect proxy for latent state dynamics. We study causal estimation under latent Markov confounding and characterize how latent-state uncertainty and downstream task conditioning propagate into causal error. We develop a regime-aware orthogonal estimator combining probabilistic state inference, temporally purged cross-fitting, and regularized inversion of the cross-regime score Jacobian. In a corrected $7\times7$ factorial experiment that independently manipulates proxy error and post-residualization treatment information (4,900 runs), the theoretical difficulty ratio $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol{J})$ ranks causal error substantially better than either component alone (Spearman $\rho=0.995$ versus $0.626$ and $0.521$). Across shifted latent-representation benchmarks, posterior log-loss improves leave-one-world-out prediction of downstream reliability beyond state-recovery $F_1$, yet temperature scaling reduces neural calibration error by up to 60\% without improving failure discrimination, showing that calibration alone is insufficient. Real sensor networks provide an observational stress test across four megacities spanning distinct residual treatment variance scales and telemetry artifacts; falsification checks are reported explicitly where temporal causal interpretation is unsupported. Together, the results show that reliable causal estimation with latent sequential confounding requires evaluating representation uncertainty jointly with the information geometry of the downstream task.
+Causal inference from dependent observational time series is complicated when an unobserved, persistent state jointly affects treatment assignment and outcomes. Standard Double Machine Learning (DML) controls for observed covariates through orthogonal residualization, but does not by itself resolve confounding induced by an imperfect proxy for latent state dynamics. We study causal estimation under latent Markov confounding and characterize how latent-state uncertainty and downstream task conditioning propagate into causal error. We develop a regime-aware orthogonal estimator combining probabilistic state inference, temporally purged cross-fitting, and regularized inversion of the cross-regime score Jacobian. Our analysis separates nuisance-estimation error, latent-state recovery error, and variability induced by persistent regime occupation, and gives conditions under which the estimator approaches the corresponding oracle-state estimator as latent-state uncertainty decreases. We evaluate these properties using real-data-calibrated semi-synthetic time series constructed from high-frequency atmospheric observations across heterogeneous Indian cities, preserving persistence, seasonality, missingness, and regime overlap while keeping causal effects known. Across controlled variations in state persistence and observability, the experiments show how latent-state uncertainty predicts causal bias and when regime-aware estimation improves over standard and temporally blocked DML. Real sensor networks provide an observational stress test across four megacities spanning distinct residual treatment variance scales and telemetry artifacts; falsification checks are reported explicitly where temporal causal interpretation is unsupported. Together, the results show that reliable causal estimation with latent sequential confounding requires evaluating representation uncertainty jointly with the information geometry of the downstream task.
 \end{abstract}
 
 \section{INTRODUCTION}
 \label{sec:intro}
 
-Sequential machine learning systems frequently operate in environments governed by persistent, partially observed context—such as unobserved physical, macroeconomic, or operational regimes. A widespread design assumption in such systems is that predictive confidence or calibration over the latent state is sufficient for downstream reliability. However, this assumption fails: \emph{accurate latent-state recovery does not guarantee reliable downstream inference because representation error is filtered through the information geometry of the task that consumes it.} When the downstream task is ill-conditioned—such as estimating causal effects under collinear treatments or weak overlap—even small posterior proxy error is catastrophically amplified, causing severe downstream failure despite seemingly confident latent representations. The same latent-state uncertainty can be informative for one task and nearly useless for another because the downstream information geometry differs.
+Sequential machine learning systems frequently operate in environments governed by persistent, partially observed context-such as unobserved physical, macroeconomic, or operational regimes. A widespread design assumption in such systems is that predictive confidence or calibration over the latent state is sufficient for downstream reliability. However, this assumption fails: \emph{accurate latent-state recovery does not guarantee reliable downstream inference because representation error is filtered through the information geometry of the task that consumes it.} When the downstream task is ill-conditioned-such as estimating causal effects under collinear treatments or weak overlap-even small posterior proxy error is catastrophically amplified, causing severe downstream failure despite seemingly confident latent representations. The same latent-state uncertainty can be informative for one task and nearly useless for another because the downstream information geometry differs.
 
 Continuous-treatment causal inference in atmospheric systems provides a natural laboratory: estimating the causal effect of variation in the observed $\text{NO}_2$ exposure proxy on ambient $\text{PM}_{2.5}$ \citep{dominici2014mitigating} (translating this observational exposure effect to an emissions policy requires structural transport assumptions). Observational time series in this domain violate two foundational assumptions: (1)~\textbf{Persistent Latent Regime Confounding:} Planetary boundary-layer dynamics transition between discrete thermodynamic regimes (e.g., nocturnal inversion vs.\ convective clearance), jointly governing precursor dispersion ($T_t$) and ambient particulate concentration ($Y_t$). (2)~\textbf{Imperfect Overlap \& Dependence:} Latent regimes are unobserved; auxiliary proxies $Z_t$ exhibit overlap ($\varepsilon_\gamma > 0$), while autoregression breaks exchangeability \citep{chernozhukov2018double}, leaking errors across folds.
 
-When standard Double Machine Learning \citep{chernozhukov2018double} or tree-based plug-in estimators are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands can exhibit severe bias and, in our benchmark, sign inversions—falsely suggesting that precursor reductions exacerbate ambient pollution.
+When standard Double Machine Learning \citep{chernozhukov2018double} or tree-based plug-in estimators are applied naively to environmental time series without accounting for latent regimes, the resulting causal estimands can exhibit severe bias and, in our benchmark, sign inversions-falsely suggesting that precursor reductions exacerbate ambient pollution.
 
 \textbf{Related Work.} We position our contribution across four neighboring literatures: (1)~\textbf{Double Machine Learning \& Orthogonal Inference:} \citet{chernozhukov2018double,chernozhukov2022automatic,foster2023orthogonal,nie2021quasi,kennedy2023towards} achieve $\sqrt{N}$-rate inference under unconfoundedness given $X_t$. (2)~\textbf{Dependent \& Time-Series Causal Inference:} \citet{ciganovic2026dml,semenova2023generalized,lewis2020double,bai2009panel,bonhomme2015grouped,hamilton1989new} relax exchangeability under mixing, but do not address latent Markov confounding. (3)~\textbf{Latent Markov \& Proximal Inference:} \citet{clouth2024latent,huang2023sdci,miao2018identifying,tchetgen2020introduction,mastouri2021proximal,cappe2005inference} use proxies for unmeasured confounders, focusing on asymptotic identification rather than downstream finite-sample score conditioning. (4)~\textbf{Weak Overlap \& Selective Reliability:} \citet{damour2021overlap,shalit2017estimating,crump2009dealing,guo2017calibration,geifman2017selective,chow1970optimum,elyaniv2010foundations} address overlap and abstention, without linking latent uncertainty to coupled score conditioning.
 
 \textbf{Contributions.} We separate latent-state uncertainty from task conditioning and show how their interaction controls downstream degradation:
 \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-    \item \textbf{Decoupling Context Uncertainty from Task Conditioning:} We prove that downstream estimation suffers two distinct degradation mechanisms: imperfect latent recovery ($\varepsilon_\gamma$) and weak task conditioning ($\lambda_{\min}(\boldsymbol{J})$), showing that predictive state confidence does not imply downstream task reliability (Theorems~\ref{thm:impossibility}--\ref{thm:graceful}).
+    \item \textbf{Decoupling Context Uncertainty from Task Conditioning:} We prove that downstream estimation suffers two distinct degradation mechanisms: imperfect latent recovery ($\varepsilon_\gamma$) and weak task conditioning ($\lambda_{\min}(\boldsymbol{J})$), showing that predictive state confidence does not imply downstream task reliability (Theorems~\ref{thm:impossibility}-\ref{thm:graceful}).
     \item \textbf{Principled Difficulty Measure \& Observable Bridge:} We formulate causal difficulty $\mathcal{D}_{\mathrm{causal}} = \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})}$ and establish rolling entropy $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$ as an observable multiplicative surrogate under two-sided spectral comparability (Proposition~\ref{prop:bridge}).
-    \item \textbf{Sequential Overlap-Aware Estimation (OR-DML):} We develop spectrally regularized OR-DML with purged block cross-fitting, proving leading-order risk bounds and establishing centered asymptotic normality under dependent data (Theorems~\ref{thm:spectral}--\ref{thm:asymptotics}).
+    \item \textbf{Sequential Overlap-Aware Estimation (OR-DML):} We develop spectrally regularized OR-DML with purged block cross-fitting, proving leading-order risk bounds and establishing centered asymptotic normality under dependent data (Theorems~\ref{thm:spectral}-\ref{thm:asymptotics}).
     \item \textbf{Representation-to-Task Reliability:} A corrected $7\times7$ factorial intervention independently varies proxy error and post-residualization task conditioning; $\varepsilon_\gamma/\lambda_{\min}(\boldsymbol{J})$ predicts causal error far better than either component alone ($\rho=0.995$ vs. $0.626/0.521$). Across 15 shifted worlds, adding posterior NLL to state-recovery $F_1$ nearly doubles leave-one-world-out reliability $R^2$ ($0.113\to0.221$), while temperature scaling cuts neural ECE by up to 60\% without improving downstream ROC-AUC.
 \end{itemize}
 
@@ -181,7 +181,7 @@ The data process $(Y_t, T_t, X_t, Z_t)$ is strictly stationary and geometrically
 
 \begin{theorem}[Decomposition of Omitted Regime Bias]
 \label{thm:bias}
-Suppose the data are generated according to SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}. Let $\hat{\theta}_{\mathrm{naive}}$ be the standard cross-sectional DML estimator \citep{chernozhukov2018double} that conditions only on observed covariates $X_t$, omitting $S_t$. Define the naive cross-sectional residuals $\tilde{T}_t = T_t - \E[T_t \mid X_t]$ and $\tilde{Y}_t = Y_t - \E[Y_t \mid X_t]$. 
+Suppose the data are generated according to SCM \eqref{eq:regime_scm}-\eqref{eq:outcome}. Let $\hat{\theta}_{\mathrm{naive}}$ be the standard cross-sectional DML estimator \citep{chernozhukov2018double} that conditions only on observed covariates $X_t$, omitting $S_t$. Define the naive cross-sectional residuals $\tilde{T}_t = T_t - \E[T_t \mid X_t]$ and $\tilde{Y}_t = Y_t - \E[Y_t \mid X_t]$. 
 
 Then, as $N \to \infty$, $\hat{\theta}_{\mathrm{naive}}$ converges in probability to:
 \begin{equation}
@@ -249,7 +249,7 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \begin{equation}
     \tau^* = \max \left\{ h \ge 1 : \max_{j} \left| \hat{\rho}_j(h) \right| \ge \frac{1.96}{\sqrt{N}} \right\} + 1.
 \end{equation}
-In theory, $\tau^* \ge C \log N$ with $C > 1/c_\alpha$ guarantees vanishing coupling (Theorem~\ref{thm:asymptotics}). In our 2-hourly cadence ($N \approx 14,000$, $\log N \approx 9.55$), Bartlett calibration yields 12--24 rows (24--48 hours), satisfying $\tau^* \ge 2\log N$ (\texttt{auto\_embargo=True}).
+In theory, $\tau^* \ge C \log N$ with $C > 1/c_\alpha$ guarantees vanishing coupling (Theorem~\ref{thm:asymptotics}). In our 2-hourly cadence ($N \approx 14,000$, $\log N \approx 9.55$), Bartlett calibration yields 12-24 rows (24-48 hours), satisfying $\tau^* \ge 2\log N$ (\texttt{auto\_embargo=True}).
 
 \begin{algorithm}[t]
 \caption{Overlap-Aware Regime DML (OR-DML)}
@@ -324,7 +324,7 @@ We formalize three central results: (1)~\textbf{Non-Identification:} latent cont
 
 \begin{theorem}[Non-Identification Under Unconstrained Overlap]
 \label{thm:impossibility}
-Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. When transitions are memoryless ($p=0.5$) or under static cross-sectional proxy evaluation, the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not point-identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist structural causal models $P_1$ and $P_2$ satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation} with identical joint observable laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$, yet possessing strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
+Suppose the latent state is unobserved, and auxiliary proxies $Z_t$ satisfy $P(Z_t \mid S_t = j) = P(Z_t \mid S_t = k)$ for all $j, k$. When transitions are memoryless ($p=0.5$) or under static cross-sectional proxy evaluation, the regime-specific causal effect vector $\boldsymbol{\theta}^* = (\theta_1^*, \dots, \theta_K^*)^\top$ is not point-identified from the joint distribution of observables $(Y_t, T_t, X_t, Z_t)$: there exist structural causal models $P_1$ and $P_2$ satisfying Assumptions~\ref{ass:unconfoundedness}-\ref{ass:innovation} with identical joint observable laws $P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N})$ for all $N \ge 1$, yet possessing strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$.
 \end{theorem}
 \textbf{Interpretation.} No estimator can recover regime-specific effects when the proxy provides no state information; this is a fundamental limitation of the observable information structure, not of optimization or sample size (proof in Appendix~\ref{app:proof_thm2}; we contrast this with dynamic models where non-trivial sequence transitions can achieve generic identification \citep{allman2009identifiability}).
 
@@ -386,7 +386,7 @@ Empirical surrogate minimizer $\hat{\lambda}^*_{\mathrm{emp}} = \arg\min_{\lambd
 
 \begin{theorem}[Asymptotic Distribution Under Dependent Purged Cross-Fitting]
 \label{thm:asymptotics}
-Under Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates}, \ref{ass:envelopes}, \ref{ass:hmm_gram} with embargo buffer $\tau^* \ge C \log N$ ($C > 1/c_\alpha$):
+Under Assumptions~\ref{ass:unconfoundedness}-\ref{ass:rates}, \ref{ass:envelopes}, \ref{ass:hmm_gram} with embargo buffer $\tau^* \ge C \log N$ ($C > 1/c_\alpha$):
 \begin{enumerate}\setlength{\topsep}{-1.5mm}\setlength{\itemsep}{-2.5pt}\setlength{\parskip}{0pt}
 \item[(a)] $\sqrt{N}(\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda) \xrightarrow{d} \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma}_\lambda^{\mathrm{tot}})$, where $\boldsymbol{\Sigma}_\lambda^{\mathrm{tot}} = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{\Omega}_\lambda^{\mathrm{tot}} (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$, $\boldsymbol{\Omega}_\lambda^{\mathrm{tot}} = \boldsymbol{\Omega}_\lambda + \kappa \boldsymbol{A}_\Lambda \mathcal{I}_\Lambda^{-1} \boldsymbol{A}_\Lambda^\top$, and $\boldsymbol{A}_\Lambda = \partial_{\boldsymbol{\Lambda}} \E[\boldsymbol{\Psi}_t(\boldsymbol{\theta}_\lambda)]|_{\boldsymbol{\Lambda}^*}$.
 \item[(b)] Because $\boldsymbol{\theta}_\lambda = \boldsymbol{\theta}^* + \mathrm{Bias}(\lambda, \boldsymbol{\gamma})$ with $\mathrm{Bias} = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}(\boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^*)$ and $\|\boldsymbol{b}_\gamma\|_2 \le C\varepsilon_\gamma$, this is equivalent to $\sqrt{N}(\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^* - \mathrm{Bias}) \xrightarrow{d} \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma}_\lambda^{\mathrm{tot}})$.
@@ -409,7 +409,7 @@ where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\
 \centering
 \footnotesize
 \renewcommand{\arraystretch}{0.72}
-\caption{Empirical Regime-Specific Exposure Effects across Four Indian Megacities ($>14,000$ 2-Hourly Observations, Feb 2025--Jun 2026, Median Cadence 2.0h, Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$). Evaluated via Gaussian HMM on meteorology ($^\dagger$Mumbai displays 3 local optima: $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; table reports global mode $\text{LL}=-55,557.7$). Diagnostics in Appendix~\ref{app:empirical_sensitivity}.}
+\caption{Empirical Regime-Specific Exposure Effects across Four Indian Megacities ($>14,000$ 2-Hourly Observations, Feb 2025-Jun 2026, Median Cadence 2.0h, Treatment $T_t = \text{NO}_2$, Outcome $Y_t = \text{PM}_{2.5}$). Evaluated via Gaussian HMM on meteorology ($^\dagger$Mumbai displays 3 local optima: $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; table reports global mode $\text{LL}=-55,557.7$). Diagnostics in Appendix~\ref{app:empirical_sensitivity}.}
 \label{tab:empirical}
 \vspace{1.5mm}
 \resizebox{0.78\textwidth}{!}{%
@@ -441,14 +441,14 @@ where $\boldsymbol{\Sigma}_\pi = \nabla_\Lambda \boldsymbol{\pi}^* \mathcal{I}_\
 \section{THE LATENT-CONFOUNDING DIFFICULTY FRONTIER}
 \label{sec:experiments}
 
-To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{thm:spectral}, we conduct a comprehensive Monte Carlo evaluation across 500 evaluation runs (100 replications per grid point), charting causal estimation error across the \textbf{Latent-Confounding Difficulty Frontier}.
+To test the theoretical predictions of Theorems~\ref{thm:impossibility}-\ref{thm:spectral}, we conduct a comprehensive Monte Carlo evaluation across 500 evaluation runs (100 replications per grid point), charting causal estimation error across the \textbf{Latent-Confounding Difficulty Frontier}.
 
 \textbf{Experimental Protocol.} \emph{DGPs \& Baselines:} 100 Monte Carlo draws across $\Delta_Z \in \{0.2, 0.5, 1.0, 2.0, 4.0\}$ ($N=1,200$, $\theta_{\mathrm{ATE}}^* = 1.5278$) comparing Oracle, Standard DML, Block DML, continuous proxy controls (Ridge/GBM), hard-clustering Regime FE, and OR-DML (Spectral/Filtered). \emph{Representations \& Shifts:} HMM, GRU, Transformer, and SSM under clean and compound shifts. \emph{Reliability Target:} Predicting squared loss via difficulty $\mathcal{D}_t$ across 5 seeds with MBB. \emph{Real-World Test:} $>14,000$ hourly observations across four megacities.
 
 \textbf{Difficulty Frontier Findings.} Table~\ref{tab:benchmark} and Figure~\ref{fig:difficulty_frontier} reveal three phenomena:
 \begin{enumerate}\setlength{\topsep}{-1.5mm}\setlength{\itemsep}{-4pt}\setlength{\parskip}{0pt}\vspace{-1.5mm}
-    \item \textbf{Low-Observability Breakdown ($\Delta_Z \le 1.0$):} Standard/Block DML exhibit constant omitted-regime bias ($+8.43\text{--}8.49$, RMSE $8.45$, $0.0\%$ coverage; Theorem~\ref{thm:bias}). Under severe overlap ($\Delta_Z \le 0.5$), all proxy estimators suffer heavy omitted-regime bias ($\hat{\varepsilon}_\gamma = 0.83$, bias $6.83\text{--}8.60$). At $\Delta_Z = 1.0$, weak proxy separation leaves non-trivial residual confounding ($\ge 2.65$: Decoupled Soft DML $3.29$, Hard FE $2.65$, Spectral OR-DML $4.02$, while conditioning on treatment HMM$(Z, T)$ achieves $1.20$). Because finite-sample separation cannot eliminate proxy bias, high $\mathcal{D}_t$ acts as an operational \emph{abstention trigger}.
-    \item \textbf{High-Observability Resolution ($\Delta_Z \ge 2.0$):} Clean separation resolves omitted confounding: with multi-restart EM ($n_{\mathrm{init}}=5$), mean absolute bias collapses to oracle levels ($0.081$ at $\Delta_Z=2.0$ and $0.054$ at $\Delta_Z=4.0$), eliminating single-init EM local traps (where 2--5\% of single-init runs pulled mean bias to $0.501$ and RMSE to $1.905$). At $\Delta_Z=4.0$, regime estimators reach bias $\approx 0.054$ with $96.0\%$ coverage matching Oracle DML, collapsing to $0.0\%$ under weak separation ($\Delta_Z \le 1.0$) from proxy-induced size distortion: in an explicit null test ($\theta_1^*=0$, Frontier B; Table~\ref{tab:frontier_b_null}), nominal 5\% sandwich tests reject in 78.0\% of runs (bias $0.342$), demonstrating that without selective abstention, uncalibrated regime Wald inference is invalid.
+    \item \textbf{Low-Observability Breakdown ($\Delta_Z \le 1.0$):} Standard/Block DML exhibit constant omitted-regime bias ($+8.43\text{-}8.49$, RMSE $8.45$, $0.0\%$ coverage; Theorem~\ref{thm:bias}). Under severe overlap ($\Delta_Z \le 0.5$), all proxy estimators suffer heavy omitted-regime bias ($\hat{\varepsilon}_\gamma = 0.83$, bias $6.83\text{-}8.60$). At $\Delta_Z = 1.0$, weak proxy separation leaves non-trivial residual confounding ($\ge 2.65$: Decoupled Soft DML $3.29$, Hard FE $2.65$, Spectral OR-DML $4.02$, while conditioning on treatment HMM$(Z, T)$ achieves $1.20$). Because finite-sample separation cannot eliminate proxy bias, high $\mathcal{D}_t$ acts as an operational \emph{abstention trigger}.
+    \item \textbf{High-Observability Resolution ($\Delta_Z \ge 2.0$):} Clean separation resolves omitted confounding: with multi-restart EM ($n_{\mathrm{init}}=5$), mean absolute bias collapses to oracle levels ($0.081$ at $\Delta_Z=2.0$ and $0.054$ at $\Delta_Z=4.0$), eliminating single-init EM local traps (where 2-5\% of single-init runs pulled mean bias to $0.501$ and RMSE to $1.905$). At $\Delta_Z=4.0$, regime estimators reach bias $\approx 0.054$ with $96.0\%$ coverage matching Oracle DML, collapsing to $0.0\%$ under weak separation ($\Delta_Z \le 1.0$) from proxy-induced size distortion: in an explicit null test ($\theta_1^*=0$, Frontier B; Table~\ref{tab:frontier_b_null}), nominal 5\% sandwich tests reject in 78.0\% of runs (bias $0.342$), demonstrating that without selective abstention, uncalibrated regime Wald inference is invalid.
     \item \textbf{Filtering vs.\ Smoothing:} Forward filtering tracks retrospective smoothing closely across separated regimes ($\Delta_Z = 2.0$: bias $0.1015$ vs.\ $0.0812$; $\Delta_Z = 4.0$: identical $0.0538$), incurring minimal loss once informed by dynamics.
 \end{enumerate}
 \vspace{-3.5mm}
@@ -460,9 +460,9 @@ To test the theoretical predictions of Theorems~\ref{thm:impossibility}--\ref{th
 \vspace{-4.5mm}
 \section{EMPIRICAL SENSOR NETWORK STRESS TEST}
 \label{sec:empirical}
-We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025--Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational diagnostic stress test rather than physical causal ground truth. Complete-case and Newey-West HAC lag sensitivity ($h \in \{12, 24, 72, 168\}$h) appear in Appendix~\ref{app:empirical_sensitivity}.
+We evaluate OR-DML on our verified multi-season dataset ($14,122$ hourly records across Delhi, Mumbai, Bengaluru, and Kolkata, Feb 2025-Jun 2026; $<0.7\%$ forward-fill; Table~\ref{tab:empirical}), treating the sensor study as an observational diagnostic stress test rather than physical causal ground truth. Complete-case and Newey-West HAC lag sensitivity ($h \in \{12, 24, 72, 168\}$h) appear in Appendix~\ref{app:empirical_sensitivity}.
 
-\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$, $\kappa = 1.58$): Decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.20$, $\kappa = 2.52$): Standard DML is unstable ($+2.64 \pm 4.42$), while Spectral OR-DML yields Regime 2 $+7.20 \pm 3.90$ ($p=0.065$) and Regime 1 $-7.63 \pm 7.05$ ($p=0.280$; overall $+1.08 \pm 3.91$). Telemetry screening reveals a 273-hour constant run and $985\,\mu\text{g/m}^3$ saturation, causing multi-modal EM likelihood surfaces (across local modes, $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; Table~\ref{tab:empirical}). \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$, $\kappa = 1.72$): Standard DML yields $-0.001 \pm 0.060$; OR-DML isolates Regime 1 ($+0.092 \pm 0.155$) from Regime 2 ($-0.153 \pm 0.069$, nominal $p=0.0265$, overall $-0.026 \pm 0.079$). Under Frontier B null size distortion ($78\%$ Type I error, Table~\ref{tab:frontier_b_null}), nominal regime $p$-values require transport modeling before causal interpretation. \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$, $\kappa = 1.43$): Sparse telemetry ($N=1,209$) and discrete quantization (31 unique $\text{NO}_2$ values; 376-hour constant $\text{PM}_{2.5}$ run) collapse residual variance; overall ATE is $-0.006 \pm 1.300$. In single-index sensitivity, unregularized DML yields $-0.557 \pm 1.107$, stabilized by spectral penalty ($\text{SE} \to 0.060$ at $\lambda=0.10$, Table~\ref{tab:kolkata_lambda_grid}). Modest condition numbers ($\kappa = 1.43\text{--}2.52$) confirm SE inflation stems from low residual variance and sensor defects rather than Gram collinearity. \emph{Semi-Synthetic Megacity Benchmark}: In real atmospheric covariates with known ground truth ($\boldsymbol{\theta}^*=(0.75, 2.50)$; Table~\ref{tab:semisynthetic_megacity}), all proxy estimators suffer bias ($3.72\text{--}5.27$ for Spectral OR-DML, $1.09\text{--}2.56$ for HMM$(Z, T)$) and $0.0\%$ coverage, confirming real sensor confounding invalidates naive causal inference. \emph{Dynamic Projections}: Exposure effect peaks at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), but Delhi fails pre-treatment placebos at $h \in \{-6,-3,-1\}$ ($p<0.01$). We treat this curve as an exposure diagnostic; other cities pass placebos (Appendix~\ref{app:empirical_sensitivity}).
+\textbf{Conditioning Diagnostics.} \emph{Delhi Basin} ($\lambda_{\min} = 111.8$, $\kappa = 1.58$): Decomposes pooled effect ($+0.47 \pm 0.04$) into Regime 1 ($+0.70 \pm 0.05$, inversion) and Regime 2 ($+0.13 \pm 0.07$, clearance). \emph{Mumbai Coastal} ($\lambda_{\min} = 0.20$, $\kappa = 2.52$): Standard DML is unstable ($+2.64 \pm 4.42$), while Spectral OR-DML yields Regime 2 $+7.20 \pm 3.90$ ($p=0.065$) and Regime 1 $-7.63 \pm 7.05$ ($p=0.280$; overall $+1.08 \pm 3.91$). Telemetry screening reveals a 273-hour constant run and $985\,\mu\text{g/m}^3$ saturation, causing multi-modal EM likelihood surfaces (across local modes, $R_1 \in [-13.34, -0.02]$, $R_2 \in [+3.45, +7.39]$, $p \in [0.006, 0.131]$; Table~\ref{tab:empirical}). \emph{Bengaluru Plateau} ($\lambda_{\min} = 4.22$, $\kappa = 1.72$): Standard DML yields $-0.001 \pm 0.060$; OR-DML isolates Regime 1 ($+0.092 \pm 0.155$) from Regime 2 ($-0.153 \pm 0.069$, nominal $p=0.0265$, overall $-0.026 \pm 0.079$). Under Frontier B null size distortion ($78\%$ Type I error, Table~\ref{tab:frontier_b_null}), nominal regime $p$-values require transport modeling before causal interpretation. \emph{Kolkata Airshed} ($\lambda_{\min} = 0.0025$, $\kappa = 1.43$): Sparse telemetry ($N=1,209$) and discrete quantization (31 unique $\text{NO}_2$ values; 376-hour constant $\text{PM}_{2.5}$ run) collapse residual variance; overall ATE is $-0.006 \pm 1.300$. In single-index sensitivity, unregularized DML yields $-0.557 \pm 1.107$, stabilized by spectral penalty ($\text{SE} \to 0.060$ at $\lambda=0.10$, Table~\ref{tab:kolkata_lambda_grid}). Modest condition numbers ($\kappa = 1.43\text{-}2.52$) confirm SE inflation stems from low residual variance and sensor defects rather than Gram collinearity. \emph{Semi-Synthetic Megacity Benchmark}: In real atmospheric covariates with known ground truth ($\boldsymbol{\theta}^*=(0.75, 2.50)$; Table~\ref{tab:semisynthetic_megacity}), all proxy estimators suffer bias ($3.72\text{-}5.27$ for Spectral OR-DML, $1.09\text{-}2.56$ for HMM$(Z, T)$) and $0.0\%$ coverage, confirming real sensor confounding invalidates naive causal inference. \emph{Dynamic Projections}: Exposure effect peaks at $h=2$h in Delhi (ATE $+1.31$, Regime 1 $+2.35$, decaying to $+0.28$ at 12h), but Delhi fails pre-treatment placebos at $h \in \{-6,-3,-1\}$ ($p<0.01$). We treat this curve as an exposure diagnostic; other cities pass placebos (Appendix~\ref{app:empirical_sensitivity}).
 
 \vspace{-5.5mm}
 \section{DISCUSSION, LIMITATIONS \& CONCLUSION}
@@ -472,7 +472,7 @@ Latent-state recovery and downstream reliability are distinct: proxy errors are 
 \clearpage
 
 \subsection*{AI Use Statement}
-We used large language models (LLMs) to assist in mathematical formulation, proof derivation drafting (Appendices~A--I), codebase development (\texttt{src/or\_dml.py}, \texttt{src/synthetic\_dgp\_benchmark.py}, \texttt{src/factorial\_reliability\_experiment.py}, \texttt{src/empirical\_evaluation.py}), bibliographic formatting, and manuscript drafting. AI tools were not used for autonomous data generation or unverified empirical interpretation. The authors independently reviewed and verified the mathematical arguments and empirical implementations against simulation baselines with known ground truth and reproducible artifacts in \texttt{reports/}. The authors take full responsibility for all content, claims, and conclusions.
+We used large language models (LLMs) to assist in mathematical formulation, proof derivation drafting (Appendices~A-I), codebase development (\texttt{src/or\_dml.py}, \texttt{src/synthetic\_dgp\_benchmark.py}, \texttt{src/factorial\_reliability\_experiment.py}, \texttt{src/empirical\_evaluation.py}), bibliographic formatting, and manuscript drafting. AI tools were not used for autonomous data generation or unverified empirical interpretation. The authors independently reviewed and verified the mathematical arguments and empirical implementations against simulation baselines with known ground truth and reproducible artifacts in \texttt{reports/}. The authors take full responsibility for all content, claims, and conclusions.
 
 % \bibliographystyle{plainnat}
 \begin{thebibliography}{83}
@@ -488,22 +488,22 @@ We used large language models (LLMs) to assist in mathematical formulation, proo
 \bibitem[Allman et~al.(2009)Allman, Matias, and Rhodes]{allman2009identifiability}
 Elizabeth~S Allman, Catherine Matias, and John~A Rhodes.
 \newblock Identifiability of parameters in latent structure models with independent or Markov conditions.
-\newblock \emph{The Annals of Statistics}, 37\penalty0 (6A):\penalty0 3099--3132, 2009.
+\newblock \emph{The Annals of Statistics}, 37\penalty0 (6A):\penalty0 3099-3132, 2009.
 
 \bibitem[Andrews(1991)]{andrews1991heteroskedasticity}
 Donald W~K Andrews.
 \newblock Heteroskedasticity and autocorrelation consistent covariance matrix estimation.
-\newblock \emph{Econometrica}, 59\penalty0 (3):\penalty0 817--858, 1991.
+\newblock \emph{Econometrica}, 59\penalty0 (3):\penalty0 817-858, 1991.
 
 \bibitem[Athey et~al.(2019)Athey, Tibshirani, and Wager]{athey2019generalized}
 Susan Athey, Julie Tibshirani, and Stefan Wager.
 \newblock Generalized random forests.
-\newblock \emph{The Annals of Statistics}, 47\penalty0 (2):\penalty0 1148--1178, 2019.
+\newblock \emph{The Annals of Statistics}, 47\penalty0 (2):\penalty0 1148-1178, 2019.
 
 \bibitem[Bai(2009)]{bai2009panel}
 Jushan Bai.
 \newblock Panel data models with interactive fixed effects.
-\newblock \emph{Econometrica}, 77\penalty0 (4):\penalty0 1229--1279, 2009.
+\newblock \emph{Econometrica}, 77\penalty0 (4):\penalty0 1229-1279, 2009.
 
 \bibitem[Banna et~al.(2016)Banna, Merlev{\`e}de, and Youssef]{banna2016bernstein}
 Marwa Banna, Florence Merlev{\`e}de, and Pierre Youssef.
@@ -515,22 +515,22 @@ Marwa Banna, Florence Merlev{\`e}de, and Pierre Youssef.
 \bibitem[Bartlett and Wegkamp(2008)]{bartlett2008classification}
 Peter~L Bartlett and Marten~H Wegkamp.
 \newblock Classification with a reject option using a hinge loss.
-\newblock \emph{Journal of Machine Learning Research}, 9:\penalty0 1823--1840, 2008.
+\newblock \emph{Journal of Machine Learning Research}, 9:\penalty0 1823-1840, 2008.
 
 \bibitem[Baum and Petrie(1966)]{baum1966statistical}
 Leonard~E Baum and Ted Petrie.
 \newblock Statistical inference for probabilistic functions of finite state {M}arkov chains.
-\newblock \emph{The Annals of Mathematical Statistics}, 37\penalty0 (6):\penalty0 1554--1563, 1966.
+\newblock \emph{The Annals of Mathematical Statistics}, 37\penalty0 (6):\penalty0 1554-1563, 1966.
 
 \bibitem[Bergmeir et~al.(2018)Bergmeir, Hyndman, and Koo]{bergmeir2018note}
 Christoph Bergmeir, Rob~J Hyndman, and Bonsoo Koo.
 \newblock A note on the validity of cross-validation for evaluating autoregressive time series prediction.
-\newblock \emph{Computational Statistics \& Data Analysis}, 120:\penalty0 70--83, 2018.
+\newblock \emph{Computational Statistics \& Data Analysis}, 120:\penalty0 70-83, 2018.
 
 \bibitem[Bica et~al.(2020)Bica, Alaa, and van~der Schaar]{bica2020time}
 Ioana Bica, Ahmed~M Alaa, and Mihaela van~der Schaar.
 \newblock Time series deconfounder: Estimating treatment effects over time in the presence of hidden confounders.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 119 of \emph{Proceedings of Machine Learning Research}, pages 884--895, 2020.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume 119 of \emph{Proceedings of Machine Learning Research}, pages 884-895, 2020.
 % verify: V
 
 \bibitem[Bickel et~al.(1993)Bickel, Klaassen, Ritov, and Wellner]{bickel1993efficient}
@@ -541,32 +541,32 @@ Peter~J Bickel, Chris~AJ Klaassen, Ya'acov Ritov, and Jon~A Wellner.
 \bibitem[Bickel et~al.(1998)Bickel, Ritov, and Ryd{\'e}n]{bickel1998asymptotic}
 Peter~J Bickel, Ya'acov Ritov, and Tobias Ryd{\'e}n.
 \newblock Asymptotic normality of the maximum-likelihood estimator for general hidden {M}arkov models.
-\newblock \emph{The Annals of Statistics}, 26\penalty0 (4):\penalty0 1614--1635, 1998.
+\newblock \emph{The Annals of Statistics}, 26\penalty0 (4):\penalty0 1614-1635, 1998.
 
 \bibitem[Bojinov and Shephard(2019)]{bojinov2019time}
 Iavor Bojinov and Neil Shephard.
 \newblock Time series experiments and causal estimands: Exact randomization tests and trading.
-\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1665--1682, 2019.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1665-1682, 2019.
 
 \bibitem[Bonhomme et~al.(2022)Bonhomme, Lamadon, and Manresa]{bonhomme2022discretizing}
 St{\'e}phane Bonhomme, Thibaut Lamadon, and Elena Manresa.
 \newblock Discretizing unobserved heterogeneity.
-\newblock \emph{Econometrica}, 90\penalty0 (2):\penalty0 625--643, 2022.
+\newblock \emph{Econometrica}, 90\penalty0 (2):\penalty0 625-643, 2022.
 
 \bibitem[Bonhomme and Manresa(2015)]{bonhomme2015grouped}
 St{\'e}phane Bonhomme and Elena Manresa.
 \newblock Grouped patterns of heterogeneity in panel data.
-\newblock \emph{Econometrica}, 83\penalty0 (3):\penalty0 1147--1184, 2015.
+\newblock \emph{Econometrica}, 83\penalty0 (3):\penalty0 1147-1184, 2015.
 
 \bibitem[Bradley(2005)]{bradley2005basic}
 Richard~C Bradley.
 \newblock Basic properties of strong mixing conditions. {A} survey and some open questions.
-\newblock \emph{Probability Surveys}, 2:\penalty0 107--144, 2005.
+\newblock \emph{Probability Surveys}, 2:\penalty0 107-144, 2005.
 
 \bibitem[Burman et~al.(1994)Burman, Chow, and Nolan]{burman1994cross}
 Prabir Burman, Edmond Chow, and Deborah Nolan.
 \newblock A cross-validatory method for dependent data.
-\newblock \emph{Biometrika}, 81\penalty0 (2):\penalty0 351--358, 1994.
+\newblock \emph{Biometrika}, 81\penalty0 (2):\penalty0 351-358, 1994.
 
 \bibitem[Capp{\'e} et~al.(2005)Capp{\'e}, Moulines, and Ryd{\'e}n]{cappe2005inference}
 Olivier Capp{\'e}, Eric Moulines, and Tobias Ryd{\'e}n.
@@ -576,22 +576,22 @@ Olivier Capp{\'e}, Eric Moulines, and Tobias Ryd{\'e}n.
 \bibitem[Chernozhukov et~al.(2018)Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey, and Robins]{chernozhukov2018double}
 Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen, Whitney Newey, and James Robins.
 \newblock Double/debiased machine learning for treatment and structural parameters.
-\newblock \emph{The Econometrics Journal}, 21\penalty0 (1):\penalty0 C1--C68, 2018.
+\newblock \emph{The Econometrics Journal}, 21\penalty0 (1):\penalty0 C1-C68, 2018.
 
 \bibitem[Chernozhukov et~al.(2022{\natexlab{a}})Chernozhukov, Escanciano, Ichimura, Newey, and Robins]{chernozhukov2022locally}
 Victor Chernozhukov, Juan~Carlos Escanciano, Hidehiko Ichimura, Whitney~K Newey, and James~M Robins.
 \newblock Locally robust semiparametric estimation.
-\newblock \emph{Econometrica}, 90\penalty0 (4):\penalty0 1501--1535, 2022{\natexlab{a}}.
+\newblock \emph{Econometrica}, 90\penalty0 (4):\penalty0 1501-1535, 2022{\natexlab{a}}.
 
 \bibitem[Chernozhukov et~al.(2022{\natexlab{b}})Chernozhukov, Newey, and Singh]{chernozhukov2022automatic}
 Victor Chernozhukov, Whitney~K Newey, and Rahul Singh.
 \newblock Automatic debiased machine learning of causal and structural effects.
-\newblock \emph{Econometrica}, 90\penalty0 (3):\penalty0 967--1027, 2022{\natexlab{b}}.
+\newblock \emph{Econometrica}, 90\penalty0 (3):\penalty0 967-1027, 2022{\natexlab{b}}.
 
 \bibitem[Chow(1970)]{chow1970optimum}
 C~K Chow.
 \newblock On optimum recognition error and reject tradeoff.
-\newblock \emph{IEEE Transactions on Information Theory}, 16\penalty0 (1):\penalty0 41--46, 1970.
+\newblock \emph{IEEE Transactions on Information Theory}, 16\penalty0 (1):\penalty0 41-46, 1970.
 
 \bibitem[Ciganovic et~al.(2026)Ciganovic, D'Amario, and Tancioni]{ciganovic2026dml}
 Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
@@ -603,7 +603,7 @@ Milos Ciganovic, Federico D'Amario, and Massimiliano Tancioni.
 \bibitem[Cinelli and Hazlett(2020)]{cinelli2020making}
 Carlos Cinelli and Chad Hazlett.
 \newblock Making sense of sensitivity: Extending omitted variable bias.
-\newblock \emph{Journal of the Royal Statistical Society: Series B}, 82\penalty0 (1):\penalty0 39--67, 2020.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 82\penalty0 (1):\penalty0 39-67, 2020.
 
 \bibitem[Clouth et~al.(2025)Clouth, Bijlsma, Pauws, and Vermunt]{clouth2024latent}
 Felix~J Clouth, Maarten~J Bijlsma, Steffen Pauws, and Jeroen~K Vermunt.
@@ -614,22 +614,22 @@ Felix~J Clouth, Maarten~J Bijlsma, Steffen Pauws, and Jeroen~K Vermunt.
 \bibitem[Cortes et~al.(2016)Cortes, DeSalvo, and Mohri]{cortes2016learning}
 Corinna Cortes, Giulia DeSalvo, and Mehryar Mohri.
 \newblock Learning with rejection.
-\newblock In \emph{Algorithmic Learning Theory (ALT)}, volume 9925 of \emph{Lecture Notes in Computer Science}, pages 67--82. Springer, 2016.
+\newblock In \emph{Algorithmic Learning Theory (ALT)}, volume 9925 of \emph{Lecture Notes in Computer Science}, pages 67-82. Springer, 2016.
 
 \bibitem[CPCB(2025)]{cpcb2025}
 Central Pollution Control~Board (CPCB).
 \newblock National ambient air quality monitoring program.
-\newblock Ministry of Environment, Forest and Climate Change, Government of India, 2025--2026.
+\newblock Ministry of Environment, Forest and Climate Change, Government of India, 2025-2026.
 
 \bibitem[Crump et~al.(2009)Crump, Hotz, Imbens, and Mitnik]{crump2009dealing}
 Richard~K Crump, V~Joseph Hotz, Guido~W Imbens, and Jack~K Mitnik.
 \newblock Dealing with limited overlap in estimation of average treatment effects.
-\newblock \emph{Biometrika}, 96\penalty0 (1):\penalty0 187--199, 2009.
+\newblock \emph{Biometrika}, 96\penalty0 (1):\penalty0 187-199, 2009.
 
 \bibitem[Cui et~al.(2024)Cui, Pu, Shi, Miao, and Tchetgen~Tchetgen]{cui2024semiparametric}
 Yifan Cui, Hongming Pu, Xu~Shi, Wang Miao, and Eric~J Tchetgen~Tchetgen.
 \newblock Semiparametric proximal causal inference.
-\newblock \emph{Journal of the American Statistical Association}, 119\penalty0 (546):\penalty0 1348--1359, 2024.
+\newblock \emph{Journal of the American Statistical Association}, 119\penalty0 (546):\penalty0 1348-1359, 2024.
 
 \bibitem[D'Amour(2019)]{damour2019multicause}
 Alexander D'Amour.
@@ -639,74 +639,74 @@ Alexander D'Amour.
 \bibitem[D'Amour et~al.(2021)D'Amour, Ding, Feller, Lei, and Sekhon]{damour2021overlap}
 Alexander D'Amour, Peng Ding, Avi Feller, Lihua Lei, and Jasjeet Sekhon.
 \newblock Overlap in observational studies with high-dimensional covariates.
-\newblock \emph{Journal of Econometrics}, 221\penalty0 (2):\penalty0 644--654, 2021.
+\newblock \emph{Journal of Econometrics}, 221\penalty0 (2):\penalty0 644-654, 2021.
 \newblock arXiv:1711.02582.
 % verify: V: title and arXiv ID
 
 \bibitem[Dempster et~al.(1977)Dempster, Laird, and Rubin]{dempster1977maximum}
 Arthur~P Dempster, Nan~M Laird, and Donald~B Rubin.
 \newblock Maximum likelihood from incomplete data via the {EM} algorithm.
-\newblock \emph{Journal of the Royal Statistical Society: Series B}, 39\penalty0 (1):\penalty0 1--38, 1977.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 39\penalty0 (1):\penalty0 1-38, 1977.
 
 \bibitem[Dominici et~al.(2014)Dominici, Greenstone, and Sunstein]{dominici2014mitigating}
 Francesca Dominici, Michael Greenstone, and Cass~R Sunstein.
 \newblock Particulate matter matters.
-\newblock \emph{Science}, 344\penalty0 (6181):\penalty0 257--259, 2014.
+\newblock \emph{Science}, 344\penalty0 (6181):\penalty0 257-259, 2014.
 
 \bibitem[Douc et~al.(2004)Douc, Moulines, and Ryd{\'e}n]{douc2004asymptotic}
 Randal Douc, Eric Moulines, and Tobias Ryd{\'e}n.
 \newblock Asymptotic properties of the maximum likelihood estimator in autoregressive models with {M}arkov regime.
-\newblock \emph{The Annals of Statistics}, 32\penalty0 (5):\penalty0 2254--2304, 2004.
+\newblock \emph{The Annals of Statistics}, 32\penalty0 (5):\penalty0 2254-2304, 2004.
 
 \bibitem[El-Yaniv and Wiener(2010)]{elyaniv2010foundations}
 Ran El-Yaniv and Yair Wiener.
 \newblock On the foundations of noise-free selective classification.
-\newblock \emph{Journal of Machine Learning Research}, 11:\penalty0 1605--1641, 2010.
+\newblock \emph{Journal of Machine Learning Research}, 11:\penalty0 1605-1641, 2010.
 
 \bibitem[Foster and Syrgkanis(2023)]{foster2023orthogonal}
 Dylan~J Foster and Vasilis Syrgkanis.
 \newblock Orthogonal statistical learning.
-\newblock \emph{The Annals of Statistics}, 51\penalty0 (3):\penalty0 879--908, 2023.
+\newblock \emph{The Annals of Statistics}, 51\penalty0 (3):\penalty0 879-908, 2023.
 
 \bibitem[Frisch and Waugh(1933)]{frisch1933partial}
 Ragnar Frisch and Frederick~V Waugh.
 \newblock Partial time regressions as compared with individual trends.
-\newblock \emph{Econometrica}, 1\penalty0 (4):\penalty0 387--401, 1933.
+\newblock \emph{Econometrica}, 1\penalty0 (4):\penalty0 387-401, 1933.
 
 \bibitem[Gassiat et~al.(2016)Gassiat, Cleynen, and Robin]{gassiat2016inference}
 {\'E}lisabeth Gassiat, Alice Cleynen, and St{\'e}phane Robin.
 \newblock Inference in finite state space non parametric hidden {M}arkov models and applications.
-\newblock \emph{Statistics and Computing}, 26\penalty0 (1--2):\penalty0 61--71, 2016.
+\newblock \emph{Statistics and Computing}, 26\penalty0 (1-2):\penalty0 61-71, 2016.
 
 \bibitem[Geifman and El-Yaniv(2017)]{geifman2017selective}
 Yonatan Geifman and Ran El-Yaniv.
 \newblock Selective classification for deep neural networks.
-\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, pages 4878--4887, 2017.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, pages 4878-4887, 2017.
 
 \bibitem[Geifman and El-Yaniv(2019)]{geifman2019selectivenet}
 Yonatan Geifman and Ran El-Yaniv.
 \newblock {SelectiveNet}: A deep neural network with an integrated reject option.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~97 of \emph{Proceedings of Machine Learning Research}, pages 2151--2159, 2019.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~97 of \emph{Proceedings of Machine Learning Research}, pages 2151-2159, 2019.
 
 \bibitem[Grange and Carslaw(2019)]{grange2019using}
 Stuart~K Grange and David~C Carslaw.
 \newblock Using meteorological normalisation to detect interventions in air quality time series.
-\newblock \emph{Science of the Total Environment}, 653:\penalty0 578--588, 2019.
+\newblock \emph{Science of the Total Environment}, 653:\penalty0 578-588, 2019.
 
 \bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
 Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q Weinberger.
 \newblock On calibration of modern neural networks.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, pages 1321--1330, 2017.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, pages 1321-1330, 2017.
 
 \bibitem[Hamilton(1989)]{hamilton1989new}
 James~D Hamilton.
 \newblock A new approach to the economic analysis of nonstationary time series and the business cycle.
-\newblock \emph{Econometrica}, 57\penalty0 (2):\penalty0 357--384, 1989.
+\newblock \emph{Econometrica}, 57\penalty0 (2):\penalty0 357-384, 1989.
 
 \bibitem[Hamilton(1990)]{hamilton1990analysis}
 James~D Hamilton.
 \newblock Analysis of time series subject to changes in regime.
-\newblock \emph{Journal of Econometrics}, 45\penalty0 (1--2):\penalty0 39--70, 1990.
+\newblock \emph{Journal of Econometrics}, 45\penalty0 (1-2):\penalty0 39-70, 1990.
 
 \bibitem[Hatt and Feuerriegel(2021)]{hatt2021sequential}
 Tobias Hatt and Stefan Feuerriegel.
@@ -716,14 +716,14 @@ Tobias Hatt and Stefan Feuerriegel.
 \bibitem[Hendrickx et~al.(2024)Hendrickx, Perini, Van~der Plas, Meert, and Davis]{hendrickx2021machine}
 Kilian Hendrickx, Lorenzo Perini, Dries Van~der Plas, Wannes Meert, and Jesse Davis.
 \newblock Machine learning with a reject option: A survey.
-\newblock \emph{Machine Learning}, 113\penalty0 (5):\penalty0 3073--3110, 2024.
+\newblock \emph{Machine Learning}, 113\penalty0 (5):\penalty0 3073-3110, 2024.
 \newblock arXiv:2107.11277.
 % verify: V: authors, title, journal, year, arXiv ID; volume/pages from memory
 
 \bibitem[Hoerl and Kennard(1970)]{hoerl1970ridge}
 Arthur~E Hoerl and Robert~W Kennard.
 \newblock Ridge regression: Biased estimation for nonorthogonal problems.
-\newblock \emph{Technometrics}, 12\penalty0 (1):\penalty0 55--67, 1970.
+\newblock \emph{Technometrics}, 12\penalty0 (1):\penalty0 55-67, 1970.
 
 \bibitem[Horn and Johnson(2012)]{horn2012matrix}
 Roger~A Horn and Charles~R Johnson.
@@ -733,14 +733,14 @@ Roger~A Horn and Charles~R Johnson.
 \bibitem[Huang et~al.(2020)Huang, Zhang, Zhang, Ramsey, Sanchez-Romero, Glymour, and Sch{\"o}lkopf]{huang2023sdci}
 Biwei Huang, Kun Zhang, Jiji Zhang, Joseph Ramsey, Ruben Sanchez-Romero, Clark Glymour, and Bernhard Sch{\"o}lkopf.
 \newblock Causal discovery from heterogeneous/nonstationary data.
-\newblock \emph{Journal of Machine Learning Research}, 21\penalty0 (89):\penalty0 1--53, 2020.
+\newblock \emph{Journal of Machine Learning Research}, 21\penalty0 (89):\penalty0 1-53, 2020.
 \newblock
 % verify: V: title, venue, volume; page range from memory
 
 \bibitem[Ibragimov(1962)]{ibragimov1962some}
 Il'dar~A Ibragimov.
 \newblock Some limit theorems for stationary processes.
-\newblock \emph{Theory of Probability \& Its Applications}, 7\penalty0 (4):\penalty0 349--382, 1962.
+\newblock \emph{Theory of Probability \& Its Applications}, 7\penalty0 (4):\penalty0 349-382, 1962.
 
 \bibitem[Imbens and Rubin(2015)]{imbens2015causal}
 Guido~W Imbens and Donald~B Rubin.
@@ -766,7 +766,7 @@ Edward~H Kennedy.
 \bibitem[Khan and Tamer(2010)]{khan2010irregular}
 Shakeeb Khan and Elie Tamer.
 \newblock Irregular identification, support conditions, and inverse weight estimation.
-\newblock \emph{Econometrica}, 78\penalty0 (6):\penalty0 2021--2042, 2010.
+\newblock \emph{Econometrica}, 78\penalty0 (6):\penalty0 2021-2042, 2010.
 
 \bibitem[Kim and Nelson(1999)]{kim1999state}
 Chang-Jin Kim and Charles~R Nelson.
@@ -776,17 +776,17 @@ Chang-Jin Kim and Charles~R Nelson.
 \bibitem[K{\"u}nsch(1989)]{kunsch1989jackknife}
 Hans~R K{\"u}nsch.
 \newblock The jackknife and the bootstrap for general stationary observations.
-\newblock \emph{The Annals of Statistics}, 17\penalty0 (3):\penalty0 1217--1241, 1989.
+\newblock \emph{The Annals of Statistics}, 17\penalty0 (3):\penalty0 1217-1241, 1989.
 
 \bibitem[Kuroki and Pearl(2014)]{kuroki2014measurement}
 Manabu Kuroki and Judea Pearl.
 \newblock Measurement bias and effect restoration in causal inference.
-\newblock \emph{Biometrika}, 101\penalty0 (2):\penalty0 423--437, 2014.
+\newblock \emph{Biometrika}, 101\penalty0 (2):\penalty0 423-437, 2014.
 
 \bibitem[Leroux(1992)]{leroux1992maximum}
 Brian~G Leroux.
 \newblock Maximum-likelihood estimation for hidden {M}arkov models.
-\newblock \emph{Stochastic Processes and their Applications}, 40\penalty0 (1):\penalty0 127--143, 1992.
+\newblock \emph{Stochastic Processes and their Applications}, 40\penalty0 (1):\penalty0 127-143, 1992.
 
 \bibitem[Lewis and Syrgkanis(2020)]{lewis2020double}
 Greg Lewis and Vasilis Syrgkanis.
@@ -801,7 +801,7 @@ Christos Louizos, Uri Shalit, Joris~M Mooij, David Sontag, Richard Zemel, and Ma
 \bibitem[Lovell(1963)]{lovell1963seasonal}
 Michael~C Lovell.
 \newblock Seasonal adjustment of economic time series and multiple regression analysis.
-\newblock \emph{Journal of the American Statistical Association}, 58\penalty0 (304):\penalty0 993--1010, 1963.
+\newblock \emph{Journal of the American Statistical Association}, 58\penalty0 (304):\penalty0 993-1010, 1963.
 
 \bibitem[L{\'o}pez~de Prado(2018)]{lopezdeprado2018advances}
 Marcos L{\'o}pez~de Prado.
@@ -818,27 +818,27 @@ Afsaneh Mastouri, Yuchen Zhu, Limor Gultchin, Anna Korba, Ricardo Silva, Matt~J 
 \bibitem[Miao et~al.(2018)Miao, Geng, and Tchetgen~Tchetgen]{miao2018identifying}
 Wang Miao, Zhi Geng, and Eric~J Tchetgen~Tchetgen.
 \newblock Identifying causal effects with proxy variables of an unmeasured confounder.
-\newblock \emph{Biometrika}, 105\penalty0 (4):\penalty0 987--993, 2018.
+\newblock \emph{Biometrika}, 105\penalty0 (4):\penalty0 987-993, 2018.
 
 \bibitem[Newey and West(1987)]{newey1987simple}
 Whitney~K Newey and Kenneth~D West.
 \newblock A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix.
-\newblock \emph{Econometrica}, 55\penalty0 (3):\penalty0 703--708, 1987.
+\newblock \emph{Econometrica}, 55\penalty0 (3):\penalty0 703-708, 1987.
 
 \bibitem[Nie and Wager(2021)]{nie2021quasi}
 Xinkun Nie and Stefan Wager.
 \newblock Quasi-oracle estimation of heterogeneous treatment effects.
-\newblock \emph{Biometrika}, 108\penalty0 (2):\penalty0 299--319, 2021.
+\newblock \emph{Biometrika}, 108\penalty0 (2):\penalty0 299-319, 2021.
 
 \bibitem[Ogburn et~al.(2019)Ogburn, Shpitser, and Tchetgen~Tchetgen]{ogburn2019comment}
 Elizabeth~L Ogburn, Ilya Shpitser, and Eric~J Tchetgen~Tchetgen.
 \newblock Comment on ``{T}he blessings of multiple causes''.
-\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1611--1615, 2019.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1611-1615, 2019.
 
 \bibitem[Open-Meteo(2025)]{openmeteo2025}
 Open-Meteo.
 \newblock Historical weather API and ECMWF ERA5 meteorological reanalysis.
-\newblock Technical documentation and API service, 2025--2026.
+\newblock Technical documentation and API service, 2025-2026.
 
 \bibitem[Pearl(2010)]{pearl2012bias}  % key kept for compatibility; paper is UAI 2010
 Judea Pearl.
@@ -849,44 +849,44 @@ Judea Pearl.
 \bibitem[Petersen et~al.(2012)Petersen, Porter, Gruber, Wang, and van~der Laan]{petersen2012diagnosing}
 Maya~L Petersen, Kristin~E Porter, Susan Gruber, Yue Wang, and Mark~J van~der Laan.
 \newblock Diagnosing and responding to violations in the positivity assumption.
-\newblock \emph{Statistical Methods in Medical Research}, 21\penalty0 (1):\penalty0 31--54, 2012.
+\newblock \emph{Statistical Methods in Medical Research}, 21\penalty0 (1):\penalty0 31-54, 2012.
 
 \bibitem[Rabiner(1989)]{rabiner1989tutorial}
 Lawrence~R Rabiner.
 \newblock A tutorial on hidden {M}arkov models and selected applications in speech recognition.
-\newblock \emph{Proceedings of the IEEE}, 77\penalty0 (2):\penalty0 257--286, 1989.
+\newblock \emph{Proceedings of the IEEE}, 77\penalty0 (2):\penalty0 257-286, 1989.
 
 \bibitem[Racine(2000)]{racine2000consistent}
 Jeff Racine.
 \newblock Consistent cross-validatory model-selection for dependent data: hv-block cross-validation.
-\newblock \emph{Journal of Econometrics}, 99\penalty0 (1):\penalty0 39--61, 2000.
+\newblock \emph{Journal of Econometrics}, 99\penalty0 (1):\penalty0 39-61, 2000.
 
 \bibitem[Robins et~al.(2000)Robins, Hern{\'a}n, and Brumback]{robins2000marginal}
 James~M Robins, Miguel~A Hern{\'a}n, and Babette Brumback.
 \newblock Marginal structural models and causal inference in epidemiology.
-\newblock \emph{Epidemiology}, 11\penalty0 (5):\penalty0 550--560, 2000.
+\newblock \emph{Epidemiology}, 11\penalty0 (5):\penalty0 550-560, 2000.
 
 \bibitem[Robinson(1988)]{robinson1988root}
 Peter~M Robinson.
 \newblock Root-{N}-consistent semiparametric regression.
-\newblock \emph{Econometrica}, 56\penalty0 (4):\penalty0 931--954, 1988.
+\newblock \emph{Econometrica}, 56\penalty0 (4):\penalty0 931-954, 1988.
 
 \bibitem[Rosenbaum and Rubin(1983)]{rosenbaum1983central}
 Paul~R Rosenbaum and Donald~B Rubin.
 \newblock The central role of the propensity score in observational studies for causal effects.
-\newblock \emph{Biometrika}, 70\penalty0 (1):\penalty0 41--55, 1983.
+\newblock \emph{Biometrika}, 70\penalty0 (1):\penalty0 41-55, 1983.
 
 \bibitem[Semenova et~al.(2023)Semenova, Goldman, Chernozhukov, and Taddy]{semenova2023generalized}
 Vira Semenova, Matt Goldman, Victor Chernozhukov, and Matt Taddy.
 \newblock Inference on heterogeneous treatment effects in high-dimensional dynamic panels under weak dependence.
-\newblock \emph{Quantitative Economics}, 14\penalty0 (2):\penalty0 471--510, 2023.
+\newblock \emph{Quantitative Economics}, 14\penalty0 (2):\penalty0 471-510, 2023.
 \newblock arXiv:1712.09988.
 % verify: V: title, venue, year, arXiv ID; pages from memory
 
 \bibitem[Shalit et~al.(2017)Shalit, Johansson, and Sontag]{shalit2017estimating}
 Uri Shalit, Fredrik~D Johansson, and David Sontag.
 \newblock Estimating individual treatment effect: Generalization bounds and algorithms.
-\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~70 of \emph{Proceedings of Machine Learning Research}, pages 3076--3085, 2017.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, volume~70 of \emph{Proceedings of Machine Learning Research}, pages 3076-3085, 2017.
 % verify: V
 
 \bibitem[Tchetgen~Tchetgen et~al.(2020)Tchetgen~Tchetgen, Ying, Cui, Shi, and Miao]{tchetgen2020introduction}
@@ -897,24 +897,24 @@ Eric~J Tchetgen~Tchetgen, Andrew Ying, Yifan Cui, Xu~Shi, and Wang Miao.
 \bibitem[Tropp(2012)]{tropp2012user}
 Joel~A Tropp.
 \newblock User-friendly tail bounds for sums of random matrices.
-\newblock \emph{Foundations of Computational Mathematics}, 12\penalty0 (4):\penalty0 389--434, 2012.
+\newblock \emph{Foundations of Computational Mathematics}, 12\penalty0 (4):\penalty0 389-434, 2012.
 
 \bibitem[Vu et~al.(2019)Vu, Shi, Cheng, Zhang, He, Wang, and Harrison]{vu2019assessing}
 Tuan~V Vu, Zongbo Shi, Jing Cheng, Qiang Zhang, Kebin He, Shuxiao Wang, and Roy~M Harrison.
 \newblock Assessing the impact of clean air action on air quality trends in {B}eijing using a machine learning technique.
-\newblock \emph{Atmospheric Chemistry and Physics}, 19\penalty0 (17):\penalty0 11303--11314, 2019.
+\newblock \emph{Atmospheric Chemistry and Physics}, 19\penalty0 (17):\penalty0 11303-11314, 2019.
 \newblock
 % verify: CHECK author list/order on the ACP page before submission
 
 \bibitem[Wang and Blei(2019)]{wang2019blessings}
 Yixin Wang and David~M Blei.
 \newblock The blessings of multiple causes.
-\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1574--1596, 2019.
+\newblock \emph{Journal of the American Statistical Association}, 114\penalty0 (528):\penalty0 1574-1596, 2019.
 
 \bibitem[Wu(1983)]{wu1983convergence}
 C~F~Jeff Wu.
 \newblock On the convergence properties of the {EM} algorithm.
-\newblock \emph{The Annals of Statistics}, 11\penalty0 (1):\penalty0 95--103, 1983.
+\newblock \emph{The Annals of Statistics}, 11\penalty0 (1):\penalty0 95-103, 1983.
 \bibitem[Tsybakov(2009)]{tsybakov2009introduction}
 Alexandre~B Tsybakov.
 \newblock \emph{Introduction to Nonparametric Estimation}.
@@ -929,14 +929,14 @@ Alexandre~B Tsybakov.
 \item For all models and algorithms presented, check if you include:
 \begin{enumerate}
   \item A clear description of the algorithm, mapping, or model. [\textbf{Yes}] See Section~3 and Algorithm~1.
-  \item An analysis of the properties and complexity. [\textbf{Yes}] See Theorems 1--5 and Propositions 1--2.
+  \item An analysis of the properties and complexity. [\textbf{Yes}] See Theorems 1-5 and Propositions 1-2.
   \item (Optional) Anonymized source code, with specification of all dependencies, including external libraries. [\textbf{Yes}] Code included in the supplementary material.
 \end{enumerate}
 
 \item For any theoretical claim, check if you include:
 \begin{enumerate}
-  \item Statements of the full set of assumptions of all theoretical results. [\textbf{Yes}] Assumptions 1--4 are stated in Section~2 and Section~4.
-  \item Complete proofs of all theoretical results. [\textbf{Yes}] Full proofs in Appendices A--F.
+  \item Statements of the full set of assumptions of all theoretical results. [\textbf{Yes}] Assumptions 1-4 are stated in Section~2 and Section~4.
+  \item Complete proofs of all theoretical results. [\textbf{Yes}] Full proofs in Appendices A-F.
   \item Clear explanations of any assumptions. [\textbf{Yes}] Detailed physical and statistical justifications accompany each assumption.
 \end{enumerate}
 
@@ -1002,7 +1002,7 @@ Alexandre~B Tsybakov.
 \vspace{-2mm}
 \section{Proof of Theorem~\ref{thm:bias}: Decomposition of Omitted Regime Bias}
 \label{app:proof_thm1}
-Consider the Structural Causal Model \eqref{eq:regime_scm}--\eqref{eq:outcome}:
+Consider the Structural Causal Model \eqref{eq:regime_scm}-\eqref{eq:outcome}:
 \begin{align*}
     T_t &= m(X_t, S_t) + V_t, \quad \E[V_t \mid X_t, S_t] = 0, \\
     Y_t &= \sum_{k=1}^K \theta_k^* \one(S_t = k) T_t + g(X_t, S_t) + U_t, \quad \E[U_t \mid X_t, S_t, T_t] = 0.
@@ -1027,7 +1027,7 @@ Dividing by $\E[\tilde{T}_t^2]$ yields \eqref{eq:b_het} and \eqref{eq:b_conf}. $
 \vspace{-2mm}
 \section{Proof of Theorem~\ref{thm:impossibility}: Non-Identification Under Unconstrained Overlap}
 \label{app:proof_thm2}
-To prove substantive causal non-identification, we constructively exhibit two data-generating distributions, $P_1$ and $P_2$, that are structurally well-formed under the SCM \eqref{eq:regime_scm}--\eqref{eq:outcome} and satisfy all Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation}, yet possess strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$ while inducing identically equal joint distributions over all observable variables:
+To prove substantive causal non-identification, we constructively exhibit two data-generating distributions, $P_1$ and $P_2$, that are structurally well-formed under the SCM \eqref{eq:regime_scm}-\eqref{eq:outcome} and satisfy all Assumptions~\ref{ass:unconfoundedness}-\ref{ass:innovation}, yet possess strictly distinct, non-permutation causal effect vectors $\boldsymbol{\theta}^{(1)} \neq \boldsymbol{\theta}^{(2)}$ while inducing identically equal joint distributions over all observable variables:
 \begin{equation}
     P_1(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \equiv P_2(Y_{1:N}, T_{1:N}, X_{1:N}, Z_{1:N}) \quad \forall N \ge 1.
 \end{equation}
@@ -1056,7 +1056,7 @@ Because $S_t$ transitions independently ($p=0.5$), observations $(Y_t, T_t, X_t,
 \section{Proof of Theorem~\ref{thm:graceful}: Graceful Degradation and the Difficulty Frontier}
 \label{app:proof_thm3}
 Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t} \in \{0, 1\}^K$ denote the unobserved true regime indicator vector.
-Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, the oracle regime nuisance functions are:
+Under SCM \eqref{eq:regime_scm}-\eqref{eq:outcome}, the oracle regime nuisance functions are:
 \begin{equation}
     m_k^*(X_t) \equiv \E[T_t \mid X_t, S_t = k], \quad \mu_k^*(X_t) \equiv \E[Y_t \mid X_t, S_t = k] = \theta_k^* m_k^*(X_t) + g(X_t, k).
 \end{equation}
@@ -1087,12 +1087,12 @@ Let $\Psi_{k}(\boldsymbol\theta;\eta)=\gamma_k\tilde T_k\big(\tilde Y_k-\sum_{j}
 \end{enumerate}
 \end{lemma}
 \begin{proof}
-(i)--(ii): $\E[\gamma_k(T-m_k^\gamma)\mid X]=0$ and $\E[\gamma_k(Y-\mu_k^\gamma)\mid X]=0$ by definition of $m_k^\gamma,\mu_k^\gamma$.
+(i)-(ii): $\E[\gamma_k(T-m_k^\gamma)\mid X]=0$ and $\E[\gamma_k(Y-\mu_k^\gamma)\mid X]=0$ by definition of $m_k^\gamma,\mu_k^\gamma$.
 (iii): differentiating $-\gamma_k\tilde T_k \sum_j \gamma_j \tilde T_j \theta_j$ in direction $\Delta m$ gives $\sum_j \theta_j \E[\Delta m_k \gamma_k \gamma_j \tilde T_j + \Delta m_j \gamma_k \gamma_j \tilde T_k]$. For $j=k$, $\E[\gamma_k^2 \tilde T_k \mid X] = \E[(\gamma_k^2 - \gamma_k)\tilde T_k \mid X]$ since $\E[\gamma_k \tilde T_k \mid X] = 0$, bounded by $M_T |\gamma_k - H_k|$. For $j \neq k$, $\gamma_k \gamma_j \le |\gamma_k - H_k| + |\gamma_j - H_j|$. Bounding each moment by $M_T g(X)$ and using $\|g\|_{L_2} \le \sqrt{2\varepsilon_\gamma}$ yields (iii). For hard assignments, $\gamma_k \gamma_j = \delta_{kj} \gamma_k$ so both moments vanish.
 \end{proof}
 
 \textbf{Step 3: Isolate proxy-induced bias via oracle score identity.}
-Under SCM \eqref{eq:regime_scm}--\eqref{eq:outcome}, on the event $S_t = k$ ($H_{tk} = 1$), the oracle outcome residual is $\tilde{Y}_{tk}^* = Y_t - \mu_k^*(X_t) = \theta_k^* \tilde{T}_{tk}^* + U_t$.
+Under SCM \eqref{eq:regime_scm}-\eqref{eq:outcome}, on the event $S_t = k$ ($H_{tk} = 1$), the oracle outcome residual is $\tilde{Y}_{tk}^* = Y_t - \mu_k^*(X_t) = \theta_k^* \tilde{T}_{tk}^* + U_t$.
 Substituting into $S_k^*$:
 \begin{equation}
     S_k^* = \E\left[ H_{tk} \tilde{T}_{tk}^* (\theta_k^* \tilde{T}_{tk}^* + U_t) \right] = \theta_k^* \E[H_{tk} (\tilde{T}_{tk}^*)^2] + \E\left[ H_{tk} \tilde{T}_{tk}^* \E[U_t \mid X_t, S_t, T_t, Z_{1:N}] \right] = \theta_k^* J_{kk}^*,
@@ -1151,7 +1151,7 @@ $m^\gamma_k=0$ since $\E V=0, V\perp S$, so $\tilde T_k=V$ and constants in $\ti
 
 \begin{theorem}[Matching Minimax Lower Bound under Latent Confounding]
 \label{thm:lower_bound}
-Let $\mathcal{P}(\varepsilon_\gamma, \lambda_0)$ denote the family of data-generating processes satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:rates} and Assumption~\ref{ass:envelopes} with binary regimes ($K=2$), state proxy error $\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \le \varepsilon_\gamma \in (0, 1/2]$, and minimal Gram eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge \lambda_0 > 0$. Then there exists a universal numerical constant $c > 0$ such that for any sample size $N \ge 1$:
+Let $\mathcal{P}(\varepsilon_\gamma, \lambda_0)$ denote the family of data-generating processes satisfying Assumptions~\ref{ass:unconfoundedness}-\ref{ass:rates} and Assumption~\ref{ass:envelopes} with binary regimes ($K=2$), state proxy error $\E\|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \le \varepsilon_\gamma \in (0, 1/2]$, and minimal Gram eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge \lambda_0 > 0$. Then there exists a universal numerical constant $c > 0$ such that for any sample size $N \ge 1$:
 \begin{equation}
 \label{eq:minimax_lower_bound}
 \inf_{\hat{\boldsymbol{\theta}}} \sup_{P \in \mathcal{P}(\varepsilon_\gamma, \lambda_0)} \E_P\left[ \|\hat{\boldsymbol{\theta}} - \boldsymbol{\theta}^*(P)\|_2 \right] \ge c \frac{\varepsilon_\gamma}{\lambda_0}.
@@ -1333,7 +1333,7 @@ Statistically, the empirical Gram matrix $\hat{\boldsymbol{J}} = \frac{1}{N}\sum
 By Weyl's theorem, $|\lambda_{\min}(\hat{\boldsymbol{J}}) - \lambda_{\min}(\boldsymbol{J})| \le \|\hat{\boldsymbol{J}} - \boldsymbol{J}\|_{\mathrm{op}}$, ensuring that $\lambda_{\min}(\hat{\boldsymbol{J}})$ concentrates at the standard $\mathcal{O}_P(N^{-1/2})$ rate whenever $\lambda_{\min}(\boldsymbol{J}) > 0$.
 
 \textbf{Non-Identifiability vs.\ Shrinkage: When Systems Must Abstain:}
-Spectral shrinkage $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ stabilizes variance under ill-conditioned overlap ($\lambda_{\min} \approx 0$). However, when data lack identifying variation entirely—diagnosed by condition number $\kappa(\hat{\boldsymbol{J}}) > 10^4$ or a moving-block bootstrap 95\% confidence interval for $\lambda_{\min}(\hat{\boldsymbol{J}})$ that covers zero—the structural parameter $\boldsymbol{\theta}^*$ is non-identified (Theorem~\ref{thm:impossibility}). In this regime, heavy shrinkage $\lambda \to \infty$ artificially forces $\|\hat{\boldsymbol{\theta}}_\lambda\| \to 0$ without recovering structural effects. Deployed decision pipelines should treat $\kappa(\hat{\boldsymbol{J}}) > 10^4$ as a structural abstention trigger rather than masking non-identifiability with excessive shrinkage.
+Spectral shrinkage $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1}\hat{\boldsymbol{S}}$ stabilizes variance under ill-conditioned overlap ($\lambda_{\min} \approx 0$). However, when data lack identifying variation entirely-diagnosed by condition number $\kappa(\hat{\boldsymbol{J}}) > 10^4$ or a moving-block bootstrap 95\% confidence interval for $\lambda_{\min}(\hat{\boldsymbol{J}})$ that covers zero-the structural parameter $\boldsymbol{\theta}^*$ is non-identified (Theorem~\ref{thm:impossibility}). In this regime, heavy shrinkage $\lambda \to \infty$ artificially forces $\|\hat{\boldsymbol{\theta}}_\lambda\| \to 0$ without recovering structural effects. Deployed decision pipelines should treat $\kappa(\hat{\boldsymbol{J}}) > 10^4$ as a structural abstention trigger rather than masking non-identifiability with excessive shrinkage.
 
 \vspace{-2mm}
 \section{Proof of Theorem~\ref{thm:asymptotics}: Asymptotic Normality Under Dependent Purged Cross-Fitting}
@@ -1354,7 +1354,7 @@ Spectral shrinkage $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + 
 \end{equation}
 with $\tilde{\boldsymbol\Psi}_t=\boldsymbol\Psi_t(\boldsymbol\theta_\lambda)-\E\boldsymbol\Psi_t(\boldsymbol\theta_\lambda)$ strictly mean zero. (At $\boldsymbol\theta^*$ the summands have non-vanishing mean $\boldsymbol b_\gamma$, so the CLT cannot be centered there without rate conditions on $\varepsilon_\gamma$.)
 
-\emph{Step 2 (nuisance errors).} Expanding in $\hat\eta-\eta^\gamma$: by Lemma~\ref{lem:orth}(i)--(ii) the $\mu$-direction and cross-moment have zero first-order term; the Gram part contributes $\mathcal{O}(\sqrt{\varepsilon_\gamma}\,\|\hat m-m^\gamma\|)=o_P(N^{-1/2})$ by (G); second-order remainder is $\mathcal{O}_P(r_N^2)=o_P(N^{-1/2})$ by Assumption~\ref{ass:rates}.
+\emph{Step 2 (nuisance errors).} Expanding in $\hat\eta-\eta^\gamma$: by Lemma~\ref{lem:orth}(i)-(ii) the $\mu$-direction and cross-moment have zero first-order term; the Gram part contributes $\mathcal{O}(\sqrt{\varepsilon_\gamma}\,\|\hat m-m^\gamma\|)=o_P(N^{-1/2})$ by (G); second-order remainder is $\mathcal{O}_P(r_N^2)=o_P(N^{-1/2})$ by Assumption~\ref{ass:rates}.
 
 \emph{Step 3 (cross-fitting under dependence).} By Bradley's coupling lemma \citep{bradley2005basic}, nuisance fits on blocks separated by $\tau^*$ from test blocks match an independent copy except on an event of probability $\le N\alpha(\tau^*)\le MN^{1-c_\alpha C}\to0$ when $C>1/c_\alpha$.
 
@@ -1661,7 +1661,7 @@ High-Persistence Inversion & $2.0$ & $2.0$ & $0.96$ & $0.159$ & $1.5934$ & $1.31
 \footnotesize
 \renewcommand{\arraystretch}{0.85}
 \setlength{\tabcolsep}{4.5pt}
-\caption{Latent Representation Zoo under Disentangled Shifts and Downstream Reliability ($N=2,000$, 5 seeds; mean $\pm$ std). Panel~A: Latent recovery under dynamics shift (A, $\rho = 0.85 \to 0.96$), observation noise (B, $\Delta_Z = 3.5 \to 1.0$), and compound shift (C). Panel~B: Downstream failure anticipation under compound shift (C) with 95\% MBB CIs [$L=24$]. Neural encoders achieve competitive recovery ($F_1 \approx 0.84\text{--}0.86$) but near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$), whereas Gaussian HMM reaches $\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$ (MBB CI $[0.540, 0.683]$). Post-hoc temperature scaling improves ECE/NLL without improving failure ROC-AUC.}
+\caption{Latent Representation Zoo under Disentangled Shifts and Downstream Reliability ($N=2,000$, 5 seeds; mean $\pm$ std). Panel~A: Latent recovery under dynamics shift (A, $\rho = 0.85 \to 0.96$), observation noise (B, $\Delta_Z = 3.5 \to 1.0$), and compound shift (C). Panel~B: Downstream failure anticipation under compound shift (C) with 95\% MBB CIs [$L=24$]. Neural encoders achieve competitive recovery ($F_1 \approx 0.84\text{-}0.86$) but near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{-}0.549$), whereas Gaussian HMM reaches $\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$ (MBB CI $[0.540, 0.683]$). Post-hoc temperature scaling improves ECE/NLL without improving failure ROC-AUC.}
 \label{tab:bench_models}
 \label{tab:reliability_auc}
 \vspace{1.5mm}
@@ -1689,14 +1689,14 @@ Linear State Space Model (SSM) & $0.8580 \pm 0.012$ & $0.5492 \pm 0.021$ & $[0.4
 \end{table*}
 
 \textbf{Representation Accuracy vs.\ Downstream Task Reliability.}
-To evaluate whether latent representations translate to reliable prediction under shift, we fit a Ridge predictor $f_m: (X_t, T_t, \boldsymbol{\gamma}_t^{(m)}) \mapsto Y_t$ on training data ($N=1,200$) and freeze it. Residualized treatments $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ yield rolling coupled Gram matrix $\boldsymbol{J}_t = \frac{1}{w}\sum_{s=t-w+1}^t (\boldsymbol{\gamma}_s \odot \tilde{\boldsymbol{T}}_s)(\boldsymbol{\gamma}_s \odot \tilde{\boldsymbol{T}}_s)^\top$ ($w=48$) and minimum eigenvalue $\lambda_{\min}(\boldsymbol{J}_t)$. On held-out Shift C ($N=1,200$, 5 seeds), a calibration split ($N_{\mathrm{cal}}=400$) fixes failure loss threshold $q_{0.90}$ out-of-sample. We evaluate future lead loss $L_{t+1} = (Y_{t+1} - \hat{Y}_{t+1})^2$ against: (i) State Entropy $H_t = H(\boldsymbol{\gamma}_t)$, (ii) Conditioning $1/\lambda_{\min}(\boldsymbol{J}_t)$, and (iii) Task Difficulty $\mathcal{D}_t = H_t / \lambda_{\min}(\boldsymbol{J}_t)$. Moving-Block Bootstrap ($B=1,000$, $L=24$h) quantifies uncertainty over dependent series; sensitivity across $L \in \{12, 24, 48, 72\}$ confirms CI widths are stable ($0.142\text{--}0.147$; \texttt{reports/representation\_zoo\_mbb\_sensitivity.csv}).
+To evaluate whether latent representations translate to reliable prediction under shift, we fit a Ridge predictor $f_m: (X_t, T_t, \boldsymbol{\gamma}_t^{(m)}) \mapsto Y_t$ on training data ($N=1,200$) and freeze it. Residualized treatments $\tilde{T}_{tk} = T_t - \hat{m}_k(X_t)$ yield rolling coupled Gram matrix $\boldsymbol{J}_t = \frac{1}{w}\sum_{s=t-w+1}^t (\boldsymbol{\gamma}_s \odot \tilde{\boldsymbol{T}}_s)(\boldsymbol{\gamma}_s \odot \tilde{\boldsymbol{T}}_s)^\top$ ($w=48$) and minimum eigenvalue $\lambda_{\min}(\boldsymbol{J}_t)$. On held-out Shift C ($N=1,200$, 5 seeds), a calibration split ($N_{\mathrm{cal}}=400$) fixes failure loss threshold $q_{0.90}$ out-of-sample. We evaluate future lead loss $L_{t+1} = (Y_{t+1} - \hat{Y}_{t+1})^2$ against: (i) State Entropy $H_t = H(\boldsymbol{\gamma}_t)$, (ii) Conditioning $1/\lambda_{\min}(\boldsymbol{J}_t)$, and (iii) Task Difficulty $\mathcal{D}_t = H_t / \lambda_{\min}(\boldsymbol{J}_t)$. Moving-Block Bootstrap ($B=1,000$, $L=24$h) quantifies uncertainty over dependent series; sensitivity across $L \in \{12, 24, 48, 72\}$ confirms CI widths are stable ($0.142\text{-}0.147$; \texttt{reports/representation\_zoo\_mbb\_sensitivity.csv}).
 
 \textbf{Offline Representation Diagnostics vs.\ Prospective Failure Signals.}
-We formalize a three-level \textbf{Reliability Triangle}: (1)~\emph{State Identification} ($F_1$), (2)~\emph{Probabilistic Trustworthiness} ($\text{ECE}, \text{NLL}$), and (3)~\emph{Downstream Reliability} ($\text{ROC-AUC}, \mathcal{D}_t$). While retrospective diagnostics ($F_1, \text{ECE}$) require ground truth, online monitoring relies on prospective signals ($H_t, \lambda_{\min}(\boldsymbol{J}_t), \mathcal{D}_t$). In Table~\ref{tab:bench_models} (Panel~B), neural sequence models (GRU, Transformer, SSM) achieve competitive recovery ($F_1 \approx 0.84\text{--}0.86$) but near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{--}0.549$). In contrast, Gaussian HMM causal filtering achieves well-calibrated states ($\text{ECE} = 0.0397$) and informative failure anticipation ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$, MBB 95\% CI $[0.540, 0.683]$, $\text{PR-AUC} = 0.1300$). In fixed-effects regressions across 15 benchmark worlds ($N=60$; \texttt{reports/representation\_zoo\_hierarchical\_regression.csv}), classification $F_1$ explains substantial reliability ($\beta_1 = +0.9817 \pm 0.2011, p = 0.0002, R^2_{\mathrm{within}} = 0.4313$), while posterior log-loss provides incremental explanatory power ($\Delta R^2_{\mathrm{within}} = +0.0924, \beta_{\mathrm{NLL}} = -0.0653 \pm 0.0295, p = 0.0442$, reaching $R^2_{\mathrm{within}} = 0.5237$). Calibration ECE exhibits negative association ($\Delta R^2_{\mathrm{within}} = 0.0647$, reaching $R^2_{\mathrm{within}} = 0.4960$). Numerical eigenvalue floor sensitivity across $\epsilon \in [10^{-6}, 10^{-3}]$ confirms invariance (AUC $0.6153$).
+We formalize a three-level \textbf{Reliability Triangle}: (1)~\emph{State Identification} ($F_1$), (2)~\emph{Probabilistic Trustworthiness} ($\text{ECE}, \text{NLL}$), and (3)~\emph{Downstream Reliability} ($\text{ROC-AUC}, \mathcal{D}_t$). While retrospective diagnostics ($F_1, \text{ECE}$) require ground truth, online monitoring relies on prospective signals ($H_t, \lambda_{\min}(\boldsymbol{J}_t), \mathcal{D}_t$). In Table~\ref{tab:bench_models} (Panel~B), neural sequence models (GRU, Transformer, SSM) achieve competitive recovery ($F_1 \approx 0.84\text{-}0.86$) but near-chance failure detection ($\text{ROC-AUC} \approx 0.515\text{-}0.549$). In contrast, Gaussian HMM causal filtering achieves well-calibrated states ($\text{ECE} = 0.0397$) and informative failure anticipation ($\text{ROC-AUC} = \mathbf{0.6153 \pm 0.0246}$, MBB 95\% CI $[0.540, 0.683]$, $\text{PR-AUC} = 0.1300$). In fixed-effects regressions across 15 benchmark worlds ($N=60$; \texttt{reports/representation\_zoo\_hierarchical\_regression.csv}), classification $F_1$ explains substantial reliability ($\beta_1 = +0.9817 \pm 0.2011, p = 0.0002, R^2_{\mathrm{within}} = 0.4313$), while posterior log-loss provides incremental explanatory power ($\Delta R^2_{\mathrm{within}} = +0.0924, \beta_{\mathrm{NLL}} = -0.0653 \pm 0.0295, p = 0.0442$, reaching $R^2_{\mathrm{within}} = 0.5237$). Calibration ECE exhibits negative association ($\Delta R^2_{\mathrm{within}} = 0.0647$, reaching $R^2_{\mathrm{within}} = 0.4960$). Numerical eigenvalue floor sensitivity across $\epsilon \in [10^{-6}, 10^{-3}]$ confirms invariance (AUC $0.6153$).
 
 \subsection{Prospective Downstream Failure Forecasting: Multi-Horizon Lead-Time Evaluation}
 \label{app:failure_prediction}
-To test prospective reliability at deployment, we strictly utilize prospective information available at time $t$ ($\mathcal{D}_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$, $H_t = H(\boldsymbol{\gamma}_t)$, and $1/\lambda_{\min}(\boldsymbol{J}_t)$—without access to ground-truth state labels, ECE, or NLL) to forecast extreme downstream forecasting failures (worst decile, top 10\% loss $L_{t+h} = (Y_{t+h} - \hat{Y}_{t+h})^2$) across advance lead horizons $h \in [1, 24]$ hours on real-world sensor networks and synthetic streams (Table~\ref{tab:failure_ablation}). This directly evaluates the operational capability: \emph{Can the sequential system know now (at time $t$) that it will suffer downstream unreliability in the future ($t+h$)?}
+To test prospective reliability at deployment, we strictly utilize prospective information available at time $t$ ($\mathcal{D}_t = H(\boldsymbol{\gamma}_t) / \lambda_{\min}(\boldsymbol{J}_t)$, $H_t = H(\boldsymbol{\gamma}_t)$, and $1/\lambda_{\min}(\boldsymbol{J}_t)$-without access to ground-truth state labels, ECE, or NLL) to forecast extreme downstream forecasting failures (worst decile, top 10\% loss $L_{t+h} = (Y_{t+h} - \hat{Y}_{t+h})^2$) across advance lead horizons $h \in [1, 24]$ hours on real-world sensor networks and synthetic streams (Table~\ref{tab:failure_ablation}). This directly evaluates the operational capability: \emph{Can the sequential system know now (at time $t$) that it will suffer downstream unreliability in the future ($t+h$)?}
 
 \begin{table}[!ht]
 \centering

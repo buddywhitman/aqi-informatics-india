@@ -65,7 +65,7 @@
       "script": "src/latent_regime_bench.py",
       "report": "reports/latent_regime_bench_results.csv",
       "figure": "plots/fig4_latent_regime_bench.png",
-      "paper_table": "Table 7 (paper/main.tex)",
+      "paper_table": "Table 8 (paper/main.tex)",
       "sample_size": 1200,
       "replications": 30,
       "description": "5 factorial configurations evaluating OR-DML vs Standard DML, Block DML, and Oracle under varied observability and regime overlap."
@@ -75,7 +75,7 @@
       "name": "Latent Representation Zoo under Disentangled Distribution Shifts",
       "script": "src/train_real_representation_zoo.py",
       "report": "reports/representation_zoo_disentangled_shifts.csv",
-      "paper_table": "Table 8 Panel A (paper/main.tex)",
+      "paper_table": "Table 9 Panel A (paper/main.tex)",
       "sample_size": 2000,
       "replications": 5,
       "description": "Evaluates HMM, GRU, Transformer, and SSM across in-distribution, Shift A (transition dynamics), Shift B (observation noise), and Shift C (compound)."
@@ -85,7 +85,7 @@
       "name": "Representation Accuracy vs Downstream Reliability",
       "script": "src/train_real_representation_zoo.py",
       "report": "reports/representation_zoo_reliability_auc.csv",
-      "paper_table": "Table 8 Panel B (paper/main.tex)",
+      "paper_table": "Table 9 Panel B (paper/main.tex)",
       "sample_size": 1200,
       "replications": 5,
       "description": "Representation benchmark under compound shift; state recovery, calibration, and downstream reliability are reported separately. Post-hoc calibration is evaluated in EXP-06."
@@ -95,7 +95,7 @@
       "name": "Multi-Horizon Prospective Downstream Failure Forecasting",
       "script": "src/train_real_representation_zoo.py",
       "report": "reports/multidomain_failure_forecasting.csv",
-      "paper_table": "Table 9 (paper/main.tex)",
+      "paper_table": "Table 10 (paper/main.tex)",
       "description": "Forecasts worst-decile downstream loss across advance lead times h in [1, 24] hours on Mumbai, Bengaluru, Delhi, and synthetic streams."
     },
     {
@@ -137,7 +137,7 @@
       "report": "reports/financial_abstention_policy.csv",
       "secondary_report": "reports/financial_regime_risk_quartiles.csv",
       "figure": "plots/fig5_financial_transfer.png",
-      "paper_table": "Table 10 & 11 (paper/main.tex)",
+      "paper_table": "Table 11 & Table 12 (paper/main.tex)",
       "sample_size": 1500,
       "description": "Macroeconomic interest rate and liquidity indicators (FRED) testing whether D_t guides risk-aware selective estimation, reducing regret by 98.74%."
     },

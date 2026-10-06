@@ -7,10 +7,10 @@ This archive is the evidence package for the submitted paper. Legacy pre-pivot a
 
 ## 1. Manuscript map
 
-- Pages 1-8: main paper.
-- Page 9: AI Use Statement and references.
-- Page 10: reproducibility checklist.
-- Remaining pages: proofs, empirical sensitivity, LatentRegimeBench/representation analyses, and synthetic transfer stress tests.
+- Pages 1-8: main paper (Sections 1-8).
+- Pages 9-10: AI Use Statement and references (83 verified citations).
+- Page 11: reproducibility checklist.
+- Pages 12-27: Appendices A-I (proofs, empirical sensitivity, LatentRegimeBench/representation analyses, and synthetic transfer stress tests).
 
 ## 2. Theory-to-proof map
 
