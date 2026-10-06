@@ -29,6 +29,7 @@ jobs:
           python research/geometry_disagreement_diagnostic.py
           python research/task_weighted_calibration.py
           python research/adversarial_calibration_concentration.py
+          python research/multitask_calibration_gap.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -41,3 +42,4 @@ jobs:
             research/results/geometry_disagreement_*.csv
             research/results/task_weighted_calibration_*.csv
             research/results/adversarial_calibration_concentration_*.csv
+            research/results/multitask_calibration_gap_*.csv
