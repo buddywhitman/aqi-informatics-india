@@ -185,6 +185,23 @@ def test_nn_constant_limit():
     check('nearest-neighbour constant -> sqrt(pi/2) with relative gap pi^2/(2 d^2)', ok, f'(gaps {gaps})')
 
 
+def test_cp_identity_and_bounds():
+    from src.bias_law.ext_cp_proof_check import run
+    r = run(4.0, n=400_000, J=20, seed=1)
+    se_ok = abs(r['m0'] - r['m0_via_psi']) < 0.0008                       # m0 = E psi(u), exact identity
+    b_ok = r['a'] <= r['bound_ab'] and r['b'] <= r['bound_ab'] and r['m1'] <= r['bound_m1'] and r['m2'] <= r['bound_m2']
+    rem_ok = abs(r['m0'] / r['m_nn'] - 1) < 0.08 and 0.0 < r['M_total'] / r['M_nn'] - 1 < 0.2
+    check('isolated switch: m0=E psi(u), moment and site bounds, remainder small', se_ok and b_ok and rem_ok,
+          f"(m0 {r['m0']:.4f} vs {r['m0_via_psi']:.4f}; M/M_nn-1 {r['M_total']/r['M_nn']-1:.3f})")
+
+
+def test_h2_doeblin():
+    from src.bias_law.ext_h2_lemma_check import run
+    r = [run(3000, dz, rho, seed=2) for dz in (0.5, 1.2) for rho in (0.9, 0.97)]
+    check('smoothing kernel Dobrushin coefficient <= 1 - eps (Doeblin), derivative envelope bounded', all(x['doeblin_ok'] and x['max_ratio'] < 0.1 for x in r),
+          f"(max coef {max(x['max_dobrushin'] for x in r):.3f}, max ratio {max(x['max_ratio'] for x in r):.3f})")
+
+
 if __name__ == '__main__':
     test_exact_law_and_hump()
     test_calibration_bound()
@@ -195,6 +212,8 @@ if __name__ == '__main__':
     test_wiener_closed_form()
     test_changepoint_closed_form()
     test_nn_constant_limit()
+    test_cp_identity_and_bounds()
+    test_h2_doeblin()
     n_ok = sum(ok for _, ok in RESULTS)
     print(f"\n{n_ok}/{len(RESULTS)} scientific checks passed")
     sys.exit(0 if n_ok == len(RESULTS) else 1)

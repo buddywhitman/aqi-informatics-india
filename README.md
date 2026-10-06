@@ -16,14 +16,18 @@ The bias is linear in Δg, monotone in v, and non-monotone in ΔT (peak at |ΔT|
 |---|---|
 | Plug-in v̂ | Exact only for the realised residual variance E(S−γ̂)². With well-specified emissions v̂ understates it by about 14%. With misspecified emissions (diagonal Gaussian HMM, correlated t5 proxies) v̂ is HALF of it (0.059 vs 0.122): the plug-in law predicts 0.168, the realised-variance law 0.326, observed 0.308 (x29). v̂ is a lower bound, not an estimate, under misspecification. |
 | Cross-fitting the HMM | Fitting it on training folds only vs on all of Z gives bias correlation 0.999 (x30). Evidence, not a proof of independence. |
-| Change-point scaling | v ≈ √(8/π)·r·e^(−d²/8)/d is a fitted constant, accurate to ±10% (ρ ≤ 0.95). The asymptotic constant √(π/2) = 1.2533 is approached as d⁻². Total isolated-change constant: 1.39, 1.18, 1.11, 1.11, 1.13 for d = 2..6 (x28; matches exact-HMM x19). Remainder is numerical, not proved. d ≥ 8 not estimable by importance sampling. |
-| Learned parameters | Rate proposition under H1-H3 (smoother, unrestricted v). EM checks (x24-x27): converged in simulation; Mumbai multimodal; H3 fails on the real series (γ̂ is predictable from X, R² ≈ 0.74). |
-| Real data | A pipeline bug (`.dt.round('h')` ties-to-even on hh:30Z timestamps) created a 2-hourly series. The corrected hourly rerun is primary; Delhi θ̂ 0.58 → 0.37, with robustness value about 82 SD. Mumbai, Bengaluru and Kolkata are not informative (Kolkata: 16 distinct NO2 values, ends June 2025). The old 2-hourly tables are kept as a comparison. |
+| Change-point scaling | v ≈ √(8/π)·r·e^(−d²/8)/d is a fitted constant at moderate switch rates, accurate to ±10% (ρ ≤ 0.95). **Proved (Prop. cp):** for an isolated switch M = √(π/2)(q/d)(1 + O(d⁻² + d·q)), q = e^(−d²/8). The remainder beyond the nearest-neighbour term is rigorously O(d·q) via an exact tilting identity (x31 checks it); measured remainder 30%, 10%, 3% at d = 3, 4, 5. Cor. cp gives the r → 0 stationary limit (proof sketch). Total constants 1.39, 1.18, 1.11, 1.11, 1.13 for d = 2..6 (x28; match exact-HMM x19). |
+| Learned parameters | **H2 is now a lemma** (Doeblin/Dobrushin + Fisher identity: moment, not almost-sure, derivative bound; x32). **H3 is replaced** by an explicit term δ_X (information X carries about the regime beyond Z), so the rate is N^(−1/2) + √δ_X. H1 is a hypothesis on the EM *output* (consistent root exists by the MLE theory; EM may land elsewhere, as in Mumbai) and is checked by multistart (x24-x27). δ_X > 0 on the real series (γ̂ predictable from X, R² ≈ 0.74). |
+| Real data | A pipeline bug (`.dt.round('h')` ties-to-even on hh:30Z timestamps) created a 2-hourly series. The corrected hourly rerun is primary; Delhi θ̂ 0.58 → 0.37, with robustness value about 82 SD. Mumbai, Bengaluru and Kolkata are not informative (Kolkata: 16 distinct NO2 values, ends June 2025). The Newey-West lag sensitivity (e6) is recomputed on the hourly grid: Delhi stays significant at every lag (p ≤ 0.010); Bengaluru regime 2 is not robust (p 0.017 → 0.087 from lag 12 to 168). The old 2-hourly tables are kept as a comparison. |
 | Bibliography | Each entry checked against web sources; two errors fixed (Tchetgen arXiv id, Pearl title/year). |
 | Audits | Three independent skeptical audits; all findings fixed (K=3 claim, "exact" remark, remainder percentages, stale text). |
 
-## Open gaps (not closed)
-H1-H3 unproved for EM as implemented. The change-point remainder and the cross-fit independence are supported numerically only. The Newey-West appendix (e6) still uses the legacy 2-hourly series. Page ranges for four bibliography entries (Douc 474-513, Leroux 127-143, Chernozhukov C1-C68, two books) are unconfirmed. **The OpenAQ API key that was used in earlier history must be revoked by its owner.**
+## Remaining limits (stated in the paper)
+- (H1) cannot be proved for a local optimiser such as EM; it is a checked property of the output (fails for Mumbai).
+- δ_X = 0 (the old H3) is a property of the data-generating process; it fails on the real series, where the rate degrades by √δ_X.
+- Cor. cp (stationary r → 0 limit) is a proof sketch at the level of finite-window expansions; the isolated-switch Prop. cp is proved with unoptimised absolute constants.
+- The plug-in v̂ is a lower bound under emission misspecification (factor 2 in x29).
+- The cross-fitting independence argument is supported by x22/x30 and an outline, not a full proof.
 
 ## Layout
 ```

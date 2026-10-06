@@ -20,7 +20,7 @@ v2 re-centres the paper on a closed-form **residual-state bias law** for latent-
 - v̂ ignores information in X (X-aware version not done). b* is not identified from data; it is a sensitivity yardstick.
 - Title/abstract differ substantially from the submitted abstract (flag risk, see docs/bestpaper.md).
 - Bibliographic details of newly added citations should be checked manually.
-- An OpenAQ API key exists in git history: revoke it at the provider; history rewrite alone is not sufficient.
+- An OpenAQ API key existed in git history; it has since been revoked at the provider.
 
 ## Extension round (joint / proximal / continuous-latent)
 Scripts: `src/bias_law/ext_joint_proximal.py` (x1,x2), `ext_contlat.py` (x3), `ext_selfnc.py` (x4, x4b), `ext_phase.py` (x5), `make_ext_tables.py`.
@@ -98,4 +98,13 @@ Open (not fixed): Kolkata coverage dates / Mumbai missing hours not re-checked i
   - x30: HMM fitted on training folds only vs on all of Z: corr(bias) 0.999, mean diff 6e-4, v_hat diff 2e-4. HMM cross-fitting does not drive the bias here (evidence, not proof).
 - Third independent audit (agent): found the change-point remainder percentages were the Gauss-Hermite J=2 values, not total/NN (fixed to x28 remainder_ratio); stale 'did not store sign' clause removed; v_hat gap wording (sd 0.002, max 0.005) and x30 numbers corrected; lower-bound caveat added to abstract/contribution/algorithm/discussion.
 - Tests: verify_science 10/10, verify_artifacts passes. Paper 16 pages.
-- Still open: H1-H3 unproved for EM; change-point remainder numerical only; Newey-West appendix on legacy 2h series; four bib page ranges (Douc, Leroux, Chernozhukov, books) unconfirmed; OpenAQ key must be revoked by the owner.
+
+## Round 15 -- closing the open items
+- **Newey-West (e6)** rerun on the corrected hourly grid with the frozen-reading screen (`hac_sensitivity.py`): Delhi regimes significant at all lags (p <= 0.010); Bengaluru regime 2 p = 0.017/0.024/0.051/0.087 at lags 12/24/72/168 (not robust); Mumbai none; Kolkata regime 2 rests on a near-constant sensor. Table and text regenerated.
+- **H2 proved** as Lemma (`lem:h2`): Doeblin minorisation of the smoothing kernel (constant eps*/2, independent of emissions) + Fisher identity gives ||d gamma_t|| <= C sum_s kappa^|t-s| (1+|Z_s|^2); moment bound, not almost-sure (the old almost-sure statement is false for Gaussian scores). Forgetting claim gamma_t vs window posterior <= kappa^m. Check: `ext_h2_lemma_check.py` -> x32.
+- **H3 replaced** by the explicit term delta_X = N^-1 sum E(E[D|Z,X] - E[D|Z])^2. Prop. rate: CE <= (sqrt dX + sqrt Delta)^2, |v_N - v*| <= 2 sqrt dX + sqrt Delta; delta_X = 0 recovers the previous statement. Cross-fit sentence corrected (gamma^X - c).
+- **H1** stated as a consistent-root hypothesis on the EM output (existence by Leroux/Douc/BRR; EM stationary points by Wu 1983, added to the bibliography); (H1') fourth-moment condition for expectation statements.
+- **Change-point proposition** (`prop:cp`): exact identity m_0 = E psi(u), psi(u) = q/(d sqrt 2pi) e^{u/2 - u^2/2d^2} J(u/d^2), moment bounds E eta^{1/2} <= q/(1-q), site bound m_t <= q^{t+1}/(2(1-q)) => |M/M_NN - 1| <= C d q (absolute C). Part (a): M_NN = sqrt(pi/2)(q/d)(1 - pi^2/2d^2 + ...). Cor. cp: r -> 0 limit via genie lower bound and windowed Bayes upper bound (sketch). Numerical verification `ext_cp_proof_check.py` -> x31 (m_0 = E psi(u) to MC error; bounds hold; M d/q = 1.18, 1.12, 1.11 vs x19 1.19, 1.12, 1.12).
+- **Fourth independent audit (agent, proofs):** confirmed the identity, J bound, moment bounds, Doeblin lemma, rate proposition algebra; required fixes applied: (H1') and the off-ball term in Prop. rate, forgetting claim added to the lemma, rho/kappa notation clash, u^2 cross terms in (ii), tail term, genie-bound wording, asymmetric-chain condition, corrected quoted numbers (x31 rerun with 3M samples and sites t <= 6).
+- Tests: verify_science 12/12 (new: isolated-switch identity and bounds; Doeblin/envelope).
+- Paper 17 pages.

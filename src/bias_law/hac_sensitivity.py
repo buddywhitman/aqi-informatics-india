@@ -1,5 +1,6 @@
 """
-hac_sensitivity.py -- Newey-West lag sensitivity of the regime-specific OR-DML estimates (real data).
+hac_sensitivity.py -- Newey-West lag sensitivity of the regime-specific OR-DML estimates (real data), on the corrected
+hourly grid (ext_real_hourly_fix.build) with the frozen-reading screen (>=6 identical NO2 readings removed).
 
 Replaces the unsupported "standard errors are stable across lags" statement of the previous draft with measured values.
     python src/bias_law/hac_sensitivity.py   ->  reports/bias_law/e6_hac_lag_sensitivity.csv
@@ -15,16 +16,18 @@ from sklearn.linear_model import Ridge
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.or_dml import OverlapAwareRegimeDML                       # noqa: E402
 from src.bias_law.real_cities_sensitivity import REGIME_FEATURES, CONTROLS, ROOT, OUT  # noqa: E402
+from src.bias_law import real_cities_sensitivity as R                                        # noqa: E402
+from src.bias_law.ext_real_hourly_fix import build                                          # noqa: E402
 
 warnings.filterwarnings('ignore')
 LAGS = (12, 24, 72, 168)
 
 
 def main():
-    df = pd.read_csv(os.path.join(ROOT, 'data', 'processed_clean', 'combined_hourly_clean.csv'))
     rows = []
     for city in ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata']:
-        d = df[df.city == city].dropna(subset=['no2', 'pm25'] + REGIME_FEATURES + CONTROLS).reset_index(drop=True)
+        d = build(city).dropna(subset=['no2', 'pm25'] + REGIME_FEATURES + CONTROLS).reset_index(drop=True)
+        d = d[~R.frozen_mask(d.no2.values, 6)].reset_index(drop=True)
         Y, T = d.pm25.values.astype(float), d.no2.values.astype(float)
         X, Z = d[CONTROLS].values.astype(float), d[REGIME_FEATURES].values.astype(float)
         for lag in LAGS:
