@@ -46,6 +46,18 @@ REQUIRED_FILES = [
     "src/financial_regime_transfer.py",
     "src/data_pipeline_clean.py",
     "src/regime_intelligence.py",
+    # Audited residual-confounding sensitivity lineage
+    "src/bias_law/__init__.py",
+    "src/bias_law/bias_law.py",
+    "src/bias_law/sim.py",
+    "src/bias_law/run_experiments.py",
+    "src/bias_law/real_cities_sensitivity.py",
+    "src/bias_law/hac_sensitivity.py",
+    "src/bias_law/make_figures_tables.py",
+    "src/bias_law/ext_misspec_crossfit.py",
+    "src/bias_law/ext_cp_proof_check.py",
+    "src/bias_law/ext_h2_lemma_check.py",
+    "docs/V2_CHANGELOG.md",
 
     "src/requirements.txt",
 
@@ -91,7 +103,7 @@ def build_archive():
     print(f"Building Authoritative Supplementary Archive: {ARCHIVE_NAME}...")
 
     # Gather all CSV reports in reports/
-    report_files = glob.glob("reports/*.csv")
+    report_files = glob.glob("reports/*.csv") + glob.glob("reports/bias_law/*")
 
     all_files = list(REQUIRED_FILES) + report_files
 
