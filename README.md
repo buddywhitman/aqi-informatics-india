@@ -23,16 +23,19 @@ We study causal estimation under latent Markov confounding and characterize how 
 
 ```text
 ├── paper/
-│   ├── main.tex                    # Authoritative LaTeX manuscript (exact 8-page main text, 24 pages total)
-│   ├── main.pdf                    # Compiled PDF submission
+│   ├── main.tex                    # Authoritative LaTeX manuscript (exact 8-page main text, strictly 24 pages total)
+│   ├── main.pdf                    # Compiled PDF submission (24 pages, 0 warnings)
 │   ├── aistats2027.sty             # Official AISTATS conference style file
 │   └── plots/                      # Publication figures embedded in manuscript
 ├── src/                            # Active, self-contained Python codebase
 │   ├── or_dml.py                   # Canonical Overlap-Aware Regime DML (OR-DML) implementation
+│   ├── three_decisive_experiments.py # 3 decisive mechanism experiments (Task Geometry, Representation, City Transfer)
+│   ├── calibration_intervention_zoo.py # Post-hoc Platt/temperature scaling evaluation on Representation Zoo
+│   ├── empirical_falsification_checks.py # Pre-treatment lead placebo falsification suite (h in {-6, -3, -1})
 │   ├── synthetic_dgp_benchmark.py  # 500-draw Monte Carlo difficulty frontier simulation
 │   ├── empirical_evaluation.py     # 4-city sensor evaluation, conditioning diagnostics, dynamic IRFs
 │   ├── train_real_representation_zoo.py # HMM, GRU, Transformer, SSM benchmark under distribution shifts
-│   ├── hierarchical_reliability_regression.py # 15-world fixed-effects regressions
+│   ├── hierarchical_reliability_regression.py # 15-world fixed-effects regressions & LOWO cross-validation
 │   ├── financial_regime_transfer.py # Multi-domain synthetic transfer & selective abstention policy
 │   ├── data_pipeline_clean.py      # Clean data engineering pipeline for 14,122 hourly records
 │   ├── generate_paper_figures.py   # Publication figures generator (Figures 1–5)
@@ -44,9 +47,8 @@ We study causal estimation under latent Markov confounding and characterize how 
 │   └── processed_clean/            # Cleaned analysis dataset (14,122 hourly rows)
 ├── docs/
 │   └── adr/                        # Architectural Decision Records (ADRs 0001–0007)
-├── archive/
-│   ├── pre-pivot/                  # Archived legacy modeling, preprocessing, and Nature drafts
-│   └── legacy_nature_drafts/       # Earlier exploratory iterations
+├── experiments_manifest.json       # Machine-readable experiment and theorem manifest
+├── SUPPLEMENT_ROADMAP.md           # Authoritative supplementary roadmap and table of contents
 ├── verify_artifacts.py             # Automated artifact and byte-for-byte manuscript synchronization check
 └── verify_science.py               # Automated verification of 9 core mathematical/algebraic invariances
 ```
@@ -102,7 +104,16 @@ python src/hierarchical_reliability_regression.py
 # Step 6: Run multi-domain transfer and selective abstention policy
 python src/financial_regime_transfer.py
 
-# Step 7: Generate all publication figures (Figures 1-5)
+# Step 7: Run three decisive mechanism experiments (Task Geometry, Representation, City Transfer)
+python src/three_decisive_experiments.py
+
+# Step 8: Run post-hoc calibration interventions on representation zoo
+python src/calibration_intervention_zoo.py
+
+# Step 9: Run pre-treatment lead placebo falsification checks
+python src/empirical_falsification_checks.py
+
+# Step 10: Generate all publication figures (Figures 1-5)
 python src/generate_paper_figures.py
 ```
 

@@ -320,8 +320,77 @@ def run_hierarchical_analysis(n_worlds: int = 15):
     print("HIERARCHICAL RELIABILITY REGRESSION RESULTS")
     print("=" * 80)
     print(df_res.to_string(index=False))
-    return df_res
+
+    # Leave-One-World-Out (LOWO) Out-of-Sample Generalization Cross-Validation
+    df_lowo = run_lowo_cross_validation(df)
+    return df_res, df_lowo
+
+
+def run_lowo_cross_validation(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Perform Leave-One-World-Out (LOWO) Cross-Validation across independent benchmark worlds.
+    Tests whether calibration signals (ECE, NLL) improve prospective generalization to
+    unobserved data generating processes out-of-sample.
+    """
+    from sklearn.linear_model import LinearRegression
+    from scipy.stats import spearmanr
+
+    worlds = df["World_ID"].unique()
+    configs = [
+        ("Model 1: F1 Alone", ["F1"]),
+        ("Model 2: F1 + ECE", ["F1", "ECE"]),
+        ("Model 3: F1 + NLL", ["F1", "NLL"]),
+        ("Model 4: F1 + ECE + NLL", ["F1", "ECE", "NLL"])
+    ]
+
+    results = []
+    for name, features in configs:
+        preds = []
+        actuals = []
+        for w in worlds:
+            train_df = df[df["World_ID"] != w]
+            test_df = df[df["World_ID"] == w]
+
+            reg = LinearRegression().fit(train_df[features], train_df["Reliability_AUC_D"])
+            pred = reg.predict(test_df[features])
+
+            preds.extend(pred)
+            actuals.extend(test_df["Reliability_AUC_D"].values)
+
+        preds = np.array(preds)
+        actuals = np.array(actuals)
+
+        rmse = float(np.sqrt(np.mean((preds - actuals) ** 2)))
+        mae = float(np.mean(np.abs(preds - actuals)))
+        ss_tot = float(np.sum((actuals - np.mean(actuals)) ** 2))
+        ss_res = float(np.sum((preds - actuals) ** 2))
+        r2_lowo = float(1.0 - (ss_res / max(ss_tot, 1e-12)))
+        rho, pval = spearmanr(preds, actuals)
+
+        results.append({
+            "Model": name,
+            "Features": "+".join(features),
+            "LOWO_RMSE": round(rmse, 4),
+            "LOWO_MAE": round(mae, 4),
+            "LOWO_R2": round(r2_lowo, 4),
+            "LOWO_Spearman_rho": round(float(rho), 4),
+            "Spearman_pval": round(float(pval), 6)
+        })
+
+    df_lowo = pd.DataFrame(results)
+    out_path = "reports/representation_zoo_lowo_evaluation.csv"
+    df_lowo.to_csv(out_path, index=False)
+    print("\n" + "=" * 80)
+    print("LEAVE-ONE-WORLD-OUT (LOWO) OUT-OF-SAMPLE GENERALIZATION RESULTS")
+    print("=" * 80)
+    print(df_lowo.to_string(index=False))
+    return df_lowo
 
 
 if __name__ == "__main__":
-    run_hierarchical_analysis(n_worlds=15)
+    if os.path.exists("reports/representation_zoo_world_evaluations.csv"):
+        df_worlds = pd.read_csv("reports/representation_zoo_world_evaluations.csv")
+        run_lowo_cross_validation(df_worlds)
+    else:
+        run_hierarchical_analysis(n_worlds=15)
+

@@ -1,0 +1,171 @@
+{
+  "project": {
+    "title": "Reliable Causal Estimation under Latent Markov Confounding",
+    "venue": "AISTATS 2027",
+    "track": "Main Conference",
+    "license": "MIT",
+    "status": "Authoritative Reproducible Artifact Package"
+  },
+  "methodology": {
+    "framework": "Overlap-Aware Regime Double Machine Learning (OR-DML)",
+    "core_estimator": "\\hat{\\theta}_\\lambda = (\\hat{J} + \\lambda I)^{-1} \\hat{S}",
+    "diagnostic_index": "D_t = H(\\gamma_t) / \\lambda_{\\min}(J_t)",
+    "sampling_scheme": "Purged Block Cross-Fitting with Temporal Embargo (\\tau = 24h)",
+    "inference_engine": "Gaussian HMM Causal Filtering / Backward Smoothing",
+    "regularization_selection": "Calibration-partition split-sample spectral risk minimization"
+  },
+  "theoretical_assertions": [
+    {
+      "theorem": "Theorem 1: Frisch-Waugh Singularity & Omitted Regime Bias",
+      "statement": "Residualization without latent state produces omitted regime bias proportional to regime treatment difference and latent transition persistence.",
+      "code_reference": "verify_science.py::assertion_1",
+      "paper_reference": "paper/main.tex#L210"
+    },
+    {
+      "theorem": "Theorem 2: Graceful Degradation under State Uncertainty",
+      "statement": "||theta_gamma - theta*||_2 <= C * epsilon_gamma / lambda_min(J), establishing that causal error is bounded jointly by proxy error and Gram conditioning.",
+      "code_reference": "src/three_decisive_experiments.py::run_experiment_29",
+      "paper_reference": "paper/main.tex#L240"
+    },
+    {
+      "theorem": "Theorem 3: Spectral Regularization Bias-Variance Frontier",
+      "statement": "Ridge regularization lambda > 0 bounds estimation variance to O(1 / (lambda_min + lambda)^2) at the cost of O(lambda^2) shrinkage bias.",
+      "code_reference": "src/or_dml_regularization_frontier.py",
+      "paper_reference": "paper/main.tex#L270"
+    },
+    {
+      "theorem": "Theorem 4: Observable Entropy Bridge",
+      "statement": "Expected L1 state recovery error epsilon_gamma is bounded by Gini impurity and Shannon posterior entropy H(gamma_t).",
+      "code_reference": "verify_science.py::assertion_5",
+      "paper_reference": "paper/main.tex#L305"
+    },
+    {
+      "theorem": "Theorem 5: Uniform Asymptotic Normality",
+      "statement": "Under beta-mixing and nuisance convergence rate o_P(N^{-1/4}), sqrt(N)(hat{theta}_lambda - theta_lambda) -> N(0, V).",
+      "code_reference": "paper/main.tex#L340",
+      "paper_reference": "paper/main.tex#Appendix_D"
+    },
+    {
+      "theorem": "Theorem 6: Leading-Order Risk Bound under Long Memory",
+      "statement": "Causal mean squared error decomposes into nuisance rate, proxy error amplified by 1/lambda_min, and mixing variance inflation.",
+      "code_reference": "paper/main.tex#L363",
+      "paper_reference": "paper/main.tex#Appendix_E"
+    }
+  ],
+  "experiments": [
+    {
+      "experiment_id": "EXP-01",
+      "name": "LatentRegimeBench Diagnostic Suite",
+      "script": "src/latent_regime_bench.py",
+      "report": "reports/latent_regime_bench_results.csv",
+      "figure": "plots/fig4_latent_regime_bench.png",
+      "paper_table": "Table 7 (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 30,
+      "description": "5 factorial configurations evaluating OR-DML vs Standard DML, Block DML, and Oracle under varied observability and regime overlap."
+    },
+    {
+      "experiment_id": "EXP-02",
+      "name": "Latent Representation Zoo under Disentangled Distribution Shifts",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/representation_zoo_disentangled_shifts.csv",
+      "paper_table": "Table 8 Panel A (paper/main.tex)",
+      "sample_size": 2000,
+      "replications": 5,
+      "description": "Evaluates HMM, GRU, Transformer, and SSM across in-distribution, Shift A (transition dynamics), Shift B (observation noise), and Shift C (compound)."
+    },
+    {
+      "experiment_id": "EXP-03",
+      "name": "Representation Accuracy vs Downstream Reliability",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/representation_zoo_reliability_auc.csv",
+      "paper_table": "Table 8 Panel B (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 5,
+      "description": "Demonstrates uncalibrated softmax posteriors in deep sequence models yield near-chance downstream failure detection, whereas HMM causal filter achieves ROC-AUC 0.6153."
+    },
+    {
+      "experiment_id": "EXP-04",
+      "name": "Multi-Horizon Prospective Downstream Failure Forecasting",
+      "script": "src/train_real_representation_zoo.py",
+      "report": "reports/multidomain_failure_forecasting.csv",
+      "paper_table": "Table 9 (paper/main.tex)",
+      "description": "Forecasts worst-decile downstream loss across advance lead times h in [1, 24] hours on Mumbai, Bengaluru, Delhi, and synthetic streams."
+    },
+    {
+      "experiment_id": "EXP-05",
+      "name": "Task Conditioning Geometry under Fixed Representation",
+      "script": "src/three_decisive_experiments.py",
+      "report": "reports/experiment30_task_conditioning.csv",
+      "paper_table": "Table 10 Panel A (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 25,
+      "description": "Holds representation fixed (epsilon_gamma=0.012) and sweeps Delta_T in [0.4, 10.0], revealing a 2.5x non-monotone swing in causal error."
+    },
+    {
+      "experiment_id": "EXP-06",
+      "name": "Representation Perturbation under Fixed Task Geometry",
+      "script": "src/three_decisive_experiments.py",
+      "report": "reports/experiment29_representation_perturbation.csv",
+      "paper_table": "Table 10 Panel B (paper/main.tex)",
+      "sample_size": 1200,
+      "replications": 25,
+      "description": "Holds geometry fixed (Delta_Z=1.5, Delta_T=3.0) and perturbs 9 posterior variants, verifying Theorem 2 monotone degradation."
+    },
+    {
+      "experiment_id": "EXP-07",
+      "name": "Leave-One-City-Out Cross-City Transfer",
+      "script": "src/three_decisive_experiments.py",
+      "report": "reports/cross_city_transfer_evaluation.csv",
+      "paper_table": "Table 10 Panel C (paper/main.tex)",
+      "description": "4-fold leave-one-city-out transfer testing whether D_t = H / lambda_min is an airshed-invariant diagnostic or local heuristic."
+    },
+    {
+      "experiment_id": "EXP-08",
+      "name": "Hierarchical Multi-World Fixed Effects & LOWO Cross-Validation",
+      "script": "src/hierarchical_reliability_regression.py",
+      "report": "reports/representation_zoo_hierarchical_regression.csv",
+      "secondary_report": "reports/representation_zoo_lowo_evaluation.csv",
+      "description": "Within-world fixed-effects regressions across 15 worlds (N=60) and 15-fold Leave-One-World-Out validation proving calibration doubles out-of-world R^2."
+    },
+    {
+      "experiment_id": "EXP-09",
+      "name": "Calibration Intervention (Platt / Temperature Scaling) on Representation Zoo",
+      "script": "src/calibration_intervention_zoo.py",
+      "report": "reports/representation_zoo_calibration_intervention.csv",
+      "description": "Tests whether post-hoc temperature scaling rescues downstream sequence reliability; reveals that while ECE drops 48-60%, failure ROC-AUC is unchanged."
+    },
+    {
+      "experiment_id": "EXP-10",
+      "name": "Multi-City Empirical Atmospheric Exposure Study",
+      "script": "src/empirical_evaluation.py",
+      "report": "reports/empirical_or_dml_results.csv",
+      "secondary_report": "reports/empirical_irf_results.csv",
+      "figure": "plots/fig3_dynamic_irf.png",
+      "paper_table": "Table 2 (paper/main.tex)",
+      "description": "Empirical evaluation on >14,000 hourly observations across Delhi, Mumbai, Bengaluru, Kolkata comparing OR-DML to Standard DML and Block DML."
+    },
+    {
+      "experiment_id": "EXP-11",
+      "name": "Pre-Treatment Lead Placebo Falsification Suite",
+      "script": "src/empirical_falsification_checks.py",
+      "report": "reports/empirical_placebo_falsification.csv",
+      "description": "Evaluates pre-treatment lead horizons h in {-6, -3, -1} to confirm exposure effect drops to zero prior to treatment, validating temporal unconfoundedness."
+    },
+    {
+      "experiment_id": "EXP-12",
+      "name": "Macro Financial Regime Transfer & 3-Way Regret Abstention Policy",
+      "script": "src/financial_regime_transfer.py",
+      "report": "reports/financial_abstention_policy.csv",
+      "secondary_report": "reports/financial_regime_risk_quartiles.csv",
+      "figure": "plots/fig5_financial_transfer.png",
+      "paper_table": "Table 11 & 12 (paper/main.tex)",
+      "sample_size": 1500,
+      "description": "Macroeconomic interest rate and liquidity indicators (FRED) testing whether D_t guides risk-aware selective estimation, reducing regret by 98.74%."
+    }
+  ],
+  "verification_suite": {
+    "scientific_invariances": "python verify_science.py",
+    "artifact_synchronization": "python verify_artifacts.py"
+  }
+}

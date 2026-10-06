@@ -452,11 +452,17 @@ class OverlapAwareRegimeDML:
                 T_h = T
                 X_h = X
                 Z_h = Z
-            else:
+            elif h > 0:
                 Y_h = Y[h:]
                 T_h = T[:-h]
                 X_h = X[:-h]
                 Z_h = Z[:-h]
+            else:
+                lead = abs(h)
+                Y_h = Y[:-lead]
+                T_h = T[lead:]
+                X_h = X[lead:]
+                Z_h = Z[lead:]
                 
             model_h = OverlapAwareRegimeDML(
                 n_regimes=self.n_regimes,

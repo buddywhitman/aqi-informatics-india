@@ -41,7 +41,13 @@ def run_verification():
         "reports/or_dml_benchmark_summary.csv",
         "reports/or_dml_regularization_frontier.csv",
         "reports/representation_zoo_hierarchical_regression.csv",
-        "reports/representation_zoo_world_evaluations.csv"
+        "reports/representation_zoo_world_evaluations.csv",
+        "reports/cross_city_transfer_evaluation.csv",
+        "reports/experiment29_representation_perturbation.csv",
+        "reports/experiment30_task_conditioning.csv",
+        "reports/representation_zoo_calibration_intervention.csv",
+        "reports/representation_zoo_lowo_evaluation.csv",
+        "reports/empirical_placebo_falsification.csv"
     ]
     for r in required_csvs:
         if not os.path.exists(r) or os.path.getsize(r) == 0:
@@ -67,6 +73,18 @@ def run_verification():
             failures.append(f"Missing or empty figure: {fig}")
         else:
             print(f"[OK] Figure exists: {fig}")
+
+    # 2b. Required Manifests & Submission Archive
+    required_meta = [
+        "experiments_manifest.json",
+        "SUPPLEMENT_ROADMAP.md",
+        "AISTATS2027_OR_DML_Supplementary_Material.zip"
+    ]
+    for meta in required_meta:
+        if not os.path.exists(meta) or os.path.getsize(meta) == 0:
+            failures.append(f"Missing or empty metadata: {meta}")
+        else:
+            print(f"[OK] Submission metadata exists: {meta}")
 
     # 3. Check for placeholder tokens in python and tex files
     import glob
@@ -140,6 +158,34 @@ def run_verification():
         failures.append(f"Hierarchical Model 3 NLL coefficient {m3_nll_coef} not found in paper/main.tex")
     else:
         print(f"[OK] Verified Hierarchical Model 3 NLL coefficient: {m3_nll_coef}")
+
+    # Check Three Decisive Experiments
+    # Exp 28: Cross-City Transfer
+    df_xfer = pd.read_csv("reports/cross_city_transfer_evaluation.csv")
+    mum_xfer = df_xfer[df_xfer["Test_City"] == "Mumbai"].iloc[0]
+    mum_auc_str = f"{mum_xfer['HeldOut_ROC_AUC_D']:.3f}"
+    if mum_auc_str not in tex_content:
+        failures.append(f"Cross-city transfer Mumbai ROC-AUC {mum_auc_str} not found in paper/main.tex")
+    else:
+        print(f"[OK] Verified Cross-city transfer Mumbai ROC-AUC: {mum_auc_str}")
+
+    # Exp 29: Representation Perturbation
+    df_exp29 = pd.read_csv("reports/experiment29_representation_perturbation.csv")
+    orc_row = df_exp29[df_exp29["Representation_Variant"].str.contains("Oracle")].iloc[0]
+    orc_err_str = f"{orc_row['Mean_Causal_Error_L2']:.3f}"
+    if orc_err_str not in tex_content:
+        failures.append(f"Exp 29 Oracle causal error {orc_err_str} not found in paper/main.tex")
+    else:
+        print(f"[OK] Verified Exp 29 Oracle causal error: {orc_err_str}")
+
+    # Exp 30: Task Conditioning Geometry
+    df_exp30 = pd.read_csv("reports/experiment30_task_conditioning.csv")
+    mid_row = df_exp30[df_exp30["Delta_T_Geometry"] == 1.5].iloc[0]
+    mid_err_str = f"{mid_row['Mean_Causal_Error_L2']:.3f}"
+    if mid_err_str not in tex_content:
+        failures.append(f"Exp 30 Delta_T=1.5 peak causal error {mid_err_str} not found in paper/main.tex")
+    else:
+        print(f"[OK] Verified Exp 30 Peak causal error: {mid_err_str}")
 
     # 5. Statistical Protocol Verification
     # (a) MBB block-length sensitivity invariance
