@@ -71,3 +71,5 @@ Independent audit found claims not backed by stored results; fixes in `paper/mai
 - x15 vs x16 unreconciled: isolated-change plateau ~1.11 vs asymptotic sqrt(pi/2)=1.2533; x16 now has a script (`ext_hmm_limit.py`): d=4 1.63,1.456,1.296,1.227,1.225; d=3 1.555,1.484,1.361,1.272,1.227.
 - New scripts: ext_apriori_check, ext_contlat_law, ext_oned_check, ext_selfnc_check, ext_hmm_limit.
 Still open: M3 replication counts everywhere, M4 degenerate bootstrap CIs (Kolkata unscreened, Bengaluru screened), M8-M9, M11-M13, M15, L-items; no proof of change-point formula, learned-HMM rate or cross-fit independence.
+
+Round 10b: closed M4 (Bengaluru screened CI excludes point estimate; noted), M11 (means), M12 (diag-cov HMM on real data), M13 (complete cases), L5 (block 72, 300 draws), softened Discussion 'exact' wording.
