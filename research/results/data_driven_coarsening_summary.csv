@@ -1,0 +1,4 @@
+N,microstate_ARI,refined_error,task_coarsened_error,oracle_macro_error,correct_pairing_rate,task_coarsening_win_rate
+400,0.990269,0.596804,0.127112,0.127863,0.890,0.950
+800,0.990929,0.458508,0.085159,0.085273,0.948,0.976
+1600,0.991448,0.326806,0.062985,0.062699,0.988,0.956
