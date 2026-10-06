@@ -1,0 +1,10 @@
+perturbation_direction,epsilon,N,target_representation_bias,target_sampling_sd,bias_to_sampling_ratio
+strong,0.001,100,0.001,0.1,0.01
+strong,0.001,1000,0.001,0.0316228,0.03162
+strong,0.001,10000,0.001,0.01,0.1
+strong,0.001,100000,0.001,0.0031623,0.31623
+strong,0.01,100,0.01,0.1,0.1
+strong,0.01,1000,0.01,0.0316228,0.31623
+strong,0.01,10000,0.01,0.01,1.0
+strong,0.01,100000,0.01,0.0031623,3.1623
+weak,0.1,100000,0.0,0.0031623,0.0
