@@ -163,6 +163,16 @@ The mechanism is self-cancellation: worse state separation raises entropy but al
 ### R28. Phantom resolution becomes more statistically convincing with more data
 At fixed poor state separation, the oracle $\lambda_{\min}$ stays near 0.00215 while soft-proxy $\lambda_{\min}$ converges near 0.0242, roughly 11x too large. Across-run proxy SD shrinks from 0.0130 at N=300 to 0.00360 at N=4800, so the oracle-proxy discrepancy grows from 1.74 to **6.11 proxy standard deviations**. Thus ordinary resampling/stability checks can become increasingly confident in the wrong optimistic geometry: they estimate sampling uncertainty around a proxy pseudo-parameter, not error relative to the unobserved oracle geometry.
 
+### R29. Posterior second-moment completion can recover oracle causal geometry without confusion inversion in a correctly specified model
+The phantom-resolution analysis revealed that posterior means are the wrong object for latent-state second moments. For one-hot state $H$ and information set $\mathcal I$ with posterior $q=P(S|\mathcal I)$,
+$E[HH^\top|\mathcal I]=\operatorname{diag}(q),$
+not $qq^\top$. Therefore for any weight $W$ measurable in $\mathcal I$,
+$E[W HH^\top]=E[W\operatorname{diag}(q)].$
+
+In a K=3 model with state-specific treatment variances, a posterior using emissions alone, $P(S|Z)$, is insufficient for a $T^2$ information moment because $T$ itself contains state information; diagonal completion using that posterior inflates weak information by 5x-47x. But updating the diagnostic posterior to $q=P(S|Z,T)$ and using $E[T^2\operatorname{diag}(q)]$ recovers oracle $\lambda_{\min}$ essentially exactly. Across N=600-4800 and emission separations .5-2, the completed/oracle ratio stays about 0.993-1.005.
+
+This gives a constructive alternative to unstable confusion-matrix inversion: estimate **posterior latent second moments** under an information set containing the variables in the diagnostic moment. It also exposes two distinct proxy-geometry errors: posterior-mean substitution and an insufficient posterior information set. Using treatment-updated state posteriors inside the causal estimator itself is not automatically valid; the current result is a diagnostic moment identity and needs causal-theory work before estimator use.
+
 ## Reproduction
 
 Run:
