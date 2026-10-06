@@ -51,6 +51,7 @@ jobs:
           python research/orthogonality_to_representation.py
           python research/representation_orthogonal_toy.py
           python research/orthogonal_latent_moment.py
+          python research/partial_orthogonality.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -85,3 +86,4 @@ jobs:
             research/results/orthogonality_to_representation*.csv
             research/results/representation_orthogonal_toy*.csv
             research/results/orthogonal_latent_moment*.csv
+            research/results/partial_orthogonality*.csv
