@@ -271,3 +271,10 @@ The automated scaling experiment confirms that global-calibration selection beco
 
 ### R44. Universal scalar representation ordering requires dominance or task restrictions
 A new exact/adversarial construction formalizes the boundary: if two representations have crossing task-relevant error profiles, a nonnegative leverage task can reverse any global scalar ordering by concentrating on a region where the globally worse representation is locally better. Universal ordering over unrestricted leverage tasks therefore requires essentially pointwise dominance of the relevant error functional, or an explicitly restricted task family. This is elementary decision theory, not claimed as a novel general theorem; its role is to delimit what a causal representation metric can possibly guarantee.
+
+
+### R45. A globally better representation can become >40x worse under a legitimate leverage task
+The automated adversarial construction confirms the scalar-metric boundary quantitatively. Representation A has lower global error than B (0.00590 vs 0.00762). At uniform leverage A is better (risk ratio 0.774). As a downstream task concentrates leverage on the region where A is locally worse, the ranking reverses: regret A/B is 4.97x at leverage ratio 10, 22.7x at 100, 40.1x at 1,000, and **43.6x at 10,000**. The global metric never changes. This makes the impossibility operational: without restrictions on task leverage, global superiority can coexist with arbitrarily severe downstream regret up to the local error ratio.
+
+### R46. Directional calibration spectrum
+A new study moves from task-level weighting to contrast-level weighting inside a vector causal target. Different effect directions induce different causal-score leverage measures, so a single task-weighted calibration scalar can still hide directional failures. The proposed object is a directional calibration spectrum C(v), paired with the causal-resolution spectrum v'Jv. This points toward a direction-specific reliability functional rather than entropy divided by a single worst-case eigenvalue. Automated results are pending.
