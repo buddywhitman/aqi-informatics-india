@@ -159,3 +159,22 @@ Start here:
 The strongest surviving research themes are phantom causal resolution, self-canceling proxy diagnostics, target/directional generated-representation reliability, conservative posterior-moment/sensitivity diagnostics, and the distinction between fine adjustment resolution and scientifically justified target resolution. Broad weak-identification, task-aware-calibration, generated-covariate, latent-class correction, and Neyman-orthogonality ideas are explicitly treated as prior art rather than claimed as new.
 
 The research workflow `.github/workflows/research-reliability.yml` executes the committed exploratory experiments and publishes their result artifacts.
+
+
+## AISTATS 2027 final synthesis branch
+
+The branch `submission/aistats2027-final-synthesis` is the submission-oriented synthesis built from the fully audited research branch. It preserves the title and abstract registered before the AISTATS abstract deadline and revises the body/supplement only to improve factual scope, falsification transparency, reproducibility, and compliance.
+
+Submission-critical files:
+
+- `paper/main.tex` — anonymous AISTATS manuscript source.
+- `paper/aistats2027.sty` — AISTATS 2027 style used by the manuscript.
+- `paper/main.pdf` — compiled manuscript produced by the final verification workflow.
+- `AISTATS2027_OR_DML_Supplementary_Material.zip` — canonical supplementary archive.
+- `SUPPLEMENT_ROADMAP.md` — map of proofs, protocols, reports, and post-audit evidence.
+- `verify_science.py` — mathematical/scientific invariance checks.
+- `verify_artifacts.py` — manuscript/report/figure synchronization checks.
+- `.github/workflows/submission-final.yml` — compile, verification, anonymity, AI-statement-ordering, and packaging workflow.
+- `SUBMISSION_SYNTHESIS_CHANGELOG.md` — exact scientific/editorial changes promoted from the audit.
+
+The final synthesis deliberately does **not** promote every exploratory result. Results enter the submission only when they are reproducible, consistent with adversarial falsification, and compatible with the frozen title/abstract and the main-paper evidence chain.
