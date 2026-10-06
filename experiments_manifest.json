@@ -4,7 +4,8 @@
     "venue": "AISTATS 2027",
     "track": "Main Conference",
     "license": "MIT",
-    "status": "Authoritative Reproducible Artifact Package"
+    "status": "Authoritative Reproducible Artifact Package",
+    "central_claim": "Phantom causal resolution: generated latent-state representations can leave residual confounding while optimistically inflating apparent downstream causal information."
   },
   "methodology": {
     "framework": "Overlap-Aware Regime Double Machine Learning (OR-DML)",
@@ -56,6 +57,12 @@
       "statement": "SATE/PATE uncertainty includes estimator, regime-occupation, and state-model covariance terms.",
       "code_reference": "paper/main.tex#app:proof_prop6",
       "paper_reference": "paper/main.tex#prop:variance"
+    },
+    {
+      "theorem": "Audited sensitivity proposition: posterior residual-confounding identity",
+      "statement": "In the binary residual model, bias = Delta_T Delta_g v / (Delta_T^2 v + sigma^2); the K-state analogue is a' Sigma b / (a' Sigma a + sigma^2). This is a sensitivity identity, not an identification theorem.",
+      "code_reference": "src/bias_law/bias_law.py",
+      "paper_reference": "paper/main.tex#app:biaslaw"
     }
   ],
   "experiments": [
@@ -150,6 +157,20 @@
       "sample_size": 1200,
       "replications": 100,
       "description": "7x7 factorial design (4,900 runs) independently manipulating controlled proxy error and post-residualization residual treatment information. The joint ratio epsilon_gamma/lambda_min(J) ranks causal error with Spearman rho=0.9955, versus 0.6260 for proxy error and 0.5209 for inverse conditioning alone."
+    },
+    {
+      "experiment_id": "EXP-11",
+      "name": "Phantom Causal Resolution and Generated-State Geometry Stress Tests",
+      "script": "research/generated_state_resolution_inflation.py",
+      "report": "research/results/generated_state_resolution_inflation_summary.csv",
+      "description": "Tests whether state ambiguity can inflate generated-state lambda_min and reduce apparent condition number relative to oracle causal geometry; interpreted as a diagnostic failure mode, not estimator superiority."
+    },
+    {
+      "experiment_id": "EXP-12",
+      "name": "Residual-Confounding Law Audit and Corrected-Hourly Sensitivity",
+      "script": "src/bias_law/run_experiments.py; src/bias_law/ext_real_hourly_fix.py; src/bias_law/ext_misspec_crossfit.py",
+      "report": "reports/bias_law/summary_numbers.json; reports/bias_law/x23_real_hourly_fix.csv; reports/bias_law/x29_misspec_v.csv",
+      "description": "Verifies the residual-confounding sensitivity law, audits posterior-uncertainty misspecification, and reconstructs the true-hourly sensor sensitivity after discovery of the legacy timestamp-rounding issue."
     }
   ],
   "verification_suite": {
