@@ -57,6 +57,7 @@ jobs:
           python research/operator_nonlinearity_breakdown.py
           python research/nonlinear_reliability_number.py
           python research/integrated_latent_dgp.py
+          python research/integrated_latent_nonlinear_outcome.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -97,3 +98,4 @@ jobs:
             research/results/operator_nonlinearity_breakdown*.csv
             research/results/nonlinear_reliability_number*.csv
             research/results/integrated_latent_dgp*.csv
+            research/results/integrated_latent_nonlinear_outcome*.csv
