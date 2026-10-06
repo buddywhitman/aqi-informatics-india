@@ -45,11 +45,13 @@ jobs:
           pages=len(r.pages)
           Path("paper/pdfinfo.txt").write_text(f"Pages: {pages}\n")
           assert pages >= 10
-          p8=r.pages[7].extract_text() or ""
-          p9=r.pages[8].extract_text() or ""
-          assert "AI Use Statement" not in p8, "AI Use Statement leaked into page 8"
-          assert "AI Use Statement" in p9, "AI Use Statement is not on page 9"
-          print(f"Compiled pages: {pages}; main text ends by page 8; AI Use Statement begins on page 9.")
+          texts=[p.extract_text() or "" for p in r.pages]
+          ai_pages=[i+1 for i,x in enumerate(texts) if "AI Use Statement" in x]
+          assert ai_pages, "AI Use Statement missing from compiled PDF"
+          ai_page=ai_pages[0]
+          assert ai_page == 9, f"AI Use Statement begins on page {ai_page}, so main text does not occupy exactly pages 1-8"
+          assert "AI Use Statement" not in texts[7], "AI Use Statement leaked into page 8"
+          print(f"Compiled pages: {pages}; main text ends by page 8; AI Use Statement begins on page {ai_page}.")
           PY
       - name: Compliance text checks
         run: |
