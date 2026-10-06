@@ -315,3 +315,13 @@ The target-subspace paradox implies a constructive change: use $\|AJ^{-1}\|$ for
 
 ### R56. Specialization versus target drift
 Target-aware regularization is not free if the scientific question changes. A new rotation experiment evaluates a procedure specialized for one target against future targets rotated toward the suppressed weak direction. This quantifies a robustness-specialization frontier: aggressive task specificity can be optimal for a fixed confirmatory estimand but fragile for exploratory reuse. Results are automated; no numeric claim until committed.
+
+
+### R57. Target-aware selection can beat lambda-min selection by 5x for the declared estimand
+In the exact two-model construction, global $\lambda_{\min}$ always selects the globally healthy model. For the first-coordinate scientific target, the globally ill-conditioned target-healthy model has amplification 1 versus 5 for the global pick, a **5x target-sensitivity improvement**, invariant as its irrelevant eigenvalue shrinks from 0.1 to $10^{-6}$. For the second-coordinate target, the global model is correctly preferred. Selection should therefore depend on the estimand, not on global conditioning alone.
+
+### R58. Selective regularization eliminates avoidable target bias, but target drift exposes the tradeoff
+With weak irrelevant eigenvalue 0.001, isotropic ridge at $\lambda=.1$ induces first-target bias 0.0909; penalizing only the irrelevant direction gives **zero** first-target bias while comparably stabilizing the weak coordinate. But when the future target rotates toward that suppressed direction, specialized bias rises: at a 10-degree rotation it is ~0.344 and by 45 degrees ~1.40. Thus target-awareness is ideal for fixed confirmatory estimands but can be fragile under target drift.
+
+### R59. Robust target families interpolate between fixed-target and global reliability
+A new framework declares a family $\mathcal F$ of plausible scientific targets and uses $\sup_{A\in\mathcal F}\|AJ^{-1}\|$. A singleton recovers fixed-target reliability; all unit contrasts recover $1/\lambda_{\min}$; restricted cones/subspaces provide an explicit middle ground for reusable representations. An automated regularization experiment now studies how the optimal spectral penalty changes as the allowed target cone widens.
