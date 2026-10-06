@@ -57,6 +57,11 @@ REQUIRED_FILES = [
     "src/bias_law/ext_misspec_crossfit.py",
     "src/bias_law/ext_cp_proof_check.py",
     "src/bias_law/ext_h2_lemma_check.py",
+    "src/bias_law/ext_real_hourly_fix.py",
+    "src/bias_law/ext_cp_is.py",
+    "src/bias_law/ext_hmm_rate.py",
+    "src/bias_law/ext_hmm_window.py",
+    "src/bias_law/ext_nn_quad.py",
     "docs/V2_CHANGELOG.md",
     # Phase-2 frontier provenance retained after audit
     "docs/RESEARCH_INVESTIGATION_METHODOLOGY_AND_FINDINGS.md",
