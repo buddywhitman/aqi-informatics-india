@@ -76,6 +76,16 @@ A proof-of-concept selector evaluates the fine K=4 partition and all three K=2 p
 
 The result strengthens the feasibility of **data-adaptive task abstraction** while also showing that partition selection near the bias-information crossover is itself a nontrivial statistical problem.
 
+### R15. Dual-resolution trilemma: fine adjustment and coarse target are different operations
+The earlier wording "coarsen the latent representation" was too broad. A fine microstate may remain necessary to remove confounding even when estimating a separate effect for every microstate is statistically harmful. The exact construction in `DUAL_RESOLUTION_PRINCIPLE.md` shows three regimes. With fine-state nuisance adjustment + fine-state target parameters, local weak overlap induces the $N^{\alpha-1/2}$ rate penalty. With coarse nuisance adjustment + coarse target, unresolved microstate treatment/outcome baselines create persistent omitted-microstate bias; in the committed construction the asymptotic slope bias is exactly $4/3$. With **fine adjustment + coarse target**, confounding is removed at full resolution while causally equivalent effect parameters pool residual information and remain root-N.
+
+This is an important correction: the strongest principle is to decouple **identification resolution** from **estimand resolution**, not to indiscriminately discard fine latent states.
+
+### R16. Multitask abstraction incompatibility: per-task compression can be exponentially smaller than any universal sufficient abstraction
+The two-task experiment already has crossing optimal partitions: Task A needs $(0,1)|(2,3)$ while Task B needs $(0,2)|(1,3)$. Neither partition is a refinement of the other, so no single two-state hierarchy can represent both as cuts. Generalizing, let the fine state be an $m$-bit vector and let task $j$ depend only on bit $j$. Every task individually has a 2-state sufficient abstraction, but any single deterministic abstraction sufficient for all $m$ tasks must recover every bit and therefore needs all $2^m$ states.
+
+This exact construction implies that a compact universal task-sufficient abstraction need not exist. The natural architecture is a rich shared latent substrate with **task-specific quotient heads**, not a single globally coarsened state space. The set-theoretic result is elementary; its potential significance here is the interaction with weak-overlap causal estimation and the statistical cost of fine target parameterization.
+
 ## Reproduction
 
 Run:
