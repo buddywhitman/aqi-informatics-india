@@ -168,3 +168,24 @@ This suggests a revised hierarchy:
 5. generated-state inference couples stages 1 and 3, so their ill-conditioning can multiply.
 
 A future method should either jointly regularize both inverse problems or construct conservative partial-identification bounds for oracle causal information from posterior/confusion uncertainty.
+
+
+## Update: generated-state geometry needs posterior second moments, not posterior-mean plug-in
+
+The phantom-resolution experiments reveal a general generated-latent-variable lesson. If H is one-hot and q=P(S|I), nonlinear latent moments should integrate over the conditional distribution:
+    E[HH'|I] = diag(q),
+not substitute the posterior mean:
+    E[H|I]E[H|I]' = qq'.
+
+For a diagnostic moment weighted by W, exact completion requires W to be measurable with respect to the posterior information set I. In the state-specific treatment-variance experiment, P(S|Z) is insufficient for W=T^2 because T contains additional state information. Updating to q=P(S|Z,T) gives
+    E[T^2 diag(q)] = E[T^2 HH']
+and recovers oracle weak-state information in population.
+
+This suggests that the operational causal-resolution spectrum should be built from **posterior expected latent sufficient statistics** under a joint state/treatment diagnostic model, rather than from plug-in posterior state means.
+
+It also creates a causal-design separation:
+- estimator posterior: constrained by the identification/orthogonality argument;
+- diagnostic posterior: may incorporate pre-outcome treatment-assignment information to estimate latent causal information geometry;
+- outcome Y must not be used casually in the diagnostic posterior without a joint generative/causal argument.
+
+This may avoid explicit confusion-matrix inversion but trades algebraic ill-conditioning for model-specification risk.
