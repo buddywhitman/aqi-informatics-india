@@ -261,56 +261,8 @@ To ensure validity under temporal dependence, we partition observations into $B$
 \end{algorithmic}
 \end{algorithm}
 
-\begin{table*}[t]
-\centering
-\small
-\renewcommand{\arraystretch}{0.75}
-\caption{The Latent-Confounding Difficulty Frontier: 100 Monte Carlo Replications per Grid Point (500 total evaluation runs across $\Delta_Z \in [0.2, 4.0]$, $N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Coverage for hard-clustering Regime FE DML is marked -- as it lacks a joint sandwich covariance theory under temporal dependence. Full 9-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv} and detailed in Appendix~\ref{app:latent_regime_bench}.}
-\label{tab:benchmark}
-\vspace{-3mm}
-\resizebox{0.86\textwidth}{!}{%
-\begin{tabular}{llccccc}
-\toprule
-$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bias} & \textbf{RMSE} & \textbf{95\% Cov (S/P)} & $\lambda_{\min}(\boldsymbol{J})$ \\
-\midrule
-\multirow{6}{*}{0.2 (Severe Overlap)} 
-& Oracle DML & 0.0558 & 0.0440 & 0.0703 & 96.0\% / 94.0\% & 0.4485 \\
-& Standard DML & 8.4556 & 8.4559 & 8.4562 & 0.0\% / 0.0\% & 4.9339 \\
-& DML + Z Controls (Ridge) & 8.3072 & 8.3120 & 8.3079 & 0.0\% / 0.0\% & 4.6273 \\
-& DML + Z Controls (GBM) & 8.0178 & 8.0252 & 8.0190 & 0.0\% / 0.0\% & 5.3254 \\
-& Regime FE DML (Hard) & 8.2773 & 8.2811 & 8.2782 & -- & 5.0108 \\
-& \textbf{Spectral OR-DML (Ours)} & 8.6296 & 8.6022 & 8.6306 & 0.0\% / 0.0\% & 0.8660 \\
-\midrule
-\multirow{6}{*}{1.0 (Moderate)} 
-& Oracle DML & 0.0572 & 0.0431 & 0.0735 & 92.0\% / 92.0\% & 0.4515 \\
-& Standard DML & 8.4331 & 8.4494 & 8.4340 & 0.0\% / 0.0\% & 4.9535 \\
-& DML + Z Controls (Ridge) & 5.4379 & 5.4619 & 5.4400 & 0.0\% / 0.0\% & 2.0779 \\
-& DML + Z Controls (GBM) & 3.6334 & 3.6420 & 3.6465 & 0.0\% / 0.0\% & 1.8845 \\
-& Regime FE DML (Hard) & 2.6422 & 2.6893 & 2.6792 & -- & 5.0275 \\
-& \textbf{Spectral OR-DML (Ours)} & 4.0171 & 4.0216 & 4.0367 & 0.0\% / 0.0\% & 0.5570 \\
-\midrule
-\multirow{7}{*}{2.0 (Clean Separation)} 
-& Oracle DML & 0.0521 & 0.0421 & 0.0658 & 93.0\% / 97.0\% & 0.4536 \\
-& Standard DML & 8.4318 & 8.4508 & 8.4327 & 0.0\% / 0.0\% & 4.9539 \\
-& DML + Z Controls (Ridge) & 2.6307 & 2.6143 & 2.6345 & 0.0\% / 0.0\% & 1.3505 \\
-& DML + Z Controls (GBM) & 0.2066 & 0.1936 & 0.2426 & 72.0\% / 72.0\% & 1.2144 \\
-& Regime FE DML (Hard) & 0.0772 & 0.0634 & 0.1025 & -- & 5.0238 \\
-& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0812} & \textbf{0.0720} & \textbf{0.1039} & 92.0\% / \textbf{97.0\%} & 0.4546 \\
-& \textbf{Filtered OR-DML (Ours)} & 0.1015 & 0.0812 & 0.1306 & 92.0\% / \textbf{94.0\%} & 0.4556 \\
-\midrule
-\multirow{7}{*}{4.0 (Isolated Regimes)} 
-& Oracle DML & 0.0540 & 0.0477 & 0.0670 & 96.0\% / 95.0\% & 0.4394 \\
-& Standard DML & 8.4509 & 8.4611 & 8.4518 & 0.0\% / 0.0\% & 4.9123 \\
-& DML + Z Controls (Ridge) & 0.8479 & 0.8415 & 0.8534 & 0.0\% / 0.0\% & 1.0945 \\
-& DML + Z Controls (GBM) & 0.1006 & 0.0817 & 0.1248 & 89.0\% / 89.0\% & 1.1889 \\
-& Regime FE DML (Hard) & 0.0536 & 0.0461 & 0.0667 & -- & 4.9960 \\
-& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0538} & \textbf{0.0462} & \textbf{0.0671} & 96.0\% / \textbf{95.0\%} & 0.4394 \\
-& \textbf{Filtered OR-DML (Ours)} & 0.0538 & 0.0462 & 0.0671 & 96.0\% / \textbf{95.0\%} & 0.4394 \\
-\bottomrule
-\end{tabular}%
-}
-\vspace{-2.5mm}
-\end{table*}
+\paragraph{Benchmark summary.} Full estimator-by-separation results, including mean/median bias, RMSE, coverage, and conditioning for all methods and grid points, are reported in Appendix~\ref{app:latent_regime_bench} and \texttt{reports/or\_dml\_benchmark\_summary.csv}. At $\Delta_Z=2$, OR-DML mean/median bias is $0.081/0.072$ versus $0.077/0.063$ for hard Regime FE; at $\Delta_Z=4$, both match the oracle to two decimals. Under severe overlap, all proxy-based methods fail, which is central to our abstention rather than dominance interpretation.
+
 
 \section{THEORETICAL ANALYSIS}
 \label{sec:theory}
@@ -1424,6 +1376,60 @@ Fine latent states may remain necessary for nuisance adjustment even when estima
 The sensor study reinforces the need for separate diagnostics. Delhi has favorable generated-state conditioning but rejects all three reported immediate pre-treatment placebos. Mumbai becomes more certain in posterior entropy after removing long frozen-$\mathrm{NO}_2$ runs while its conditioning worsens and its regime decomposition changes materially. Kolkata remains near-singular after cleaning. These observations are not oracle validation of phantom resolution; they show that representation certainty, downstream information, data quality, temporal falsification, and scientific identification are distinct axes.
 
 
+
+\section{Full Difficulty-Frontier Benchmark Table}
+\label{app:benchmark_table}
+The full main-experiment table is retained here to keep the eight-page body focused on the failure mechanism and falsification logic.
+\begin{table*}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{0.75}
+\caption{The Latent-Confounding Difficulty Frontier: 100 Monte Carlo Replications per Grid Point (500 total evaluation runs across $\Delta_Z \in [0.2, 4.0]$, $N=1,200$, True $\theta_{\mathrm{ATE}}^* = 1.5278$). Nominal coverage target is 95.0\% for Sample ATE (SATE) and Population ATE (PATE). Both mean and median absolute bias are reported to disclose finite-sample failure tails honestly. Coverage for hard-clustering Regime FE DML is marked -- as it lacks a joint sandwich covariance theory under temporal dependence. Full 9-method evaluation across all 5 grid points is tabulated in \texttt{reports/or\_dml\_benchmark\_summary.csv} and detailed in Appendix~\ref{app:latent_regime_bench}.}
+\label{tab:benchmark}
+\vspace{-3mm}
+\resizebox{0.86\textwidth}{!}{%
+\begin{tabular}{llccccc}
+\toprule
+$\Delta_Z$ & \textbf{Estimator} & \textbf{Mean Abs Bias} & \textbf{Median Abs Bias} & \textbf{RMSE} & \textbf{95\% Cov (S/P)} & $\lambda_{\min}(\boldsymbol{J})$ \\
+\midrule
+\multirow{6}{*}{0.2 (Severe Overlap)} 
+& Oracle DML & 0.0558 & 0.0440 & 0.0703 & 96.0\% / 94.0\% & 0.4485 \\
+& Standard DML & 8.4556 & 8.4559 & 8.4562 & 0.0\% / 0.0\% & 4.9339 \\
+& DML + Z Controls (Ridge) & 8.3072 & 8.3120 & 8.3079 & 0.0\% / 0.0\% & 4.6273 \\
+& DML + Z Controls (GBM) & 8.0178 & 8.0252 & 8.0190 & 0.0\% / 0.0\% & 5.3254 \\
+& Regime FE DML (Hard) & 8.2773 & 8.2811 & 8.2782 & -- & 5.0108 \\
+& \textbf{Spectral OR-DML (Ours)} & 8.6296 & 8.6022 & 8.6306 & 0.0\% / 0.0\% & 0.8660 \\
+\midrule
+\multirow{6}{*}{1.0 (Moderate)} 
+& Oracle DML & 0.0572 & 0.0431 & 0.0735 & 92.0\% / 92.0\% & 0.4515 \\
+& Standard DML & 8.4331 & 8.4494 & 8.4340 & 0.0\% / 0.0\% & 4.9535 \\
+& DML + Z Controls (Ridge) & 5.4379 & 5.4619 & 5.4400 & 0.0\% / 0.0\% & 2.0779 \\
+& DML + Z Controls (GBM) & 3.6334 & 3.6420 & 3.6465 & 0.0\% / 0.0\% & 1.8845 \\
+& Regime FE DML (Hard) & 2.6422 & 2.6893 & 2.6792 & -- & 5.0275 \\
+& \textbf{Spectral OR-DML (Ours)} & 4.0171 & 4.0216 & 4.0367 & 0.0\% / 0.0\% & 0.5570 \\
+\midrule
+\multirow{7}{*}{2.0 (Clean Separation)} 
+& Oracle DML & 0.0521 & 0.0421 & 0.0658 & 93.0\% / 97.0\% & 0.4536 \\
+& Standard DML & 8.4318 & 8.4508 & 8.4327 & 0.0\% / 0.0\% & 4.9539 \\
+& DML + Z Controls (Ridge) & 2.6307 & 2.6143 & 2.6345 & 0.0\% / 0.0\% & 1.3505 \\
+& DML + Z Controls (GBM) & 0.2066 & 0.1936 & 0.2426 & 72.0\% / 72.0\% & 1.2144 \\
+& Regime FE DML (Hard) & 0.0772 & 0.0634 & 0.1025 & -- & 5.0238 \\
+& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0812} & \textbf{0.0720} & \textbf{0.1039} & 92.0\% / \textbf{97.0\%} & 0.4546 \\
+& \textbf{Filtered OR-DML (Ours)} & 0.1015 & 0.0812 & 0.1306 & 92.0\% / \textbf{94.0\%} & 0.4556 \\
+\midrule
+\multirow{7}{*}{4.0 (Isolated Regimes)} 
+& Oracle DML & 0.0540 & 0.0477 & 0.0670 & 96.0\% / 95.0\% & 0.4394 \\
+& Standard DML & 8.4509 & 8.4611 & 8.4518 & 0.0\% / 0.0\% & 4.9123 \\
+& DML + Z Controls (Ridge) & 0.8479 & 0.8415 & 0.8534 & 0.0\% / 0.0\% & 1.0945 \\
+& DML + Z Controls (GBM) & 0.1006 & 0.0817 & 0.1248 & 89.0\% / 89.0\% & 1.1889 \\
+& Regime FE DML (Hard) & 0.0536 & 0.0461 & 0.0667 & -- & 4.9960 \\
+& \textbf{Spectral OR-DML (Ours)} & \textbf{0.0538} & \textbf{0.0462} & \textbf{0.0671} & 96.0\% / \textbf{95.0\%} & 0.4394 \\
+& \textbf{Filtered OR-DML (Ours)} & 0.0538 & 0.0462 & 0.0671 & 96.0\% / \textbf{95.0\%} & 0.4394 \\
+\bottomrule
+\end{tabular}%
+}
+\vspace{-2.5mm}
+\end{table*}
 
 \section{Audited Residual-Confounding Sensitivity Law}
 \label{app:biaslaw}
