@@ -33,6 +33,7 @@ jobs:
           python research/task_conditioned_representation_dominance.py
           python research/minimax_task_family.py
           python research/representation_selection_regret.py
+          python research/representation_metric_impossibility.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -49,3 +50,4 @@ jobs:
             research/results/task_conditioned_representation_*.csv
             research/results/minimax_task_family_*.csv
             research/results/representation_selection_regret*.csv
+            research/results/representation_metric_impossibility*.csv
