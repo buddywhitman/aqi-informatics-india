@@ -167,5 +167,49 @@
   "verification_suite": {
     "scientific_invariances": "python verify_science.py",
     "artifact_synchronization": "python verify_artifacts.py"
+  },
+  "v2": {
+    "note": "v2 supersedes experiments below for headline claims; see docs/V2_CHANGELOG.md",
+    "experiments": {
+      "E1": {
+        "script": "src/bias_law/run_experiments.py",
+        "output": "reports/bias_law/e1_*.csv",
+        "claim": "law vs learned-HMM DML, K=2 grid"
+      },
+      "E2": {
+        "script": "src/bias_law/run_experiments.py",
+        "output": "reports/bias_law/e2_three_state_summary.csv",
+        "claim": "K=3 matrix law"
+      },
+      "E3": {
+        "script": "src/bias_law/run_experiments.py",
+        "output": "reports/bias_law/e3_table1_dgp_summary.csv",
+        "claim": "Table-1 DGP"
+      },
+      "E4": {
+        "script": "src/bias_law/run_experiments.py",
+        "output": "reports/bias_law/e4_calibration_summary.csv",
+        "claim": "calibration bound"
+      },
+      "E5": {
+        "script": "src/bias_law/real_cities_sensitivity.py",
+        "output": "reports/bias_law/e5_*.csv",
+        "claim": "robustness values, 4 cities"
+      },
+      "E6": {
+        "script": "src/bias_law/hac_sensitivity.py",
+        "output": "reports/bias_law/e6_hac_lag_sensitivity.csv",
+        "claim": "HAC lag sensitivity"
+      },
+      "E7": {
+        "script": "src/bias_law/run_experiments.py",
+        "output": "reports/bias_law/e7_corrected_conditioning.csv",
+        "claim": "corrected conditioning baselines"
+      }
+    },
+    "verification": [
+      "verify_science.py",
+      "verify_artifacts.py"
+    ]
   }
 }

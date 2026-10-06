@@ -1,4 +1,9 @@
 """
+!! SUPERSEDED (v2) !!  Experiments 29 and 30 in this file contain a bug: nuisances were fitted on X only, so a regime shift in T
+leaked into the residuals and the reported "calibration / state-representation" effects were artefacts.  Do not cite
+their numbers.  The corrected analysis is src/bias_law/ (see docs/V2_CHANGELOG.md).  Kept for provenance only.
+"""
+"""
 three_decisive_experiments.py
 =============================
 Implements the three decisive experiments recommended in the AISTATS memo:

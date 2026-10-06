@@ -28,6 +28,9 @@ REQUIRED_FILES = [
     # Paper Source & Compiled PDF
     "paper/main.pdf",
     "paper/main.tex",
+    "paper/main_v1.tex",
+    "docs/V2_CHANGELOG.md",
+    "src/bias_law/__init__.py",
     "paper/aistats2027.sty",
     "paper/fancyhdr.sty",
 
@@ -45,6 +48,7 @@ REQUIRED_FILES = [
     "src/generate_paper_figures.py",
     "src/regime_intelligence.py",
     "src/requirements.txt",
+    "requirements.txt",
 
     # Clean Datasets
     "data/processed_clean/combined_hourly_clean.csv",
@@ -67,9 +71,11 @@ def build_archive():
     print(f"Building Authoritative Supplementary Archive: {ARCHIVE_NAME}...")
 
     # Gather all CSV reports in reports/
-    report_files = glob.glob("reports/*.csv")
+    report_files = (glob.glob("reports/*.csv") + glob.glob("reports/bias_law/*")
+                    + glob.glob("src/bias_law/*.py") + glob.glob("paper/generated/*.tex")
+                    + glob.glob("paper/plots/bl_*.pdf"))
 
-    all_files = list(REQUIRED_FILES) + report_files
+    all_files = list(dict.fromkeys(list(REQUIRED_FILES) + report_files))
 
     missing = [f for f in all_files if not os.path.exists(f)]
     if missing:

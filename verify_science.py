@@ -1,190 +1,165 @@
 """
 verify_science.py
 =================
-Automated scientific verification of core algebraic and mathematical invariances
-for 'Reliable Causal Estimation under Latent Markov Confounding'.
+Fast (~1 min) scientific checks of the paper's theory against simulation.  These are *not* algebraic tautologies:
+each test simulates data from the model, runs the actual estimator, and compares with the closed-form prediction.
 
-Asserts:
-  1. Estimator normal equations: ||J * theta_hat - S||_2 < 1e-10
-  2. Oracle convergence: ||theta_hat_oracle - theta*||_2 < 0.15 in large sample
-  3. K=1 reduction identity: OR-DML with single state matches standard DML exactly
-  4. Permutation covariance: permuting state indices permutes theta_k but leaves SATE/PATE invariant
-  5. Posterior simplex conservation: sum_k gamma_{tk} == 1 within machine epsilon
-  6. Gram conditioning: lambda_min(J) > 0 in identified separation regimes
-  7. Regularization monotonicity: Tr((J + lambda I)^-1) is strictly decreasing in lambda
-  8. Temporal causality / no-leakage: training fold indices are strictly disjoint from test/embargo folds
-  9. Held-out representation evaluation: representation zoo evaluated strictly out-of-sample
+    python verify_science.py
 """
-
+import os
 import sys
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import Ridge
 
-def run_scientific_verification():
-    print("=" * 75)
-    print("SCIENTIFIC INVARIANCE AND MATHEMATICAL REASONING VERIFICATION")
-    print("=" * 75)
-    passed = 0
-    total = 9
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from src.bias_law import bias_law as BL                                # noqa: E402
+from src.bias_law.sim import (gen_states_proxy, gen_TY, fit_posteriors, align_to_truth,  # noqa: E402
+                              partial_out, residual_state_cov)
 
-    # -------------------------------------------------------------
-    # 1. Estimator Normal Equations: ||J * theta - S|| < epsilon
-    # -------------------------------------------------------------
-    np.random.seed(42)
-    K = 2
-    N = 500
-    gamma = np.random.dirichlet([1.0, 1.0], size=N)
-    T_res = np.random.randn(N, K)
-    Y_res = np.random.randn(N, K)
-    
-    # Construct J and S
-    J = np.zeros((K, K))
-    S = np.zeros(K)
+RESULTS = []
+
+
+def check(name, cond, detail=''):
+    RESULTS.append((name, bool(cond)))
+    print(f"[{'OK' if cond else 'FAIL'}] {name} {detail}")
+
+
+def exact_posterior_sim(N, dz, dT, dg, rho, seed):
+    """Known-parameter filter (calibrated posterior) for a persistent two-state chain."""
+    rng = np.random.default_rng(seed)
+    S = np.zeros(N, int)
+    for t in range(1, N):
+        S[t] = S[t - 1] if rng.random() < rho else 1 - S[t - 1]
+    Z = np.where(S == 1, dz, -dz) + rng.normal(size=N)
+    A = np.array([[rho, 1 - rho], [1 - rho, rho]])
+    mu = np.array([-dz, dz])
+    a = np.array([.5, .5])
+    g = np.zeros(N)
     for t in range(N):
-        w_t = gamma[t]
-        J += np.outer(w_t * T_res[t], w_t * T_res[t])
-        S += w_t * T_res[t] * Y_res[t]
-    J /= N
-    S /= N
-    
-    theta_unreg = np.linalg.solve(J, S)
-    residual_norm = np.linalg.norm(J @ theta_unreg - S)
-    assert residual_norm < 1e-10, f"Normal equations violated: norm={residual_norm}"
-    print(f"[OK] 1. Estimator Normal Equations: ||J theta - S||_2 = {residual_norm:.2e} < 1e-10")
-    passed += 1
+        a = (a @ A if t else a) * np.exp(-0.5 * (Z[t] - mu) ** 2)
+        a /= a.sum()
+        g[t] = a[1]
+    T = dT * S + rng.normal(size=N)
+    Y = T + dg * S + rng.normal(size=N)
+    return S, g, T, Y
 
-    # -------------------------------------------------------------
-    # 2. Oracle Special Case: theta_oracle -> theta*
-    # -------------------------------------------------------------
-    theta_star = np.array([0.75, 2.50])
-    N_large = 2000
-    S_true = np.random.choice([0, 1], size=N_large, p=[0.5, 0.5])
-    H = np.eye(2)[S_true]
-    T = np.random.randn(N_large) + 2.0 * (1 - S_true) + 6.0 * S_true
-    m_star = np.where(S_true == 0, 2.0, 6.0)
-    T_tilde = T - m_star
-    U = np.random.randn(N_large) * 0.5
-    Y = np.where(S_true == 0, theta_star[0] * T, theta_star[1] * T) + U
-    mu_star = np.where(S_true == 0, theta_star[0] * m_star, theta_star[1] * m_star)
-    Y_tilde = Y - mu_star
 
-    J_oracle = np.zeros((2, 2))
-    S_oracle = np.zeros(2)
-    for k in range(2):
-        mask = (S_true == k)
-        J_oracle[k, k] = np.mean(T_tilde[mask]**2) * np.mean(mask)
-        S_oracle[k] = np.mean(T_tilde[mask] * Y_tilde[mask]) * np.mean(mask)
+def test_exact_law_and_hump():
+    # (i) the law matches OLS partialling-out with a calibrated filter; (ii) peak location/height of Corollary 2
+    dz, dg = 0.5, 3.0
+    best = None
+    errs = []
+    for dT in (0.5, 1, 2, 4, 8, 16):
+        S, g, T, Y = exact_posterior_sim(60000, dz, dT, dg, 0.9, int(dT * 10))
+        F = np.column_stack([np.ones_like(g), g])
+        rt = T - F @ np.linalg.lstsq(F, T, rcond=None)[0]
+        ry = Y - F @ np.linalg.lstsq(F, Y, rcond=None)[0]
+        bias = (rt @ ry) / (rt @ rt) - 1.0
+        v = np.var(S - g)
+        errs.append(abs(bias - BL.law_bias(dT, dg, v)))
+        if best is None or bias > best[1]:
+            best = (dT, bias, v)
+    check('law matches OLS with calibrated posterior (max abs err < 0.02)', max(errs) < 0.02, f'(max err {max(errs):.4f})')
+    pk = BL.peak_dT(best[2])
+    check('hump peak within 2x of sigma/sqrt(v) and height <= sup bound',
+          0.5 * pk <= best[0] <= 2 * pk and best[1] <= BL.sup_bias(dg, best[2]) * 1.05,
+          f'(argmax {best[0]}, predicted {pk:.1f}; max bias {best[1]:.3f} <= {BL.sup_bias(dg, best[2]):.3f})')
 
-    theta_oracle = np.linalg.solve(J_oracle, S_oracle)
-    oracle_error = np.linalg.norm(theta_oracle - theta_star)
-    assert oracle_error < 0.10, f"Oracle error too large: {oracle_error}"
-    print(f"[OK] 2. Oracle Special Case: ||theta_oracle - theta*||_2 = {oracle_error:.4f} < 0.10")
-    passed += 1
 
-    # -------------------------------------------------------------
-    # 3. K=1 Reduction Identity: OR-DML equals Standard DML
-    # -------------------------------------------------------------
-    gamma_one = np.ones((N, 1))
-    T_res_1 = T_res[:, 0:1]
-    Y_res_1 = Y_res[:, 0:1]
-    
-    J_1 = np.mean((gamma_one * T_res_1)**2)
-    S_1 = np.mean(gamma_one * T_res_1 * Y_res_1)
-    theta_ordml_1 = S_1 / J_1
+def test_learned_hmm_dependent():
+    # learned HMM + dependent data + cross-fitted learners: law with the observable v_hat is within 20% of the bias
+    rows = []
+    for rep in range(6):
+        rng = np.random.default_rng(900 + rep)
+        S, Z, X = gen_states_proxy(3000, 2, 0.6, 0.9, rng)
+        V, U = rng.normal(size=3000), rng.normal(size=3000)
+        post = fit_posteriors(Z, 2, rep)
+        g = align_to_truth(post['smooth'], S)
+        T, Y = gen_TY(S, X, [0, 2.0], [0, 3.0], [1.0, 1.0], (V, U))
+        th, tT, tY = partial_out(Y, T, np.column_stack([X, g[:, 1]]), 'lin', rep)
+        v_hat = float(np.mean(g[:, 1] * (1 - g[:, 1])))
+        rows.append((th - 1.0, BL.law_bias(2.0, 3.0, v_hat)))
+    r = np.array(rows)
+    rel = abs(r[:, 0].mean() - r[:, 1].mean()) / abs(r[:, 0].mean())
+    check('learned HMM, dependent data: |law(v_hat) - bias| / bias < 0.25', rel < 0.25, f'(bias {r[:, 0].mean():.3f}, law {r[:, 1].mean():.3f})')
 
-    # Standard DML OLS on residuals
-    theta_std_dml = np.mean(T_res_1 * Y_res_1) / np.mean(T_res_1**2)
-    diff_k1 = abs(theta_ordml_1 - theta_std_dml)
-    assert diff_k1 < 1e-12, f"K=1 reduction mismatch: {diff_k1}"
-    print(f"[OK] 3. K=1 Reduction Identity: |theta_ORDML - theta_StdDML| = {diff_k1:.2e} < 1e-12")
-    passed += 1
 
-    # -------------------------------------------------------------
-    # 4. Permutation Covariance
-    # -------------------------------------------------------------
-    P = np.array([[0, 1], [1, 0]])
-    gamma_perm = gamma @ P
-    T_res_perm = T_res @ P
-    Y_res_perm = Y_res @ P
-    
-    J_perm = np.zeros((K, K))
-    S_perm = np.zeros(K)
-    for t in range(N):
-        w_t = gamma_perm[t]
-        J_perm += np.outer(w_t * T_res_perm[t], w_t * T_res_perm[t])
-        S_perm += w_t * T_res_perm[t] * Y_res_perm[t]
-    J_perm /= N
-    S_perm /= N
-    theta_perm = np.linalg.solve(J_perm, S_perm)
-    
-    # Expected: theta_perm == P @ theta_unreg
-    perm_diff = np.linalg.norm(theta_perm - P @ theta_unreg)
-    assert perm_diff < 1e-10, f"Permutation equivariance violated: {perm_diff}"
-    print(f"[OK] 4. Permutation Invariance: ||theta_perm - P*theta||_2 = {perm_diff:.2e} < 1e-10")
-    passed += 1
+def test_information_monotonicity():
+    # soft posterior never has larger residual variance than its hard label (law of total variance)
+    rng = np.random.default_rng(3)
+    S, Z, X = gen_states_proxy(6000, 2, 0.7, 0.9, rng)
+    post = fit_posteriors(Z, 2, 0)
+    g = align_to_truth(post['smooth'], S)[:, 1]
+    hard = (g > 0.5).astype(float)
+    v_soft = float(np.mean((S - g) ** 2))                 # Brier >= E Var(S|g); use conditional variance estimates below
+    # conditional variances via binning
+    bins = np.clip((g * 20).astype(int), 0, 19)
+    vs = np.mean([np.var(S[bins == b]) * np.mean(bins == b) for b in range(20) if np.sum(bins == b) > 1])
+    vs = sum(np.var(S[bins == b]) * np.mean(bins == b) for b in range(20) if np.sum(bins == b) > 1)
+    vh = sum(np.var(S[hard == h]) * np.mean(hard == h) for h in (0, 1))
+    check('information monotonicity: E Var(S|soft) <= E Var(S|hard)', vs <= vh + 1e-9, f'({vs:.4f} <= {vh:.4f})')
 
-    # -------------------------------------------------------------
-    # 5. Posterior Simplex Conservation
-    # -------------------------------------------------------------
-    simplex_err = np.max(np.abs(np.sum(gamma, axis=1) - 1.0))
-    assert simplex_err < 1e-12, f"Simplex violation: {simplex_err}"
-    print(f"[OK] 5. Posterior Simplex: max |sum_k gamma_k - 1| = {simplex_err:.2e} < 1e-12")
-    passed += 1
 
-    # -------------------------------------------------------------
-    # 6. Gram Conditioning: lambda_min(J) > 0
-    # -------------------------------------------------------------
-    eigmin = np.min(np.linalg.eigvalsh(J))
-    assert eigmin > 0, f"Gram matrix singular: eigmin={eigmin}"
-    print(f"[OK] 6. Gram Conditioning: lambda_min(J) = {eigmin:.4f} > 0")
-    passed += 1
+def test_calibration_bound():
+    rng = np.random.default_rng(5)
+    ok = True
+    for _ in range(200):
+        p = rng.beta(0.5, 0.5, size=2000)                              # true posterior c
+        S = (rng.random(2000) < p).astype(float)
+        tau = rng.uniform(0.3, 3)
+        g = 1 / (1 + np.exp(-np.log(np.clip(p, 1e-9, 1 - 1e-9) / np.clip(1 - p, 1e-9, 1)) / tau))  # miscalibrated
+        v = np.mean(p * (1 - p))
+        vh = np.mean(g * (1 - g))
+        ce = np.mean((g - p) ** 2)
+        ok &= abs(vh - v) <= BL.calibration_gap_bound(ce) + 1e-9
+    check('calibration bound |v_hat - v| <= sqrt(CE) + CE (200 random posteriors)', ok)
 
-    # -------------------------------------------------------------
-    # 7. Regularization Monotonicity: Tr((J + lambda I)^-1) decreasing
-    # -------------------------------------------------------------
-    lambdas = [0.001, 0.01, 0.05, 0.10, 0.50, 1.00]
-    traces = [np.trace(np.linalg.inv(J + lam * np.eye(K))) for lam in lambdas]
-    is_strictly_decreasing = all(traces[i] > traces[i+1] for i in range(len(traces)-1))
-    assert is_strictly_decreasing, f"Tr((J + lambda I)^-1) not decreasing: {traces}"
-    print(f"[OK] 7. Regularization Monotonicity: Trace decreases strictly across lambda in {lambdas[0]}..{lambdas[-1]}")
-    passed += 1
 
-    # -------------------------------------------------------------
-    # 8. Temporal Causality / No-Leakage Purged Split
-    # -------------------------------------------------------------
-    T_total = 1000
-    K_folds = 5
-    embargo = 24
-    fold_size = T_total // K_folds
-    for f_idx in range(K_folds):
-        test_start = f_idx * fold_size
-        test_end = (f_idx + 1) * fold_size
-        test_set = set(range(test_start, test_end))
-        embargo_before = set(range(max(0, test_start - embargo), test_start))
-        embargo_after = set(range(test_end, min(T_total, test_end + embargo)))
-        train_set = set(range(T_total)) - test_set - embargo_before - embargo_after
-        # Verify strict disjointness
-        assert len(train_set.intersection(test_set)) == 0
-        assert len(train_set.intersection(embargo_before)) == 0
-        assert len(train_set.intersection(embargo_after)) == 0
-    print(f"[OK] 8. Temporal Causality: Purged block cross-fitting is strictly disjoint (embargo={embargo}h)")
-    passed += 1
+def test_three_state_matrix_law():
+    errs = []
+    for rep in range(6):
+        rng = np.random.default_rng(1200 + rep)
+        S, Z, X = gen_states_proxy(3000, 3, 0.9, 0.9, rng)
+        V, U = rng.normal(size=3000), rng.normal(size=3000)
+        post = fit_posteriors(Z, 3, rep)
+        g = align_to_truth(post['smooth'], S)
+        aF, bF = (0, 3, -3), (0, 2, 2)
+        T, Y = gen_TY(S, X, aF, bF, [1.0] * 3, (V, U))
+        F = np.column_stack([X, g[:, 1:]])
+        th, _, _ = partial_out(Y, T, F, 'lin', rep)
+        Sig = residual_state_cov(S, F, 3, 'lin', rep)
+        pred = BL.law_bias_matrix(np.array(aF[1:]) - aF[0], np.array(bF[1:]) - bF[0], Sig, 1.0)
+        errs.append(th - 1.0 - pred)
+    check('K=3 matrix law (mean abs err < 0.03)', np.mean(np.abs(errs)) < 0.03, f'({np.mean(np.abs(errs)):.4f})')
 
-    # -------------------------------------------------------------
-    # 9. Held-Out Out-of-Sample Evaluation
-    # -------------------------------------------------------------
-    # Verify that reports reflect strictly out-of-sample evaluated splits
-    df_auc = pd.read_csv("reports/representation_zoo_reliability_auc.csv")
-    assert "Reliability_ROC_AUC_D" in df_auc.columns
-    assert len(df_auc) >= 4
-    print(f"[OK] 9. Out-of-Sample Verification: Representation zoo reports verified ({len(df_auc)} models)")
-    passed += 1
 
-    print("-" * 75)
-    print(f"SUCCESS: All {passed}/{total} scientific invariances and mathematical assertions PASSED!")
-    print("=" * 75)
-    return 0
+def test_heterogeneous_formula():
+    rng = np.random.default_rng(77)
+    N = 60000
+    S, g, T0, _ = exact_posterior_sim(N, 0.5, 3.0, 0.0, 0.9, 11)
+    V = np.random.default_rng(1).normal(size=N)
+    mbar, dT, dg = 2.0, 3.0, 4.0
+    T = mbar + dT * S + V
+    th0, th1 = 0.75, 2.5
+    thS = np.where(S == 1, th1, th0)
+    Y = thS * T + dg * S + np.random.default_rng(2).normal(size=N)
+    F = np.column_stack([np.ones(N), g])
+    rt = T - F @ np.linalg.lstsq(F, T, rcond=None)[0]
+    ry = Y - F @ np.linalg.lstsq(F, Y, rcond=None)[0]
+    est = (rt @ ry) / (rt @ rt)
+    v = np.var(S - g)
+    thbar = np.mean(thS)
+    pred = thbar + BL.law_bias_hetero(dT, dg, th1, thbar, v, 1.0, th1 - th0, mbar)
+    check('heterogeneous-effects formula (abs err < 0.05)', abs(est - pred) < 0.05, f'(est {est:.3f}, formula {pred:.3f})')
 
-if __name__ == "__main__":
-    sys.exit(run_scientific_verification())
+
+if __name__ == '__main__':
+    test_exact_law_and_hump()
+    test_calibration_bound()
+    test_information_monotonicity()
+    test_heterogeneous_formula()
+    test_learned_hmm_dependent()
+    test_three_state_matrix_law()
+    n_ok = sum(ok for _, ok in RESULTS)
+    print(f"\n{n_ok}/{len(RESULTS)} scientific checks passed")
+    sys.exit(0 if n_ok == len(RESULTS) else 1)
