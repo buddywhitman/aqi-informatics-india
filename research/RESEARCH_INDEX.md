@@ -25,6 +25,8 @@
 | Self-canceling diagnostics | SELF_CANCELING_DIAGNOSTICS.md | phantom_diagnostic_cancellation.py | H/proxy-lambda can be worse than entropy because ambiguity inflates its denominator |
 | Phantom concentration | PHANTOM_CAUSAL_RESOLUTION.md | phantom_resolution_concentration.py | more data concentrate proxy geometry around an optimistic pseudo-parameter |
 | Posterior moment completion | POSTERIOR_SECOND_MOMENT_COMPLETION.md | posterior_second_moment_completion.py | conditional latent second moments recover oracle information in the correctly specified diagnostic model |
+| Markov moment completion | POSTERIOR_SECOND_MOMENT_COMPLETION.md | markov_second_moment_completion.py | filtering preserves the completion identity under correct sequential dynamics |
+| Completion robustness | COMPLETION_ROBUSTNESS_LIMITS.md | completion_misspecification.py; completion_sensitivity_envelope.py | completed geometry can be badly optimistic under state-treatment model misspecification |
 | Resolution-adaptive targets | CAUSAL_RESOLUTION_SPECTRUM.md | resolution_adaptive_target.py | truncation helps only when target projection is explicit; unresolved is not zero |
 | Multitask incompatibility | MULTITASK_ABSTRACTION_GAP.md | multitask_abstraction.py | crossing partitions; exponential universal-compression gap construction |
 | Real K sensitivity | README R8/R19 | latent_state_count_sensitivity.py | BIC improves while downstream lambda_min collapses |
