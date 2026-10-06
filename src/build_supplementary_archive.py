@@ -23,7 +23,8 @@ REQUIRED_FILES = [
     "SUPPLEMENT_ROADMAP.md",
     "experiments_manifest.json",
     "verify_science.py",
-    "verify_artifacts.py",\n    "verify_submission_synthesis.py",
+    "verify_artifacts.py",
+    "verify_submission_synthesis.py",
 
     # Paper Source & Compiled PDF
     "paper/main.pdf",
