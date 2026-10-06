@@ -10,11 +10,11 @@ Causal inference from dependent observational time series is challenging when an
 
 We study causal estimation under latent Markov confounding and characterize how latent-state uncertainty and regime overlap propagate into causal estimation error:
 1. **Non-Identification under Unconstrained Overlap (Theorem 1)**: Proves that when proxies contain zero information distinguishing latent regimes, regime-specific causal effects cannot be point-identified from observables.
-2. **Graceful Degradation Error Bound (Theorem 2)**: Separates posterior proxy error $\varepsilon_\gamma$ from task conditioning $\lambda_{\min}(\boldsymbol{J})$, establishing an explicit error bound:
+2. **Graceful Degradation Error Bound (Theorem 3)**: Separates posterior proxy error $\varepsilon_\gamma$ from task conditioning $\lambda_{\min}(\boldsymbol{J})$, establishing an explicit error bound:
    $$\|\hat{\boldsymbol{\theta}}_\gamma - \boldsymbol{\theta}^*\|_2 \le \frac{C \cdot \varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} + \mathcal{O}_P(N^{-1/2}).$$
-3. **Surrogate Entropy-Difficulty Bridge (Proposition 4)**: Demonstrates that under Bayesian calibration, posterior entropy bounds latent-state error, yielding the computable operational difficulty index $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
-4. **Spectral Regularization & Asymptotics (Theorems 3 & 5, Proposition 6)**: Derives leading-order risk bounds for ridge-regularized inversion $(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ and establishes centered asymptotic normality with purged block cross-fitting under dependent data.
-5. **Representation Zoo vs. Downstream Reliability**: Evaluates HMM, GRU, Causal Transformer, and Linear State-Space Models across 15 independent benchmark worlds under disentangled transition and emission shifts, proving that state classification accuracy ($F_1$) alone does not guarantee downstream reliability, whereas posterior calibration provides significant incremental predictive value.
+3. **Surrogate Entropy-Difficulty Bridge (Proposition 1)**: Demonstrates that under Bayesian calibration, posterior entropy bounds latent-state error, yielding the computable operational difficulty index $\mathcal{D}_{\mathrm{operational}}(t) = \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)}$.
+4. **Spectral Regularization & Asymptotics (Theorems 4 & 5, Proposition 2)**: Derives leading-order risk bounds for ridge-regularized inversion $(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}$ and establishes centered asymptotic normality with purged block cross-fitting under dependent data.
+5. **Representation-to-Task Reliability**: A corrected 7x7 factorial intervention (4,900 runs) independently varies proxy error and post-residualization task conditioning; the joint ratio $\varepsilon_\gamma/\lambda_{\min}(J)$ ranks causal error far better than either constituent alone. Across 15 shifted representation worlds, NLL improves leave-one-world-out reliability prediction beyond $F_1$, while temperature scaling cuts neural ECE by up to 60% without improving downstream failure AUC, showing calibration is informative but insufficient.
 6. **Real-World Observational Stress Test**: Evaluates four Indian megacities ($14,122$ complete analysis hours across Delhi, Mumbai, Bengaluru, and Kolkata), demonstrating how disparate task geometries illuminate distinct operating regimes on the difficulty frontier.
 
 ---
@@ -29,7 +29,8 @@ We study causal estimation under latent Markov confounding and characterize how 
 │   └── plots/                      # Publication figures embedded in manuscript
 ├── src/                            # Active, self-contained Python codebase
 │   ├── or_dml.py                   # Canonical Overlap-Aware Regime DML (OR-DML) implementation
-│   ├── calibration_intervention_zoo.py # Post-hoc Platt/temperature scaling evaluation on Representation Zoo
+│   ├── calibration_intervention_zoo.py # Post-hoc temperature-scaling intervention on Representation Zoo
+│   ├── factorial_reliability_experiment.py # Corrected 7x7 representation-by-task mechanism experiment
 │   ├── empirical_falsification_checks.py # Pre-treatment lead placebo falsification suite (h in {-6, -3, -1})
 │   ├── synthetic_dgp_benchmark.py  # 500-draw Monte Carlo difficulty frontier simulation
 │   ├── empirical_evaluation.py     # 4-city sensor evaluation, conditioning diagnostics, dynamic IRFs
@@ -49,7 +50,7 @@ We study causal estimation under latent Markov confounding and characterize how 
 ├── experiments_manifest.json       # Machine-readable experiment and theorem manifest
 ├── SUPPLEMENT_ROADMAP.md           # Authoritative supplementary roadmap and table of contents
 ├── verify_artifacts.py             # Automated artifact and byte-for-byte manuscript synchronization check
-└── verify_science.py               # Automated verification of 9 core mathematical/algebraic invariances
+└── verify_science.py               # Automated verification of 10 core mathematical/algebraic invariances
 ```
 
 ---
