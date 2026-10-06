@@ -48,6 +48,8 @@ jobs:
           python research/reliability_budget_decomposition.py
           python research/representation_accuracy_rate_requirement.py
           python research/crossfit_representation_rate.py
+          python research/orthogonality_to_representation.py
+          python research/representation_orthogonal_toy.py
       - name: Summarize outputs
         run: |
           cat research/results/geometry_disagreement_summary.csv
@@ -79,3 +81,5 @@ jobs:
             research/results/reliability_budget_decomposition*.csv
             research/results/representation_accuracy_rate_requirement*.csv
             research/results/crossfit_representation_rate*.csv
+            research/results/orthogonality_to_representation*.csv
+            research/results/representation_orthogonal_toy*.csv
