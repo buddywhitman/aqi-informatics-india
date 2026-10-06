@@ -420,3 +420,16 @@ A new experiment assumes a small adjudicated subset where true/high-quality late
 If coordinate-j perturbation variance is $v_j$ and target sensitivity is $c_j=(a^\top J^{-1})_j$, propagated validation variance is approximately $\sum_j c_j^2v_j/m_j$. Under fixed labeling budget, optimal allocation satisfies
 $$m_j\propto |c_j|\sqrt{v_j}.$$
 Thus the most useful states to validate are not necessarily the most frequent or most uncertain: validation should concentrate where representation uncertainty and causal sensitivity jointly matter. An automated experiment compares equal, frequency, raw-uncertainty and target-sensitive allocations.
+
+
+### R85. Temporal information is governed by the score process, not regime persistence alone
+A new sequential experiment directly verifies the product-score result: for independent AR(1) treatment residual and outcome innovation processes with correlations $\rho_T,\rho_U$, score autocorrelation is approximately $\rho_T\rho_U$ and long-run variance inflation follows $(1+\rho_T\rho_U)/(1-\rho_T\rho_U)$. Persistence in only one factor need not create first-order score dependence. Temporal reliability diagnostics should therefore target influence/score long-run variance rather than HMM persistence itself.
+
+### R86. Fine adjustment and coarse reporting have fundamentally different information costs
+With K balanced states and healthy local overlap, separate state-effect SE scales as $\sqrt{K/N}$ while a pooled task-equivalent target remains $N^{-1/2}$, a $\sqrt K$ precision gap. Rich states can therefore be necessary for nuisance/confounding adjustment without justifying equally fine causal parameterization. This operationalizes the dual-resolution principle.
+
+### R87. Target-family robustness has an inference cost
+Protecting a finite family of M predeclared contrasts requires simultaneous rather than pointwise inference; even a simple Bonferroni benchmark widens intervals according to $z_{1-\alpha/(2M)}$. This completes the fixed-target -> target-family -> adaptive-target -> unrestricted-target hierarchy: increasing scientific reusability carries multiplicity/robustness cost.
+
+### R88. Unified theorem sketch and saturation checkpoint
+The branch now contains a consolidated local expansion separating target sensitivity $AJ^{-1}$, representation perturbation $b_\gamma$, dependent sampling noise, nonlinear remainder, generated-state geometry, and oracle-identification error. The saturation audit concludes that further toy variants have sharply diminishing returns; remaining high-value work is real-data/zoo reanalysis, exact novelty collision-testing, and final synthesis.
