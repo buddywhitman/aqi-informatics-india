@@ -79,3 +79,22 @@ The manuscript's new Appendix~J records stress tests that narrow the scope of th
 - `research/NOVELTY_COLLISION_AUDIT.md` and `research/FINAL_AUDIT_CHECKLIST.md`: claim-scope and prior-art discipline.
 
 These files are supplementary evidence only. The canonical claims remain those stated in `paper/main.tex`; where exploratory findings narrow a claim, the manuscript now states that limitation explicitly.
+
+
+## Final audit and navigation
+
+For the final synthesized submission, use the following order:
+
+1. `research/MASTER_ARTIFACT_INDEX.md` maps promoted post-audit evidence to its code/results.
+2. `research/FINAL_CANDIDATE_SYNTHESIS.md` separates surviving candidate contributions from exploratory ideas and preserved negative results.
+3. `research/NOVELTY_COLLISION_AUDIT.md` records the conservative prior-art boundary used to narrow novelty claims.
+4. `research/FINAL_REAL_DATA_COLLISION.md` records placebo, frozen-sensor, conditioning, and dependence limitations.
+5. `research/REPRESENTATION_ZOO_REANALYSIS.md` records what the aggregate representation benchmark supports and what it cannot establish.
+6. `research/FINAL_AUDIT_CHECKLIST.md` is the final claim/reproducibility/limitation gate.
+7. `research/UNIFIED_THEOREM_SKETCH.md` is included for transparency as a working synthesis only; it is not asserted as an additional proved theorem of the submitted manuscript.
+
+The archive also includes `research/results/frozen_sensor_sensitivity.csv` and `research/results/real_transition_diagnostics.csv` so the observational qualifications promoted into the manuscript are directly inspectable.
+
+### Claim hierarchy
+
+The paper's theorem statements and canonical reports remain authoritative. Post-audit research files are used to **narrow**, stress-test, or contextualize claims; they do not silently supersede the proved assumptions or create new submission claims. In particular, representation orthogonality, target-family methodology, and the unified operator theorem remain research directions unless explicitly proved in `paper/main.tex`.
