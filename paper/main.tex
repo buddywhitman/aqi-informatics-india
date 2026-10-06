@@ -126,6 +126,22 @@ reported in standard deviations of $\tilde Y$ and benchmarked against the observ
 \end{algorithmic}
 \end{algorithm}
 
+\section{A PRIORI BIAS FROM SENSOR PRIMITIVES}\label{sec:prior}
+The law takes $v$ as given. For a continuous latent confounder, $v$ has a closed form in the sensor's information rate and the state's persistence, so the bias of posterior-conditioned DML can be predicted before $(T,Y)$ are seen.
+\begin{proposition}[Wiener smoothing error]\label{prop:wiener}
+Let $u_t$ be a stationary unit-variance AR(1) with coefficient $\phi$, observed as $Z_t=hu_t+\varepsilon_t$ with $\varepsilon_t\sim N(0,R)$ i.i.d., and let $\iota=h^\top R^{-1}h$. Conditioning on the Kalman-smoothed mean leaves residual variance
+\begin{equation}
+v=\frac{1-\phi^2}{\sqrt{\bigl(1+\phi^2+\iota(1-\phi^2)\bigr)^2-4\phi^2}},
+\end{equation}
+and the bias is $\Delta_T\Delta_g v/(\Delta_T^2 v+\sigma^2)$ by Thm.~\ref{thm:law} with $u$ in place of $S$. For $0.02\ll\iota\ll(1-\phi^2)^{-1}$, $v\approx\tfrac12\sqrt{(1-\phi^2)/\iota}$, so the worst-case bias $|\Delta_g|\sqrt v/(2\sigma)$ decays only as $\iota^{-1/4}$; for $\iota\gg(1-\phi^2)^{-1}$, $v\approx1/\iota$ and it decays as $\iota^{-1/2}$.
+\end{proposition}
+The proof is the Wiener--Kolmogorov smoothing error $v=\int S_u/(1+\iota S_u)\,d\omega/2\pi$ with $S_u(\omega)=(1-\phi^2)/|1-\phi e^{-i\omega}|^2$, evaluated with $\int_0^{2\pi}d\omega/2\pi\,(A-2\phi\cos\omega)^{-1}=(A^2-4\phi^2)^{-1/2}$ \citep{anderson1979optimal}. In 18 simulated configurations ($\phi\in\{0.9,0.97\}$, three sensor strengths, three $\Delta_T$; Table~\ref{tab:kalman}), the closed form matches the Kalman smoother's variance to $2\times10^{-4}$, and the predicted bias matches the DML bias with correlation $0.9987$ and maximum error $0.021$. For a persistent state, halving the worst-case bias therefore needs about $16\times$ the sensor information while $\iota\ll(1-\phi^2)^{-1}$. Discretizing $u$ into a $K$-state HMM posterior acts as a sieve: at $\phi=0.97$, $\iota=2.76$, $\Delta_T=1$, the bias falls from $0.82$ ($K{=}2$) to $0.52$ ($K{=}3$) and $0.39$ ($K{=}4$) and then stops improving ($0.40$ at $K{=}6$), matching the law with $v_K=\Var(u\mid X,\hg_K)$ ($0.78,0.49,0.37,0.38$). The result applies to the linear-Gaussian latent case; we have not derived the analogue for a finite-state chain.
+\begin{table}[h]
+\caption{Bias predicted from primitives vs.\ observed ($\Delta_g{=}3$, $\Delta_T{=}1$, $\sigma^2{=}1$).}\label{tab:kalman}
+\centering\small
+\input{generated/tab_kalman.tex}
+\end{table}
+
 \section{BEYOND SENSITIVITY: WHEN CAN $b$ BE LEARNED?}\label{sec:prox}
 The law leaves $b$ unidentified. Two routes learn it, and they fail differently.
 \textbf{Joint model.} Treat $(Z,T,Y)$ as emissions of the chain (a Markov-switching regression with a common $\theta$) and maximize the likelihood by EM. When the regime model is correct this is essentially unbiased and has the smallest variance in our simulations, even when $Z$ is uninformative (App.~\ref{app:ext}); the price of the modular, two-stage posterior used above is exactly the law. But it inherits the regime model: if the latent confounder is a continuous AR(1) process, a $K{=}2$ joint fit is as biased as posterior-DML (about $+0.8$ on $\theta{=}1$).
@@ -213,6 +229,11 @@ We used large language models to assist with code, derivations, and drafting. Th
 \setlength{\itemsep}{-1pt}
 \footnotesize
 \providecommand{\natexlab}[1]{#1}
+
+\bibitem[Anderson and Moore(1979)]{anderson1979optimal}
+B.~D.~O. Anderson and J.~B. Moore.
+\newblock \emph{Optimal Filtering}.
+\newblock Prentice-Hall, 1979.
 
 \bibitem[Cappé et~al.(2005)]{cappe2005inference}
 O.~Cappé, E.~Moulines, and T.~Rydén.

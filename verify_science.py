@@ -153,6 +153,16 @@ def test_heterogeneous_formula():
     check('heterogeneous-effects formula (abs err < 0.05)', abs(est - pred) < 0.05, f'(est {est:.3f}, formula {pred:.3f})')
 
 
+def test_wiener_closed_form():
+    from src.bias_law.ext_kalman import kalman_smoother, sim, H, R
+    errs = []
+    for phi, snr in ((0.9, 0.5), (0.97, 1.0), (0.97, 2.0)):
+        u, X, Z, T, Y = sim(0, 6000, phi, snr, 1.0, 3.0)
+        _, Ps = kalman_smoother(Z, phi, snr)
+        errs.append(abs(Ps[200:-200].mean() - BL.wiener_smoother_var(phi, BL.sensor_information(H, R, snr))))
+    check('Wiener closed-form smoothing variance matches Kalman smoother (< 2e-3)', max(errs) < 2e-3, f'(max {max(errs):.1e})')
+
+
 if __name__ == '__main__':
     test_exact_law_and_hump()
     test_calibration_bound()
@@ -160,6 +170,7 @@ if __name__ == '__main__':
     test_heterogeneous_formula()
     test_learned_hmm_dependent()
     test_three_state_matrix_law()
+    test_wiener_closed_form()
     n_ok = sum(ok for _, ok in RESULTS)
     print(f"\n{n_ok}/{len(RESULTS)} scientific checks passed")
     sys.exit(0 if n_ok == len(RESULTS) else 1)

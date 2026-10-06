@@ -18,3 +18,19 @@ tab = ("\\begin{tabular}{llccc}\n\\toprule\nScenario & $\\Delta_T$ & Posterior-D
        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 open(os.path.join(R, 'paper/generated/tab_ext.tex'), 'w').write(tab)
 print(tab)
+
+# --- Kalman / Wiener primitives table
+import sys
+sys.path.insert(0, os.path.abspath(R))
+from src.bias_law import bias_law as BL
+k = pd.read_csv(os.path.join(R, 'reports/bias_law/x6_kalman.csv'))
+H, RR = [1, 1.5], [[1, .2], [.2, 1]]
+rows = []
+for _, r in k[k.dT == 1.0].iterrows():
+    io = BL.sensor_information(H, RR, r.snr)
+    vc = BL.wiener_smoother_var(r.phi, io)
+    rows.append(f"{r.phi:g} & {io:.2f} & {vc:.3f} & {BL.law_bias(1.0, 3.0, vc):.3f} & {r.bias:.3f} \\\\")
+tab2 = ("\\begin{tabular}{ccccc}\n\\toprule\n$\\phi$ & $\\iota$ & closed-form $v$ & predicted bias & observed bias \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+open(os.path.join(R, 'paper/generated/tab_kalman.tex'), 'w').write(tab2)
+print(tab2)

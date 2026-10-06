@@ -31,3 +31,8 @@ Findings (honest):
 - NEGATIVE results: lagged outcome Y_{t-h} as self-contained negative control is not robust (AR shocks: bias 0.07-0.21); smoothed posterior is an invalid instrument with lagged-outcome NC (bias ~0.2 at N=40k), raw Z_t is valid.
 - No valid negative control/excluded proxy exists in the four-city data (meteorology affects PM2.5 directly), so no proximal real-data claim.
 - Not best-paper-level: contributions remain a calibrated-HMM OVB law + honest comparison map. Unverified: author lists of arXiv:2208.00105 (not cited in paper).
+
+## Round 3: primitives, sieve, real-data joint check
+- `bias_law.wiener_smoother_var`: closed-form residual variance v = (1-phi^2)/sqrt((1+phi^2+iota(1-phi^2))^2-4phi^2) for an AR(1) latent smoothed from sensors with information iota = h'R^-1 h. Matches the Kalman smoother to 2e-4; predicts DML bias before seeing (T,Y) (corr 0.9987, max err 0.021 over 18 configs; `x6_kalman.csv`). Regimes: v ~ 0.5*sqrt((1-phi^2)/iota) for 0.02<<iota<<1/(1-phi^2) (worst-case bias ~ iota^-1/4), v ~ 1/iota beyond. Wiener-Kolmogorov theory is classical; the causal-bias consequence is the contribution; not derived for finite-state chains.
+- K-state HMM posterior as a sieve for the continuous latent (`x6_sieve.csv`): bias 0.82/0.52/0.39/0.40 for K=2/3/4/6 vs law 0.78/0.49/0.37/0.38.
+- Real cities, joint Markov-switching MLE vs posterior-DML (`x7_real_joint.csv`): law-implied corrections are negligible (v_hat 0.005-0.035 and small a_hat), so law-adjusted theta ~ theta_DML; joint MLE differs (Delhi 0.47 vs 0.58, Mumbai 2.35 vs 1.90, Kolkata 0.42 vs 0.12, Bengaluru ~0), likely Gaussian/shared-variance misspecification and data quality (Kolkata Var(T~)=0.006). Not used in the paper as evidence of confounding.

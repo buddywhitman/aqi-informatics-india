@@ -87,3 +87,18 @@ def robustness_value(theta_hat, a_hat, Sigma_hat, var_Ttilde):
     if denom < 1e-12:
         return np.inf
     return float(abs(theta_hat) * var_Ttilde / denom)
+
+
+def wiener_smoother_var(phi, iota):
+    """Steady-state smoothing error variance of a unit-variance AR(1) latent (coefficient phi) observed in white noise with
+    per-step information iota = h' R^{-1} h:   v = (1-phi^2) / sqrt((1+phi^2+iota(1-phi^2))^2 - 4 phi^2).
+    Slow-state limit: v ~ 0.5*sqrt((1-phi^2)/iota)  (so sup-bias ~ iota^{-1/4})."""
+    import numpy as _np
+    A = 1 + phi ** 2 + iota * (1 - phi ** 2)
+    return (1 - phi ** 2) / _np.sqrt(A ** 2 - 4 * phi ** 2)
+
+
+def sensor_information(h, R, snr=1.0):
+    import numpy as _np
+    h = snr * _np.asarray(h, float)
+    return float(h @ _np.linalg.solve(_np.asarray(R, float), h))
