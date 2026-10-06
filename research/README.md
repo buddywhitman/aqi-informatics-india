@@ -71,6 +71,11 @@ A clean multi-task experiment uses the **same four latent microstates, same obse
 
 This provides a direct experimental demonstration of the broad principle: **representation optimality is a relation between a representation and a downstream functional, not an intrinsic property of the representation alone.** The exact same high-fidelity latent representation should be abstracted differently depending on the query.
 
+### R14. A train-only estimated risk can adaptively choose whether to coarsen, but the hard heterogeneity boundary remains difficult
+A proof-of-concept selector evaluates the fine K=4 partition and all three K=2 pairings using only the training split, with estimated risk = within-group effect heterogeneity + pooled estimation variance. The chosen partition is frozen before held-out effect estimation. For small/moderate heterogeneity it is close to the oracle partition selector: at delta=0 and N=1600, mean held-out error is 0.089 versus oracle 0.085 and refined 0.681; at delta=0.25, 0.247 versus oracle 0.215 and refined 0.675. As heterogeneity becomes large, selection becomes harder and the fine representation catches up: at delta=1-2 the selector no longer reliably beats refinement. This is desirable behavior conceptually but the current criterion is not yet minimax or theoretically calibrated.
+
+The result strengthens the feasibility of **data-adaptive task abstraction** while also showing that partition selection near the bias-information crossover is itself a nontrivial statistical problem.
+
 ## Reproduction
 
 Run:
@@ -84,6 +89,7 @@ python research/crossfit_task_coarsening.py
 python research/weak_overlap_refinement_paradox.py
 python research/abstraction_tradeoff.py
 python research/multitask_abstraction.py
+python research/risk_selected_abstraction.py
 ```
 
 The script writes raw/summary CSVs under `research/results/`. Increase `PHASE_REPS`, `REG_REPS`, and `TRANSITION_REPS` for publication-grade Monte Carlo precision.
