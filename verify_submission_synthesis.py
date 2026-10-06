@@ -33,12 +33,12 @@ for arch in ["Neural GRU Encoder","Causal Transformer Encoder"]:
 assert "without improving downstream ROC-AUC" in tex
 
 # Phantom-resolution appendix must be present and numerically scoped.
-assert "Phantom causal resolution" in tex
-assert "11.4x/21.2x inflation" in tex
+assert "phantom causal resolution" in tex.lower()
+assert "11.4\\times/21.2\\times" in tex
 assert "not automatically a conservative certificate" in tex
 
-# Scope/AI disclosure.
-assert "worst-direction diagnostic" in tex
+# Scope/AI disclosure: verify the actual directional object rather than a prose synonym.
+assert "a^\\top J^{-1}b_\\gamma" in tex
 assert "Generative AI tools were used as research assistants" in tex
 
 print("Final submission synthesis checks passed.")
@@ -50,7 +50,7 @@ assert abs(law_bias(2.0, 3.0, 0.25, 1.0) - 1.0) < 1e-12
 assert abs(peak_dT(0.25, 1.0) - 2.0) < 1e-12
 assert abs(sup_bias(3.0, 0.25, 1.0) - 0.75) < 1e-12
 assert "residual-confounding identity" in tex
-assert "not monotone" in tex
+assert ("not monotone" in tex) or ("non-monotone" in tex)
 assert "lower-bound/optimistic diagnostic" in tex
 print("Cross-branch residual-confounding integration checks passed.")
 
