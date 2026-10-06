@@ -38,7 +38,6 @@ We study causal estimation under latent Markov confounding and characterize how 
 │   ├── hierarchical_reliability_regression.py # 15-world fixed-effects regressions & LOWO cross-validation
 │   ├── financial_regime_transfer.py # Multi-domain synthetic transfer & selective abstention policy
 │   ├── data_pipeline_clean.py      # Clean data engineering pipeline for 14,122 hourly records
-│   ├── generate_paper_figures.py   # Publication figures generator (Figures 1–5)
 │   ├── regime_intelligence.py      # Meteorological regime validation and profiling
 │   └── requirements.txt            # Minimal pip environment dependencies
 ├── reports/                        # Synchronized CSV report artifacts cited in manuscript
