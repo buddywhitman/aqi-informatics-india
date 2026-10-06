@@ -44,7 +44,24 @@ REQUIRED_FILES = [
     "src/financial_regime_transfer.py",
     "src/data_pipeline_clean.py",
     "src/regime_intelligence.py",
+
     "src/requirements.txt",
+
+    # Final post-audit evidence promoted to supplementary material
+    "research/PHANTOM_CAUSAL_RESOLUTION.md",
+    "research/POSTERIOR_SECOND_MOMENT_COMPLETION.md",
+    "research/COMPLETION_ROBUSTNESS_LIMITS.md",
+    "research/DIRECTIONAL_RELIABILITY_OPERATOR.md",
+    "research/DUAL_RESOLUTION_PRINCIPLE.md",
+    "research/FINAL_REAL_DATA_COLLISION.md",
+    "research/REPRESENTATION_ZOO_REANALYSIS.md",
+    "research/NOVELTY_COLLISION_AUDIT.md",
+    "research/FINAL_AUDIT_CHECKLIST.md",
+    "research/generated_state_resolution_inflation.py",
+    "research/posterior_second_moment_completion.py",
+    "research/completion_misspecification.py",
+    "research/real_data_collision_panel.py",
+    "research/zoo_task_relative_reanalysis.py",
 
     # Clean Datasets
     "data/processed_clean/combined_hourly_clean.csv",
