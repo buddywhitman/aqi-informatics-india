@@ -91,26 +91,27 @@ python src/data_pipeline_clean.py
 # Step 2: Run 500-draw Monte Carlo difficulty frontier benchmark
 python src/synthetic_dgp_benchmark.py
 
-# Step 3: Run real-world megacity evaluation and dynamic impulse-response functions
+# Step 3: Run corrected 7x7 representation-by-task factorial mechanism test
+python src/factorial_reliability_experiment.py
+
+# Step 4: Run real-world megacity evaluation and dynamic exposure-response functions
 python src/empirical_evaluation.py
 
-# Step 4: Run representation zoo evaluation (HMM, GRU, Transformer, SSM)
+# Step 5: Run representation zoo evaluation (HMM, GRU, Transformer, SSM)
 python src/train_real_representation_zoo.py
 
-# Step 5: Run hierarchical reliability regressions across 15 benchmark worlds
+# Step 6: Run hierarchical reliability regressions across 15 benchmark worlds
 python src/hierarchical_reliability_regression.py
 
-# Step 6: Run multi-domain transfer and selective abstention policy
+# Step 7: Run multi-domain transfer and selective abstention policy
 python src/financial_regime_transfer.py
 
-# Step 7: Run post-hoc calibration interventions on representation zoo
+# Step 8: Run post-hoc calibration interventions on representation zoo
 python src/calibration_intervention_zoo.py
 
-# Step 8: Run pre-treatment lead placebo falsification checks
+# Step 9: Run pre-treatment lead placebo falsification checks
 python src/empirical_falsification_checks.py
 
-# Step 9: Generate all publication figures (Figures 1-5)
-python src/generate_paper_figures.py
 ```
 
 ### 3. Automated Dual-Layer Verification
