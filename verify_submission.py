@@ -107,6 +107,14 @@ def check_posterior_adjusted():
 def check_estimator():
     r = subprocess.run([sys.executable, os.path.join(ROOT, 'verify_science.py')], capture_output=True, text=True, cwd=ROOT)
     ok(r.returncode == 0 and 'PASSED' in r.stdout, 'estimator invariances (verify_science.py)')
+    r = subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'src',
+                        '-p', 'test_inference_regression.py', '-v'], capture_output=True, text=True, cwd=ROOT)
+    ok(r.returncode == 0, 'coupled score, centered HAC and occupation covariance regressions')
+    if r.returncode:
+        print(r.stdout + r.stderr)
+    r = subprocess.run([sys.executable, os.path.join(ROOT, 'src', 'synthesis',
+                       'nonidentification_check.py')], capture_output=True, text=True, cwd=ROOT)
+    ok(r.returncode == 0 and 'PASSED' in r.stdout, 'assumption-consistent non-identification probability tables')
 
 
 def pdftext(path, first=None, last=None):

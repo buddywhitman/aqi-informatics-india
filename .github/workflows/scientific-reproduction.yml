@@ -1,0 +1,71 @@
+name: scientific-reproduction
+on:
+  push:
+    branches: [master]
+    paths:
+      - src/or_dml.py
+      - src/synthesis/estimators.py
+      - src/synthesis/semisynthetic_hourly.py
+      - .github/workflows/scientific-reproduction.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corrected-inference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install scientific dependencies
+        run: pip install numpy pandas scipy scikit-learn hmmlearn statsmodels matplotlib sympy joblib
+      - name: Install manuscript tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-science poppler-utils
+      - name: Scientific regressions and analytical checks
+        run: |
+          python -m unittest discover -s src -p test_inference_regression.py -v
+          python src/synthesis/nonidentification_check.py
+          python src/synthesis/closed_form_factorial.py
+          python src/synthesis/coupled_law_check.py
+      - name: Recompute affected uncertainty results
+        run: |
+          python src/synthesis/frontier_designs.py
+          python src/synthesis/semisynthetic_hourly.py
+          python src/synthesis/city_stress_hourly.py
+          python src/bias_law/hac_sensitivity.py
+      - name: Rebuild and verify artifacts
+        run: |
+          python src/synthesis/make_figures.py
+          python src/synthesis/make_tables_numbers.py
+          cd paper
+          python build_appendix.py
+          python prune_bib.py
+          for pass in 1 2 3; do
+            pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null || { tail -40 main.log; exit 1; }
+          done
+          cd ..
+          cp paper/main.pdf AISTATS2027_Main_Paper.pdf
+          python src/build_supplementary_archive.py
+          python verify_submission.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: corrected-inference-artifacts
+          path: |
+            AISTATS2027_Main_Paper.pdf
+            AISTATS2027_Supplementary_Material.zip
+            paper/main.pdf
+            paper/generated/
+            paper/plots/fig*.pdf
+            paper/plots/fig*.png
+            reports/synthesis/
+            reports/bias_law/e6_hac_lag_sensitivity.csv

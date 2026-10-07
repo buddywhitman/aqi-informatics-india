@@ -300,14 +300,14 @@ def main(outdir):
     keep = ['Oracle DML', 'Standard DML', 'Block DML', 'DML + Z Controls (Ridge)', 'DML + Z Controls (GBM)',
             'Regime FE DML (Hard)', 'Unregularized Coupled DML', 'Spectral OR-DML (Ours)', 'Filtered OR-DML (Ours)',
             'Decoupled Soft OR-DML', 'HMM(Z, T) OR-DML']
-    lines = ['\\begin{tabular}{llccccc}', '\\toprule',
-             '$\\Delta_Z$ & Estimator & mean $|\\mathrm{bias}|$ & median & RMSE & cov.\\ S/P (\\%) & $\\lambda_{\\min}$ \\\\', '\\midrule']
+    lines = ['\\begin{tabular}{llcccc}', '\\toprule',
+             '$\\Delta_Z$ & Estimator & mean $|\\mathrm{bias}|$ & median & RMSE & $\\lambda_{\\min}$ \\\\', '\\midrule']
     for d in sorted(bm.Delta_Z.unique()):
         sub = bm[bm.Delta_Z == d].set_index('Method')
         for i, m in enumerate(keep):
             r = sub.loc[m]
             nm = m.replace('(Ours)', '').replace('HMM(Z, T)', 'HMM$(Z,T)$').strip()
-            lines.append(f'{f(d, 1) if i == 0 else ""} & {nm} & {r.Abs_Bias:.3f} & {r.Median_Abs_Bias:.3f} & {r.RMSE:.3f} & {r.Coverage_SATE_95_Pct:.0f}/{r.Coverage_PATE_95_Pct:.0f} & {r.Mean_Lambda_Min:.3f} \\\\')
+            lines.append(f'{f(d, 1) if i == 0 else ""} & {nm} & {r.Abs_Bias:.3f} & {r.Median_Abs_Bias:.3f} & {r.RMSE:.3f} & {r.Mean_Lambda_Min:.3f} \\\\')
         lines.append('\\midrule' if d != bm.Delta_Z.max() else '\\bottomrule')
     lines.append('\\end{tabular}')
     tabs['tab_frontier_full'] = '\n'.join(lines)
@@ -339,15 +339,15 @@ def main(outdir):
     L.add('RegRatio', rg.MSE.iloc[0] / rg.MSE[best_i], s, 'MSE(0)/MSE(best)', '{:.0f}')
     L.add('RegCovBest', rg.Coverage_95_Pct[best_i], s, 'coverage at best lambda', '{:.0f}')
     L.add('RegCovZero', rg.Coverage_95_Pct.iloc[0], s, 'coverage at lambda=0', '{:.0f}')
-    lines = ['\\begin{tabular}{lcccc}', '\\toprule', '$\\lambda$ & $|\\mathrm{bias}|$ & variance & MSE & coverage (\\%) \\\\', '\\midrule']
+    lines = ['\\begin{tabular}{lccc}', '\\toprule', '$\\lambda$ & $|\\mathrm{bias}|$ & variance & MSE \\\\', '\\midrule']
     for r in rg.itertuples():
-        lines.append(f'{r.Lambda:g} & {r.Abs_Bias:.4f} & {r.Variance:.4f} & {r.MSE:.4f} & {r.Coverage_95_Pct:.0f} \\\\')
+        lines.append(f'{r.Lambda:g} & {r.Abs_Bias:.4f} & {r.Variance:.4f} & {r.MSE:.4f} \\\\')
     lines += ['\\bottomrule', '\\end{tabular}']
     tabs['tab_regularization'] = '\n'.join(lines)
     ms = pd.read_csv(R('multiregime_scalability_summary.csv'))
-    lines = ['\\begin{tabular}{lccccc}', '\\toprule', '$K$ & ATE bias & ATE SE & $\\|\\hat\\theta-\\theta\\|_2$ & $\\lambda_{\\min}$ & $\\kappa$ \\\\', '\\midrule']
+    lines = ['\\begin{tabular}{lcccc}', '\\toprule', '$K$ & ATE bias & $\\|\\hat\\theta-\\theta\\|_2$ & $\\lambda_{\\min}$ & $\\kappa$ \\\\', '\\midrule']
     for r in ms.itertuples():
-        lines.append(f'{r.K} & {r.ATE_Bias:.3f} & {r.ATE_SE:.3f} & {r.L2_Error:.3f} & {r.Lambda_Min:.3f} & {r.Kappa_J:.2f} \\\\')
+        lines.append(f'{r.K} & {r.ATE_Bias:.3f} & {r.L2_Error:.3f} & {r.Lambda_Min:.3f} & {r.Kappa_J:.2f} \\\\')
     lines += ['\\bottomrule', '\\end{tabular}']
     tabs['tab_scalability'] = '\n'.join(lines)
     sv = pd.read_csv(R('synthesis', 'soft_vs_hard_continuous_mixture_summary.csv')).iloc[0]

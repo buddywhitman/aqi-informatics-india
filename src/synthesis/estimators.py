@@ -33,6 +33,7 @@ def purged(n, k=5, emb=24):
 
 def hac(psi, L=24):
     """Newey-West long-run covariance of the rows of psi (n x d) with Bartlett weights."""
+    psi = np.asarray(psi) - np.mean(psi, axis=0)
     n = len(psi)
     om = psi.T @ psi / n
     for l in range(1, min(L, n - 1) + 1):

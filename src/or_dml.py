@@ -258,7 +258,7 @@ class OverlapAwareRegimeDML:
     Provides:
     - Spectral regularized causal estimation: theta_hat_lambda = (J_hat + lambda I)^{-1} S_hat.
     - Observability and overlap diagnostics: lambda_min(J), condition number kappa(J), posterior entropy H_bar.
-    - Asymptotically valid HAC sandwich standard errors and un-truncated p-values.
+    - Centered HAC uncertainty for the fitted proxy target, conditional on the HMM.
     - Both retrospective smoothing (offline) and forward filtering (online) regimes.
     """
     def __init__(self,
@@ -464,14 +464,29 @@ class OverlapAwareRegimeDML:
                 inv_J_reg = np.linalg.pinv(J_mat + eff_lambda * np.eye(K))
             theta_vec = inv_J_reg @ S_vec
         
-        # 6. Joint HAC Sandwich Covariance Matrix
-        # Influence score for each observation t: psi_t = w_t * tilde_T_t * (tilde_Y_t - theta * tilde_T_t)
-        scores = np.zeros((N, K))
-        for k in range(K):
-            scores[:, k] = w[:, k] * tilde_T[k] * (tilde_Y[k] - theta_vec[k] * tilde_T[k])
+        # 6. Use precisely the observation moments whose average was solved.
+        # Soft coupled weights have off-diagonal terms; the legacy scalar
+        # regime score has a different derivative and is not its influence score.
+        design = w * tilde_T.T
+        moment_J = design[:, :, None] * design[:, None, :]
+        if self.weighting_mode == 'matched':
+            for k in range(K):
+                moment_J[:, k, k] = w[:, k] * tilde_T[k] ** 2
+        if self.solve_mode == 'decoupled':
+            for j in range(K):
+                for k in range(K):
+                    if j != k:
+                        moment_J[:, j, k] = 0.0
+        moment_S = design * tilde_Y.T
+        scores = moment_S - np.einsum('njk,k->nj', moment_J, theta_vec)
+        self.scores_ = scores.copy()
+        # At a ridge target E[psi] = lambda * theta, not zero.
+        scores -= scores.mean(axis=0)
+        self.centered_scores_ = scores
+        self.inference_scope_ = 'proxy_target_conditional_on_fitted_hmm'
             
         Omega = (scores.T @ scores) / N
-        for lag in range(1, self.hac_lag + 1):
+        for lag in range(1, min(self.hac_lag, N - 1) + 1):
             weight = 1.0 - (lag / (self.hac_lag + 1.0))
             Gamma_lag = (scores[lag:].T @ scores[:-lag]) / N
             Omega += weight * (Gamma_lag + Gamma_lag.T)
@@ -493,25 +508,13 @@ class OverlapAwareRegimeDML:
             for b in range(self.n_boot):
                 block_starts = rng.randint(0, max(1, N - self.boot_block_len + 1), size=n_blocks)
                 boot_idx = np.concatenate([np.arange(s, s + self.boot_block_len) for s in block_starts])[:N]
-                if self.solve_mode == 'decoupled':
-                    for k in range(K):
-                        s_b = np.mean(w[boot_idx, k] * tilde_T[k, boot_idx] * tilde_Y[k, boot_idx])
-                        j_b = np.mean(w[boot_idx, k] * (tilde_T[k, boot_idx] ** 2))
-                        boot_thetas[b, k] = s_b / max(j_b + eff_lambda, 1e-12)
-                else:
-                    J_b = np.zeros((K, K))
-                    S_b = np.zeros(K)
-                    for j in range(K):
-                        S_b[j] = np.mean(w[boot_idx, j] * tilde_T[j, boot_idx] * tilde_Y[j, boot_idx])
-                        for k in range(K):
-                            if j == k and self.weighting_mode == 'matched':
-                                J_b[j, k] = np.mean(w[boot_idx, k] * (tilde_T[k, boot_idx] ** 2))
-                            else:
-                                J_b[j, k] = np.mean(w[boot_idx, j] * w[boot_idx, k] * tilde_T[j, boot_idx] * tilde_T[k, boot_idx])
-                    boot_thetas[b] = np.linalg.solve(J_b + eff_lambda * np.eye(K), S_b)
+                J_b = moment_J[boot_idx].mean(axis=0)
+                S_b = moment_S[boot_idx].mean(axis=0)
+                boot_thetas[b] = np.linalg.pinv(J_b + eff_lambda * np.eye(K)) @ S_b
             for k in range(K):
                 self.boot_se_regimes_[k] = float(np.std(boot_thetas[:, k]))
             self.boot_ate_se_ = float(np.std(boot_thetas @ self.regime_weights_))
+            self.bootstrap_scope_ = 'fixed_hmm_and_nuisance_residual_block_bootstrap'
         
         for k in range(K):
             th = float(theta_vec[k])
@@ -523,25 +526,25 @@ class OverlapAwareRegimeDML:
             self.se_regimes_[k] = se
             self.p_regimes_[k] = p_val
             
-        # 7. Aggregate ATE Inference (with Markov state occupation covariance)
+        # 7. Empirical posterior-occupation target. Include both its random
+        # shares and their cross-covariance with theta in one joint HAC.
         pi = self.regime_weights_
         self.Sigma_ = Sigma
         self.ate_ = float(pi @ theta_vec)
         var_sate = float(pi @ Sigma @ pi)
         self.sate_se_ = float(np.sqrt(max(var_sate, 1e-12)))
         
-        # Proposition 6 Markov regime occupation variance
-        try:
-            Pi = self.hmm_.A
-            ones = np.ones((K, 1))
-            Z_ergodic = np.linalg.inv(np.eye(K) - Pi + ones @ pi.reshape(1, -1))
-            D_pi = np.diag(pi)
-            Cov_occ = (D_pi @ Z_ergodic + Z_ergodic.T @ D_pi - D_pi - np.outer(pi, pi)) / N
-            var_occ = max(float(theta_vec.T @ Cov_occ @ theta_vec), 0.0)
-        except Exception:
-            var_occ = 0.0
-            
-        self.ate_se_ = float(np.sqrt(max(var_sate + var_occ, 1e-12)))
+        bread = (np.diag(1.0 / (np.diag(J_mat) + eff_lambda))
+                 if self.solve_mode == 'decoupled' else inv_J_reg)
+        ate_influence = scores @ bread.T @ pi + (w - pi) @ theta_vec
+        ate_influence -= ate_influence.mean()
+        self.ate_influence_ = ate_influence
+        ate_omega = float(ate_influence @ ate_influence / N)
+        for lag in range(1, min(self.hac_lag, N - 1) + 1):
+            ate_omega += 2 * (1 - lag / (self.hac_lag + 1)) * float(
+                ate_influence[lag:] @ ate_influence[:-lag] / N)
+        self.ate_se_ = float(np.sqrt(max(ate_omega / N, 1e-12)))
+        # Compatibility alias: this is not a transition-MLE stationary ATE SE.
         self.pate_se_ = self.ate_se_
         ate_z = abs(self.ate_ / self.ate_se_) if self.ate_se_ > 0 else 0.0
         self.ate_p_ = float(2.0 * norm.sf(ate_z))
@@ -549,7 +552,12 @@ class OverlapAwareRegimeDML:
         return self
 
     def summary(self) -> pd.DataFrame:
-        """Return formatted statistical summary with genuine asymptotic p-values."""
+        """Return Wald summaries for proxy targets, conditional on the fitted HMM.
+
+        These do not account for HMM fitting or latent-state bias and are not
+        certified causal intervals for full-sample smoothing. sate_se_ treats
+        empirical shares as fixed; ate_se_ includes their joint HAC influence.
+        """
         records = []
         for k in range(self.n_regimes):
             th = self.theta_regimes_[k]

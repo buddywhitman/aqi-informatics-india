@@ -56,3 +56,12 @@ research/              research ledger (phantom resolution, directional reliabil
 `master` consolidates the following branches. The submitted draft (`feature/or-dml-phase2-pivot`) supplied the locked abstract and the estimator theory. `v2-bias-law` supplied the residual-state bias law and the time-grid audit. `research/task-relative-reliability` supplied phantom resolution and directional reliability. `v2` is an ancestor of the submitted draft. The other branches hold the original applied study (`agent-*`), a stale snapshot (`imgbot`) and earlier submission integrations (`submission/*`).
 
 Appendix Q of the paper records every claim that changed during consolidation: the two-hour time grid, the placebo alignment, the scope of ε/λ_min, the estimator design and ranking, and the analyses retired from the evidence.
+
+
+## Scientific correction (October 2026)
+
+The current proof uses an assumption-consistent randomized-treatment construction: regime effects are unidentified in the memoryless uninformative-proxy model class, while its average effect is identified. The inference appendix is written for posterior-adjusted coupled moments under explicit sufficient conditions; it excludes full-sample smoothing.
+
+The canonical estimator now uses the derivative and centered score of the equation it solves. `ate_se_` includes empirical posterior-occupation cross-covariance; `sate_se_` treats its shares as fixed. `pate_se_` is a compatibility alias and does not implement transition-MLE stationary inference. HAC and residual bootstrap intervals exclude HMM fitting uncertainty and latent bias. Misspecified posterior Gini has no universal lower-bound interpretation. Legacy coverage and rejection percentages from the earlier canonical variance implementation are retired from the paper; historical result files remain for provenance.
+
+Run `python -m unittest discover -s src -p test_inference_regression.py -v` for the numerical regressions. The `scientific-reproduction` workflow recomputes affected current uncertainty results and uploads rebuilt artifacts; it does not commit.

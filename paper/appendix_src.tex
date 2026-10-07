@@ -36,7 +36,21 @@ with $\pi_k(X)=P(S_t{=}k\mid X_t)$, $\bar m(X)=\E[T_t\mid X_t]$, $\Delta m_k(X)=
 
 \section{PROOF OF THEOREM~\ref{thm:impossibility}}
 \label{app:proof_thm2}
-%%SEG 1015-1038%%
+We exhibit two models satisfying Assumptions~\ref{ass:unconfoundedness}--\ref{ass:innovation} with the same observable law for every sequence length. Let $S_t$ be independent Bernoulli$(1/2)$, so both rows of the transition matrix are $(1/2,1/2)$. Let $Z_t$ be independent standard Gaussian noise, $X_t$ independent of $(S_t,Z_t)$, and $T_t$ independent Bernoulli$(1/2)$. All sequences are independent across time. Thus
+\[
+P(S_t=s\mid X_t,T_t,Z_{1:N})=P(S_t=s\mid Z_{1:N})=1/2,
+\]
+which verifies proxy sufficiency rather than contradicting it. State positivity holds with $c_0=\eta=1/2$, treatment variance is $1/4$ in both states, and all treatment and outcome variables are bounded.
+
+Generate independent uniforms $E_t$ and define potential outcomes $Y_t(a)=\one\{E_t\le g_{S_t}+\theta_{S_t}a\}$ for $a\in\{0,1\}$. Set $Y_t=Y_t(T_t)$ and $U_t=Y_t-g_{S_t}-\theta_{S_t}T_t$. The probabilities below lie in $[0,1]$; treatment is independent of potential outcomes, and $\E[U_t\mid X_t,S_t,T_t,Z_{1:N}]=0$. Also $V_t=T_t-1/2$ has conditional mean zero.
+\begin{center}\begin{tabular}{c|cc|cc}
+Model & $\theta_0$ & $\theta_1$ & $g_0$ & $g_1$\\\hline
+$P_1$ & $0.20$ & $0.20$ & $0.30$ & $0.50$\\
+$P_2$ & $0.10$ & $0.30$ & $0.40$ & $0.40$
+\end{tabular}\end{center}
+In both models, $P(Y_t=1\mid T_t=0)=0.40$ and $P(Y_t=1\mid T_t=1)=0.60$. Since $Y_t$ is binary, these specify its entire conditional distribution. The distribution of $(T,X,Z)$ is also identical, and temporal independence gives equality of the observable sequence laws for every $N\ge1$. The effect vectors $(0.20,0.20)$ and $(0.10,0.30)$ are not permutations. The enumeration in \texttt{src/synthesis/nonidentification\_check.py} verifies the probability tables, posterior sufficiency and overlap.
+
+\textbf{Scope.} This proves non-identification of the \emph{regime-specific vector} in the stated memoryless model class. Both models have population ATE $0.20$, which randomized treatment identifies; the example does not establish ATE non-identification. It does not imply that every persistent latent model with uninformative $Z$ is unidentified: outcomes and treatment histories can supply identifying information under additional joint-model restrictions \citep{allman2009identifiability}. $\square$
 
 \section{PROOF OF THEOREM~\ref{thm:graceful}}
 \label{app:proof_thm3}
@@ -132,7 +146,7 @@ Under (E) there are $r>0$, $C<\infty$ with $D_t:=\sup_{\|\vartheta-\vartheta^*\|
 Assume (E) and (H1), and let $\delta_X=N^{-1}\sum_t\E(\E[D_t\mid Z,X]-\gamma^*_t)^2$ be the regime information carried by the controls beyond the proxies. Then $N^{-1}\sum_t\|\hat\gamma_t-\gamma^*_t\|^2=O_P(N^{-1})$, $|\E\hat v-v^*|=O(N^{-1/2})$, $CE\le(\sqrt{\delta_X}+O(N^{-1/2}))^2$ and $|v_N-v^*|\le2\sqrt{\delta_X}+O(N^{-1/2})$. The plug-in is therefore $N^{-1/2}$-accurate when $\delta_X=0$, and its guarantee degrades by $\sqrt{\delta_X}$ otherwise.
 \end{proposition}
 \emph{Proof.} On $\{\|\hat\vartheta-\vartheta^*\|\le r\}$ the mean-value theorem and Lemma~\ref{lem:h2} give $\|\hat\gamma_t-\gamma^*_t\|\le D_t\|\hat\vartheta-\vartheta^*\|$, and averaging gives the first claim. Since $|x(1-x)-y(1-y)|\le|x-y|$ the second follows. With $P$ the $L^2$ projection onto $\sigma(X,\hat\gamma)$, $CE=\|P(\hat\gamma-\gamma^X)\|^2\le\|\hat\gamma-\gamma^X\|^2$, and $|v_N-v^*|\le\|c-\gamma^*\|\le\|\hat\gamma-\gamma^X\|+\sqrt{\delta_X}$. $\square$
-\emph{Empirical checks} (supplement, \texttt{reports/bias\_law/x21}--\texttt{x30}). When the emission model is correct, $\E|\hat\gamma-\gamma^*|$ decays with log--log slope $-0.49$. Under misspecified (correlated $t_5$) emissions the plug-in $\hat v$ equals the pseudo-true value but understates the realized residual variance by a factor of two, so it is a lower bound. Refitting the HMM on training folds only leaves the bias unchanged (correlation 0.999 between fold-wise and global estimates). Mumbai's likelihood is multimodal: five restarts span 1{,}182 log-likelihood units, so (H1) fails there, and the best restart changes its robustness value from 11.9 to 7.1 SD without changing any conclusion. On the real series $\delta_X>0$, because the controls contain the proxy variables.
+\emph{Empirical checks} (supplement, \texttt{reports/bias\_law/x21}--\texttt{x30}). When the emission model is correct, $\E|\hat\gamma-\gamma^*|$ decays with log--log slope $-0.49$. Under misspecified (correlated $t_5$) emissions the plug-in $\hat v$ equals the pseudo-true value but understates the realized residual variance by a factor of two, in that experiment. This is not a general lower bound: a true constant posterior 0.9 replaced by 0.5 gives plug-in Gini 0.25 versus true residual variance 0.09, whereas reversing the posteriors understates it. Refitting the HMM on training folds only leaves the bias unchanged (correlation 0.999 between fold-wise and global estimates). Mumbai's likelihood is multimodal: five restarts span 1{,}182 log-likelihood units, so (H1) fails there, and the best restart changes its robustness value from 11.9 to 7.1 SD without changing any conclusion. On the real series $\delta_X>0$, because the controls contain the proxy variables.
 
 \textbf{A priori residual variance.} For a continuous AR(1) latent state with coefficient $\phi$ observed with information rate $\iota=h^\top R^{-1}h$, the Kalman-smoothed residual variance is $v=(1-\phi^2)/\sqrt{(1+\phi^2+\iota(1-\phi^2))^2-4\phi^2}$ (Wiener--Kolmogorov). The worst-case bias therefore decays only as $\iota^{-1/4}$ while $\iota\ll(1-\phi^2)^{-1}$: halving it needs about $16\times$ the sensor information. For a persistent two-state chain with Mahalanobis separation $d$ and switch rate $r$, residual variance is paid at change points, $v\approx c\,r\,e^{-d^2/8}/d$ with $c\to\sqrt{\pi/2}$ for an isolated switch. Discrete regimes with informative proxies are therefore far less dangerous than a continuous latent state with the same sensor information. Statements, proofs, numerical checks and fitted constants are in the supplementary archive (\texttt{archive/manuscript\_lineages/v2\_bias\_law\_main.tex}, \texttt{reports/bias\_law/x6}, \texttt{x15}--\texttt{x20}, \texttt{x28}, \texttt{x31}).
 
@@ -162,13 +176,83 @@ All use \texttt{src/bias\_law/}: a persistent chain (stay probability 0.9), 2-d 
 
 \section{INFERENCE}
 \label{app:proof_asym}
-\textbf{Scope.} Theorem~\ref{thm:asymptotics} covers HMM parameters fitted on a calibration window separated from the evaluation sample (causal filtering or a held-out fit). Our real-data analyses use full-sample smoothing, which the theorem does not cover. In the bias-law designs, refitting the HMM fold-wise instead of globally leaves estimates unchanged (correlation 0.999; Appendix~\ref{app:biaslaw}), which is evidence, not a proof, that the gap is immaterial there. The proof below is written for posterior-weighted nuisances, where condition (G) controls the non-orthogonal Gram part; for posterior-adjusted nuisances Lemma~\ref{lem:orth} makes the score orthogonal in both nuisances, (G) is not needed, and Step~2 holds with remainder $\mathcal O_P(r_N^2)$.
+\textbf{Scope.} This proof is for the \emph{posterior-adjusted coupled} estimator. Its target is the regularized proxy parameter, not automatically the structural effect. Full-sample HMM smoothing in the empirical analyses is outside this theorem. Fold-wise and global estimates having correlation 0.999 is a stability observation, not a justification of their standard errors. Orthogonality in $m,\mu$ does not imply orthogonality in the fitted representation.
 
-%%SEG 1307-1361%%
+\begin{assumption}[Sufficient conditions for posterior-adjusted inference]
+\label{ass:hmm_gram}
+(D) For a fixed representation parameter $\Lambda$, the augmented evaluation process $(Y_t,T_t,F_t,\bgam_t)$ is strictly stationary and geometrically \emph{absolutely regular}, with $\beta(h)\le M\exp(-c_\beta h)$. This condition concerns the representation as well as the raw observations; it does not follow merely by assuming $\alpha$-mixing of the latter. Use a fixed number of contiguous evaluation folds of size proportional to $N$, and separate their nuisance-training observations, and the historical calibration window, by $\tau_N\ge C\log N$, $C>1/c_\beta$. Any finite-history approximation to a filter must have an additional aggregate score error $o_P(N^{-1/2})$, and its history must be included in the purge.
+
+(R) Treatment, outcome, and fitted nuisances have uniform bounded envelopes (nuisances may be clipped). For the conditional targets $m^\Lambda(F)=\E[T\mid F]$, $\mu^\Lambda(F)=\E[Y\mid F]$, held-out nuisance errors satisfy $r_N=\max_{\rm folds}(\|\hat m-m^\Lambda\|_2+\|\hat\mu-\mu^\Lambda\|_2)=o_P(N^{-1/4})$, uniformly in a neighborhood of $\Lambda^*$. The fixed-$K$ population matrix $B_\lambda=J+\lambda I$ has smallest eigenvalue bounded away from zero. Here $\lambda$ is fixed; a deterministic convergent sequence may be used if stability and the following expansion hold uniformly.
+
+(H) For an estimated representation, a separated calibration sample of length $N_{\rm cal}$ gives an asymptotically linear regular MLE with $\sqrt{N_{\rm cal}}(\hat\Lambda-\Lambda^*)\Rightarrow\mathcal N(0,\mathcal I_\Lambda^{-1})$ and $N/N_{\rm cal}\to\kappa$. The population moment map below is differentiable, and its empirical version is stochastically differentiable with remainder $o_P(N^{-1/2})$ at $\hat\Lambda$. These are additional conditions on the filter and its population nuisance targets, not consequences of nuisance orthogonality or of running EM \citep{leroux1992maximum,bickel1998asymptotic,douc2004asymptotic}. For a known representation $\kappa=0$ and (H) is unnecessary.
+\end{assumption}
+
+For fixed $\Lambda$, put $r=T-m^\Lambda(F)$, $q=Y-\mu^\Lambda(F)$ and
+\[
+\Psi_t(\theta;\Lambda)=\bgam_t r_t(q_t-r_t\bgam_t^\top\theta),\qquad
+J=\E[\bgam\bgam^\top r^2],\quad S=\E[\bgam rq].
+\]
+Let $\theta_\lambda=B_\lambda^{-1}S$. At this target $\E\Psi_t(\theta_\lambda)=\lambda\theta_\lambda$, so the CLT and HAC covariance use $\widetilde\Psi_t=\Psi_t-\E\Psi_t$.
+
+\begin{proof}[Proof of Theorem~\ref{thm:asymptotics}]
+\emph{Step 1 (nuisance expansion).} Write $\delta_m=\hat m-m^\Lambda$ and $\delta_\mu=\hat\mu-\mu^\Lambda$, and $h=\bgam^\top\theta_\lambda$. The exact score difference on a held-out fold is
+\[
+\hat\Psi-\Psi
+=\bgam\{-\delta_m q-r\delta_\mu+2hr\delta_m
+ \delta_m\delta_\mu-h\delta_m^2\}.
+\]
+The first three terms have zero population mean because $r,q$ are centered conditional on $F$ and $\bgam,h,\delta_m,\delta_\mu$ are $F$-measurable. The last two have mean bounded by $C(\|\delta_m\|_2\|\delta_\mu\|_2+\|\delta_m\|_2^2)=O_P(r_N^2)$. No posterior-weighted Gram condition (G) is needed.
+
+\emph{Step 2 (dependence and held-out errors).} Absolute-regularity coupling of separated blocks \citep{yu1994rates} replaces training and evaluation blocks by independent copies with total failure probability at most $O(N\beta(\tau_N))=o(1)$. An $\alpha$-mixing bound alone does not provide this total-variation coupling for arbitrary learned fits. Conditional on an independent training copy, each bounded linear perturbation in Step 1 has second moment $O(r_N^2)$ and covariance at lag $h$ bounded by $\min\{Cr_N^2,C\beta(h)\}$. Summing gives $O(r_N^2(1+|\log r_N|))=o_P(1)$ for the variance of its normalized fold sum. The empirical quadratic terms are $O_P(r_N^2)$ by Cauchy--Schwarz and conditional Markov bounds. Summing over the fixed number of folds yields
+\[
+\hat S-\hat J\theta_\lambda
+=N^{-1}\sum_t\Psi_t(\theta_\lambda;\Lambda)+o_P(N^{-1/2}).
+\]
+The same argument gives $\hat J\to_p J$. This is a sufficient-condition result for clipped, bounded nuisances, not a claim for arbitrary learners under mixing alone.
+
+\emph{Step 3 (exact normal equation and CLT).} The sample system is $(\hat J+\lambda I)\hat\theta_\lambda=\hat S$. Subtracting $(J+\lambda I)\theta_\lambda=S$ gives
+\[
+\sqrt N(\hat\theta_\lambda-\theta_\lambda)
+=B_\lambda^{-1}N^{-1/2}\sum_t\widetilde\Psi_t+o_P(1).
+\]
+The centered, stationary, bounded geometrically $\beta$-mixing score obeys the mixing CLT \citep{ibragimov1962some}, with long-run covariance $\Omega_\lambda=\sum_{h\in\mathbb Z}\operatorname{Cov}(\Psi_0,\Psi_h)$.
+
+\emph{Step 4 (representation estimation).} At fixed $\theta_\lambda$ define the $K$-by-$\dim(\Lambda)$ \emph{total} derivative
+\[
+A_\Lambda=\left.\partial_{\Lambda^\top}
+\E[\Psi_t(\theta_\lambda;\Lambda)]\right|_{\Lambda=\Lambda^*}.
+\]
+This is the derivative of the coupled vector moment, including both occurrences of the weights and the posterior-dependent conditional targets. Under (H), the expansion gains $B_\lambda^{-1}A_\Lambda\sqrt N(\hat\Lambda-\Lambda^*)$. Separation from the calibration sample gives asymptotic independence under (D), hence
+\[
+\Sigma_\lambda^{\rm tot}
+=B_\lambda^{-1}\{\Omega_\lambda+
+\kappa A_\Lambda\mathcal I_\Lambda^{-1}A_\Lambda^\top\}B_\lambda^{-T}.
+\]
+For same-sample representation fitting, independence fails and the joint influence covariance must also include cross terms; that setting is not proved here.
+
+\emph{Step 5 (structural centering).} The exact displacement is $\theta_\lambda-\theta^*=B_\lambda^{-1}(b_\gamma-\lambda\theta^*)$. A structural Wald interval requires this displacement to be $o(N^{-1/2})$, with a nondegenerate limiting covariance. The bound in the main theorem is a sufficient condition; nuisance orthogonality alone cannot remove $b_\gamma$. $\square$
+\end{proof}
+
+\textbf{What the code estimates.} \texttt{src/or\_dml.py} now constructs the observation-level moment matrix used in its solve, centers its resulting scores, and uses their HAC sandwich. \texttt{src/synthesis/estimators.py} implements the same coupled vector score. These routines \emph{do not estimate} $A_\Lambda\mathcal I_\Lambda^{-1}A_\Lambda^\top$ or the HMM joint influence covariance. Their intervals are conditional first-stage proxy-target diagnostics, not implementations of the full variance in Theorem~\ref{thm:asymptotics}. A residual block bootstrap that keeps the fitted HMM and nuisance residuals fixed has the same limitation. HMM-uncertainty inference requires the additional influence calculation above or a justified full-pipeline refit scheme; misspecification and structural bias require separate sensitivity analysis. Forward state updating with globally fitted parameters is likewise not a held-out calibration fit.
+
+\textbf{Legacy weighted design.} Its nonzero first-order treatment-nuisance derivative requires an additional rate such as $\sqrt{\varepsilon_\gamma}\|\hat m-m^\gamma\|_2=o_P(N^{-1/2})$ before an analogous CLT can be claimed. It is not covered by the posterior-adjusted proof merely because the software can fit it.
 
 \subsection{Regime occupation and the population ATE}
 \label{app:proof_prop6}
-%%SEG 1391-1420%%
+Three weighting objects must be distinguished: the true stationary state probabilities $\pi^*$, the invariant vector $\hat\pi(\hat\Lambda)$ of a fitted transition matrix, and the empirical posterior shares $\bar\gamma_N=N^{-1}\sum_t\bgam_t$.
+
+The implemented point estimate is $\bar\gamma_N^\top\hat\theta_\lambda$. With shares treated as fixed, its plug-in standard error uses $\bar\gamma_N^\top\hat\Sigma_\lambda\bar\gamma_N/N$, where $\hat\Sigma_\lambda$ here denotes the long-run asymptotic covariance (the software's \texttt{Sigma\_} already includes $1/N$). This fixed-share calculation is not a conditional-on-the-entire-observed-series theorem.
+
+For the population \emph{proxy-occupation} target $\bar\pi^\top\theta_\lambda$, $\bar\pi=\E\bgam_t$, the joint influence at fixed representation is
+\[
+\phi_{{\rm occ},t}=\bar\pi^\top B_\lambda^{-1}\widetilde\Psi_t
++\theta_\lambda^\top(\bgam_t-\bar\pi).
+\]
+HAC of this \emph{combined} influence includes the cross-covariance between the effect and occupation estimates. This is \texttt{ate\_se\_} in the canonical estimator; \texttt{sate\_se\_} retains the fixed-share calculation. The compatibility alias \texttt{pate\_se\_} refers to the empirical-share calculation, not a transition-MLE ATE. The compact synthesis benchmarks retain fixed-share standard errors and report empirical coverage against simulated structural sample effects; those coverage numbers are stress-test outcomes, not guarantees.
+
+For the different estimator $\hat\pi(\hat\Lambda)^\top\hat\theta_\lambda$, let $D_\pi=\partial\pi(\Lambda^*)/\partial\Lambda^\top$. The separated-calibration influence additionally contributes $(\bar\pi^\top B_\lambda^{-1}A_\Lambda+\theta_\lambda^\top D_\pi)\sqrt N(\hat\Lambda-\Lambda^*)$, when $\bar\pi=\pi(\Lambda^*)$. Its variance includes both derivatives and their covariance through the calibration influence. None of the implemented empirical-share intervals estimates this transition-MLE variance.
+
+For a \emph{fully observed binary stationary chain}, $\operatorname{Cov}(S_0,S_h)=\pi_0\pi_1\rho^{|h|}$ gives occupation variance $\pi_0\pi_1(1+\rho)/(1-\rho)$. This factor applies to that occupation component only. Soft posterior occupations have their own long-run covariance, and the total ATE variance also has effect--occupation cross terms; it cannot generally be multiplied by this factor.
 
 \section{OPERATIONAL SURROGATE, SCREENING AND REGULARIZATION}
 \label{app:surrogate}
@@ -181,20 +265,145 @@ There exist $0<\underline c_J\le\overline c_J<\infty$ with $\underline c_J\le\lm
 For calibrated forward posteriors in binary regimes, $\E[\|\bgam_t-\boldsymbol H_t\|_1\mid\mathcal F_t]=2\,\mathrm{Gini}(\bgam_t)\le C_KH(\bgam_t)$ with $C_K\le1/\ln2$. Hence $\mathcal D_{\rm causal}\equiv\eps/\lmin(\bJ)\le C_K\E[H(\bgam_t)]/\lmin(\bJ)$, and under Assumption~\ref{ass:spectral_comparability} $\mathcal D_{\rm causal}\le C_K\overline c_J\E[H(\bgam_t)/\lmin(\bJ_t)]$.
 \end{proposition}
 The surrogate is an upper bound on $\mathcal D_{\rm causal}$, which is defined with the \emph{generated-state} $\bJ$. By Section~\ref{sec:theory} that object can be inflated relative to the oracle geometry, so the surrogate inherits phantom resolution. We keep it as a monitoring device, not a certificate.
-%%SEG 1153-1194%%
+Let $\boldsymbol{\gamma}_t \equiv P(S_t \in \cdot \mid \mathcal{F}_t) \in \Delta^K$ be the Bayesian posterior state distribution with respect to filtration $\mathcal{F}_t \equiv \sigma(Z_{1:t})$. Under proper Bayesian calibration, conditional on $\mathcal{F}_t$, the true latent indicator $\boldsymbol{H}_t \equiv \boldsymbol{e}_{S_t}$ is distributed as a categorical random variable taking value $\boldsymbol{e}_k$ with probability $\gamma_{tk}$.
+
+\textbf{Step 1: Expected $L_1$ Error as Gini Impurity.}
+Evaluating the conditional expectation of the $L_1$ error:
+\begin{align}
+    \E\left[ \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \;\middle|\; \mathcal{F}_t \right] &= \sum_{k=1}^K \gamma_{tk} \|\boldsymbol{\gamma}_t - \boldsymbol{e}_k\|_1 = \sum_{k=1}^K \gamma_{tk} \left( (1 - \gamma_{tk}) + \sum_{j \neq k} \gamma_{tj} \right) \nonumber \\
+    &= \sum_{k=1}^K \gamma_{tk} \cdot 2(1 - \gamma_{tk}) = 2\left( 1 - \sum_{k=1}^K \gamma_{tk}^2 \right) = 2 \operatorname{Gini}(\boldsymbol{\gamma}_t).
+\end{align}
+
+\textbf{Step 2: Entropy Bound on Gini Impurity.}
+By the standard concave inequality $\ln(x) \le x - 1$, for any $x > 0$:
+\begin{equation}
+    H(\boldsymbol{\gamma}_t) = -\sum_{k=1}^K \gamma_{tk} \ln \gamma_{tk} = \sum_{k=1}^K \gamma_{tk} \ln\left(\frac{1}{\gamma_{tk}}\right) \ge \sum_{k=1}^K \gamma_{tk} (1 - \gamma_{tk}) = \operatorname{Gini}(\boldsymbol{\gamma}_t).
+\end{equation}
+Furthermore, for any binary regime partition ($K=2$) with $\gamma_{t1} = p$ and $\gamma_{t2} = 1-p$, $2 \operatorname{Gini}(\boldsymbol{\gamma}_t) = 4p(1-p)$. Comparing to binary Shannon entropy $H(p) = -p\ln p - (1-p)\ln(1-p)$, the ratio $\frac{4p(1-p)}{H(p)}$ achieves its maximum at $p = 1/2$, where $\frac{4(1/4)}{\ln 2} = \frac{1}{\ln 2} \approx 1.4427$. Hence for all $p \in [0, 1]$:
+\begin{equation}
+    2 \operatorname{Gini}(\boldsymbol{\gamma}_t) \le C_K H(\boldsymbol{\gamma}_t), \quad \text{where } C_K \le \frac{1}{\ln 2} \approx 1.4427.
+\end{equation}
+
+\textbf{Step 3: Population and Observable Bridge.}
+Taking the population expectation of Step 1 and applying Step 2:
+\begin{equation}
+    \varepsilon_\gamma \equiv \E\left[ \E\left[ \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 \;\middle|\; \mathcal{F}_t \right] \right] = 2 \E[\operatorname{Gini}(\boldsymbol{\gamma}_t)] \le C_K \E[H(\boldsymbol{\gamma}_t)].
+\end{equation}
+Dividing by the global minimal singular value $\lambda_{\min}(\boldsymbol{J})$:
+\begin{equation}
+    \mathcal{D}_{\mathrm{causal}} \equiv \frac{\varepsilon_\gamma}{\lambda_{\min}(\boldsymbol{J})} \le C_K \E\left[ \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J})} \right] = C_K \E[\mathcal{D}_{\mathrm{global}}^H(t)].
+\end{equation}
+Furthermore, under Assumption~\ref{ass:spectral_comparability} (Two-Sided Spectral Comparability), the rolling Gram matrix satisfies $\lambda_{\min}(\boldsymbol{J}_t) \le \overline{c}_J \lambda_{\min}(\boldsymbol{J})$ almost surely for all evaluation windows $t \ge w$, which implies $\frac{1}{\lambda_{\min}(\boldsymbol{J})} \le \frac{\overline{c}_J}{\lambda_{\min}(\boldsymbol{J}_t)}$. Pointwise substitution yields:
+\begin{equation}
+    \mathcal{D}_{\mathrm{causal}} \le C_K \overline{c}_J \E\left[ \frac{H(\boldsymbol{\gamma}_t)}{\lambda_{\min}(\boldsymbol{J}_t)} \right] = C_K \overline{c}_J \E[\mathcal{D}_{\mathrm{operational}}(t)],
+\end{equation}
+and $\E[\mathcal{D}_{\mathrm{operational}}(t)] \le \underline{c}_J^{-1} \E[\mathcal{D}_{\mathrm{global}}^H(t)]$. In simulation benchmarks where true states are known and posteriors are evaluated at population parameters $\boldsymbol{\Lambda}^*$, the ergodic theorem and central limit theorem for stationary $\alpha$-mixing chains ensure that $\hat{\varepsilon}_{\gamma, N} \equiv \frac{1}{N}\sum_{t=1}^N \|\boldsymbol{\gamma}_t - \boldsymbol{H}_t\|_1 = \varepsilon_\gamma + \mathcal{O}_P(N^{-1/2})$ (preserved under $\sqrt{N}$-consistent estimation of $\boldsymbol{\Lambda}$), providing an evaluation-only benchmark surrogate $\hat{\mathcal{D}}_{\mathrm{causal}, N} \equiv \hat{\varepsilon}_{\gamma, N}/\lambda_{\min}(\boldsymbol{J}) = \mathcal{D}_{\mathrm{causal}} + \mathcal{O}_P(N^{-1/2})$. We emphasize that these bounds establish $\mathcal{D}_{\mathrm{operational}}(t)$ as an observable surrogate upper bound for $\mathcal{D}_{\mathrm{causal}}$, not a two-sided equivalence. $\blacksquare$
+
+\subsection{A Priori Proxy Diagnostics and Separation Screening}
+\label{app:proxy_diagnostics}
+Before fitting OR-DML or downstream prediction heads, practitioners should assess proxy informativeness on auxiliary measurements $Z_t \in \R^q$. Let $\hat{\boldsymbol{\mu}}_{Z,k} \equiv \frac{1}{N_k}\sum_{t: \hat{S}_t=k} Z_t$ and $\hat{\boldsymbol{\Sigma}}_{Z,k}$ denote empirical cluster moments. We define the standardized separation index:
+\begin{equation}
+    \Delta_Z \equiv \min_{j \neq k} \frac{\|\hat{\boldsymbol{\mu}}_{Z,j} - \hat{\boldsymbol{\mu}}_{Z,k}\|_2}{\sqrt{\frac{1}{2}(\mathrm{Tr}(\hat{\boldsymbol{\Sigma}}_{Z,j}) + \mathrm{Tr}(\hat{\boldsymbol{\Sigma}}_{Z,k}))/q}}.
+\end{equation}
+Small fitted separation, low silhouette scores and large posterior entropy can flag weak proxy information in a chosen emission model. Mean separation alone does not characterize distributional overlap (states can differ in variances), and entropy depends on the fitted model and calibration. Thresholds such as $\Delta_Z<0.5$ or entropy $>0.80\ln K$ are design-specific abstention heuristics, not identification tests. Theorem~\ref{thm:impossibility} supplies an observational-equivalence example only in its stated memoryless model class. A warning should prompt sensitivity analysis and additional identifying restrictions, not a declaration of structural non-identification.
+
 
 \subsection{Spectral regularization}
 \begin{theorem}[Risk bound]
 \label{thm:spectral}
 For $\lambda\ge0$ with $\lmin(\bJ)+\lambda>0$: $\|\bth_\lambda-\bth^*\|_2\le(C\eps+\lambda M_\theta)/(\lmin(\bJ)+\lambda)$, and if $N\|\hat\bth_\lambda-\bth_\lambda\|^2$ is uniformly integrable, $\E\|\hat\bth_\lambda-\bth^*\|_2^2\le2B_\lambda^2+2\,\mathrm{Tr}(\boldsymbol\Omega^{\rm tot}_\lambda)/(N(\lmin+\lambda)^2)+o(N^{-1})$.
 \end{theorem}
-%%SEG 1198-1238%%
-In the ill-conditioned benchmark of Table~\ref{tab:reg} (100 replications, mean $\lmin=0.026$), the grid minimum of the empirical MSE is at $\lambda=\RegLamBest$, a \RegRatio$\times$ reduction relative to $\lambda=0$, with coverage of the regularized target \RegCovBest\% (versus \RegCovZero\% unregularized). These are properties of that DGP, not constants. In the well-conditioned frontier (Table~\ref{tab:main}) the penalty is immaterial.
+Let $\hat{\boldsymbol{\theta}}_\lambda = (\hat{\boldsymbol{J}} + \lambda \boldsymbol{I})^{-1} \hat{\boldsymbol{S}}$, and define the population regularized estimand $\boldsymbol{\theta}_\lambda \equiv (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \boldsymbol{S}$.
+We decompose the estimation error around the regularized population estimand $\boldsymbol{\theta}_\lambda$ via the exact algebraic identity:
+\begin{equation}
+\label{eq:exact_decomp}
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 = \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2^2 + \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 + 2 \langle \E[\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda], \; \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* \rangle,
+\end{equation}
+which accounts explicitly for the cross term between stochastic estimation error and deterministic regularization bias.
+For the deterministic bias, substituting $\boldsymbol{S} = \boldsymbol{J}\boldsymbol{\theta}^* + \boldsymbol{b}_\gamma$:
+\begin{align}
+    \boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^* &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - (\boldsymbol{J} + \lambda \boldsymbol{I})\boldsymbol{\theta}^* \right) \nonumber \\
+    &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{S} - \boldsymbol{J}\boldsymbol{\theta}^* - \lambda \boldsymbol{\theta}^* \right) \nonumber \\
+    &= (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \boldsymbol{b}_\gamma - \lambda \boldsymbol{\theta}^* \right), \label{eq:reg_identity}
+\end{align}
+which establishes the exact deterministic identity \eqref{eq:reg_identity}.
+Since $\boldsymbol{J} \succeq 0$ with minimal eigenvalue $\lambda_{\min}(\boldsymbol{J}) \ge 0$, the spectral operator norm is $\|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} = \frac{1}{\lambda_{\min}(\boldsymbol{J}) + \lambda}$.
+Applying the triangle inequality:
+\begin{equation}
+    \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2 \le \|(\boldsymbol{J} + \lambda \boldsymbol{I})^{-1}\|_{\mathrm{op}} \left( \|\boldsymbol{b}_\gamma\|_2 + \lambda \|\boldsymbol{\theta}^*\|_2 \right) \le \frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}.
+\end{equation}
+For the stochastic variance, expanding $\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda$:
+\begin{equation}
+    \hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda = (\boldsymbol{J} + \lambda \boldsymbol{I})^{-1} \left( \hat{\boldsymbol{S}} - \boldsymbol{S} - (\hat{\boldsymbol{J}} - \boldsymbol{J})\boldsymbol{\theta}_\lambda \right) + o_p(N^{-1/2}).
+\end{equation}
+By Theorem~\ref{thm:asymptotics}(a), $\sqrt{N}(\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda) \Rightarrow \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma}_\lambda^{\mathrm{tot}})$. Under uniform integrability of $N\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2$, stochastic variance satisfies $V_N \equiv \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_2^2 = \frac{1}{N}\mathrm{Tr}(\boldsymbol{\Sigma}_\lambda^{\mathrm{tot}}) + o(N^{-1}) \le \frac{\mathrm{Tr}(\boldsymbol{\Omega}_\lambda^{\mathrm{tot}})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} + o(N^{-1})$, using $\mathrm{Tr}(\boldsymbol{A}^{-1}\boldsymbol{\Omega}\boldsymbol{A}^{-1}) \le \|\boldsymbol{A}^{-2}\|_{\mathrm{op}}\mathrm{Tr}(\boldsymbol{\Omega})$ for $\boldsymbol{A} = \boldsymbol{J}+\lambda\boldsymbol{I} \succ 0$.
+Applying Minkowski's inequality in $L_2(P; \R^K)$ to the decomposition $(\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*) = (\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda) + (\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*)$:
+\begin{equation}
+\label{eq:minkowski_risk}
+    \left(\E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2\right)^{1/2} \le \|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}_\lambda\|_{L_2} + \|\boldsymbol{\theta}_\lambda - \boldsymbol{\theta}^*\|_2 \le \sqrt{V_N} + B_\lambda,
+\end{equation}
+which establishes the finite-sample risk upper bound:
+\begin{equation}
+    \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2 \le (B_\lambda + \sqrt{V_N})^2 \le 2 B_\lambda^2 + 2 V_N \le 2\left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{2\mathrm{Tr}(\boldsymbol{\Omega}_\lambda^{\mathrm{tot}})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} + o(N^{-1}),
+\end{equation}
+completely avoiding any requirement to bound the stochastic bias cross-term.
+
+\textbf{Risk Bound Minimizer vs. Empirical Grid Optimum:}
+Differentiating the leading-order risk upper bound $R_{\mathrm{bound}}(\lambda) \equiv \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2}$ with respect to $\lambda \ge 0$, the bound-optimal shrinkage parameter $\lambda^*_{\mathrm{bound}} \equiv \arg\min_{\lambda \ge 0} R_{\mathrm{bound}}(\lambda)$ satisfies:
+\begin{equation}
+    \frac{\partial}{\partial \lambda} \left[ \left(\frac{C \varepsilon_\gamma + \lambda M_\theta}{\lambda_{\min}(\boldsymbol{J}) + \lambda}\right)^2 + \frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min}(\boldsymbol{J}) + \lambda)^2} \right] = 0.
+\end{equation}
+When the overlap Gram matrix is ill-conditioned ($\lambda_{\min}(\boldsymbol{J}) \approx 0$), the variance term $\frac{\mathrm{Tr}(\boldsymbol{\Omega})}{N (\lambda_{\min} + \lambda)^2}$ dominates for small $\lambda$, while the deterministic shrinkage bias $(\frac{\lambda M_\theta}{\lambda_{\min} + \lambda})^2$ dominates for large $\lambda$. The interior minimizer $\lambda^*_{\mathrm{bound}} > 0$ balances variance reduction against shrinkage bias in the upper bound. We distinguish $\lambda^*_{\mathrm{bound}}$ and the empirical surrogate minimizer $\hat{\lambda}^*_{\mathrm{emp}} = \arg\min_\lambda \hat{R}(\lambda)$ from the true infeasible risk minimizer $\lambda^*_{\mathrm{true}} \equiv \arg\min_\lambda \E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$.
+In the ill-conditioned benchmark of Table~\ref{tab:reg} (100 replications, mean $\lmin=0.026$), the grid minimum of empirical MSE is at $\lambda=\RegLamBest$, a $\RegRatio\times$ reduction relative to $\lambda=0$. These are properties of that DGP, not constants; legacy coverage from the earlier variance code is retired. In the well-conditioned frontier (Table~\ref{tab:main}) the penalty is immaterial.
 \begin{table}[h]\centering\footnotesize
 \caption{Regularization path in an ill-conditioned design (\texttt{reports/or\_dml\_regularization\_frontier.csv}).}\label{tab:reg}
 \input{generated/tab_regularization.tex}
 \end{table}
-%%SEG 1242-1286%%
+\subsection{Derivation of Adaptive Spectral Regularization Parameter and Oracle Bound}
+\label{app:adaptive_lambda_derivation}
+We consider the data-driven selection of the spectral shrinkage parameter $\lambda \ge 0$. While classical Tikhonov regularization selects shrinkage via prediction cross-validation, in OR-DML the target is the structural causal parameter vector $\boldsymbol{\theta}^*$, where prediction cross-validation conflates causal identification with prognostic predictive fit.
+We distinguish two distinct regularization regimes:
+\begin{enumerate}
+    \item \textbf{Inferential Regularization ($\lambda = o(N^{-1/2})$):} Required by Theorem~\ref{thm:asymptotics} to guarantee asymptotic unbiasedness $\sqrt{N}\mathrm{Bias}(\lambda) \to \mathbf{0}$, ensuring centered Gaussian limit laws and valid nominal confidence interval coverage.
+    \item \textbf{Finite-Sample Risk Minimization ($\lambda_{\mathrm{risk}} = \mathcal{O}(1)$):} Minimizes the finite-sample expected $\ell_2$ estimation risk $\E\|\hat{\boldsymbol{\theta}}_\lambda - \boldsymbol{\theta}^*\|_2^2$ under severe causal ill-conditioning ($\lambda_{\min}(\boldsymbol{J}) \approx 0$).
+\end{enumerate}
+
+\textbf{Empirical Risk Surrogate and Convexity:}
+Define the empirical plug-in risk surrogate $\hat{R}(\lambda)$ by substituting empirical estimators $(\hat{\varepsilon}_\gamma, \lambda_{\min}(\hat{\boldsymbol{J}}), \hat{\boldsymbol{\Omega}}, \|\hat{\boldsymbol{\theta}}_0\|_2)$ into the risk upper bound of Theorem~\ref{thm:spectral}:
+\begin{equation}
+    \hat{R}(\lambda) = \frac{(C \hat{\varepsilon}_\gamma + \lambda \|\hat{\boldsymbol{\theta}}_0\|_2)^2 + N^{-1}\mathrm{Tr}(\hat{\boldsymbol{\Omega}})}{(\lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda)^2}.
+\end{equation}
+Let $u = \lambda_{\min}(\hat{\boldsymbol{J}}) + \lambda \ge \lambda_{\min}(\hat{\boldsymbol{J}}) > 0$. Rewriting $\lambda = u - \lambda_{\min}$, the numerator becomes:
+\begin{equation}
+    \left( C \hat{\varepsilon}_\gamma - \lambda_{\min}(\hat{\boldsymbol{J}}) \|\hat{\boldsymbol{\theta}}_0\|_2 + u \|\hat{\boldsymbol{\theta}}_0\|_2 \right)^2 + N^{-1}\mathrm{Tr}(\hat{\boldsymbol{\Omega}}) = (A + u B)^2 + V,
+\end{equation}
+where $A = C \hat{\varepsilon}_\gamma - \lambda_{\min}(\hat{\boldsymbol{J}}) \|\hat{\boldsymbol{\theta}}_0\|_2$, $B = \|\hat{\boldsymbol{\theta}}_0\|_2$, and $V = N^{-1}\mathrm{Tr}(\hat{\boldsymbol{\Omega}})$.
+Dividing by $u^2$:
+\begin{equation}
+    \hat{R}(u - \lambda_{\min}) = B^2 + \frac{2AB}{u} + \frac{A^2 + V}{u^2}.
+\end{equation}
+Differentiating with respect to $u$:
+\begin{equation}
+    \frac{d \hat{R}}{du} = -\frac{2AB}{u^2} - \frac{2(A^2 + V)}{u^3} = -\frac{2}{u^3} \left[ AB u + (A^2 + V) \right].
+\end{equation}
+Setting the derivative to zero yields the unique critical point $u^* = \frac{A^2 + V}{|A| B}$ when $A < 0$. When $A \ge 0$ (i.e., $C \hat{\varepsilon}_\gamma \ge \lambda_{\min}(\hat{\boldsymbol{J}}) \|\hat{\boldsymbol{\theta}}_0\|_2$), $\frac{d\hat{R}}{du} < 0$ on $(0, \infty)$, so that the objective is strictly decreasing toward $B^2$ as $\lambda \to \infty$. Constraining the search to a compact admissible set $\lambda \in [0, \bar{\lambda}]$ with a fixed upper bound $\bar{\lambda} < \infty$ (independent of $N$), the bounded empirical minimizer is:
+\begin{equation}
+    \hat{\lambda}^* = \begin{cases} 
+    \mathrm{clip}\left( \frac{(C\hat{\varepsilon}_\gamma - \lambda_{\min}\|\hat{\boldsymbol{\theta}}_0\|_2)^2 + N^{-1}\mathrm{Tr}(\hat{\boldsymbol{\Omega}})}{(\lambda_{\min}\|\hat{\boldsymbol{\theta}}_0\|_2 - C\hat{\varepsilon}_\gamma)\|\hat{\boldsymbol{\theta}}_0\|_2} - \lambda_{\min}(\hat{\boldsymbol{J}}), \; 0, \; \bar{\lambda} \right), & \text{if } A < 0, \\
+    \bar{\lambda}, & \text{if } A \ge 0.
+    \end{cases}
+\end{equation}
+Because $R'(u) = -\frac{2}{u^3}[AB u + (A^2+V)]$ changes sign strictly from negative to positive at $u^*$ when $A < 0$, $u^*$ is the unique global interior minimizer on $(0, \infty)$.
+
+\begin{lemma}[Oracle Inequality for the Surrogate]
+\label{lem:surrogate_oracle}
+Let $R_{\rm surr}$ be the population surrogate, $\hat R$ its plug-in, and $\Delta_N=\sup_{\lambda\in[0,\bar\lambda]}|\hat R(\lambda)-R_{\rm surr}(\lambda)|=\mathcal{O}_P(N^{-1/2})$.
+Then $R_{\rm surr}(\hat\lambda^*)\le\inf_{\lambda\in[0,\bar\lambda]}R_{\rm surr}(\lambda)+2\Delta_N$.
+\end{lemma}
+\begin{proof}
+For any $\lambda^\circ\in[0,\bar\lambda]$: $R_{\rm surr}(\hat\lambda^*)\le\hat R(\hat\lambda^*)+\Delta_N\le\hat R(\lambda^\circ)+\Delta_N\le R_{\rm surr}(\lambda^\circ)+2\Delta_N$.
+\end{proof}
+This guarantee governs the surrogate, not the true risk; calibrated plug-in $\hat\varepsilon_\gamma = \frac{2}{N}\sum_t \operatorname{Gini}(\boldsymbol\gamma_t)$ preserves ranking when $C\hat\varepsilon_\gamma$ dominates. $\blacksquare$
 
 \section{ALGORITHM AND SCALABILITY}
 \label{app:algorithm}
@@ -227,10 +436,10 @@ Table~\ref{tab:scal} reports OR-DML with oracle-quality proxies for $K\in\{2,3,4
 \end{table}
 \textbf{Legacy difficulty benchmark} (\texttt{src/synthetic\_dgp\_benchmark.py}). The earlier eleven-method benchmark on the same DGP (Table~\ref{tab:frontier}) includes forward filtering, decoupled and unregularized variants, GBM proxy controls and HMM$(Z,T)$; its ``Spectral OR-DML'' rows are the posterior-weighted design. HMM$(Z,T)$, which infers the state from $(Z,T)$, is best at low separation because the treatment carries state information. The $\lmin$ column displays phantom resolution directly: residualizing on $X$ only gives \BMLamStd, against \BMLamOracle\ for the oracle state, and at $\Delta_Z=0.2$ the weighted design's generated-state value is \BMLamSoftLow\ with $\eps=\BMEpsLow$.
 \begin{table}[h]\centering\scriptsize
-\caption{Legacy difficulty benchmark, all methods (\texttt{reports/or\_dml\_benchmark\_summary.csv}). Coverage is for the sample/population ATE.}\label{tab:frontier}
+\caption{Legacy difficulty benchmark, all methods (\texttt{reports/or\_dml\_benchmark\_summary.csv}). Legacy uncertainty columns are omitted because they predate the corrected variance implementation.}\label{tab:frontier}
 \input{generated/tab_frontier_full.tex}
 \end{table}
-\textbf{Frontier B (size).} With $\theta_1^*=0$, nominal 5\% Wald tests reject in \FBSoft\ of runs for the weighted design and \FBHard\ for hard fixed effects: the sandwich is centered at the proxy target $\bth_\gamma$, not at $\bth^*$ (Theorem~\ref{thm:asymptotics}).
+\textbf{Frontier B (size).} The legacy null-rejection percentages are retired because the earlier canonical implementation used a scalar score with a coupled bread. The proxy-target displacement in Theorem~\ref{thm:asymptotics} still explains why even corrected sampling uncertainty cannot guarantee structural null size.
 \textbf{Soft versus hard under a continuous latent mixture} (\texttt{src/test\_soft\_vs\_hard\_continuous\_mixture.py}). With a continuous latent mixture weight and an informative proxy, the posterior-weighted coupled estimator has mean absolute bias \SVHSoft, hard fixed effects \SVHHard\ and standard DML \SVHStd. Soft weighting wins in \SVHWin\% of 100 replications; the experiment was written to exhibit an advantage of soft weighting and found none for that design. With posterior-adjusted nuisances on the same inputs, OR-DML has bias \SVHPA\ and beats hard fixed effects in \SVHPAWin\% of replications: the posterior helps once it is used as an adjustment feature rather than a nuisance weight.
 
 \section{REAL-DATA-CALIBRATED SEMI-SYNTHETIC BENCHMARK}
