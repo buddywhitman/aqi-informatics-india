@@ -1,0 +1,3 @@
+design,direction,derivative_norm,jacobian_norm,relative_to_jacobian
+posterior-adjusted,treatment nuisance,0.003365374771043691,0.7730446751792492,0.0043534026933997666
+posterior-weighted,treatment nuisance,0.7137161701107791,0.8405708768053415,0.8490850561267551

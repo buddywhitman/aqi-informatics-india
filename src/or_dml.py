@@ -33,41 +33,60 @@ class LatentRegimeHMM:
     Gaussian Hidden Markov Model for temporal regime discovery from exogenous
     meteorological dynamics Z_t. Supports both forward-filtering and retrospective smoothing.
     """
-    def __init__(self, n_regimes: int = 3, n_iter: int = 25, tol: float = 1e-3, random_state: int = 42):
+    def __init__(self, n_regimes: int = 3, n_iter: int = 50, tol: float = 1e-3, random_state: int = 42, n_inits: int = 5):
         self.n_regimes = n_regimes
         self.n_iter = n_iter
         self.tol = tol
         self.random_state = random_state
+        self.n_inits = n_inits
         self.pi = None       # Initial state distribution (K,)
         self.A = None        # Transition matrix (K, K)
         self.means = None    # Emission means (K, d)
         self.covs = None     # Emission diagonal variances (K, d)
         self._hmm_backend = None
+        self.best_log_likelihood = -np.inf
 
     def fit(self, Z: np.ndarray) -> 'LatentRegimeHMM':
-        """Fit Gaussian HMM parameters on exogenous state dynamics Z (N, d) via EM."""
+        """Fit Gaussian HMM parameters on exogenous state dynamics Z (N, d) via multi-restart EM."""
         N, d = Z.shape
         K = self.n_regimes
         
         try:
             from hmmlearn import hmm
-            m = hmm.GaussianHMM(
-                n_components=K,
-                covariance_type='diag',
-                n_iter=self.n_iter,
-                tol=self.tol,
-                random_state=self.random_state
-            )
-            m.fit(Z)
-            order = np.argsort(m.means_[:, 0])
-            self.means = m.means_[order]
-            self.covs = np.array([np.diag(c) if c.ndim == 2 else c for c in m.covars_[order]])
-            self.pi = m.startprob_[order]
-            self.A = m.transmat_[order][:, order]
-            self._hmm_model = m
-            self._order = order
-            self._hmm_backend = 'hmmlearn'
-            return self
+            best_m = None
+            best_score = -np.inf
+            base_seed = 42 if self.random_state is None else (self.random_state if isinstance(self.random_state, int) else 42)
+            n_inits = max(1, getattr(self, 'n_inits', 5))
+            
+            for init_idx in range(n_inits):
+                try:
+                    m = hmm.GaussianHMM(
+                        n_components=K,
+                        covariance_type='diag',
+                        n_iter=self.n_iter,
+                        tol=self.tol,
+                        random_state=base_seed + init_idx * 10007
+                    )
+                    m.fit(Z)
+                    score = m.score(Z)
+                    if score > best_score:
+                        best_score = score
+                        best_m = m
+                except Exception:
+                    continue
+
+            if best_m is not None:
+                m = best_m
+                self.best_log_likelihood = best_score
+                order = np.argsort(m.means_[:, 0])
+                self.means = m.means_[order]
+                self.covs = np.array([np.diag(c) if c.ndim == 2 else c for c in m.covars_[order]])
+                self.pi = m.startprob_[order]
+                self.A = m.transmat_[order][:, order]
+                self._hmm_model = m
+                self._order = order
+                self._hmm_backend = 'hmmlearn'
+                return self
         except Exception:
             pass
 
@@ -184,22 +203,25 @@ class LatentRegimeHMM:
         return float(-2.0 * log_lik + n_params * np.log(N))
 
 
-def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 72) -> int:
-    """Estimate optimal embargo buffer tau* using Bartlett 95% autocorrelation bound."""
+def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 24, c_log: float = 2.0) -> int:
+    """Estimate optimal embargo buffer tau* per Eq. 17 using Bartlett 95% autocorrelation bound and C*log(N)."""
     N = len(X)
     crit = 1.96 / np.sqrt(N)
     V = np.column_stack([X, Z])
     V_centered = V - np.mean(V, axis=0)
     var_V = np.var(V, axis=0) + 1e-12
-    max_tau = min(max_tau, max(12, N // 10))
+    search_tau = min(max_tau, max(12, int(N // 10)))
     
     significant_lags = [0]
-    for h in range(1, max_tau + 1):
+    for h in range(1, search_tau + 1):
         cov_h = np.mean(V_centered[:-h] * V_centered[h:], axis=0)
         corr_h = np.abs(cov_h / var_V)
         if np.any(corr_h >= crit):
             significant_lags.append(h)
-    return int(max(max(significant_lags) + 1, 1))
+    bartlett_tau = max(significant_lags)
+    min_log_tau = int(np.ceil(c_log * np.log(max(N, 2))))
+    tau_star = max(bartlett_tau, min_log_tau, 1)
+    return int(min(tau_star, max_tau))
 
 
 class PurgedBlockKFold:
@@ -247,9 +269,18 @@ class OverlapAwareRegimeDML:
                  reg_lambda: Optional[float] = None,
                  reg_alpha: float = 0.05,
                  posterior_mode: str = 'smooth',
+                 weighting_mode: str = 'coupled',
+                 solve_mode: str = 'coupled',
+                 regime_assignment: str = 'soft',
+                 condition_on_treatment: bool = False,
+                 nuisance_mode: str = 'weighted',
+                 compute_bootstrap: bool = False,
+                 n_boot: int = 100,
+                 boot_block_len: int = 24,
                  nuisance_model = None,
                  hac_lag: int = 12,
-                 random_state: int = 42):
+                 random_state: int = 42,
+                 n_inits: int = 5):
         self.n_regimes = n_regimes
         self.n_splits = n_splits
         self.embargo_tau = embargo_tau
@@ -257,9 +288,20 @@ class OverlapAwareRegimeDML:
         self.reg_lambda = reg_lambda
         self.reg_alpha = reg_alpha
         self.posterior_mode = posterior_mode
+        self.weighting_mode = weighting_mode
+        self.solve_mode = solve_mode
+        self.regime_assignment = regime_assignment
+        self.condition_on_treatment = condition_on_treatment
+        if nuisance_mode not in ('weighted', 'posterior'):
+            raise ValueError("nuisance_mode must be 'weighted' or 'posterior'")
+        self.nuisance_mode = nuisance_mode
+        self.compute_bootstrap = compute_bootstrap
+        self.n_boot = n_boot
+        self.boot_block_len = boot_block_len
         self.nuisance_model = nuisance_model if nuisance_model is not None else HistGradientBoostingRegressor(max_iter=100, min_samples_leaf=20)
         self.hac_lag = hac_lag
         self.random_state = random_state
+        self.n_inits = n_inits
         
         # Fitted attributes
         self.theta_regimes_ = {}
@@ -269,15 +311,23 @@ class OverlapAwareRegimeDML:
         self.ate_se_ = None
         self.ate_p_ = None
         self.gamma_ = None
+        self.weights_ = None
         self.regime_weights_ = None
         self.J_mat_ = None
         self.S_vec_ = None
         self.effective_lambda_ = 0.0
         self.lambda_min_ = None
         self.lambda_max_ = None
+        self.lambda_min_std_ = None
+        self.lambda_max_std_ = None
+        self.res_t_var_ = None
         self.kappa_ = None
         self.mean_entropy_ = None
+        self.difficulty_index_ = None
+        self.mean_difficulty_ = None
         self.effective_embargo_tau_ = embargo_tau
+        self.boot_se_regimes_ = {}
+        self.boot_ate_se_ = None
 
     def fit(self, Y: np.ndarray, T: np.ndarray, X: np.ndarray, Z: np.ndarray) -> 'OverlapAwareRegimeDML':
         N = len(Y)
@@ -290,12 +340,25 @@ class OverlapAwareRegimeDML:
         else:
             self.effective_embargo_tau_ = self.embargo_tau
             
-        # 2. Fit HMM on exogenous meteorological variables Z
-        self.hmm_ = LatentRegimeHMM(n_regimes=K, random_state=self.random_state)
-        self.hmm_.fit(Z)
-        gamma = self.hmm_.predict_posteriors(Z, mode=self.posterior_mode)
+        # 2. Fit HMM on exogenous meteorological variables Z (optionally conditioned on T)
+        self.hmm_ = LatentRegimeHMM(n_regimes=K, random_state=self.random_state, n_inits=self.n_inits)
+        if self.condition_on_treatment:
+            T_std = ((T - np.mean(T)) / max(np.std(T), 1e-6))[:, None]
+            Z_fit = np.column_stack([Z, T_std])
+        else:
+            Z_fit = Z
+        self.hmm_.fit(Z_fit)
+        gamma = self.hmm_.predict_posteriors(Z_fit, mode=self.posterior_mode)
         self.gamma_ = gamma
-        self.regime_weights_ = np.mean(gamma, axis=0)
+        
+        # Regime assignment weights: soft posteriors vs hard discrete clusters
+        if self.regime_assignment == 'hard':
+            s_hard = np.argmax(gamma, axis=1)
+            weights = np.column_stack([s_hard == k for k in range(K)]).astype(float)
+        else:
+            weights = gamma
+        self.weights_ = weights
+        self.regime_weights_ = np.mean(weights, axis=0)
         
         # Posterior entropy diagnostic: H_bar(gamma) = -1/N sum_t sum_k gamma_tk log(gamma_tk)
         eps = 1e-12
@@ -303,33 +366,64 @@ class OverlapAwareRegimeDML:
         self.mean_entropy_ = float(np.mean(entropy_t))
         
         # 3. Purged Block Temporal Cross-Fitting for Nuisances
+        #    'weighted'  (legacy): regime-k nuisances E_gamma[T | X] fitted on X with posterior weights gamma_k.
+        #                Soft weights mix regime-specific residuals; the Gram part of the score is then not
+        #                Neyman-orthogonal and regime mean contrasts leak into J and S at first order in eps.
+        #    'posterior' (default in the paper): one pair of nuisances E[T | X, gamma], E[Y | X, gamma] fitted
+        #                unweighted on F = (X, gamma_{2:K}, gamma_{2:K} (x) X).  Because the score weights are
+        #                measurable with respect to F, the coupled score is exactly Neyman-orthogonal in both
+        #                nuisances for ANY posterior (fine adjustment, coarse target).
         splitter = PurgedBlockKFold(n_splits=self.n_splits, embargo_tau=self.effective_embargo_tau_)
         
         tilde_Y = np.zeros((K, N))
         tilde_T = np.zeros((K, N))
         
-        for k in range(K):
-            w_k = gamma[:, k]
+        if self.nuisance_mode == 'posterior':
+            G = weights[:, 1:]
+            F = np.column_stack([X, G] + [G[:, [k]] * X for k in range(G.shape[1])])
+            self.nuisance_features_ = F.shape[1]
             for train_idx, test_idx in splitter.split(N):
-                weights_train = np.maximum(w_k[train_idx], 1e-4)
-                
-                # Nuisance outcome: ell_k(X) = E[Y | X, S=k]
                 m_y = clone(self.nuisance_model)
-                m_y.fit(X[train_idx], Y[train_idx], sample_weight=weights_train)
-                tilde_Y[k, test_idx] = Y[test_idx] - m_y.predict(X[test_idx])
-                
-                # Nuisance treatment: m_k(X) = E[T | X, S=k]
+                m_y.fit(F[train_idx], Y[train_idx])
                 m_t = clone(self.nuisance_model)
-                m_t.fit(X[train_idx], T[train_idx], sample_weight=weights_train)
-                tilde_T[k, test_idx] = T[test_idx] - m_t.predict(X[test_idx])
+                m_t.fit(F[train_idx], T[train_idx])
+                ry = Y[test_idx] - m_y.predict(F[test_idx])
+                rt = T[test_idx] - m_t.predict(F[test_idx])
+                for k in range(K):
+                    tilde_Y[k, test_idx] = ry
+                    tilde_T[k, test_idx] = rt
+        else:
+            for k in range(K):
+                w_k = weights[:, k]
+                for train_idx, test_idx in splitter.split(N):
+                    weights_train = np.maximum(w_k[train_idx], 1e-4)
+                    
+                    # Nuisance outcome: ell_k(X) = E[Y | X, S=k]
+                    m_y = clone(self.nuisance_model)
+                    m_y.fit(X[train_idx], Y[train_idx], sample_weight=weights_train)
+                    tilde_Y[k, test_idx] = Y[test_idx] - m_y.predict(X[test_idx])
+                    
+                    # Nuisance treatment: m_k(X) = E[T | X, S=k]
+                    m_t = clone(self.nuisance_model)
+                    m_t.fit(X[train_idx], T[train_idx], sample_weight=weights_train)
+                    tilde_T[k, test_idx] = T[test_idx] - m_t.predict(X[test_idx])
+        self.tilde_T_ = tilde_T
+        self.tilde_Y_ = tilde_Y
                 
-        # 4. Construct Empirical Coupled Gram Matrix J and Score Vector S
+        # 4. Construct Gram Matrix J and Score Vector S
+        w = self.weights_
+        res_t_var = float(np.mean(tilde_T ** 2))
+        self.res_t_var_ = res_t_var
+        
         J_mat = np.zeros((K, K))
         S_vec = np.zeros(K)
         for j in range(K):
-            S_vec[j] = np.mean(gamma[:, j] * tilde_T[j] * tilde_Y[j])
+            S_vec[j] = np.mean(w[:, j] * tilde_T[j] * tilde_Y[j])
             for k in range(K):
-                J_mat[j, k] = np.mean(gamma[:, j] * gamma[:, k] * tilde_T[j] * tilde_T[k])
+                if j == k and self.weighting_mode == 'matched':
+                    J_mat[j, k] = np.mean(w[:, k] * (tilde_T[k] ** 2))
+                else:
+                    J_mat[j, k] = np.mean(w[:, j] * w[:, k] * tilde_T[j] * tilde_T[k])
                 
         self.J_mat_ = J_mat
         self.S_vec_ = S_vec
@@ -340,8 +434,15 @@ class OverlapAwareRegimeDML:
         self.lambda_max_ = float(eigvals[-1])
         self.kappa_ = float(self.lambda_max_ / max(self.lambda_min_, 1e-12))
         
-        # 5. Spectral Regularization
-        # If reg_lambda is explicitly provided, use it; otherwise scale by Tr(J)/K * N^{-1/2}
+        # Scale-free spectral diagnostics
+        J_std = J_mat / max(res_t_var, 1e-12)
+        eigvals_std = np.linalg.eigvalsh(J_std)
+        self.lambda_min_std_ = float(max(eigvals_std[0], 0.0))
+        self.lambda_max_std_ = float(eigvals_std[-1])
+        self.difficulty_index_ = entropy_t / max(self.lambda_min_std_, 1e-6)
+        self.mean_difficulty_ = float(np.mean(self.difficulty_index_))
+        
+        # 5. Spectral Regularization Parameter
         if self.reg_lambda is not None:
             eff_lambda = float(self.reg_lambda)
         else:
@@ -349,15 +450,25 @@ class OverlapAwareRegimeDML:
             eff_lambda = float(self.reg_alpha * trace_scale * (1.0 / np.sqrt(N)))
         self.effective_lambda_ = eff_lambda
         
-        # Regularized solve: theta_hat = (J + lambda * I)^{-1} S
-        inv_J_reg = np.linalg.inv(J_mat + eff_lambda * np.eye(K))
-        theta_vec = inv_J_reg @ S_vec
+        # 5b. Solve theta
+        inv_J_reg = None
+        if self.solve_mode == 'decoupled':
+            theta_vec = np.zeros(K)
+            for k in range(K):
+                denom = J_mat[k, k] + eff_lambda
+                theta_vec[k] = S_vec[k] / max(denom, 1e-12)
+        else:
+            try:
+                inv_J_reg = np.linalg.inv(J_mat + eff_lambda * np.eye(K))
+            except np.linalg.LinAlgError:
+                inv_J_reg = np.linalg.pinv(J_mat + eff_lambda * np.eye(K))
+            theta_vec = inv_J_reg @ S_vec
         
         # 6. Joint HAC Sandwich Covariance Matrix
-        # Influence score for each observation t: psi_t = gamma_t * tilde_T_t * (tilde_Y_t - theta * tilde_T_t)
+        # Influence score for each observation t: psi_t = w_t * tilde_T_t * (tilde_Y_t - theta * tilde_T_t)
         scores = np.zeros((N, K))
         for k in range(K):
-            scores[:, k] = gamma[:, k] * tilde_T[k] * (tilde_Y[k] - theta_vec[k] * tilde_T[k])
+            scores[:, k] = w[:, k] * tilde_T[k] * (tilde_Y[k] - theta_vec[k] * tilde_T[k])
             
         Omega = (scores.T @ scores) / N
         for lag in range(1, self.hac_lag + 1):
@@ -365,8 +476,42 @@ class OverlapAwareRegimeDML:
             Gamma_lag = (scores[lag:].T @ scores[:-lag]) / N
             Omega += weight * (Gamma_lag + Gamma_lag.T)
             
-        # Sandwich variance formula: Sigma = (J_lambda)^{-1} Omega (J_lambda)^{-1} / N
-        Sigma = (inv_J_reg @ Omega @ inv_J_reg) / N
+        # Sandwich variance formula: Sigma
+        if self.solve_mode == 'decoupled':
+            Sigma = np.zeros((K, K))
+            for j in range(K):
+                for k in range(K):
+                    denom_jk = (J_mat[j, j] + eff_lambda) * (J_mat[k, k] + eff_lambda)
+                    Sigma[j, k] = Omega[j, k] / (max(denom_jk, 1e-12) * N)
+        else:
+            Sigma = (inv_J_reg @ Omega @ inv_J_reg) / N
+            
+        if self.compute_bootstrap:
+            boot_thetas = np.zeros((self.n_boot, K))
+            n_blocks = int(np.ceil(N / self.boot_block_len))
+            rng = np.random.RandomState(self.random_state)
+            for b in range(self.n_boot):
+                block_starts = rng.randint(0, max(1, N - self.boot_block_len + 1), size=n_blocks)
+                boot_idx = np.concatenate([np.arange(s, s + self.boot_block_len) for s in block_starts])[:N]
+                if self.solve_mode == 'decoupled':
+                    for k in range(K):
+                        s_b = np.mean(w[boot_idx, k] * tilde_T[k, boot_idx] * tilde_Y[k, boot_idx])
+                        j_b = np.mean(w[boot_idx, k] * (tilde_T[k, boot_idx] ** 2))
+                        boot_thetas[b, k] = s_b / max(j_b + eff_lambda, 1e-12)
+                else:
+                    J_b = np.zeros((K, K))
+                    S_b = np.zeros(K)
+                    for j in range(K):
+                        S_b[j] = np.mean(w[boot_idx, j] * tilde_T[j, boot_idx] * tilde_Y[j, boot_idx])
+                        for k in range(K):
+                            if j == k and self.weighting_mode == 'matched':
+                                J_b[j, k] = np.mean(w[boot_idx, k] * (tilde_T[k, boot_idx] ** 2))
+                            else:
+                                J_b[j, k] = np.mean(w[boot_idx, j] * w[boot_idx, k] * tilde_T[j, boot_idx] * tilde_T[k, boot_idx])
+                    boot_thetas[b] = np.linalg.solve(J_b + eff_lambda * np.eye(K), S_b)
+            for k in range(K):
+                self.boot_se_regimes_[k] = float(np.std(boot_thetas[:, k]))
+            self.boot_ate_se_ = float(np.std(boot_thetas @ self.regime_weights_))
         
         for k in range(K):
             th = float(theta_vec[k])

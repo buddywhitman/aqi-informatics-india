@@ -27,7 +27,7 @@ from scipy.stats import norm
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath('.'))
 
-from src.or_dml import OverlapAwareRegimeDML, PurgedBlockKFold
+from src.or_dml import OverlapAwareRegimeDML, PurgedBlockKFold, estimate_optimal_embargo
 
 
 DATA_PATH = "data/processed_clean/combined_hourly_clean.csv"
@@ -130,8 +130,11 @@ def run_empirical_study():
             'Lambda_Min': float(np.mean(tilde_T_std ** 2)), 'Kappa': 1.0, 'Entropy': np.nan
         })
         
-        # 3. Block DML (Purged Block CV, ignores regimes, with HAC SE)
-        pb = PurgedBlockKFold(n_splits=5, embargo_tau=24)
+        # Determine data-driven embargo buffer tau* per Eq. 17 (Bartlett + C*log N bound)
+        tau_star = estimate_optimal_embargo(X, Z, max_tau=24)
+        
+        # 3. Block DML (Purged Block CV with dynamic tau*, ignores regimes, with HAC SE)
+        pb = PurgedBlockKFold(n_splits=5, embargo_tau=tau_star)
         tilde_Y_blk = np.zeros(N)
         tilde_T_blk = np.zeros(N)
         for tr, te in pb.split(N):
@@ -154,7 +157,7 @@ def run_empirical_study():
         
         # 4. Spectral OR-DML (Ours, Retrospective Smoothing, K=2 regimes: Ventilated vs Stagnant)
         or_model = OverlapAwareRegimeDML(
-            n_regimes=2, n_splits=5, embargo_tau=24,
+            n_regimes=2, n_splits=5, embargo_tau=tau_star,
             reg_alpha=0.05, posterior_mode='smooth',
             nuisance_model=Ridge(alpha=1.0),
             random_state=42
@@ -191,7 +194,7 @@ def run_empirical_study():
         
         # 5. Filtered OR-DML (Ours, Forward Filtering)
         filt_model = OverlapAwareRegimeDML(
-            n_regimes=2, n_splits=5, embargo_tau=24,
+            n_regimes=2, n_splits=5, embargo_tau=tau_star,
             reg_alpha=0.05, posterior_mode='filter',
             nuisance_model=Ridge(alpha=1.0),
             random_state=42

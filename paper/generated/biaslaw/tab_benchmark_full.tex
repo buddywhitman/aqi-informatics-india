@@ -1,0 +1,55 @@
+\begin{tabular}{rlrrrr}
+\toprule
+$\Delta_Z$ & Estimator & mean $|$bias$|$ & median $|$bias$|$ & RMSE & cover.\ SATE \\
+\midrule
+0.2 & Oracle DML & 0.056 & 0.044 & 0.070 & 96\% \\
+ & Standard DML & 8.456 & 8.456 & 8.456 & 0\% \\
+ & Block DML & 8.490 & 8.479 & 8.491 & 0\% \\
+ & DML + Z Controls (Ridge) & 8.307 & 8.312 & 8.308 & 0\% \\
+ & DML + Z Controls (GBM) & 8.018 & 8.025 & 8.019 & 0\% \\
+ & Regime FE DML (Hard) & 8.277 & 8.281 & 8.278 & 0\% \\
+ & Unregularized Coupled DML & 8.640 & 8.613 & 8.641 & 0\% \\
+ & Spectral OR-DML (Ours) & 8.630 & 8.602 & 8.631 & 0\% \\
+ & Filtered OR-DML (Ours) & 8.606 & 8.587 & 8.607 & 0\% \\
+\midrule
+0.5 & Oracle DML & 0.055 & 0.044 & 0.071 & 92\% \\
+ & Standard DML & 8.429 & 8.432 & 8.430 & 0\% \\
+ & Block DML & 8.467 & 8.483 & 8.468 & 0\% \\
+ & DML + Z Controls (Ridge) & 7.429 & 7.424 & 7.430 & 0\% \\
+ & DML + Z Controls (GBM) & 7.031 & 7.020 & 7.034 & 0\% \\
+ & Regime FE DML (Hard) & 6.593 & 6.632 & 6.600 & 0\% \\
+ & Unregularized Coupled DML & 8.847 & 8.886 & 8.851 & 0\% \\
+ & Spectral OR-DML (Ours) & 8.835 & 8.874 & 8.839 & 0\% \\
+ & Filtered OR-DML (Ours) & 8.988 & 9.001 & 8.991 & 0\% \\
+\midrule
+1.0 & Oracle DML & 0.057 & 0.043 & 0.073 & 92\% \\
+ & Standard DML & 8.433 & 8.449 & 8.434 & 0\% \\
+ & Block DML & 8.466 & 8.475 & 8.467 & 0\% \\
+ & DML + Z Controls (Ridge) & 5.438 & 5.462 & 5.440 & 0\% \\
+ & DML + Z Controls (GBM) & 3.633 & 3.642 & 3.647 & 0\% \\
+ & Regime FE DML (Hard) & 2.642 & 2.689 & 2.679 & 0\% \\
+ & Unregularized Coupled DML & 4.025 & 4.030 & 4.045 & 0\% \\
+ & Spectral OR-DML (Ours) & 4.017 & 4.022 & 4.037 & 0\% \\
+ & Filtered OR-DML (Ours) & 5.172 & 5.185 & 5.185 & 0\% \\
+\midrule
+2.0 & Oracle DML & 0.052 & 0.042 & 0.066 & 93\% \\
+ & Standard DML & 8.432 & 8.451 & 8.433 & 0\% \\
+ & Block DML & 8.461 & 8.472 & 8.462 & 0\% \\
+ & DML + Z Controls (Ridge) & 2.631 & 2.614 & 2.635 & 0\% \\
+ & DML + Z Controls (GBM) & 0.207 & 0.194 & 0.243 & 72\% \\
+ & Regime FE DML (Hard) & 0.077 & 0.063 & 0.102 & 96\% \\
+ & Unregularized Coupled DML & 0.082 & 0.073 & 0.105 & 93\% \\
+ & Spectral OR-DML (Ours) & 0.081 & 0.072 & 0.104 & 92\% \\
+ & Filtered OR-DML (Ours) & 0.102 & 0.081 & 0.131 & 92\% \\
+\midrule
+4.0 & Oracle DML & 0.054 & 0.048 & 0.067 & 96\% \\
+ & Standard DML & 8.451 & 8.461 & 8.452 & 0\% \\
+ & Block DML & 8.486 & 8.495 & 8.487 & 0\% \\
+ & DML + Z Controls (Ridge) & 0.848 & 0.842 & 0.853 & 0\% \\
+ & DML + Z Controls (GBM) & 0.101 & 0.082 & 0.125 & 89\% \\
+ & Regime FE DML (Hard) & 0.054 & 0.046 & 0.067 & 100\% \\
+ & Unregularized Coupled DML & 0.054 & 0.048 & 0.067 & 96\% \\
+ & Spectral OR-DML (Ours) & 0.054 & 0.046 & 0.067 & 96\% \\
+ & Filtered OR-DML (Ours) & 0.054 & 0.046 & 0.067 & 96\% \\
+\bottomrule
+\end{tabular}

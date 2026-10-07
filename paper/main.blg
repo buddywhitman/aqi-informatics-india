@@ -1,0 +1,83 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: plainnat.bst
+I found no \bibdata command---while reading file main.aux
+Warning--I didn't find a database entry for "chernozhukov2018double"
+Warning--I didn't find a database entry for "chernozhukov2022automatic"
+Warning--I didn't find a database entry for "foster2023orthogonal"
+Warning--I didn't find a database entry for "nie2021quasi"
+Warning--I didn't find a database entry for "lewis2020double"
+Warning--I didn't find a database entry for "semenova2023generalized"
+Warning--I didn't find a database entry for "ciganovic2026dml"
+Warning--I didn't find a database entry for "bica2020time"
+Warning--I didn't find a database entry for "hatt2021sequential"
+Warning--I didn't find a database entry for "miao2018identifying"
+Warning--I didn't find a database entry for "tchetgen2020introduction"
+Warning--I didn't find a database entry for "mastouri2021proximal"
+Warning--I didn't find a database entry for "cui2024semiparametric"
+Warning--I didn't find a database entry for "clouth2024latent"
+Warning--I didn't find a database entry for "hamilton1989new"
+Warning--I didn't find a database entry for "greenland1980effect"
+Warning--I didn't find a database entry for "cinelli2020making"
+Warning--I didn't find a database entry for "chernozhukov2022long"
+Warning--I didn't find a database entry for "pearl2012bias"
+Warning--I didn't find a database entry for "ding2017instrumental"
+Warning--I didn't find a database entry for "crump2009dealing"
+Warning--I didn't find a database entry for "damour2021overlap"
+Warning--I didn't find a database entry for "wang2019blessings"
+Warning--I didn't find a database entry for "damour2019multicause"
+Warning--I didn't find a database entry for "allman2009identifiability"
+Warning--I didn't find a database entry for "leroux1992maximum"
+Warning--I didn't find a database entry for "bickel1998asymptotic"
+Warning--I didn't find a database entry for "douc2004asymptotic"
+Warning--I didn't find a database entry for "bradley2005basic"
+Warning--I didn't find a database entry for "ibragimov1962some"
+Warning--I didn't find a database entry for "bickel1993efficient"
+Warning--I didn't find a database entry for "kemeny1976finite"
+Warning--I didn't find a database entry for "banna2016bernstein"
+Warning--I didn't find a database entry for "openaq2025"
+Warning--I didn't find a database entry for "cpcb2025"
+Warning--I didn't find a database entry for "openmeteo2025"
+You've used 0 entries,
+            2773 wiz_defined-function locations,
+            627 strings with 5454 characters,
+and the built_in function-call counts, 33 in all, are:
+= -- 0
+> -- 0
+< -- 0
++ -- 0
+- -- 0
+* -- 2
+:= -- 10
+add.period$ -- 0
+call.type$ -- 0
+change.case$ -- 0
+chr.to.int$ -- 0
+cite$ -- 0
+duplicate$ -- 0
+empty$ -- 1
+format.name$ -- 0
+if$ -- 1
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 0
+newline$ -- 8
+num.names$ -- 0
+pop$ -- 0
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 1
+stack$ -- 0
+substring$ -- 0
+swap$ -- 0
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 0
+width$ -- 0
+write$ -- 7
+(There was 1 error message)

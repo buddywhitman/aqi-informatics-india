@@ -1,0 +1,290 @@
+% Source of appendix.tex. Lines of the form %%SEG a-b%% are replaced by lines a..b of
+% archive/manuscript_lineages/feature_submitted_draft_main.tex (the submitted draft), with label substitutions,
+% by paper/build_appendix.py.  Edit this file, not appendix.tex.
+\allowdisplaybreaks
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{0.95}
+
+\section*{SUPPLEMENTARY MATERIAL}
+\noindent\textbf{Roadmap.}
+Appendix~\ref{app:assumptions} states the assumptions.
+Appendices~\ref{app:proof_thm1}--\ref{app:proof_thm3} prove Theorems~\ref{thm:bias}--\ref{thm:graceful}.
+Appendix~\ref{app:pa} treats posterior-adjusted nuisances: Lemma~\ref{lem:orth}, Theorem~\ref{thm:graceful} for that design, the proof of Theorem~\ref{thm:law} and its numerical checks.
+Appendix~\ref{app:exact} proves Proposition~\ref{prop:exact} and Corollary~\ref{cor:phantom}, and records the phantom-resolution results for hard classifiers and higher dimensions.
+Appendix~\ref{app:biaslaw} gives the pooled law for $K\ge2$ regimes and its learned-HMM extension.
+Appendix~\ref{app:proof_asym} covers inference.
+Appendix~\ref{app:surrogate} gives the operational surrogate, proxy screening and spectral regularization.
+Appendix~\ref{app:algorithm} gives the algorithm and scalability.
+Appendices~\ref{app:factorial}--\ref{app:zoo} document every experiment.
+Appendix~\ref{app:provenance} documents the sensor data and its audit.
+Appendix~\ref{app:repro} explains how to reproduce and verify every number.
+Appendix~\ref{app:lineage} records what changed relative to earlier drafts and why.
+
+\section{ASSUMPTIONS}
+\label{app:assumptions}
+%%SEG 143-175%%
+
+\section{PROOF OF THEOREM~\ref{thm:bias}}
+\label{app:proof_thm1}
+\textbf{Full statement.} Under~\eqref{eq:scm1}--\eqref{eq:scm2}, with $\tilde T_t=T_t-\E[T_t\mid X_t]$,
+\begin{align}
+\mathcal{B}_{\mathrm{het}} &= \frac{\sum_{k} \theta_k^* \E\left[ \bar{m}(X_t) \Delta m_k(X_t) \pi_k(X_t) \right]}{\E[\tilde{T}_t^2]}, \label{eq:b_het} \\
+\mathcal{B}_{\mathrm{conf}} &= \frac{\sum_{k} \E\left[ \pi_k(X_t) \Delta m_k(X_t) \Delta g_k(X_t) \right]}{\E[\tilde{T}_t^2]}, \label{eq:b_conf}
+\end{align}
+with $\pi_k(X)=P(S_t{=}k\mid X_t)$, $\bar m(X)=\E[T_t\mid X_t]$, $\Delta m_k(X)=\E[T_t\mid X_t,S_t{=}k]-\bar m(X)$ and $\Delta g_k(X)=g(X,k)-\E[g(X_t,S_t)\mid X_t]$.
+%%SEG 990-1010%%
+
+\section{PROOF OF THEOREM~\ref{thm:impossibility}}
+\label{app:proof_thm2}
+%%SEG 1015-1038%%
+
+\section{PROOF OF THEOREM~\ref{thm:graceful}}
+\label{app:proof_thm3}
+This appendix proves Theorem~\ref{thm:graceful} for posterior-weighted nuisances; Appendix~\ref{app:pa} adapts the argument to posterior-adjusted nuisances. \textbf{Full statement.} Let $\boldsymbol{H}_t = \boldsymbol{e}_{S_t}$, $\bgam_t \in \Delta^K$ a state proxy with $\varepsilon_\gamma \equiv \E\|\bgam_t - \boldsymbol{H}_t\|_1$, and $\bJ, \bS$ the population coupled Gram matrix and score at the proxy nuisances $(m_k^\gamma, \mu_k^\gamma)$. Under Assumption~\ref{ass:overlap} and $\|\bth^*\|_2 \le M_\theta$, if $\lmin(\bJ) > 0$:
+(i) $\bth_\gamma \equiv \bJ^{-1}\bS$ satisfies $\|\bth_\gamma - \bth^*\|_2 \le C\varepsilon_\gamma/\lmin(\bJ)$ with $C = C_S + M_\theta C_J$, $C_S = \sqrt{K}(M_T M_Y + M_Y \tilde{C}_m + M_T \tilde{C}_\mu)$, $C_J = K(2M_T^2 + 2M_T \tilde{C}_m)$, $\tilde{C}_m = 2B_T/c_0^2$ and $\tilde{C}_\mu = 2B_Y/c_0^2$.
+(ii) With $r_N = \max_k(\|\hat{m}_k - m_k^\gamma\|_{L_2} + \|\hat{\mu}_k - \mu_k^\gamma\|_{L_2})$, under purged cross-fitting and Assumption~\ref{ass:rates}, on $\mathcal{E}_N = \{\|\hat{\bJ} - \bJ\|_{\rm op} \le \lmin(\bJ)/2\}$, $\|\hat{\bth}_\gamma - \bth^*\|_2 \le C\varepsilon_\gamma/\lmin(\bJ) + \mathcal{O}_P((N^{-1/2} + r_N)/\lmin(\bJ))$.
+
+%%SEG 1043-1137%%
+
+\section{POSTERIOR-ADJUSTED NUISANCES}
+\label{app:pa}
+Throughout, $F_t=(X_t,\bgam_t,\bgam_t\otimes X_t)$, $m^\gamma(F)=\E[T\mid F]$, $\mu^\gamma(F)=\E[Y\mid F]$, $\tilde T=T-m^\gamma$, $\tilde Y=Y-\mu^\gamma$, and the population system is $J_{jk}=\E[\gamma_j\gamma_k\tilde T^2]$, $S_k=\E[\gamma_k\tilde T\tilde Y]$.
+
+\textbf{Lemma~\ref{lem:orth} in detail.} For a direction $\delta_m(F)$, $\partial_t\E\psi_k(\bth;m^\gamma+t\delta_m,\mu^\gamma)|_{t=0}=-\E[\gamma_k\delta_m\{\tilde Y-\textstyle\sum_j\gamma_j\theta_j\tilde T\}]+\E[\gamma_k\tilde T\textstyle\sum_j\gamma_j\theta_j\delta_m]$. Conditioning on $F$, the first term is $-\E[\gamma_k\delta_m(\E[\tilde Y\mid F]-\sum_j\gamma_j\theta_j\E[\tilde T\mid F])]=0$, and the second is $\E[\gamma_k\sum_j\gamma_j\theta_j\delta_m\E[\tilde T\mid F]]=0$. The $\mu$-direction gives $-\E[\gamma_k\delta_\mu\E[\tilde T\mid F]]=0$, and $\partial_t\E[\gamma_j\gamma_k(\tilde T-t\delta_m)^2]=-2\E[\gamma_j\gamma_k\delta_m\E[\tilde T\mid F]]=0$. Nothing here uses calibration or the form of $\bgam$: the weights only need to be functions of the conditioning set. For posterior-weighted regime nuisances $m_k(X)=\E[\gamma_kT\mid X]/\E[\gamma_k\mid X]$, the same calculation leaves $\E[\gamma_k\gamma_j\delta_m(X)\tilde T_k]\neq0$ for soft weights, the $\sqrt{\eps}$ sensitivity of Appendix~\ref{app:proof_thm3}.
+\emph{Numerical check} (\texttt{src/synthesis/coupled\_law\_check.py}, $N=10^6$): perturbing the treatment nuisance by $t(1+X^2+\gamma)$, the finite-difference derivative of the mean score is \OrthPA\% of the Jacobian norm for posterior-adjusted nuisances (sampling noise) and \OrthW\% for posterior-weighted nuisances.
+
+\textbf{Theorem~\ref{thm:graceful} for posterior-adjusted nuisances.} Assume (i) calibration given $F$: $P(S_t{=}k\mid F_t)=\gamma_{tk}$, and (ii) $(T,Y)\perp Z\mid(X,S)$, so that $\E[T\mid X,S,\bgam]=m_S(X)$. Then $m^\gamma(F)=\sum_k\gamma_km_k(X)$ and $|m^\gamma-m_S|\le B_T\|\bgam-\boldsymbol H\|_1$, and likewise for $\mu^\gamma$. Steps 3--5 of Appendix~\ref{app:proof_thm3} then go through with the shared residual $\tilde T$ in place of $\tilde T_k$ and $(\tilde C_m,\tilde C_\mu)=(B_T,B_Y)$, giving $\|\boldsymbol b_\gamma\|_2\le C\eps$. For the stochastic part, Lemma~\ref{lem:orth} makes both $\hat\bS$ and $\hat\bJ$ first-order insensitive to nuisance error, so $\|\hat\bS-\bS\|+\|\hat\bJ-\bJ\|_{\rm op}=\mathcal O_P(N^{-1/2}+r_N^2)$ under purged cross-fitting, and the argument of Step 5 gives the stated rate with $\rho_N=r_N^2$. When (i) fails, the bound acquires the calibration error $\E\|P(S\in\cdot\mid F)-\bgam\|_1$. $\square$
+
+\textbf{Proof of Theorem~\ref{thm:law}.} Write $r_t=S_t-\gamma_t$; by calibration $\E[r\mid F]=0$ and $\E[r^2\mid F]=v$. Then $\E[T\mid F]=m(X)+a\gamma$ and $\tilde T=ar+V$. Since $\theta_S=\theta_0+\Delta\theta S$ with $\Delta\theta=\theta_1-\theta_0$ and $S^2=S$, $\E[\theta_ST\mid F]=\theta_0(m+a\gamma)+\Delta\theta\gamma(m+a)$, so
+\[
+\tilde Y=\theta_0\tilde T+\Delta\theta\{(S-\gamma)(m+a)+SV\}+br+U .
+\]
+For OR-DML, $\boldsymbol w^\top\bth^*=\theta_0+\gamma\Delta\theta$, and the residual at the truth is
+$e=\tilde Y-(\theta_0+\gamma\Delta\theta)\tilde T=r\{\Delta\theta(m+a(1-\gamma))+b\}+\Delta\theta\,rV+U=c\,r+\Delta\theta\,rV+U$.
+Expanding $\tilde Te=(ar+V)(cr+\Delta\theta rV+U)$ and conditioning on $F$ (with $V$ independent of $(S,F)$, $\E[U\mid S,F,V]=0$) leaves only $a\,c\,v$. Hence $\boldsymbol b_\gamma=\E[\boldsymbol w\tilde Te]=a\E[\boldsymbol w\,c\,v]$ and, from $\E[\tilde T^2\mid F]=a^2v+\sigma^2$, $\bJ=\E[\boldsymbol w\boldsymbol w^\top(a^2v+\sigma^2)]$. For the pooled estimator ($w\equiv1$), $\E[\tilde T\tilde Y]=\E[(\theta_0+\gamma\Delta\theta)(a^2v+\sigma^2)]+a\E[cv]$, and dividing by $\E[\tilde T^2]$ gives the stated limit. Consistency of the sample version follows as in Appendix~\ref{app:biaslaw}, Steps 1--4, with remainder $O_P(N^{-1/2}+r_N^2+\varepsilon_\tau)$ by Lemma~\ref{lem:orth}. (a) is immediate. (b) is Appendix~\ref{app:biaslaw}. (c): $\bJ-\E[\boldsymbol w\boldsymbol w^\top]\sigma^2=a^2\E[\boldsymbol w\boldsymbol w^\top v]\succeq0$ grows in $|a|$ and in $v$. $\square$
+
+\textbf{Numerical check.} Table~\ref{tab:cl} compares the OR-DML estimate with the law on $N=10^6$ draws with a calibrated Beta posterior, $m(X)$ linear and nuisances fitted on $(1,X,\gamma,\gamma X)$. The bias is hump-shaped in $a$ (largest at $a=\CLAPeak$) while $\lmin(\bJ)$ rises from \CLLamLo\ to \CLLamHi, past the oracle value \CLLamOracle.
+\begin{table}[h]\centering\footnotesize
+\caption{Residual-state law for posterior-adjusted OR-DML: estimate versus law, true $\bth^*=(0.5,0.5+\Delta\theta)$ (\texttt{reports/synthesis/coupled\_law\_check.csv}).}\label{tab:cl}
+\input{generated/tab_coupled_law.tex}
+\end{table}
+
+\section{THE COUPLED SCORE UNDER STATE CONFUSION}
+\label{app:exact}
+
+\subsection{Proof of Proposition~\ref{prop:exact}}
+With oracle regime-wise nuisances $m_k(X)=\E[T\mid X,S{=}k]$ and $\mu_k(X)=\E[Y\mid X,S{=}k]$, the regime-$k$ residuals evaluated on an observation from regime $s$ are $\tilde T_k=(m_s-m_k)+\sigma_sV$ and $\tilde Y_k=(\mu_s-\mu_k)+\theta_s\sigma_sV+U$, where $V$ has mean zero and unit variance and is independent of $U$ and of $S$. The covariate parts cancel because the nuisances are regime-correct; only the regime-mean contrasts remain. Because $\gamma_j$ is a function of $s$ alone,
+\[
+J_{jk}=\E[\gamma_j\gamma_k\tilde T_j\tilde T_k]=\textstyle\sum_s\pi_s\gamma_j(s)\gamma_k(s)\,\E[\tilde T_j\tilde T_k\mid S{=}s]
+=\textstyle\sum_s\pi_s\gamma_j(s)\gamma_k(s)\big[(m_s-m_j)(m_s-m_k)+\sigma_s^2\big],
+\]
+and $S_j=\E[\gamma_j\tilde T_j\tilde Y_j]=\sum_s\pi_s\gamma_j(s)[(m_s-m_j)(\mu_s-\mu_j)+\theta_s\sigma_s^2]$.
+In the symmetric case put $a=1-\alpha$, $b=\alpha$. The diagonal entries are $\tfrac12[a^2\sigma^2+b^2(\Delta^2+\sigma^2)]$; the off-diagonal entry is $\tfrac12\cdot2ab\sigma^2=ab\sigma^2$, because on either regime the two residuals are $\sigma V$ and $\pm\Delta+\sigma V$, whose product has mean $\sigma^2$. A symmetric $2\times2$ matrix with equal diagonal has eigenvectors $(1,\pm1)$ and eigenvalues ``diagonal $\pm$ off-diagonal'', which gives $\lambda_\pm$ after using $a+b=1$. For the displacement, write $\bS-\bJ\bth^*=\boldsymbol b_\gamma$, project $\boldsymbol b_\gamma$ on $(1,\pm1)$ and divide by $2\lambda_\pm$. The $(1,1)$ component of $\boldsymbol b_\gamma$ collects the leaked outcome contrast $\alpha\Delta G$ and the quadratic leakage $-\tfrac12\alpha^2\Delta^2(\theta_0+\theta_1)$. The $(1,-1)$ component collects the effect heterogeneity. The identity is verified symbolically in \texttt{src/synthesis/closed\_form\_factorial.py} (\texttt{displacement\_formula\_ok}). Setting $\Delta=0$ recovers the symmetric flip model of Proposition~\ref{prop:flip}. $\square$
+
+\textbf{Proof of Corollary~\ref{cor:phantom}.} (a) $\lambda_-(\eps)-\sigma^2/2=\tfrac12\sigma^2(\eps^2-2\eps)+\eps^2\Delta^2/8$, which is positive iff $\eps(\sigma^2+\Delta^2/4)>2\sigma^2$. (b) Dropping the $\mathcal O(\alpha^2)$ numerator term and the heterogeneity component, $\|\bth_\gamma-\bth^*\|_2\approx\sqrt2\,\alpha|\Delta G|/(\sigma^2+\alpha^2\Delta^2)$ with $\alpha=\eps/2$. Maximizing $\eps/(\sigma^2+\eps^2\Delta^2/4)$ gives $\varepsilon^\star=2\sigma/|\Delta|$ (also verified symbolically) and the stated peak. (c) The leading displacement is proportional to $(1,1)$, the eigenvector of $\lambda_+$, so $\|\bJ^{-1}\boldsymbol b_\gamma\|=\|\boldsymbol b_\gamma\|/\lambda_+\le\|\boldsymbol b_\gamma\|/\lambda_-$. $\square$
+
+\subsection{Verification against the factorial experiment}
+\label{app:factorial_cf}
+Table~\ref{tab:cf} reports, for every cell of the $7\times7$ factorial with $\eps>0$, the ratio of the observed median error (100 replications) to the population error from Proposition~\ref{prop:exact}, using the factorial's own parameters: stationary weights $(0.556,0.444)$, $m=(2,5)$, $g=(15,50)$, $\theta=(0.75,2.5)$, $\sigma_0=1$. All \CFNCells\ ratios lie in $[\CFRatioMin,\CFRatioMax]$, and the population $\lmin$ matches the mean realized value to within 1.1\%. The finite-sample component is visible only at $\eps=0$, where the population error is zero.
+\begin{table}[h]
+\centering\footnotesize
+\caption{Observed median error divided by the exact population error (Proposition~\ref{prop:exact}), factorial design.}
+\label{tab:cf}
+\input{generated/tab_closed_form.tex}
+\end{table}
+
+\subsection{Phantom resolution beyond the coupled score}
+\label{app:phantom_more}
+\textbf{Hard classifiers.} Let $J_{\rm true}=\E[\tilde T_t^2H_tH_t^\top]$ with true residual treatment variances $a>b>0$ in a balanced two-state model. A symmetric hard classifier that flips labels with probability $p\in(0,1/2)$ yields inferred diagonal information proportional to $((1-p)a+pb,\;pa+(1-p)b)/2$. The smaller inferred value $[pa+(1-p)b]/2$ exceeds $b/2$, and at $p=1/2$ the apparent condition number is one however large the oracle condition number $a/b$ is. In a three-state Monte Carlo with residual treatment standard deviations $(1,0.3,0.08)$ and $\Delta_Z=0.5$, oracle $\lmin\approx0.0022$, while the soft and hard generated-state values are about $0.0246$ and $0.0457$ (11.4$\times$ and 21.2$\times$ inflation; research ledger in the supplementary archive).
+
+\textbf{Why posterior means are insufficient for information moments.} For one-hot $H_t$ and posterior $q_t=P(S_t\mid\mathcal I_t)$, $\E[H_tH_t^\top\mid\mathcal I_t]=\operatorname{diag}(q_t)$, not $q_tq_t^\top$. For any weight $W_t$ measurable with respect to $\mathcal I_t$, $\E[W_tH_tH_t^\top]=\E[W_t\operatorname{diag}(q_t)]$. This can recover oracle second moments under a correctly specified posterior whose information set contains every state-informative variable entering $W_t$. It is not a free correction, though: misspecifying the state--treatment model recreates phantom resolution, so we treat completed geometry as a sensitivity diagnostic.
+
+\textbf{Directional reliability.} The bound $\|\boldsymbol b_\gamma\|/\lmin(\bJ)$ is worst-directional. For a scientific contrast $\boldsymbol c$ the relevant first-order quantity is $|\boldsymbol c^\top\bJ^{-1}\boldsymbol b_\gamma|$. In $K\ge3$ regimes, equal-magnitude perturbations can therefore have very different consequences depending on their alignment with the information eigenvectors, and no task-agnostic scalar representation score is sufficient in general. Fine latent states may still be needed for nuisance adjustment even when a separate coefficient for every state is unsupported, which is why we distinguish adjustment resolution from target resolution.
+
+\section{THE RESIDUAL-STATE BIAS LAW}
+\label{app:biaslaw}
+\textbf{Setting.} $S_t\in\{0,\dots,K-1\}$ with indicator vector $D_t\in\{0,1\}^{K-1}$; $T_t=m(X_t)+a^\top D_t+V_t$ and $Y_t=\theta T_t+g(X_t)+b^\top D_t+U_t$; $\hat\gamma_t=\hat\gamma_t(Z_{1:N})$ is any posterior computed from the proxies; nuisances are cross-fitted on $F_t=(X_t,\hat\gamma_t)$ with purged blocks; $\hat\theta=\sum\tilde T_t\tilde Y_t/\sum\tilde T_t^2$.
+\begin{assumption}[Exogenous noise]\label{as:noise} $V_t$ is independent of $(S,Z,X)$ at all times, $\E V_t=0$, $\Var V_t=\sigma^2>0$; $\E[U_t\mid S,Z,X,V]=0$; both noises have summable autocovariances and bounded $4{+}\delta$ moments.\end{assumption}
+\begin{assumption}[Posterior as a local feature]\label{as:post} The process is stationary and $\alpha$-mixing; $\hat\gamma_t$ depends on $Z_s$ for $|s-t|>\tau$ only through terms of size $\varepsilon_\tau$ in $L^2$ (filter stability).\end{assumption}
+\begin{assumption}[Nuisance learners]\label{as:nuis} The cross-fitted learners for $\E[T\mid F]$ and $\E[Y\mid F]$ have $L^2$ errors $r_T,r_Y$ ($r_h=r_Y+|\theta|r_T$), and the embargo exceeds the mixing time.\end{assumption}
+
+\textbf{Pooled law for $K\ge2$ regimes.} For homogeneous effects and $w\equiv1$, Theorem~\ref{thm:law} extends to $K\ge2$: posterior-feature DML satisfies $\hat\theta-\theta=a^\top\Sigma_Nb/(a^\top\Sigma_Na+\sigma^2)+O_P(N^{-1/2}+r_Tr_h+\varepsilon_\tau)$, where $D_t$ is the $(K{-}1)$-vector of regime indicators, $\tilde D_t=D_t-\E[D_t\mid F_t]$, $\Sigma_N=N^{-1}\sum_t\tilde D_t\tilde D_t^\top$, and $T=m(X)+a^\top D+V$, $Y=\theta T+g(X)+b^\top D+U$. Calibration is not needed for this form, because $\Sigma_N$ is defined relative to the conditional mean given $F$ (Remark: the relevant $\Sigma_N$ is that of the learner's projection when the learner class is restricted).
+\emph{Proof.} \emph{Step 0 (exact decomposition).} By Assumption~\ref{as:noise}, $\E[T_t\mid F_t]=m(X_t)+a^\top c_t$ and $\E[Y_t\mid F_t]=\theta\E[T_t\mid F_t]+g(X_t)+b^\top c_t$ with $c_t=\E[D_t\mid F_t]$. With nuisance errors $\delta^T_t,\delta^Y_t$ and $\delta^h=\delta^Y-\theta\delta^T$, $\tilde T_t=a^\top\tilde D_t+V_t-\delta^T_t$ and $\tilde Y_t-\theta\tilde T_t=b^\top\tilde D_t+U_t-\delta^h_t$, and $\hat\theta-\theta=\sum_t\tilde T_t(\tilde Y_t-\theta\tilde T_t)/\sum_t\tilde T_t^2$ exactly.
+\emph{Step 1.} $N^{-1}\sum(a^\top\tilde D_t)(b^\top\tilde D_t)=a^\top\Sigma_Nb$, $N^{-1}\sum(a^\top\tilde D_t)^2=a^\top\Sigma_Na$, and $N^{-1}\sum V_t^2=\sigma^2+O_P(N^{-1/2})$.
+\emph{Step 2.} Conditionally on $\mathcal G=\sigma(S,Z,X)$, $\sum_tV_tb^\top\tilde D_t$, $\sum_ta^\top\tilde D_tU_t$ and $\sum_tV_tU_t$ have mean zero and variance $O(N)$, hence are $O_P(N^{1/2})$.
+\emph{Step 3.} Within a fold, $\delta_t=\delta(F_t)$ is fixed given the training folds and $\E[\tilde D_t\mid F_t]=0$. So $\sum\delta_t\tilde D_t$, $\sum\delta_tV_t$ and $\sum\delta_tU_t$ have conditional mean $O(\varepsilon_\tau)$ and variance $\le CN\|\delta\|^2_{L^2}$ by Davydov's inequality; and $|\sum\delta^T_t\delta^h_t|\le Nr_Tr_h$.
+\emph{Step 4.} Write the ratio as $(A+e_1)/(B+e_2)$ with $A=a^\top\Sigma_Nb$, $B=a^\top\Sigma_Na+\sigma^2\ge\sigma^2$ and $e_i=O_P(N^{-1/2}+r_Tr_h+\varepsilon_\tau)$. Then $(A+e_1)/(B+e_2)-A/B=(e_1-(A/B)e_2)/(B+e_2)$, with $|A/B|\le\sqrt{b^\top\Sigma_Nb}/(2\sigma)$ bounded. $\square$
+
+\textbf{Hump, sup bound and monotonicity ($K=2$).} (i) $a^2v+\sigma^2\ge2|a|\sqrt v\sigma$, with equality at $|a|=\sigma/\sqrt v$, so $|B|\le|\Delta_g|\sqrt v/(2\sigma)$. (ii) With $\lambda=\Var(\tilde T)=a^2v+\sigma^2$, $|B|=|\Delta_g|\sqrt v\sqrt{\lambda-\sigma^2}/\lambda$, which increases in $\lambda$ on $[\sigma^2,2\sigma^2]$ and decreases afterwards, while $\lambda$ increases monotonically in $|a|$. Conditioning therefore cannot be a monotone certificate. (iii) $\partial_v[v/(a^2v+\sigma^2)]=\sigma^2/(a^2v+\sigma^2)^2>0$. For $\mathcal F\subseteq\mathcal F'$, the law of total variance gives $\E\Cov(D\mid\mathcal F')\preceq\E\Cov(D\mid\mathcal F)$; a hard label is a measurable function of $\hat\gamma$, so the soft feature is never worse for $K=2$. $\square$
+
+\textbf{Observable plug-in.} Let $CE=\E\|\hat\gamma_t-\E[D_t\mid F_t]\|^2$. With $c=\E[D\mid F]$, $\gamma(1-\gamma)-c(1-c)=(\gamma-c)(1-2c)-(\gamma-c)^2$, so $|\E\hat v-v|\le\sqrt{CE}+CE$. If $m$ is linear and the posterior calibrated, the OLS coefficient $\hat a$ of $\hat\gamma$ in the regression of $T$ on $(1,X,\hat\gamma)$ is consistent for $a$, and $\sigma^2=\Var(\tilde T)-a^\top\Sigma a$. $\square$
+
+\textbf{Heterogeneous effects ($K=2$).} With $\theta(S)\in\{\theta_0,\theta_1\}$, $\bar\theta=\E\theta(S)$, $T_t=\bar m+m_0(X_t)+aD_t+V_t$, $\E m_0=0$ and $\E[m_0(X)\Var(D\mid F)]=0$,
+$\hat\theta\to_p\bar\theta+a v[b+a(\theta_1-\bar\theta)+\bar m(\theta_1-\theta_0)]/(a^2v+\sigma^2)$. Expanding $\E[\tilde T\theta(S)T]$ with $\tilde T=a\tilde D+V$ gives $a\bar m(\theta_1-\theta_0)v+a^2\theta_1v+\sigma^2\bar\theta$; subtract $\bar\theta(a^2v+\sigma^2)$. This is the form used for Table~\ref{tab:main}'s semi-synthetic prediction and for the frontier DGP. $\square$
+
+\textbf{Learned HMM parameters.}
+\emph{Setting (E).} The chain has finitely many states with $A^*_{ij}\ge\varepsilon^*>0$; the emissions are Gaussian with parameters in a compact set and variances bounded below; and $\vartheta^*$ is interior, identifiable up to labels, with nonsingular Fisher information. Let $\gamma^*_t$ be the smoothing posterior at $\vartheta^*$ and $\hat\gamma_t$ at $\hat\vartheta$. \emph{(H1)} $\|\hat\vartheta-\vartheta^*\|=O_P(N^{-1/2})$ (and $\E\|\sqrt N(\hat\vartheta-\vartheta^*)\|^4\le C$ for statements in expectation). This is a hypothesis on the \emph{output} of EM, which we check by multistart.
+\begin{lemma}[Derivative of the smoother]\label{lem:h2}
+Under (E) there are $r>0$, $C<\infty$ with $D_t:=\sup_{\|\vartheta-\vartheta^*\|\le r}\|\partial_\vartheta\gamma_{t,\vartheta}\|\le C\sum_s\kappa^{|t-s|}(1+\|Z_s\|^2)$, $\kappa=1-\varepsilon^*/2$, and $|\gamma^*_t-\gamma^{*,(m)}_t|\le\kappa^m$ for the window-$m$ posterior; hence $\sup_{t,N}\E D_t^p<\infty$ and $N^{-1}\sum_tD_t^2=O_P(1)$.
+\end{lemma}
+\emph{Proof.} Given $Z$, the hidden chain has kernels $K_s(i,j)\ge(\varepsilon^*/2)w_j/\sum_lw_l$, a Doeblin minorisation independent of the emissions, so its Dobrushin coefficient is at most $\kappa$ and conditional covariances decay as $\kappa^{|t-s|}$. Fisher's identity writes $\partial_\vartheta\gamma_t(k)=\sum_s\Cov(\one\{S_t=k\},h_s\mid Z)$ with $\mathrm{osc}(h_s)\le C(1+\|Z_s\|^2)$; summing gives the bound, and the same contraction gives forgetting. $\square$
+\begin{proposition}[Rate for learned parameters]\label{prop:rate}
+Assume (E) and (H1), and let $\delta_X=N^{-1}\sum_t\E(\E[D_t\mid Z,X]-\gamma^*_t)^2$ be the regime information carried by the controls beyond the proxies. Then $N^{-1}\sum_t\|\hat\gamma_t-\gamma^*_t\|^2=O_P(N^{-1})$, $|\E\hat v-v^*|=O(N^{-1/2})$, $CE\le(\sqrt{\delta_X}+O(N^{-1/2}))^2$ and $|v_N-v^*|\le2\sqrt{\delta_X}+O(N^{-1/2})$. The plug-in is therefore $N^{-1/2}$-accurate when $\delta_X=0$, and its guarantee degrades by $\sqrt{\delta_X}$ otherwise.
+\end{proposition}
+\emph{Proof.} On $\{\|\hat\vartheta-\vartheta^*\|\le r\}$ the mean-value theorem and Lemma~\ref{lem:h2} give $\|\hat\gamma_t-\gamma^*_t\|\le D_t\|\hat\vartheta-\vartheta^*\|$, and averaging gives the first claim. Since $|x(1-x)-y(1-y)|\le|x-y|$ the second follows. With $P$ the $L^2$ projection onto $\sigma(X,\hat\gamma)$, $CE=\|P(\hat\gamma-\gamma^X)\|^2\le\|\hat\gamma-\gamma^X\|^2$, and $|v_N-v^*|\le\|c-\gamma^*\|\le\|\hat\gamma-\gamma^X\|+\sqrt{\delta_X}$. $\square$
+\emph{Empirical checks} (supplement, \texttt{reports/bias\_law/x21}--\texttt{x30}). When the emission model is correct, $\E|\hat\gamma-\gamma^*|$ decays with log--log slope $-0.49$. Under misspecified (correlated $t_5$) emissions the plug-in $\hat v$ equals the pseudo-true value but understates the realized residual variance by a factor of two, so it is a lower bound. Refitting the HMM on training folds only leaves the bias unchanged (correlation 0.999 between fold-wise and global estimates). Mumbai's likelihood is multimodal: five restarts span 1{,}182 log-likelihood units, so (H1) fails there, and the best restart changes its robustness value from 11.9 to 7.1 SD without changing any conclusion. On the real series $\delta_X>0$, because the controls contain the proxy variables.
+
+\textbf{A priori residual variance.} For a continuous AR(1) latent state with coefficient $\phi$ observed with information rate $\iota=h^\top R^{-1}h$, the Kalman-smoothed residual variance is $v=(1-\phi^2)/\sqrt{(1+\phi^2+\iota(1-\phi^2))^2-4\phi^2}$ (Wiener--Kolmogorov). The worst-case bias therefore decays only as $\iota^{-1/4}$ while $\iota\ll(1-\phi^2)^{-1}$: halving it needs about $16\times$ the sensor information. For a persistent two-state chain with Mahalanobis separation $d$ and switch rate $r$, residual variance is paid at change points, $v\approx c\,r\,e^{-d^2/8}/d$ with $c\to\sqrt{\pi/2}$ for an isolated switch. Discrete regimes with informative proxies are therefore far less dangerous than a continuous latent state with the same sensor information. Statements, proofs, numerical checks and fitted constants are in the supplementary archive (\texttt{archive/manuscript\_lineages/v2\_bias\_law\_main.tex}, \texttt{reports/bias\_law/x6}, \texttt{x15}--\texttt{x20}, \texttt{x28}, \texttt{x31}).
+
+\subsection{Experiments for the bias law}
+\label{app:biaslaw_exp}
+All use \texttt{src/bias\_law/}: a persistent chain (stay probability 0.9), 2-d Gaussian proxies, $N=3000$, $\Delta_g=3$, an EM-fitted HMM, five purged folds with $\tau=24$, and 12 replications per cell. Across \BLCells\ two-regime cells (smoother and filter; linear and boosted nuisances; $\Delta_Z\in\{0.5,0.8,1.2\}$; eight values of $\Delta_T$ from 0.25 to 32), the law with the observable plug-in $\hat v$ has correlation \BLCorr\ and RMSE \BLRmse\ with the measured bias, and median relative error \BLMedRel\% on cells with $|{\rm bias}|>0.05$ (\BLMedRelTrue\% with the realized $v_N$; Table~\ref{tab:blver}). Subtracting the plug-in bias with the true $b$ reduces mean absolute error from \BLAdjBefore\ to \BLAdjAfter. Table~\ref{tab:bl_e7} shows the pitfall behind ``conditioning sweeps'': if nuisances omit the regime, $\lmin$ grows from \ESevLamLo\ to \ESevLamHi\ while error is hump-shaped (peak \ESevErrPeak); with regime-aware nuisances $\lmin$ is flat at \ESevRegLam\ and the error stays in [\ESevRegLo, \ESevRegHi]. Table~\ref{tab:bl_t1} shows the law explaining the frontier DGP of Table~\ref{tab:main}. Table~\ref{tab:bl_cal} shows that temperature scaling changes $\hat v$ by a factor of 14 while the realized bias is constant.
+\begin{table}[h]\centering\footnotesize
+\caption{Agreement between measured bias and the law (bias-law experiments E1--E2).}\label{tab:blver}
+\input{generated/biaslaw/tab_verification.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Conditioning sweep on the frontier DGP ($\Delta_Z=1.5$): the role of regime-aware nuisances.}\label{tab:bl_e7}
+\input{generated/biaslaw/tab_e7.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Frontier DGP (30 replications, $N=1200$): excess bias of soft conditioning over the oracle state, and the law.}\label{tab:bl_t1}
+\input{generated/biaslaw/tab_table1dgp.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Temperature scaling of the posterior ($K=2$, boosted nuisances, 20 replications, $\Delta_Z=0.8$, $\Delta_T=2$).}\label{tab:bl_cal}
+\input{generated/biaslaw/tab_calibration.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{When can $b$ be learned? Posterior-DML versus a correctly specified joint Markov-switching MLE and proximal 2SLS with a negative-control outcome (bias, RMSE in parentheses).}\label{tab:bl_ext}
+\input{generated/biaslaw/tab_ext.tex}
+\end{table}
+
+\section{INFERENCE}
+\label{app:proof_asym}
+\textbf{Scope.} Theorem~\ref{thm:asymptotics} covers HMM parameters fitted on a calibration window separated from the evaluation sample (causal filtering or a held-out fit). Our real-data analyses use full-sample smoothing, which the theorem does not cover. In the bias-law designs, refitting the HMM fold-wise instead of globally leaves estimates unchanged (correlation 0.999; Appendix~\ref{app:biaslaw}), which is evidence, not a proof, that the gap is immaterial there. The proof below is written for posterior-weighted nuisances, where condition (G) controls the non-orthogonal Gram part; for posterior-adjusted nuisances Lemma~\ref{lem:orth} makes the score orthogonal in both nuisances, (G) is not needed, and Step~2 holds with remainder $\mathcal O_P(r_N^2)$.
+
+%%SEG 1307-1361%%
+
+\subsection{Regime occupation and the population ATE}
+\label{app:proof_prop6}
+%%SEG 1391-1420%%
+
+\section{OPERATIONAL SURROGATE, SCREENING AND REGULARIZATION}
+\label{app:surrogate}
+\begin{assumption}[Two-sided spectral comparability]
+\label{ass:spectral_comparability}
+There exist $0<\underline c_J\le\overline c_J<\infty$ with $\underline c_J\le\lmin(\bJ_t)/\lmin(\bJ)\le\overline c_J$ for rolling Gram matrices $\bJ_t$, $t\ge w$.
+\end{assumption}
+\begin{proposition}[Entropy surrogate]
+\label{prop:bridge}
+For calibrated forward posteriors in binary regimes, $\E[\|\bgam_t-\boldsymbol H_t\|_1\mid\mathcal F_t]=2\,\mathrm{Gini}(\bgam_t)\le C_KH(\bgam_t)$ with $C_K\le1/\ln2$. Hence $\mathcal D_{\rm causal}\equiv\eps/\lmin(\bJ)\le C_K\E[H(\bgam_t)]/\lmin(\bJ)$, and under Assumption~\ref{ass:spectral_comparability} $\mathcal D_{\rm causal}\le C_K\overline c_J\E[H(\bgam_t)/\lmin(\bJ_t)]$.
+\end{proposition}
+The surrogate is an upper bound on $\mathcal D_{\rm causal}$, which is defined with the \emph{generated-state} $\bJ$. By Section~\ref{sec:theory} that object can be inflated relative to the oracle geometry, so the surrogate inherits phantom resolution. We keep it as a monitoring device, not a certificate.
+%%SEG 1153-1194%%
+
+\subsection{Spectral regularization}
+\begin{theorem}[Risk bound]
+\label{thm:spectral}
+For $\lambda\ge0$ with $\lmin(\bJ)+\lambda>0$: $\|\bth_\lambda-\bth^*\|_2\le(C\eps+\lambda M_\theta)/(\lmin(\bJ)+\lambda)$, and if $N\|\hat\bth_\lambda-\bth_\lambda\|^2$ is uniformly integrable, $\E\|\hat\bth_\lambda-\bth^*\|_2^2\le2B_\lambda^2+2\,\mathrm{Tr}(\boldsymbol\Omega^{\rm tot}_\lambda)/(N(\lmin+\lambda)^2)+o(N^{-1})$.
+\end{theorem}
+%%SEG 1198-1238%%
+In the ill-conditioned benchmark of Table~\ref{tab:reg} (100 replications, mean $\lmin=0.026$), the grid minimum of the empirical MSE is at $\lambda=\RegLamBest$, a \RegRatio$\times$ reduction relative to $\lambda=0$, with coverage of the regularized target \RegCovBest\% (versus \RegCovZero\% unregularized). These are properties of that DGP, not constants. In the well-conditioned frontier (Table~\ref{tab:main}) the penalty is immaterial.
+\begin{table}[h]\centering\footnotesize
+\caption{Regularization path in an ill-conditioned design (\texttt{reports/or\_dml\_regularization\_frontier.csv}).}\label{tab:reg}
+\input{generated/tab_regularization.tex}
+\end{table}
+%%SEG 1242-1286%%
+
+\section{ALGORITHM AND SCALABILITY}
+\label{app:algorithm}
+Algorithm~\ref{alg:ordml} (main text) lists the steps.
+%%SEG 1290-1301%%
+Table~\ref{tab:scal} reports OR-DML with oracle-quality proxies for $K\in\{2,3,4,5\}$ ($N=1200$).
+\begin{table}[h]\centering\footnotesize
+\caption{Multi-regime scalability (\texttt{reports/multiregime\_scalability\_summary.csv}).}\label{tab:scal}
+\input{generated/tab_scalability.tex}
+\end{table}
+
+\section{FACTORIAL AND LEARNED-POSTERIOR EXPERIMENTS}
+\label{app:factorial}
+\textbf{Factorial design} (\texttt{src/factorial\_reliability\_experiment.py}). A two-state chain with persistence 0.88 and exit probability 0.15 generates $T=2(1{-}S)+5S+0.8X_0-0.5X_1+\sigma_SV$ with $\sigma_0=1$ and $\sigma_1\in\{0.08,\dots,1.5\}$, and $Y=\theta_ST+15(1{-}S)+50S+1.2X_0+0.9X_2+U$ with $\theta=(0.75,2.5)$ and $N=1200$. Nuisances are cross-fitted with oracle regime weights; the proxy is the label mixture $\bgam=(1-\eps/2)\boldsymbol H+(\eps/2)(\boldsymbol 1-\boldsymbol H)$ for $\eps\in\{0,\dots,0.4\}$, with 100 sequences per cell (\FacNRuns\ runs). Rank correlations: run-level \FacRhoD\ for $\eps/\lmin$, \FacRhoEps\ for $\eps$, \FacRhoLam\ for $1/\lmin$, \FacRhoAdd\ for the additive score; cell-level \FacRhoDCell. Retaining the 40\% of runs with lowest $\eps/\lmin$ reduces mean error from \FacFullErr\ to \FacRetainErr. Because the proxy is a deterministic corruption of the true state, these numbers verify Proposition~\ref{prop:exact} rather than a statistical property of learned representations. Rerunning the script reproduces the committed raw data to within $10^{-12}$.
+
+\textbf{Numerator scale.} In a feature-branch exploration with proxy error fixed at \DEEps\ and $\lmin$ essentially flat (\DELamLo--\DELamHi), increasing the treatment shift from \DETLo\ to \DETHi\ raises the causal error from \DEErrLo\ to \DEErrHi. The ratio $\eps/\lmin$ omits the regime-shift scale that multiplies state error in both laws.
+
+\textbf{Learned posteriors} (\texttt{src/synthesis/learned\_posterior\_coupled.py}). Same structural equations, with treatment shift $\Delta_T\in\{1.5,3,6\}$, $\sigma_1\in\{0.3,0.75,1.5\}$ and 2-d Gaussian proxies with Mahalanobis separation $\Delta_Z\in\{0.75,1.25,2,3\}$; full-covariance HMM (three restarts, smoothing); posterior-weighted Ridge nuisances on five purged folds (embargo 12); 20 replications per cell. The oracle Gram uses the true one-hot weights with the same nuisance procedure. The plug-in shifts $\hat\Delta_T,\hat\Delta_Y$ are posterior-weighted differences of regime means of $T$ and $Y$. Raw output: \texttt{reports/synthesis/learned\_posterior\_coupled\_raw.csv}.
+
+\section{SYNTHETIC FRONTIERS}
+\label{app:frontiers}
+\textbf{Observability and persistence frontier} (\texttt{src/synthesis/frontier\_designs.py}). The DGP is the difficulty-frontier generator (\texttt{src/synthetic\_dgp\_benchmark.py}): two regimes, $\theta=(0.75,2.5)$, treatment shift 4, outcome offsets 15/50, AR(1) controls, 2-d Gaussian proxies with separation $\Delta_Z$, $N=1200$, stationary ATE \FDTrueATE. Posteriors are learned by a full-covariance Gaussian HMM (EM, three restarts, smoothing) from $Z$ alone. All eight estimators share the posteriors, five purged blocks (embargo 12), Ridge nuisances and a HAC lag of 12. Labels are aligned to the truth only to evaluate regime-specific errors. The grid is $\Delta_Z\in\{0.2,0.5,1,2,4\}$ at regime-0 stay probability 0.88, plus stay probabilities $\{0.70,0.97\}$ at $\Delta_Z\in\{1,2\}$, with 100 datasets per cell (\FDNRuns\ in all). The DGP deliberately violates proxy sufficiency (the treatment carries state information), and $\Delta_Z\le0.5$ is close to the non-identification boundary of Theorem~\ref{thm:impossibility}, where every proxy-based estimator fails.
+\begin{table}[h]\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Observability $\times$ persistence frontier, all estimators (\texttt{reports/synthesis/}\allowbreak\texttt{frontier\_designs\_summary.csv}). Coverage: nominal 95\% intervals for the sample ATE. $\|\hat\bth-\bth^*\|$: median over datasets. $\lmin$: generated-state Gram matrix (median).}\label{tab:fd}
+\input{generated/tab_frontier_designs.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Persistence: mean absolute ATE bias by regime-0 stay probability $p_{00}$ (\texttt{reports/synthesis/frontier\_designs\_summary.csv}).}\label{tab:fc}
+\input{generated/tab_frontier_c.tex}
+\end{table}
+\textbf{Legacy difficulty benchmark} (\texttt{src/synthetic\_dgp\_benchmark.py}). The earlier eleven-method benchmark on the same DGP (Table~\ref{tab:frontier}) includes forward filtering, decoupled and unregularized variants, GBM proxy controls and HMM$(Z,T)$; its ``Spectral OR-DML'' rows are the posterior-weighted design. HMM$(Z,T)$, which infers the state from $(Z,T)$, is best at low separation because the treatment carries state information. The $\lmin$ column displays phantom resolution directly: residualizing on $X$ only gives \BMLamStd, against \BMLamOracle\ for the oracle state, and at $\Delta_Z=0.2$ the weighted design's generated-state value is \BMLamSoftLow\ with $\eps=\BMEpsLow$.
+\begin{table}[h]\centering\scriptsize
+\caption{Legacy difficulty benchmark, all methods (\texttt{reports/or\_dml\_benchmark\_summary.csv}). Coverage is for the sample/population ATE.}\label{tab:frontier}
+\input{generated/tab_frontier_full.tex}
+\end{table}
+\textbf{Frontier B (size).} With $\theta_1^*=0$, nominal 5\% Wald tests reject in \FBSoft\ of runs for the weighted design and \FBHard\ for hard fixed effects: the sandwich is centered at the proxy target $\bth_\gamma$, not at $\bth^*$ (Theorem~\ref{thm:asymptotics}).
+\textbf{Soft versus hard under a continuous latent mixture} (\texttt{src/test\_soft\_vs\_hard\_continuous\_mixture.py}). With a continuous latent mixture weight and an informative proxy, the posterior-weighted coupled estimator has mean absolute bias \SVHSoft, hard fixed effects \SVHHard\ and standard DML \SVHStd. Soft weighting wins in \SVHWin\% of 100 replications; the experiment was written to exhibit an advantage of soft weighting and found none for that design. With posterior-adjusted nuisances on the same inputs, OR-DML has bias \SVHPA\ and beats hard fixed effects in \SVHPAWin\% of replications: the posterior helps once it is used as an adjustment feature rather than a nuisance weight.
+
+\section{REAL-DATA-CALIBRATED SEMI-SYNTHETIC BENCHMARK}
+\label{app:semisyn}
+\texttt{src/synthesis/semisynthetic\_hourly.py}. For each city, the analysis sample consists of the hours on the corrected grid where NO$_2$, PM$_{2.5}$, the proxies and the controls are all observed. The real missingness pattern is therefore inherited, including outages and the shorter Kolkata record. The proxies are temperature, humidity and wind; the controls are pressure, diurnal phase and lagged NO$_2$. A two-state diagonal Gaussian HMM (five restarts) is calibrated on the standardized proxies. In each of 30 replications the true path is drawn from that HMM's exact smoothing distribution by forward-filtering backward-sampling, so regime durations and overlap are the calibrated ones. Then $T=\mathrm{NO}_2^{\rm std}+S$ and $Y=\theta_ST+3S+X\beta+U$, with $\theta=(0.5,1.5)$ and $U$ an AR(1) process with coefficient 0.8. Estimators receive the calibrated posteriors, the most favourable case for posterior methods. Besides the estimators of Table~\ref{tab:main}, the ``Spectral OR-DML (soft, coupled)'' rows are the posterior-weighted design and ``OR-DML (posterior-adjusted)'' is the paper's estimator. The bias-law column uses the heterogeneous-effects form with the observed $\hat v$ and $\widehat{\Var}(\tilde T)$ and the injected $(\Delta_T,\Delta_g)$.
+\begin{table}[h]\centering\scriptsize
+\caption{Semi-synthetic benchmark, all estimators (\texttt{reports/synthesis/semisynthetic\_hourly\_summary.csv}). Coverage: nominal 95\% intervals for the sample ATE.}\label{tab:ss_full}
+\input{generated/tab_semisynthetic_full.tex}
+\end{table}
+Bias-law prediction versus observed mean bias of posterior-feature DML: Delhi \SSDelhiLaw\ vs \SSDelhiObs; Mumbai \SSMumbaiLaw\ vs \SSMumbaiObs; Bengaluru \SSBengaluruLaw\ vs \SSBengaluruObs; Kolkata \SSKolkataLaw\ vs \SSKolkataObs. The residual gaps reflect restricted (linear) learners and the assumption $\E[m_0(X)\Var(D\mid F)]=0$, which the real NO$_2$ series need not satisfy. The oracle-state intervals under-cover in some cities (70--93\%), which we attribute to the HAC truncation at 24 hours under strongly persistent real NO$_2$.
+
+\section{REPRESENTATIONS, CALIBRATION AND RELIABILITY}
+\label{app:zoo}
+LatentRegimeBench (\texttt{src/train\_real\_representation\_zoo.py}, \texttt{src/calibration\_intervention\_zoo.py}, \texttt{src/hierarchical\_reliability\_regression.py}) trains a Gaussian HMM (causal filter), a GRU, a causal Transformer and a linear SSM on shifted worlds ($N=2000$, five seeds), and evaluates state recovery, calibration and downstream failure discrimination of the rolling score $\mathcal D_t=H(\bgam_t)/\lmin(\bJ_t)$. The HMM attains failure ROC-AUC \ZooAucHMM. That is no better than plain entropy, and the neural encoders are near chance. Consistent with Theorem~\ref{thm:law}, the representation's \emph{probabilistic} quality (NLL) predicts reliability across worlds, but recalibration, which changes $\hat v$ and not the conditional information, does not improve it.
+\begin{table}[h]\centering\footnotesize
+\caption{Temperature scaling (\texttt{reports/representation\_zoo\_calibration\_intervention.csv}).}\label{tab:zoocal}
+\input{generated/tab_zoo_calibration.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Leave-one-world-out prediction of downstream reliability (15 worlds, \texttt{reports/representation\_zoo\_lowo\_evaluation.csv}). With 15 worlds the effective sample is small; we report the comparison, not a significance claim.}\label{tab:lowo}
+\input{generated/tab_lowo.tex}
+\end{table}
+
+\section{SENSOR DATA, AUDIT AND FULL CITY RESULTS}
+\label{app:provenance}
+\textbf{Sources.} Hourly pollutant concentrations come from CPCB continuous monitoring stations via OpenAQ \citep{openaq2025,cpcb2025}, and weather from Open-Meteo reanalysis \citep{openmeteo2025}. The record runs from February 2025 to June 2026 (Kolkata to June 2025), and raw files are in \texttt{data/raw\_hourly}.
+\textbf{Time-grid audit.} OpenAQ stamps readings at $hh{:}30$Z. The legacy pipeline (\texttt{src/data\_pipeline\_clean.py}) rounded these with ties-to-even, so every reading mapped to an even hour, and the inner join with hourly weather kept only even hours. The legacy ``hourly'' panel is in fact two-hourly: lag-1 is two hours and its rolling 3-hour mean covers six. The corrected grid (\texttt{src/bias\_law/ext\_real\_hourly\_fix.py}) floors readings to the hour, pairing each reading with the weather hour that began 30 minutes earlier (a causal alignment). It reindexes to a regular hourly grid, forward-fills at most two hours, and rebuilds lags on the grid. At least \AuHourlyMin\% of consecutive analysis rows are exactly one hour apart in every city. All real-data results in the main text use the corrected grid. Legacy two-hourly results are retained in \texttt{reports/} for provenance only.
+\textbf{Aligned placebos.} For a lead $h<0$ we regress PM$_{2.5,t+h}$ on NO$_{2,t}$ with the controls and contemporaneous NO$_2$ measured at the outcome time $t+h$, so the test asks whether future NO$_2$ predicts past PM$_{2.5}$ beyond the information available then. Without this alignment, the $h=-1$ placebo is identically zero because PM$_{2.5,t-1}$ is a control.
+\begin{table}[h]\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Dynamic responses and lead placebos by horizon (hours; ATE, $^{*}$: $p<0.05$; \texttt{reports/synthesis/city\_placebo\_hourly.csv}). Delhi's response peaks at \PlDelhiPeak\ at $h=\PlDelhiPeakH$\,h, but its one-hour lead rejects, so we do not interpret the curve causally.}\label{tab:placebo}
+\input{generated/tab_placebo.tex}
+\end{table}
+\begin{table}[h]\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Newey--West lag sensitivity of regime-specific OR-DML with posterior-adjusted nuisances (corrected grid, frozen-sensor screen; \texttt{reports/bias\_law/e6\_hac\_lag\_sensitivity.csv}).}\label{tab:hac}
+\input{generated/tab_hac.tex}
+\end{table}
+\begin{table}[h]\centering\footnotesize
+\caption{Sensitivity analysis on the corrected hourly grid (posterior-feature estimate, 90\% block-bootstrap intervals; \texttt{reports/bias\_law/x23\_real\_hourly\_fix.csv}).}\label{tab:bstar}
+\input{generated/biaslaw/tab_cities.tex}
+\end{table}
+
+\section{REPRODUCTION AND VERIFICATION}
+\label{app:repro}
+\textbf{One command.} \texttt{bash reproduce.sh} reruns, in order:
+\begin{enumerate}
+\item the synthesis experiments, about ten minutes on two CPU cores: the closed-form verification, the coupled-law and orthogonality checks, the observability--persistence frontier, learned posteriors, the semi-synthetic benchmark, the city stress test, the HAC lag sensitivity and soft-versus-hard;
+\item the factorial experiment (about 20\,s);
+\item the figures, the generated tables and \texttt{numbers.tex};
+\item \texttt{verify\_submission.py}.
+\end{enumerate}
+\texttt{bash reproduce.sh --full} also reruns the longer legacy benchmarks: the difficulty frontier, the bias-law suite and the representation zoo.
+\textbf{Single source of numbers.} Every numeric claim in the main text is a \LaTeX\ macro defined in \texttt{paper/generated/numbers.tex}, and every results table is an \texttt{\textbackslash input} of \texttt{paper/generated/tab\_*.tex}. Both are written by \texttt{src/synthesis/make\_tables\_numbers.py} from committed CSV/JSON outputs. \texttt{paper/generated/claims.csv} lists each macro with its value, source file and derivation.
+\textbf{Verifier.} \texttt{verify\_submission.py} (i) regenerates all macros and tables into a temporary directory and requires byte-identical output, (ii) re-evaluates the closed form and its symbolic identities, (iii) checks that every macro used in the manuscript is defined and every defined macro is used or listed, (iv) checks that the PDF is newer than its sources and has an eight-page main body, and (v) scans the PDF and the supplementary archive for de-anonymizing strings.
+
+\section{LINEAGE, CORRECTIONS AND SCOPE}
+\label{app:lineage}
+This paper consolidates several development lines (an applied study, a regime-conditional DML draft, an overlap-aware DML draft, a research ledger on task-relative reliability, and a residual-state bias-law analysis). Audits across them changed the claims as follows. (1)~The two-hour time grid (Appendix~\ref{app:provenance}) invalidated ``hourly'' labels, horizons and lag lengths in earlier drafts; all real-data numbers here are recomputed. (2)~Earlier placebo leads were not aligned to the outcome's information set; the one-hour lead was mechanically zero. (3)~Earlier drafts presented $\eps/\lmin$ as a general reliability predictor on the basis of the factorial design; Proposition~\ref{prop:exact} shows that design's correlation is algebraic, and learned posteriors reduce it to \LPRhoD. (4)~Earlier drafts used posterior-\emph{weighted} regime nuisances in the coupled estimator and presented it as the method of choice; every benchmark here favours hard fixed effects over that design. Proposition~\ref{prop:exact} locates the failure in the nuisance step, and the posterior-adjusted design of Lemma~\ref{lem:orth} replaces it. (5)~A semi-synthetic benchmark built on the legacy grid, in which the true state was a deterministic function of the proxies, is superseded by Appendix~\ref{app:semisyn}. (6)~A synthetic financial transfer experiment, an imputation-sensitivity table and a multi-horizon failure-forecasting table built on the legacy grid, and an early policy simulation with an unsupported mortality scaling, are not part of this paper's evidence; their code remains in the archive for transparency. (7)~Regularization numbers are recomputed from the committed path (Table~\ref{tab:reg}). The full research ledger, earlier manuscripts and changelogs are in the supplementary archive under \texttt{archive/} and \texttt{research/}.

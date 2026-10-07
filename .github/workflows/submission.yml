@@ -1,0 +1,40 @@
+name: submission-verify
+# Verification only: never commits or pushes. The committed PDF and archive are built locally by reproduce.sh.
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Python dependencies (fast path)
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas scipy scikit-learn hmmlearn statsmodels matplotlib sympy joblib
+      - name: Install LaTeX and poppler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended poppler-utils
+      - name: Numbers, tables, closed form and estimator invariances
+        run: python verify_submission.py --no-artifacts
+      - name: Manuscript compiles from committed sources
+        run: |
+          cd paper
+          python build_appendix.py && python prune_bib.py
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null
+          if grep -E "undefined references|Citation .* undefined|Reference .* undefined" main.log; then exit 1; fi
+      - name: Committed artifacts (PDF, archive, anonymity)
+        run: |
+          git checkout -- paper/main.pdf
+          touch paper/main.pdf AISTATS2027_Main_Paper.pdf
+          python verify_submission.py --fast

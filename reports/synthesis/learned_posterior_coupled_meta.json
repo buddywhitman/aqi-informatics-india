@@ -1,0 +1,13 @@
+{
+  "n_runs": 720,
+  "n_cells": 36,
+  "frac_runs_lam_proxy_gt_oracle": 0.8236111111111111,
+  "median_lam_inflation": 1.9347442765641425,
+  "lam_inflation_q90": 11.35468590958631,
+  "frac_cells_hard_better": 1.0,
+  "median_err_ratio_coupled_over_hard": 1.4027539976611494,
+  "frac_cells_pa_better_than_hard": 0.7222222222222222,
+  "median_err_ratio_pa_over_hard": 0.9712178608740601,
+  "frac_runs_pa_better_than_hard": 0.6875,
+  "median_err_ratio_pa_over_weighted": 0.6889268913481349
+}

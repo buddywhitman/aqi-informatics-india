@@ -1,0 +1,483 @@
+\documentclass[twoside]{article}
+\usepackage{aistats2027}
+\usepackage{amssymb,amsthm,amsfonts,amsmath}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage[round]{natbib}
+\renewcommand{\bibname}{References}
+\renewcommand{\bibsection}{\subsubsection*{\bibname}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\hth}{\hat\theta}
+\newcommand{\hg}{\hat\gamma}
+
+\begin{document}
+
+\runningtitle{Reliable Causal Estimation under Latent Markov Confounding}
+\runningauthor{Anonymous}
+
+\twocolumn[
+\aistatstitle{Reliable Causal Estimation under Latent Markov Confounding}
+\aistatsauthor{ Anonymous Author(s) }
+\aistatsaddress{ Anonymous Institution(s) }]
+
+\begin{abstract}
+When a persistent latent regime drives both a treatment and an outcome, a standard remedy is to infer the regime with a hidden Markov model and condition on its posterior. We show that this soft conditioning leaves a bias with a closed form, an omitted-variable-bias identity in the residual state variance. The bias is governed by the \emph{residual state variance} $v$ left in the posterior and by two regime shifts: one in the treatment ($\Delta_T$) and one in the outcome ($\Delta_g$). It equals $\Delta_T\Delta_g v/(\Delta_T^2 v+\sigma^2)$, where $\sigma^2$ is the exogenous treatment variance. The bias is non-monotone in the treatment shift $\Delta_T$ (it is linear in $\Delta_g$), so the conditioning of the residualized treatment (the usual Gram-matrix $\lambda_{\min}$) is not a monotone predictor of reliability. The quantity $v$ is estimable by a plug-in for calibrated posteriors, with error at most $\sqrt{CE}+CE$ in the calibration error $CE$ (which itself requires labels or a validation set; under misspecified emissions the plug-in is only a lower bound), leaving $\Delta_g$ as the single unidentified parameter, which yields a one-parameter sensitivity analysis and a robustness value. In learned-HMM simulations with dependent data, linear and boosted nuisances, and two or three regimes, the plug-in law (with $\Delta_T,\sigma^2$ known) predicts the realized bias with a median relative error of about 5\% for two regimes (7\% over all 72 cells; 14\% when $\hat a$ and $\Var(\tilde T)$ are also estimated). For three regimes it tracks the large biases but under-predicts small ones. For EM-fitted parameters we prove an $N^{-1/2}$ rate for the smoother, given a consistent root (a hypothesis on the EM output, tested by multistart) and with an explicit extra term $\sqrt{\delta_X}$ for information the controls carry about the regime (App.~\ref{app:proofs}). It also reproduces the bias of a difficulty-frontier benchmark, and it shows that a regime-aware coupled estimator is no better than regime fixed effects. On four Indian air-quality networks, the Delhi estimate is robust to residual confounding through the HMM-regime channel, provided the posterior is calibrated and no other confounder acts; the other cities are inconclusive.
+\end{abstract}
+
+\section{INTRODUCTION}
+Observational time series are often shaped by a persistent hidden regime: a boundary-layer state in atmospheric data, a macro regime in finance, an operating mode in a plant. If the regime moves both the treatment and the outcome, adjusting for observed covariates $X_t$ does not identify the effect. A common remedy is to fit a hidden Markov model (HMM) to auxiliary proxies $Z_t$ and then condition on the regime posterior $\hg_t$, either as a hard label or as a soft probability, inside a double machine learning (DML) estimator \citep{chernozhukov2018double}. The practical question is how far the result can be trusted when the posterior is imperfect.
+
+Two quantities are commonly used to answer it: the uncertainty of the posterior (its entropy or $L^1$ error $\varepsilon_\gamma$) and the conditioning of the score Jacobian, whose smallest eigenvalue $\lambda_{\min}$ measures how much treatment variation is left after residualization. Heuristically, error then scales like $\varepsilon_\gamma/\lambda_{\min}$. We show that this heuristic is wrong in a specific, checkable way, and we replace it with a closed-form law (exact for the learner-defined residual variance, Remark~\ref{rem:learner}).
+
+\textbf{Contributions.}
+(1) \emph{A residual-state bias law} (Thm.~\ref{thm:law}, Cor.~\ref{cor:hump}). For soft conditioning on a posterior computed from the proxy sequence, $\hth-\theta=\Delta_T\Delta_g v/(\Delta_T^2v+\sigma^2)+O_P(N^{-1/2})$, with a matrix version for $K>2$ regimes. This is proved for a posterior that is a fixed function of the proxies; for EM-fitted parameters it holds at rate $N^{-1/2}+\sqrt{\delta_X}$ (App.~\ref{app:proofs}): a proved derivative lemma for the smoother, a consistent-root hypothesis on the EM output that we test by multistart (it fails for Mumbai), and an explicit information term $\delta_X$ (positive on the real data) in place of the former assumption H3.
+(2) \emph{Non-monotone difficulty.} The bias is hump-shaped in $\Delta_T$ with peak $|\Delta_g|\sqrt v/(2\sigma)$, whereas the residual treatment variance (the scalar analogue of $\lambda_{\min}(\hat J)$) rises monotonically. Refining the conditioning information can only reduce the bias (Prop.~\ref{prop:info}); soft posteriors beat hard regime labels.
+(3) \emph{Observability and sensitivity analysis} (Prop.~\ref{prop:calib}, Sec.~\ref{sec:sens}). $v$ is estimated by the posterior Gini impurity, with error at most $\sqrt{CE}+CE$ in the posterior's calibration error ($CE$ requires the true state or a labelled validation set, so on real data calibration must be argued, not measured). Only $\Delta_g$ is unidentified, giving a robustness value that says how large a hidden outcome shift must be to explain an estimate away.
+(4) \emph{Evidence with strong baselines} (Sec.~\ref{sec:exp}). The plug-in law matches simulations to a median relative error of about 5\% ($K{=}2$, cells with $|{\rm bias}|>0.05$, $\Delta_T,\sigma^2$ known; $K{=}3$: tracks the two large-bias cells and under-predicts the rest, median error 43\% over 8 cells and 10\% with the realized $v_N$), explains the bias of our own difficulty benchmark, exposes an experimental pitfall (nuisances that omit the regime), and is applied to four Indian cities.
+
+\textbf{Relation to prior work.} Mathematically the law is an omitted-variable-bias (OVB) identity with a partially observed confounder \citep{greenland1980effect,cinelli2020making,chernozhukov2022long}; the hump follows from the same algebra that underlies bias amplification \citep{pearl2012class,ding2017instrumental}. We do not claim these ingredients as new. What we add is (i) the identification of the residual variance with the calibrated HMM posterior, valid for learned posteriors and dependent data under purged cross-fitting; (ii) the consequence that the Gram-matrix conditioning, a standard DML diagnostic, is not a monotone predictor of reliability here; and (iii) a calibration-based, nearly fully observable sensitivity analysis (whose plug-in $\hat v$ is a lower bound under emission misspecification) for latent Markov regimes. Posterior-based adjustment is known to fail without identification \citep{wang2019blessings,damour2019multi}; our law quantifies how it fails. Latent-state and proximal approaches \citep{miao2018identifying,tchetgen2020introduction} target identification, which we do not assume. HMMs follow \citet{hamilton1989new,cappe2005inference}; dynamic DML is in \citet{lewis2020double}.
+
+\section{SETTING AND ESTIMATOR}\label{sec:setting}
+Let $S_t\in\{0,\dots,K{-}1\}$ be a latent persistent regime with indicator vector $D_t=(\mathbb 1\{S_t=k\})_{k=1}^{K-1}$. We observe a treatment $T_t$, an outcome $Y_t$, controls $X_t$, and proxies $Z_t$ that depend on $S_t$. We posit
+\begin{align}
+T_t &= m(X_t)+a^\top D_t+V_t, \label{eq:T}\\
+Y_t &= \theta\,T_t+g(X_t)+b^\top D_t+U_t, \label{eq:Y}
+\end{align}
+where $a\in\mathbb R^{K-1}$ and $b\in\mathbb R^{K-1}$ are the regime shifts of the treatment and the outcome ($\Delta_T$ and $\Delta_g$ when $K=2$), $\theta$ is the causal effect, and $(V_t,U_t)$ are exogenous noises (assumptions below). The regime is confounding when $a\neq0$ and $b\neq0$.
+
+\textbf{Soft conditioning.} Let $\hg_t=\hg_t(Z_{1:N})\in\Delta^{K-1}$ be any posterior computed from the proxies, for example the smoothing or filtering distribution of a Gaussian HMM whose parameters are learned by EM on the same sample. With features $F_t=(X_t,\hg_t)$ and purged block cross-fitting with an embargo of $\tau$ steps, let $\tilde T_t=T_t-\hat m_T(F_t)$ and $\tilde Y_t=Y_t-\hat m_Y(F_t)$ be cross-fitted residuals and
+\begin{equation}
+\hth=\textstyle\sum_t\tilde T_t\tilde Y_t\big/\sum_t\tilde T_t^2 .
+\end{equation}
+Hard assignment uses $\mathbb 1\{\arg\max\hg_t\}$ instead of $\hg_t$. The coupled, regime-specific estimator of our earlier work (OR-DML) is analysed in Appendix~\ref{app:ordml}; it does not improve on these baselines.
+
+\section{THE RESIDUAL-STATE BIAS LAW}\label{sec:law}
+Let $c_t=\E[D_t\mid F_t]$, $\tilde D_t=D_t-c_t$, $\Sigma_N=N^{-1}\sum_t\tilde D_t\tilde D_t^\top$ (the residual state covariance), and $v=\Sigma_N$ when $K=2$.
+\begin{assumption}[Exogenous noise]\label{as:noise}
+$V_t$ is independent of $(S,Z,X)$ at all times, $\E V_t=0$, $\Var V_t=\sigma^2>0$. $\E[U_t\mid S,Z,X,V]=0$. Both noise processes have summable autocovariances and bounded $4{+}\delta$ moments.
+\end{assumption}
+\begin{assumption}[Posterior as a local feature]\label{as:post}
+The process is stationary and $\alpha$-mixing. $\hg_t$ is a function of $Z_{1:N}$ that depends on $Z_s$ for $|s-t|>\tau$ only through terms of size $\varepsilon_\tau$ in $L^2$ (filter stability), and estimated HMM parameters converge at rate $N^{-1/2}$.
+\end{assumption}
+\begin{assumption}[Nuisance learners]\label{as:nuis}
+The cross-fitted learners for $\E[T\mid F]$ and $\E[Y\mid F]$ have $L^2$ errors $r_T,r_Y$ (set $r_h=r_Y+|\theta|r_T$) and the embargo $\tau$ exceeds the mixing time.
+\end{assumption}
+\begin{theorem}[Residual-state bias law]\label{thm:law}
+Under Assumptions~\ref{as:noise}--\ref{as:nuis},
+\begin{equation}\label{eq:law}
+\hth-\theta=\frac{a^\top\Sigma_N\,b}{a^\top\Sigma_N\,a+\sigma^2}+O_P\!\big(N^{-1/2}+r_Tr_h+\varepsilon_\tau\big),
+\end{equation}
+with constants depending on $\|a\|,\|b\|$ and $\sigma^{-2}$. In particular, if the remainder vanishes, $\hth$ is consistent iff $a^\top\Sigma_N b\to0$, and the denominator equals $\Var(\tilde T)$.
+\end{theorem}
+\begin{remark}[$v$ is relative to the learner]\label{rem:learner}
+Theorem~\ref{thm:law} is stated for the unrestricted conditional covariance $\Sigma_N$. With a restricted learner class the relevant $\Sigma_N$ is the residual of the learner's projection, which can exceed $\E\Var(S\mid F)$, and exactness additionally needs $m,g$ in the class. We observe both effects: with boosted nuisances the law evaluated at the realized $v_N$ has 14\% median error (versus 1--3\% for linear learners), and in the calibration experiment it overshoots by 26\%, because the cross-fitted learner adds estimation noise to $v_N$ (Limitation 5, Sec.~\ref{sec:exp}).
+\end{remark}
+The estimation error of the HMM enters \emph{only through $v$}, because $v$ is defined with respect to the realized posterior. The proof (Appendix~\ref{app:proofs}) writes the residuals as $\tilde T=a^\top\tilde D+V-\delta^T$ and $\tilde Y-\theta\tilde T=b^\top\tilde D+U-\delta^h$; all cross terms are centered mixing sums or nuisance products.
+
+\textbf{Intuition.} After partialling out $F_t$, the treatment still contains the part of the regime that the posterior failed to explain, $a^\top\tilde D_t$, and so does the outcome, $b^\top\tilde D_t$. This shared component is a confounder that no longer has a proxy: it contributes covariance $a^\top\Sigma_N b$ to the numerator, while the denominator mixes it with the clean variation $\sigma^2$. A strong treatment shift $a$ makes the unexplained component dominate the treatment residual (so $\Var(\tilde T)$ is large), but then the estimator regresses $\tilde Y$ on a variable that is nearly a copy of $b^\top\tilde D$, and its slope tends to $\theta+b/a$; the bias is free of $\theta$ and shrinks like $b/a$ as $a$ grows. Weak shifts leave little bias to begin with.
+
+\begin{corollary}[Hump, sup bound, information monotonicity]\label{cor:hump}
+Let $K=2$ and $B=\Delta_T\Delta_g v/(\Delta_T^2v+\sigma^2)$ with $\lambda:=\Delta_T^2v+\sigma^2=\Var(\tilde T)$.
+(i) $|B|\le|\Delta_g|\sqrt v/(2\sigma)$ for all $\Delta_T$, with equality at $|\Delta_T|=\sigma/\sqrt v$.
+(ii) $|B|=|\Delta_g|\sqrt v\,\sqrt{\lambda-\sigma^2}/\lambda$, which \emph{increases} in $\lambda$ on $[\sigma^2,2\sigma^2]$ and \emph{decreases} afterwards, while $\lambda$ increases monotonically in $|\Delta_T|$.
+(iii) For fixed $(\Delta_T,\Delta_g,\sigma)$, $|B|$ is strictly increasing in $v$.
+\end{corollary}
+Part (ii) is the correct replacement for the heuristic $\varepsilon_\gamma/\lambda_{\min}$: the numerator $\Delta_T\Delta_g v$ grows with the same confounding strength that inflates $\lambda$, so no function of $(\varepsilon_\gamma,\lambda)$ alone bounds the bias monotonically. The bound (i) decays only as $\sqrt v$, so the worst case is $O(\sqrt{\varepsilon_\gamma})$ even though for fixed $\Delta_T$ the bias is linear in $v$.
+
+\begin{proposition}[Information monotonicity]\label{prop:info}
+If $\mathcal F\subseteq\mathcal F'$ are two conditioning sets, then $\Sigma'\preceq\Sigma$, and for $K=2$ $|B'|\le|B|$. In particular, conditioning on the soft posterior never does worse than conditioning on its hard label, and adding informative controls or proxies cannot hurt.
+\end{proposition}
+
+\begin{proposition}[Observable plug-in]\label{prop:calib}
+Let $\hat\Sigma=N^{-1}\sum_t[\mathrm{diag}(\hg_t)-\hg_t\hg_t^\top]_{1:,1:}$ (for $K=2$, $\hat v=N^{-1}\sum_t\hg_{t}(1-\hg_{t})$, the posterior Gini impurity) and $CE=\E\|\hg_t-\E[D_t\mid F_t]\|^2$ the $L^2$ calibration error given $F_t$. For $K=2$,
+\begin{equation}
+\big|\E\hat v-\E v\big|\le\sqrt{CE}+CE,
+\end{equation}
+so $\hat v=v$ for a calibrated posterior and an over-confident one understates the bias (so does a misspecified emission model, App.~\ref{app:proofs}, \texttt{x29}). If $m$ is linear and the posterior is calibrated, the OLS coefficient $\hat a$ of $\hg$ in the regression of $T$ on $(1,X,\hg)$ consistently estimates $a$, and $\sigma^2=\Var(\tilde T)-a^\top\Sigma a$.
+\end{proposition}
+Heterogeneous effects $\theta(S)$ add the terms $a(\theta_1-\bar\theta)+\bar m(\theta_1-\theta_0)$ to $b$ (Appendix~\ref{app:hetero}), where $\bar m$ is the state-free mean treatment level.
+
+\section{SENSITIVITY ANALYSIS}\label{sec:sens}
+By Thm.~\ref{thm:law} and Prop.~\ref{prop:calib}, everything in the bias except $b$ is observable: $\hat a$ from the treatment regression, $\hat\Sigma$ from the posterior, and $\widehat{\Var}(\tilde T)$ from the residuals. For a hypothesized outcome shift $b$ the bias-adjusted estimate is $\hth_{\rm adj}(b)=\hth-\hat a^\top\hat\Sigma b/\widehat{\Var}(\tilde T)$.
+\textbf{Robustness value.} The smallest outcome shift that explains the point estimate away is
+\begin{equation}
+b^*=\frac{|\hth|\,\widehat{\Var}(\tilde T)}{\|\hat\Sigma\hat a\|},
+\end{equation}
+reported in standard deviations of $\tilde Y$ and benchmarked against the observed regime shift of $Y$ (the coefficient of $\hg$ in an outcome regression), which is not identified but is a natural yardstick. A large $b^*$ means the estimate cannot be overturned by residual regime confounding through this channel; $b^*$ is uninformative when $\hth\approx0$. A block bootstrap (blocks of 72 rows, 300 draws; percentile intervals) resamples contiguous blocks of rows and recomputes $(\hth,\hat v,\hat a,\widehat{\Var}(\tilde T))$.
+\begin{algorithm}[t]
+\caption{Residual-state sensitivity analysis}\label{alg:sens}
+\begin{algorithmic}[1]
+\STATE Fit an HMM to $Z_{1:N}$; where labels or a validation set permit, check calibration and recalibrate $\hg$ (Prop.~\ref{prop:calib}); otherwise treat $\hat v$ as a lower bound on $v$ (over-confident posterior or misspecified emissions: factor 2 in \texttt{x29}).
+\STATE Cross-fit $\hat m_T,\hat m_Y$ on $(X,\hg)$ with purged blocks; compute $\tilde T,\tilde Y,\hth$.
+\STATE Compute $\hat\Sigma$ (posterior Gini), $\hat a$ (OLS of $T$ on $(1,X,\hg)$), $\widehat{\Var}(\tilde T)$.
+\STATE For a grid of outcome shifts $b$: report $\hth_{\rm adj}(b)$; report $b^*$ in SD of $\tilde Y$ and its bootstrap interval.
+\end{algorithmic}
+\end{algorithm}
+
+\section{A PRIORI BIAS FROM SENSOR PRIMITIVES}\label{sec:prior}
+The law takes $v$ as given. For a continuous latent confounder, $v$ has a closed form in the sensor's information rate and the state's persistence, so the bias of posterior-conditioned DML can be predicted before $(T,Y)$ are seen.
+\begin{proposition}[Wiener smoothing error]\label{prop:wiener}
+Let $u_t$ be a stationary unit-variance AR(1) with coefficient $\phi$, observed as $Z_t=hu_t+\varepsilon_t$ with $\varepsilon_t\sim N(0,R)$ i.i.d., and let $\iota=h^\top R^{-1}h$. Conditioning on the Kalman-smoothed mean leaves residual variance
+\begin{equation}
+v=\frac{1-\phi^2}{\sqrt{\bigl(1+\phi^2+\iota(1-\phi^2)\bigr)^2-4\phi^2}},
+\end{equation}
+and the bias is $\Delta_T\Delta_g v/(\Delta_T^2 v+\sigma^2)$ by Thm.~\ref{thm:law} with $u$ in place of $S$. For $0.02\ll\iota\ll(1-\phi^2)^{-1}$, $v\approx\tfrac12\sqrt{(1-\phi^2)/\iota}$, so the worst-case bias $|\Delta_g|\sqrt v/(2\sigma)$ decays only as $\iota^{-1/4}$; for $\iota\gg(1-\phi^2)^{-1}$, $v\approx1/\iota$ and it decays as $\iota^{-1/2}$.
+\end{proposition}
+The proof is the Wiener--Kolmogorov smoothing error $v=\int S_u/(1+\iota S_u)\,d\omega/2\pi$ with $S_u(\omega)=(1-\phi^2)/|1-\phi e^{-i\omega}|^2$, evaluated with $\int_0^{2\pi}d\omega/2\pi\,(A-2\phi\cos\omega)^{-1}=(A^2-4\phi^2)^{-1/2}$ \citep{anderson1979optimal}. In 18 simulated configurations ($\phi\in\{0.9,0.97\}$, three sensor strengths, three $\Delta_T$; $N{=}3000$, 8 replications each; Table~\ref{tab:kalman}), the closed form matches the Kalman smoother's variance to $2\times10^{-4}$, and the predicted bias matches the DML bias with correlation $0.9987$ and maximum error $0.021$. For a persistent state, halving the worst-case bias therefore needs about $16\times$ the sensor information while $\iota\ll(1-\phi^2)^{-1}$. Discretizing $u$ into a $K$-state HMM posterior acts as a sieve: at $\phi=0.97$, $\iota=2.76$, $\Delta_T=1$ (6 replications, $N{=}3000$), the bias falls from $0.82$ ($K{=}2$) to $0.52$ ($K{=}3$) and $0.39$ ($K{=}4$) and then stops improving ($0.40$ at $K{=}6$), matching the law with $v_K=\Var(u\mid X,\hg_K)$ ($0.78,0.49,0.37,0.38$).
+
+\textbf{Finite-state chains.} For a finite-state chain, $v=\E\Var(S\mid Z_{1:N})$ is the minimum mean-squared smoothing error, so it is at most the linear Wiener error of the rescaled indicator: $v\le\tfrac14\,v_{\rm W}(2\rho-1,\iota)$ with $\iota=\Delta_Z^2 h^\top R^{-1}h$ for emission means $\pm\Delta_Z h$ (a bound, valid for known parameters). It is tight for weak signals (bound/exact ratio $1.04$--$1.4$ for $\Delta_Z\le0.5$ at $\rho=0.9$, and $1.3$--$2.3$ at $\rho=0.97$; \texttt{x8\_finite\_state.csv}) and loose for well-separated regimes, where $v$ falls exponentially (exact $v=10^{-4}$ vs.\ bound $0.017$ at $\Delta_Z=2$; App.~\ref{app:ext}). Persistent discrete regimes with informative proxies are therefore far less dangerous than a continuous latent state with the same sensor information, whose bias decays only polynomially.
+
+\textbf{Change-point scaling.} For a persistent two-state chain with Gaussian emissions and Mahalanobis separation $d^2=(\mu_1-\mu_0)^\top\Sigma^{-1}(\mu_1-\mu_0)$, residual variance is paid at change points. Let $r=\pi_0\epsilon_0+\pi_1\epsilon_1$ be the switch rate per step. In the isolated-change limit, the posterior of the change location $c$ is $p(k)\propto e^{W_k}$, where $W_{\pm1}\sim N(-d^2/2,d^2)$ is the log-likelihood ratio of moving the change by one site, and only the two sites adjacent to the switch carry non-negligible variance, each contributing $\E[\sigma(W)\sigma(-W)]=\frac{e^{-d^2/8}}{d\sqrt{2\pi}}\int\frac{e^{-w/2}e^{-w^2/2d^2}}{4\cosh^2(w/2)}dw\to\frac{\pi}{2}\frac{e^{-d^2/8}}{d\sqrt{2\pi}}$ (the odd part of $e^{-w/2}$ integrates out and $\int\frac{dw}{4\cosh(w/2)}=\frac\pi2$). Hence $v\approx\sqrt{\pi/2}\;r\,e^{-d^2/8}/d$ as $r\to0$ and $d\to\infty$. The nearest-neighbour term is exact (quadrature, \texttt{x20\_nn\_quad.csv}): its constant tends to $\sqrt{\pi/2}$ with relative gap $\approx\pi^2/(2d^2)$ (an asymptotic expansion: the first-order truncation is inaccurate below $d\approx6$); the quadrature values are $0.91, 1.01, 1.08, 1.12, 1.17$ at $d=3,4,5,6,8$, within $0.3\%$ of the limit at $d=40$. That the limit is approached only as $d^{-2}$ is why simulations at $d\ge4$ sit below $1.25$ (at $d\le3$ the total exceeds it). The remaining sites add $+88\%,+30\%,+9.7\%,+3.2\%,+0.8\%$ at $d=2,\dots,6$ (importance-sampled total constant for one isolated change relative to the exact nearest-neighbour quadrature, \texttt{x28\_cp\_total.csv}; the total itself is $1.39,1.18,1.11,1.11,1.13$, standard error $\le0.015$; the $d=8$ estimate is too noisy to use and $d\ge10$ failed through weight degeneracy, so we state nothing there). Prop.~\ref{prop:cp} (App.~\ref{app:proofs}) proves that, for one isolated switch, the total constant equals the nearest-neighbour one up to a relative error $\le C\,d\,e^{-d^2/8}$ ($C$ absolute, not optimised), and Cor.~\ref{cor:cp} gives the $\epsilon\to0$ limit for the stationary chain; at moderate $\epsilon$ and $d$ the practical formula remains a fitted approximation. With the exact HMM posterior on windows containing one switch (variance-reduced, $\epsilon=10^{-4}$; \texttt{x19\_hmm\_window.csv}) the constant $v\,d\,e^{d^2/8}/\epsilon$ is $1.19$ ($d=3$), $1.12$ ($d=4$) and $1.12$ ($d=5$), standard error $\le0.004$ ($1.21,1.14,1.14$ at $\epsilon=10^{-3}$); our earlier stationary-chain estimate of $1.23$ at $d=4$ was Monte Carlo noise (about $1500$ switches, rare-event tail) and is superseded, and for $\epsilon\ge0.03$ the constant is larger ($1.5$--$2.7$ for $d\ge3$), which is why the practical formula uses $\sqrt{8/\pi}$ (App.~\ref{app:ext}). For the practical range $\rho\in[0.9,0.97]$ an effective constant $\sqrt{8/\pi}$ fits:\begin{equation}v\;\approx\;\sqrt{8/\pi}\;r\,\frac{e^{-d^2/8}}{d}.\end{equation}Against the exact HMM filter (40{,}000 steps, $\rho\in\{0.8,\dots,0.99\}$) this is within $\pm10\%$ for $\rho\in\{0.9,0.95\}$ and $\pm14\%$ at $\rho=0.97$ (up to $+32\%$ at $\rho=0.8$) ($\Delta_Z\in[0.5,1.5]$, $d^2\in[2.8,25]$), within $0.89$--$1.11$ for a one-dimensional proxy at equal $d^2$ (\texttt{x17\_oned\_check.csv}), and within $0.87$--$1.02$ for asymmetric chains with stationary regime probability as low as $0.1$ (so the relevant quantity is the switch rate $r$, not $\rho$); it drifts up to $+23\%$ at $\rho=0.99$ and is noise-dominated at $\Delta_Z=2$ where $v<10^{-3}$. Plugging this \emph{a priori} $v$ into the law predicts the learned-HMM bias of Sec.~\ref{sec:exp} from sensor primitives alone, but the constant was fitted on exact-HMM $v$ from the same generator, so this is a consistency check, not an out-of-sample test. RMSE over the cells with $\Delta_Z\ge0.8$: smoother with linear nuisances $0.0059$ (data-based $\hat v$: $0.0080$), smoother with boosted nuisances $0.0155$ ($0.0115$), filter with linear nuisances $0.0362$ ($0.0121$); the asymptotic constant $\sqrt{\pi/2}$ gives $0.0150$, $0.0111$, $0.0504$ (\texttt{x18\_apriori\_check.csv}). The a priori law is thus competitive only for smoothing posteriors with linear nuisances; e.g.\ $\Delta_Z{=}0.8$, $\Delta_T{=}8$: predicted $0.230$, observed $0.226$. Follow-up checks show the form carries over but the constants do not: a three-state chain (nearest-pair $d^2$) gave $0.74$--$0.84\times$ the two-state value of $\sum_k\gamma_k(1-\gamma_k)$, and unit-variance $t_5$ proxies (true density in the filter) gave $0.9$--$1.7\times$, increasing with $d^2\in[6,17]$ (\texttt{x13\_switchrate\_ext.csv}). The one-change simulation (\texttt{x15}) is consistent with the nearest-neighbour quadrature (e.g.\ $1.02$ vs.\ $1.01$ at $d=4$).
+\begin{table}[h]
+\caption{Bias predicted from primitives vs.\ observed ($\Delta_g{=}3$, $\Delta_T{=}1$, $\sigma^2{=}1$).}\label{tab:kalman}
+\centering\small
+\input{generated/tab_kalman.tex}
+\end{table}
+
+\section{BEYOND SENSITIVITY: WHEN CAN $b$ BE LEARNED?}\label{sec:prox}
+The law leaves $b$ unidentified. Two routes learn it, and they fail differently.
+\textbf{Joint model.} Treat $(Z,T,Y)$ as emissions of the chain (a Markov-switching regression with a common $\theta$) and maximize the likelihood by EM. When the regime model is correct this is essentially unbiased and has the smallest variance in our simulations, even when $Z$ is uninformative (App.~\ref{app:ext}); the price of the modular, two-stage posterior used above is exactly the law. But it inherits the regime model: if the latent confounder is a continuous AR(1) process, a $K{=}2$ joint fit is as biased as posterior-DML (about $+0.8$ on $\theta{=}1$).
+\textbf{Proximal route.} Suppose a negative-control outcome $W=cS+\ell T+e$ is available ($c\neq0$; $\ell=0$ means $T$ does not cause $W$), and $Z\perp(U,V,e)\mid S$.
+\begin{proposition}[Proximal identification, linear case]\label{prop:prox}
+Under the linear model of Sec.~\ref{sec:setting}, the 2SLS regression of $\tilde Y$ on $(\tilde T,\tilde W)$ with instruments $(\tilde T,\tilde\gamma)$, where tildes denote cross-fitted residuals on $X$, converges to $(\theta-\ell b/c,\;b/c)$. Hence $\ell=0$ identifies $\theta$ and $b/c$ (so $b$ if $c$ is known) without any model for the latent state, and for $\ell\neq0$ the bias is $-\ell\,\hat\beta_W$, computable for any hypothesized leakage $\ell$.
+\end{proposition}
+This is the linear special case of proximal causal inference \citep{miao2018identifying,tchetgen2020introduction}; we claim no novelty for the identification argument. What the regime setting adds is (i) the posterior $\hg$ is a valid instrument when $W$ is an external variable, but \emph{not} when $W$ is a lagged outcome, in our checks (see below) and (ii) in a continuous-latent stress test, proximal 2SLS has bias below $0.03$ where posterior-DML and the joint MLE are off by $0.8$--$0.9$ (Table~\ref{tab:ext}). The law still describes the failure: replacing $S$ by the continuous state $u$ and $v$ by $\Var(u\mid X,\hg)$ predicts the bias to within $1.4$--$3.2\%$, slightly under: $0.808$ vs.\ $0.834$ and $0.750$ vs.\ $0.774$ at $\Delta_T{=}1$ (sensor SNR $0.5$, $1$), $0.888$ vs.\ $0.901$ and $0.861$ vs.\ $0.874$ at $\Delta_T{=}2$ (\texttt{x3b\_contlat\_law.csv}). The cost is variance (RMSE $0.02$--$0.16$ vs.\ $0.01$--$0.03$ for the correct joint model) and reliance on a valid negative control; a leaking control ($\ell=0.3$) gives bias $-0.45=-\ell b/c$, as predicted. We also tried the lagged outcome $Y_{t-h}$ as a self-contained negative control ($N{=}20{,}000$, $h{=}4$, $\Delta_T{=}1$, 4 replications; \texttt{x4c\_selfnc\_check.csv}). With iid shocks, proximal 2SLS with the posterior as instrument has mean bias $0.094$ and with raw $Z$ as instrument $0.018$, versus $0.111$ for DML; with AR shocks they are $0.148$ and $0.098$ versus $0.110$. Neither instrument is reliable, so we do not recommend this variant, and we do not claim a mechanism. On the four cities we do not apply the proximal estimator: the available proxies (meteorology) also affect PM$_{2.5}$ directly, so the exclusion restrictions fail.
+
+\textbf{Environment route (no negative control, no joint model).} The law is linear in an observable: in environment $e$, $\theta_e=\theta+b_e k_e$ with $k_e=a_ev_e/\Var(\tilde T_e)$, because $\Var(\tilde T_e)=a_e^2v_e+\sigma_e^2$. If the outcome shift is invariant across environments (or merely independent of $k_e$) while the treatment shift varies, regressing $\hat\theta_e$ on $\hat k_e$ identifies $\theta$ as the intercept, i.e.\ it extrapolates to zero residual confounding. In a simulation with 10 environments of $N{=}1500$ and treatment shifts $\Delta_T\in[0.3,4]$ (12 replications), the intercept has bias $+0.03$ (RMSE $0.04$) for a common $b=3$ and $0.00$ (RMSE $0.05$) for random $b_e$, against $+0.30$ for the average of environment-wise estimates; the slope recovers $b$ ($3.3$, $3.7$). If $b_e$ grows with the treatment shift the intercept is biased ($-0.14$), still smaller than the pooled error ($+0.36$). On the four cities, with calendar months as environments, the route has no leverage: $|k_e|\le0.06$ except in Kolkata (4 months), and monthly $\hat\theta_e$ is too unstable (standard deviations $0.4$--$28$) for the regression to be informative, so we report no real-data estimate from it (\texttt{x11\_envreal.csv}).
+
+\section{EXPERIMENTS}\label{sec:exp}
+\textbf{Setup.} All experiments use \texttt{src/bias\_law/} and share these ingredients unless noted: a persistent Markov chain (stay probability 0.9), 2-d Gaussian proxies with separation $\Delta_Z$, two exogenous controls, $N=3000$, unit-variance noises, $\Delta_g=3$. The HMM is fitted by EM on the same sample (smoother or filter), cross-fitting uses 5 purged blocks with $\tau=24$, and nuisances are linear or gradient boosting. Reported biases are means over 12 replications per cell with $\theta=1$; the law is evaluated with the \emph{observable} plug-ins unless stated.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{plots/bl_fig1_bias_law.pdf}
+\caption{Bias of the soft-conditioning estimator against the treatment shift $\Delta_T$ ($K=2$, learned smoother, linear nuisances, 12 replications, 95\% bands). (a) The measured bias is hump-shaped and matches the law (lines) with $\hat v$ read from the posterior. (b) The same bias against $\Var(\tilde T)$, the scalar analogue of $\lambda_{\min}(\hat J)$: conditioning rises monotonically while bias rises and then falls. (c) Hard regime fixed effects are worse than the soft posterior; DML on $X$ alone is far worse; the oracle state is unbiased.}\label{fig:law}
+\end{figure*}
+
+\subsection{The law predicts the bias}
+Figure~\ref{fig:law} and Table~\ref{tab:ver} summarize 72 cells for $K=2$ (smoother and filter; linear and boosted nuisances; three proxy qualities $\Delta_Z\in\{0.5,0.8,1.2\}$; eight values of $\Delta_T$ from 0.25 to 32) and 8 cells for $K=3$ (matrix law, four $(a,b)$ configurations including sign changes). The law with the observable plug-in $\hat v$ has correlation 0.996 and RMSE 0.012 with the measured bias, with median relative error 5.2\% on cells with $|{\rm bias}|>0.05$. Using the realized $v_N$ gives 3.5\%, and also estimating $\hat a$ and $\widehat{\Var}(\tilde T)$ from the data gives 14\%. The predicted peak location $\sigma/\sqrt{\hat v}$ and height $|\Delta_g|\sqrt{\hat v}/2\sigma$ match the observed maximum to within the grid (Appendix~\ref{app:exp}).
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{2.5pt}
+\caption{Agreement between measured bias and law$(\hat v)$. Median relative error is over cells with $|{\rm bias}|>0.05$ (54 of 72 cells for $K{=}2$; 2 of 8 for $K{=}3$, where the all-cell median is 43\%).}\label{tab:ver}
+\resizebox{\columnwidth}{!}{\input{generated/tab_verification.tex}}
+\end{table}
+
+\textbf{Soft beats hard.} For the smoother with linear nuisances the soft posterior has smaller $|{\rm bias}|$ than the hard regime label in all 24 $(\Delta_Z,\Delta_T)$ cells (23/24 with boosting; median ratio 1.19 where the bias exceeds 0.02), as Prop.~\ref{prop:info} predicts. The filter posterior is worse than the smoother's hard labels in all 24 cells, since it conditions on less information, which the proposition does not cover; DML on $X$ alone has mean absolute bias 0.387 versus 0.125 for the soft smoother posterior (0.114 boosted, 0.157 filter), 0.142 for the hard label and 0.004 for the oracle state (Fig.~\ref{fig:law}c).
+
+\textbf{Using the law to correct.} Subtracting the plug-in bias $\hat a\,\hat v\,b/\widehat{\Var}(\tilde T)$ with the true $b$ reduces the per-replication mean absolute error from 0.126 to 0.021 (83\%). Misspecifying $b$ by a factor of 0.5 or 2 gives 0.072 and 0.097 (43\% and 23\% below the uncorrected error). The correction therefore degrades gracefully but is not robust to gross misspecification, which is why we advocate sensitivity analysis rather than point correction.
+
+\subsection{It explains a standard difficulty benchmark}
+We rerun our earlier difficulty-frontier DGP ($\theta=(0.75,2.5)$, treatment shift $\Delta_T=4$, outcome offsets 15/50, i.e.\ $\Delta_g=35$), in which ``DML on $X$ only'' has bias $\approx8.5$. Table~\ref{tab:dgp} shows that the \emph{excess} bias of soft conditioning over the oracle-state estimator is predicted by the heterogeneous-effects form of the law (with the realized $v_N$) to within 0.04 at every $\Delta_Z$, from 8.24 at $\Delta_Z=0.2$ to $0.02$ at $\Delta_Z=2$; the observable plug-in $\hat v$ underestimates it by 9--32\%. So in this benchmark the transition between failure and success is accounted for by $v(\Delta_Z)$; we found no evidence that a Jacobian-spectrum property is needed to explain it.
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{2.5pt}
+\caption{Table-1 DGP (30 replications; $N=1200$; law uses the realized $v_N$). $\theta$ estimates; ``excess'' $=\hth_{\rm soft}-\hth_{\rm oracle}$; true pooled $\bar\theta=1.53$.}\label{tab:dgp}
+\resizebox{\columnwidth}{!}{\input{generated/tab_table1dgp.tex}}
+\end{table}
+
+\textbf{Honest baselines.} With the proxy used as controls, a regime-fixed-effects baseline matches the coupled OR-DML estimator at $\Delta_Z\ge2$ (median absolute bias 0.063 vs.\ 0.072 at $\Delta_Z=2$, 0.046 vs.\ 0.046 at $\Delta_Z=4$) and beats it at $\Delta_Z=1$ (mean absolute bias 2.64 vs.\ 4.02); the spectral penalty changes OR-DML by less than 1.5\% (Appendix~\ref{app:ordml}). The contribution of this paper is therefore the law and the sensitivity analysis, not a new estimator.
+
+\subsection{Why $\lambda_{\min}$ misleads}\label{sec:lam}
+A common experiment varies the treatment shift while holding the representation fixed and reads the error against $\lambda_{\min}(\hat J)$. Table~\ref{tab:lam} (12 replications per cell, boosted nuisances, oracle regime weights) shows the pitfall: if nuisances are fit on $X$ only, the regime shift leaks into $\tilde T$, $\lambda_{\min}$ grows from 0.54 to 14.4, and the error is hump-shaped (5.9, 14.0, 5.7). If the nuisances are fit on $(X,S)$, $\lambda_{\min}$ is flat at 0.51 and the error is 0.06--0.10 for every $\Delta_T$. The hump is the one of Cor.~\ref{cor:hump} with $v=\Var(S)$, whose predicted peak $\sigma/\sqrt v\approx2$ matches the observed peak at 1.5--3. Because $\lambda_{\min}$ moves while the error is flat or falls, $\lambda_{\min}$ does not govern reliability here.
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{2.5pt}
+\caption{Task-conditioning sweep. Regime-weighted score on the Table-1 DGP, $\Delta_Z=1.5$.}\label{tab:lam}
+\resizebox{\columnwidth}{!}{\input{generated/tab_e7.tex}}
+\end{table}
+
+\subsection{Calibration controls the observable bias}
+We rescale the posterior logits by a temperature $\tau$ ($\tau<1$ over-confident) and compare the law with $\hat v$ against the realized residual variance (Table~\ref{tab:cal}). A flexible learner is invariant to monotone recalibration, so the realized bias is constant (0.127) while $\hat v$ changes by a factor of 14; the bound $|\hat v-v_N|\le\sqrt{CE}+CE$ held in 100\% of the 120 runs, where $v_N$ is the cross-fitted learner residual variance and $CE$ is estimated by in-sample isotonic regression of $S$ on the recalibrated posterior alone (which biases $CE$ downward and ignores $X$), so this is a weak check of Prop.~\ref{prop:calib}. An over-confident posterior therefore understates the bias, and the sensitivity analysis should use a recalibrated posterior.
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{2.5pt}
+\caption{Temperature scaling ($K=2$, boosted nuisances, 20 replications, $\Delta_Z{=}0.8$, $\Delta_T{=}2$, $N{=}3000$).}\label{tab:cal}
+\resizebox{\columnwidth}{!}{\input{generated/tab_calibration.tex}}
+\end{table}
+
+\subsection{Four Indian cities}
+We apply the analysis to NO$_2$ (treatment) and PM$_{2.5}$ (outcome) on a regular hourly grid in Delhi, Mumbai, Bengaluru and Kolkata (Feb 2025--Jun 2026; Kolkata ends Jun 2025) with the controls and proxies of Appendix~\ref{app:real}. Figure~\ref{fig:cities} and Table~\ref{tab:cities} report the pooled estimate and the robustness value. (An earlier version of our data pipeline rounded half-hour timestamps to even hours and produced a 2-hourly series; the corrected hourly series changes the numbers materially, e.g.\ Delhi's $\hat\theta$ from $0.58$ to $0.37$, Mumbai's screened estimate from $4.9$ to $0.3$, Kolkata's from $0.4$ to $4.5$; the 2-hourly results are in Table~\ref{tab:cities2h}, App.~\ref{app:real}.) For Delhi the NO$_2$--PM$_{2.5}$ association is positive and stable ($\hat\theta=0.37$, 90\% interval $0.29$--$0.44$), with a robustness value of about 82 standard deviations of $\tilde Y$ (90\% interval 54--144), far above the regression coefficient $\hat c_Y$ of $\hg$ in the PM$_{2.5}$ regression ($b^*/|\hat c_Y|\approx560$; a conditional coefficient, not $\Delta_g$, so only a rough yardstick): residual confounding through this channel would need an implausibly large outcome shift to overturn it. The other cities are not informative. Mumbai's and Bengaluru's intervals include zero, and Mumbai's estimate depends on screening runs of $\ge6$ identical NO$_2$ readings ($2.2$ unscreened, $0.3$ screened, 1{,}857 rows or 23\% removed). Kolkata has only 2{,}322 hourly rows and its NO$_2$ takes 16 distinct values (a nearly constant sensor): its screened estimate $4.5$ ($1.5$--$7.4$) should not be trusted. Mumbai's HMM likelihood is multimodal (App.~\ref{app:proofs}); using the best of eight converged EM restarts changes its $b^*$ from $11.9$ to $7.1$ SD without changing any conclusion. The bootstrap resamples fixed cross-fitted residuals and does not refit the HMM or the nuisances, and the point estimate of $b^*$ lies outside its percentile interval in the 2-hourly Bengaluru (screened) and Kolkata (unscreened) cases; $b^*$ is uninformative where $\hat\theta\approx0$. The HMM in the real-data analysis uses diagonal covariances, so the full-covariance Mahalanobis $d^2$ of Sec.~\ref{sec:exp} applies only to the simulations. The posterior is fitted on rows that are complete cases of the hourly grid (about 97--98\% of consecutive rows are exactly one hour apart; the rest follow gaps).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{plots/bl_fig2_cities.pdf}
+\caption{Robustness values $b^*$ (log scale) with 90\% block-bootstrap intervals; blue: $\hat\theta$ clearly nonzero.}\label{fig:cities}
+\end{figure}
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Real-data sensitivity (pooled soft-conditioning estimate, Ridge nuisances); full table in Appendix~\ref{app:real}.}\label{tab:cities}
+\resizebox{\columnwidth}{!}{\input{generated/tab_cities.tex}}
+\end{table}
+
+\section{DISCUSSION AND LIMITATIONS}
+We gave a closed-form law, with every input estimable except one parameter (and the plug-in $\hat v$ is only a lower bound when the emission model is misspecified), for the bias of soft conditioning on a latent Markov posterior. It explains when posterior-based DML fails, why a standard conditioning diagnostic is not monotone in reliability, and how to bound the damage.
+\textbf{Practical guidance.} (a) Report $\hat v$, $\hat a$ and the robustness value alongside every posterior-conditioned effect. (b) Do not read $\lambda_{\min}$ of the residualized Gram matrix as a reliability index when a latent confounder may remain; fit nuisances on $(X,\hg)$. (c) Prefer soft posteriors to hard labels, recalibrate over-confident posteriors, and always compare with regime-fixed-effects and proxy-as-control baselines.
+\textbf{Limitations.} (1) The law is a probability-limit identity under Assumptions~\ref{as:noise}--\ref{as:nuis}; it is not a finite-sample or uniform-over-HMM-error guarantee, and Assumption~\ref{as:post} (locality of the posterior) is asserted via filter stability, and the $N^{-1/2}$ rate for learned parameters (Prop.~\ref{prop:rate}) rests on (H1), a hypothesis on the EM output that we check by multistart, and on $\delta_X=0$ (otherwise the rate degrades by $\sqrt{\delta_X}$). (2) Assumption~\ref{as:noise} (treatment noise independent of the proxies) is strong; correlation between the NO$_2$ innovations and meteorology would add terms. (3) The model is linear in the regime indicators and has a single scalar treatment. (4) $b$ is unidentified, so the sensitivity analysis bounds rather than corrects. (5) The plug-in $\hat v$ requires calibration and is defined relative to the nuisance learner class: in a test where $X_1$ informs the regime, the $Z$-only $\hat v$ predicted the bias within 3\% ($0.30$ vs.\ $0.31$), whereas an HMM refit on $(Z,X)$ gave a smaller $\hat v$ and underpredicted it ($0.24$), because a linear nuisance cannot exploit the information the HMM uses. (6) The real-data analysis is illustrative: the proxies partly overlap the controls, lagged pollutants may be mediators, and data-quality issues are material. (7) $v$ depends on the nuisance learner class. Boosted nuisances with the smoother: 4.3\% median error for law($\hat v$) and 14.2\% for law($v_N$); calibration experiment (E4): law($v_N$) overshoots by 26\%; Table-1 DGP (E3): law($\hat v$) is 9--32\% below the excess bias. (8) The a priori formulas (Wiener, change-point) are approximations with fitted constants at moderate switch rates; the change-point scaling is proved only for an isolated switch and in the $\epsilon\to0$ limit (Prop.~\ref{prop:cp}, Cor.~\ref{cor:cp}). (9) The formula is an OVB identity; the new content is its calibrated, dependent-data form and its consequences for DML diagnostics.
+
+\subsection*{AI Use Statement}
+We used large language models to assist with code, derivations, and drafting. The authors reviewed the arguments; experiments are scripted and the numbers are checked against \texttt{reports/} and \texttt{reports/bias\_law/} by \texttt{verify\_science.py} and \texttt{verify\_artifacts.py}, though some quoted values are summary roundings and a few derivation steps are explicitly marked as sketches. The authors take full responsibility for the content.
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{18}
+\setlength{\itemsep}{-1pt}
+\footnotesize
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[Anderson and Moore(1979)]{anderson1979optimal}
+B.~D.~O. Anderson and J.~B. Moore.
+\newblock \emph{Optimal Filtering}.
+\newblock Prentice-Hall, 1979.
+
+\bibitem[Bickel et~al.(1998)]{bickel1998asymptotic}
+P.~J. Bickel, Y.~Ritov, and T.~Ryd\'en.
+\newblock Asymptotic normality of the maximum-likelihood estimator for general hidden {M}arkov models.
+\newblock \emph{The Annals of Statistics}, 26(4):1614--1635, 1998.
+
+\bibitem[Cappé et~al.(2005)]{cappe2005inference}
+O.~Cappé, E.~Moulines, and T.~Rydén.
+\newblock \emph{Inference in Hidden Markov Models}.
+\newblock Springer, 2005.
+
+\bibitem[Chernozhukov et~al.(2018)]{chernozhukov2018double}
+V.~Chernozhukov, D.~Chetverikov, M.~Demirer, E.~Duflo, C.~Hansen, W.~Newey, and J.~Robins.
+\newblock Double/debiased machine learning for treatment and structural parameters.
+\newblock \emph{The Econometrics Journal}, 21(1):C1--C68, 2018.
+
+\bibitem[Chernozhukov et~al.(2022)]{chernozhukov2022long}
+V.~Chernozhukov, C.~Cinelli, W.~Newey, A.~Sharma, and V.~Syrgkanis.
+\newblock Long story short: Omitted variable bias in causal machine learning.
+\newblock \emph{arXiv preprint arXiv:2112.13398}, 2022.
+
+\bibitem[Cinelli and Hazlett(2020)]{cinelli2020making}
+C.~Cinelli and C.~Hazlett.
+\newblock Making sense of sensitivity: Extending omitted variable bias.
+\newblock \emph{Journal of the Royal Statistical Society: Series B}, 82(1):39--67, 2020.
+
+\bibitem[D'Amour(2019)]{damour2019multi}
+A.~D'Amour.
+\newblock On multi-cause causal inference with unobserved confounding: Counterexamples, impossibility, and alternatives.
+\newblock \emph{arXiv preprint arXiv:1902.10286}, 2019.
+
+\bibitem[Ding et~al.(2017)]{ding2017instrumental}
+P.~Ding, T.~J. VanderWeele, and J.~M. Robins.
+\newblock Instrumental variables as bias amplifiers with general outcome and confounding.
+\newblock \emph{Biometrika}, 104(2):291--302, 2017.
+
+\bibitem[Douc et~al.(2011)]{douc2011consistency}
+R.~Douc, E.~Moulines, J.~Olsson, and R.~van Handel.
+\newblock Consistency of the maximum likelihood estimator for general hidden Markov models.
+\newblock \emph{The Annals of Statistics}, 39(1):474--513, 2011.
+
+\bibitem[Greenland(1980)]{greenland1980effect}
+S.~Greenland.
+\newblock The effect of misclassification in the presence of covariates.
+\newblock \emph{American Journal of Epidemiology}, 112(4):564--569, 1980.
+
+\bibitem[Hamilton(1989)]{hamilton1989new}
+J.~D. Hamilton.
+\newblock A new approach to the economic analysis of nonstationary time series and the business cycle.
+\newblock \emph{Econometrica}, 57(2):357--384, 1989.
+
+\bibitem[Leroux(1992)]{leroux1992maximum}
+B.~G. Leroux.
+\newblock Maximum-likelihood estimation for hidden {M}arkov models.
+\newblock \emph{Stochastic Processes and their Applications}, 40(1):127--143, 1992.
+
+\bibitem[Lewis and Syrgkanis(2020)]{lewis2020double}
+G.~Lewis and V.~Syrgkanis.
+\newblock Double/debiased machine learning for dynamic treatment effects via g-estimation.
+\newblock \emph{arXiv preprint arXiv:2002.07285}, 2020.
+
+\bibitem[Miao et~al.(2018)]{miao2018identifying}
+W.~Miao, Z.~Geng, and E.~J. Tchetgen~Tchetgen.
+\newblock Identifying causal effects with proxy variables of an unmeasured confounder.
+\newblock \emph{Biometrika}, 105(4):987--993, 2018.
+
+\bibitem[Pearl(2010)]{pearl2012class}
+J.~Pearl.
+\newblock On a class of bias-amplifying variables that endanger effect estimates.
+\newblock In \emph{Uncertainty in Artificial Intelligence (UAI)}, 2010. arXiv:1203.3503.
+
+\bibitem[Tchetgen~Tchetgen et~al.(2020)]{tchetgen2020introduction}
+E.~J. Tchetgen~Tchetgen, A.~Ying, Y.~Cui, X.~Shi, and W.~Miao.
+\newblock An introduction to proximal causal learning.
+\newblock \emph{arXiv preprint arXiv:2009.10982}, 2020.
+
+\bibitem[Wang and Blei(2019)]{wang2019blessings}
+Y.~Wang and D.~M. Blei.
+\newblock The blessings of multiple causes.
+\newblock \emph{Journal of the American Statistical Association}, 114(528):1574--1596, 2019.
+\bibitem[Wu(1983)]{wu1983convergence}
+C.~F.~J. Wu.
+\newblock On the convergence properties of the {EM} algorithm.
+\newblock \emph{The Annals of Statistics}, 11(1):95--103, 1983.
+
+\end{thebibliography}
+
+\clearpage
+\section*{Checklist}
+\begin{enumerate}
+\item For all models and algorithms presented, check if you include:
+\begin{enumerate}
+  \item A clear description of the algorithm, mapping, or model. [\textbf{Yes}] Section~\ref{sec:setting}, Section~\ref{sec:sens}.
+  \item An analysis of the properties and complexity. [\textbf{Yes}] Theorem~\ref{thm:law}, Corollary~\ref{cor:hump}, Propositions~\ref{prop:info}--\ref{prop:calib}.
+  \item (Optional) Anonymized source code, with specification of all dependencies, including external libraries. [\textbf{Yes}] Supplementary material (\texttt{src/bias\_law/}, \texttt{requirements.txt}).
+\end{enumerate}
+\item For any theoretical claim, check if you include:
+\begin{enumerate}
+  \item Statements of the full set of assumptions of all theoretical results. [\textbf{Yes}] Assumptions~\ref{as:noise}--\ref{as:nuis}; strong ones are listed in the limitations.
+  \item Complete proofs of all theoretical results. [\textbf{Partial}] Appendix~\ref{app:proofs} gives the algebra, the derivative lemma, the rate proposition and the isolated-switch change-point proposition in full; the cross-fitting independence argument, the stationary $\epsilon\to0$ corollary and the passage from expectations to realised averages are given as proof sketches.
+  \item Clear explanations of any assumptions. [\textbf{Yes}] Sections~\ref{sec:law} and~\ref{sec:exp}.
+\end{enumerate}
+\item For all figures and tables that present empirical results, check if you include:
+\begin{enumerate}
+  \item The code, data, and instructions needed to reproduce the main experimental results. [\textbf{Yes}] \texttt{README.md}; \texttt{python src/bias\_law/run\_experiments.py}.
+  \item All the training details (e.g., data splits, hyperparameters, how they were selected). [\textbf{Yes}] Section~\ref{sec:exp}, Appendix~\ref{app:exp}.
+  \item A clear definition of the specific measure or statistics and error bars (e.g., confidence intervals, p-values). [\textbf{Yes}] Replication counts and bands are stated; real-data intervals are block bootstrap.
+  \item A description of the computing infrastructure used. [\textbf{Yes}] Appendix~\ref{app:exp} (2-CPU container; most scripts take minutes, the change-point and rate checks up to about an hour).
+\end{enumerate}
+\item If you are using existing assets (e.g., code, data, models) or curating/releasing new assets:
+\begin{enumerate}
+  \item If your work uses existing assets, did you cite the creators? [\textbf{Yes}] Data sources are described in Appendix~\ref{app:real}.
+  \item Did you mention the license of the assets? [\textbf{Not Applicable}] Public environmental measurements.
+  \item Did you include any new assets either in the supplemental material or as a URL? [\textbf{Yes}] Cleaned data and code in the supplement.
+  \item Did you discuss whether and how consent was obtained from people whose data you're using/curating? [\textbf{Not Applicable}]
+  \item Did you discuss whether the data you are using/curating contains personally identifiable information or offensive content? [\textbf{Not Applicable}]
+\end{enumerate}
+\item If you used crowdsourcing or conducted research with human subjects: [\textbf{Not Applicable}]
+\end{enumerate}
+
+\clearpage
+\onecolumn
+\appendix
+\section{PROOFS}\label{app:proofs}
+\paragraph{Proof of Theorem~\ref{thm:law}.}
+\emph{Step 0 (exact decomposition).} By Assumption~\ref{as:noise}, $V_t$ is independent of $\mathcal G=\sigma(S,Z,X)$, which contains $F_t$ and $D_t$, so $\E[T_t\mid F_t]=m(X_t)+a^\top c_t$ and $\E[Y_t\mid F_t]=\theta\E[T_t\mid F_t]+g(X_t)+b^\top c_t$. With nuisance errors $\delta^T_t=\hat m_T(F_t)-\E[T_t\mid F_t]$, $\delta^Y_t=\hat m_Y(F_t)-\E[Y_t\mid F_t]$ and $\delta^h=\delta^Y-\theta\delta^T$,
+\[
+\tilde T_t=a^\top\tilde D_t+V_t-\delta^T_t,\qquad \tilde Y_t-\theta\tilde T_t=b^\top\tilde D_t+U_t-\delta^h_t,
+\]
+and $\hth-\theta=\sum_t\tilde T_t(\tilde Y_t-\theta\tilde T_t)/\sum_t\tilde T_t^2$ \emph{exactly}.
+
+\emph{Step 1 (main terms).} $N^{-1}\sum(a^\top\tilde D_t)(b^\top\tilde D_t)=a^\top\Sigma_Nb$ and $N^{-1}\sum(a^\top\tilde D_t)^2=a^\top\Sigma_Na$. Also $N^{-1}\sum V_t^2=\sigma^2+O_P(N^{-1/2})$ by the summable-autocovariance condition.
+
+\emph{Step 2 (noise cross terms).} Conditionally on $\mathcal G$, $\sum_tV_tb^\top\tilde D_t$ and $\sum_t a^\top\tilde D_t U_t$ have mean zero (Assumption~\ref{as:noise}) and variance at most $C\sum_t\|\tilde D_t\|^2\le CN$ by summable autocovariances; similarly $\sum_tV_tU_t$ (conditioning on $\mathcal G$ and $V$). Hence each is $O_P(N^{1/2})$.
+
+\emph{Step 3 (nuisance terms).} Within a cross-fitting fold, $\delta_t=\delta(F_t)$ is a fixed function given the training folds, and $\E[\tilde D_t\mid F_t]=0$. The sums $\sum\delta_t\tilde D_t$, $\sum\delta_tV_t$, $\sum\delta_tU_t$ have conditional mean zero up to an $O(\varepsilon_\tau)$ dependence between training and test blocks (embargo plus Assumption~\ref{as:post}) and variance $\le CN\|\delta\|_{L^2}^2$ by the mixing covariance inequality (Davydov), so they are $O_P(rN^{1/2})$. The product term satisfies $|\sum\delta^T_t\delta^h_t|\le N r_Tr_h$ by Cauchy--Schwarz.
+
+\emph{Step 4.} Write the ratio as $(A+e_1)/(B+e_2)$ with $A=a^\top\Sigma_Nb$, $B=a^\top\Sigma_Na+\sigma^2\ge\sigma^2$, and $e_1,e_2=O_P(N^{-1/2}+r_Tr_h+\varepsilon_\tau)$. Then $(A+e_1)/(B+e_2)-A/B=(e_1-(A/B)e_2)/(B+e_2)$ and $|A/B|\le\sqrt{b^\top\Sigma_Nb}/(2\sigma)$ is bounded (Corollary~\ref{cor:hump}(i), matrix form via Cauchy--Schwarz and $x/(x^2+\sigma^2)\le1/(2\sigma)$). $\square$
+
+\paragraph{Proof of Corollary~\ref{cor:hump}.}
+(i) $a^2v+\sigma^2\ge2|a|\sqrt v\sigma$ (AM--GM), with equality at $|a|=\sigma/\sqrt v$. (ii) $|a|=\sqrt{(\lambda-\sigma^2)/v}$ gives $|B|=|b|v|a|/\lambda$; and $\frac{d}{d\lambda}\sqrt{\lambda-\sigma^2}/\lambda=(2\sigma^2-\lambda)/(2\lambda^2\sqrt{\lambda-\sigma^2})$. (iii) $\partial_v[v/(a^2v+\sigma^2)]=\sigma^2/(a^2v+\sigma^2)^2>0$. $\square$
+
+\paragraph{Proof of Proposition~\ref{prop:info}.} For $\mathcal F\subseteq\mathcal F'$ the law of total variance gives $\E\Cov(D\mid\mathcal F')\preceq\E\Cov(D\mid\mathcal F)$; hard labels are a measurable function of $\hg$, hence $\sigma(\text{hard})\subseteq\sigma(\hg)$. Part (iii) of Corollary~\ref{cor:hump} finishes the $K=2$ case. $\square$
+
+\paragraph{Proof of Proposition~\ref{prop:calib}.} With $c=\E[D\mid F]$, $\gamma(1-\gamma)-c(1-c)=(\gamma-c)(1-2c)-(\gamma-c)^2$, so $|\E[\gamma(1-\gamma)-c(1-c)]|\le\E|\gamma-c|+\E(\gamma-c)^2\le\sqrt{CE}+CE$ (Cauchy--Schwarz, $|1-2c|\le1$), and $\E c(1-c)=\E\Var(D\mid F)=v$. If $m$ is linear and $c=\hg$, then $\E[T\mid F]=m(X)+a^\top\hg$ is linear in $(X,\hg)$ and the OLS coefficient is $a$; $\Var(\tilde T)=a^\top\Sigma a+\sigma^2$ is Step~1. $\square$
+
+\paragraph{Learned HMM parameters.} \emph{Setting (E).} The chain has finitely many states and $A^*_{ij}\ge\varepsilon^*>0$; emissions are Gaussian with parameters in a compact set with variances bounded below; $\vartheta^*$ is interior, identifiable up to labels, with nonsingular Fisher information. Let $\gamma_{t,\vartheta}$ be the smoothing posterior under $\vartheta$, $\gamma^*_t=\gamma_{t,\vartheta^*}$ and $\hg_t=\gamma_{t,\hat\vartheta}$.
+
+\emph{(H1) Consistent root.} $\|\hat\vartheta-\vartheta^*\|=O_P(N^{-1/2})$; for statements in expectation we use (H1$'$): additionally $\E\|\sqrt N(\hat\vartheta-\vartheta^*)\|^4\le C$ (automatic on a compact parameter set once the fit is consistent with a polynomial tail bound). Under (E) a sequence of roots of the likelihood equation with this property exists: the maximum-likelihood estimator is consistent \citep{leroux1992maximum,douc2011consistency} and asymptotically normal \citep{bickel1998asymptotic}. EM converges to stationary points of the likelihood \citep{wu1983convergence} but not necessarily to this root (Mumbai, below), so (H1) is a hypothesis on the \emph{output} of the fit; it is not provable for a local algorithm, and we check it by multistart (\texttt{x24}, \texttt{x26}).
+
+\begin{lemma}[Derivative of the smoother]\label{lem:h2}
+Under (E) there are $r>0$ and $C<\infty$ such that $D_t:=\sup_{\|\vartheta-\vartheta^*\|\le r}\|\partial_\vartheta\gamma_{t,\vartheta}\|\le C\sum_{s}\kappa^{|t-s|}(1+\|Z_s\|^2)$ almost surely, with $\kappa=1-\varepsilon^*/2$; moreover $|\gamma^*_t-\gamma^{*,(m)}_t|\le\kappa^m$, where $\gamma^{*,(m)}_t$ is the posterior computed from $Z_{t-m:t+m}$ only. Consequently $\sup_{t,N}\E D_t^p<\infty$ for every $p$ (the Gaussian-mixture tails of $Z$ give all moments of $\|Z_s\|^2$), and $N^{-1}\sum_tD_t^2=O_P(1)$.
+\end{lemma}
+\emph{Proof.} Take $r$ so small that $A_{ij}\ge\varepsilon^*/2$ and the emission scores are $\le C(1+\|z\|^2)$ on the neighbourhood. Given $Z_{1:N}$, the hidden chain is a Markov chain with kernels $K_s(i,j)=A_{ij}w_j/\sum_lA_{il}w_l$, $w_j=f_j(Z_{s+1})\beta_{s+1}(j)$. Since $A_{il}\le1$, $K_s(i,j)\ge(\varepsilon^*/2)\,w_j/\sum_lw_l$, a Doeblin minorisation whose constant does not depend on the emissions, so the Dobrushin coefficient of $K_s$ is $\le\kappa$ and $|\Cov(\phi(S_t),\psi(S_s)\mid Z)|\le\kappa^{|t-s|}\,\mathrm{osc}(\phi)\,\mathrm{osc}(\psi)$. Fisher's identity gives $\partial_\vartheta\gamma_t(k)=\sum_s\Cov(\mathbf 1\{S_t=k\},h_s\mid Z)$ with $h_s=\partial_\vartheta\log A_{S_{s-1}S_s}+\partial_\vartheta\log f_{S_s}(Z_s)$ (the initial law is the stationary law of $A$ and contributes a bounded term at $s=1$), and $\mathrm{osc}(h_s)\le C(1+\|Z_s\|^2)$. The same contraction (a backward chain started from any two initial laws at distance $m$ differs in total variation by $\le\kappa^m$) gives the forgetting claim. Summing proves the bound; Minkowski's inequality and stationarity of the Gaussian-mixture sequence give the moments, and Markov's inequality the last claim. $\square$ (Numerical check of the minorisation and of the envelope, perturbing one mean parameter, one seed, $N\in\{2000,8000,32000\}$: \texttt{x32\_h2\_lemma\_check.csv}; the maximum of $\|\partial\gamma_t\|$ over $t$ grows slowly with $N$, as the unbounded score of Gaussian emissions requires, so the earlier \emph{almost-sure uniform} bound is not true and is not used.)
+
+\emph{Information in the controls.} Let $\gamma^X_t=\E[D_t\mid Z_{1:N},X]$ and $\delta_X:=N^{-1}\sum_t\E(\gamma^X_t-\gamma^*_t)^2\ge0$, the information about the regime that $X$ carries beyond $Z$. The earlier hypothesis (H3) is exactly $\delta_X=0$; it is a property of the data-generating process and cannot be proved, so we carry $\delta_X$ explicitly instead.
+\begin{proposition}[Rate for learned parameters, smoother]\label{prop:rate}
+Assume (E) and (H1). Then $\bar\Delta_N:=N^{-1}\sum_t\|\hg_t-\gamma^*_t\|^2=O_P(N^{-1})$; under (H1$'$) also $\Delta_N:=\E\bar\Delta_N=O(N^{-1})$. With $v^*=\E\gamma^*(1-\gamma^*)$, $v_N=\E\Var(D\mid X,\hg)$ (unrestricted conditional variance) and $CE:=\E(\hg-\E[D\mid X,\hg])^2$, all norms averaged over $t$:
+$$|\E\hat v-v^*|\le\sqrt{\Delta_N},\quad CE\le(\sqrt{\delta_X}+\sqrt{\Delta_N})^2,\quad|\E\hat v-v_N|\le\sqrt{CE}+CE,\quad|v_N-v^*|\le2\sqrt{\delta_X}+\sqrt{\Delta_N}.$$
+Hence if $\delta_X=0$ (H3) all gaps are $O(N^{-1/2})$ (under (H1$'$)), and $v_N-v^*=\|\gamma^*-c\|^2\in[0,\Delta_N]$, $CE\le\Delta_N$, so $CE$ and $v_N-v^*$ are $O(N^{-1})$; if $\delta_X>0$ the plug-in $\hat v$ is within $\sqrt{CE}+CE$ of $v_N$ with $\sqrt{CE}\le\sqrt{\delta_X}+\sqrt{\Delta_N}$, so the guarantee degrades by $\sqrt{\delta_X}$ and no longer vanishes with $N$. The proposition concerns the unrestricted conditional variance; it does not cover restricted learners (linear, boosted), for which $v_N$ differs from it at order one (e.g.\ $\hat v=0.063$, linear $0.070$, boosted $0.079$ at $\Delta_Z=0.5$), nor the filter. For the realised $\Sigma_N$ of Thm.~\ref{thm:law}: $|N^{-1}\sum_t[\hg_t(1-\hg_t)-\gamma^*_t(1-\gamma^*_t)]|\le N^{-1}\sum_t|\hg_t-\gamma^*_t|=O_P(N^{-1/2})$ and $N^{-1}\sum_t\gamma^*_t(1-\gamma^*_t)-v^*=O_P(N^{-1/2})$, because $\gamma^*_t$ is approximated by a function of $Z_{t\pm m}$ up to $\kappa^m$ (forgetting claim of Lemma~\ref{lem:h2}), so the sequence is geometrically mixing.
+\end{proposition}
+\emph{Proof.} On $\{\|\hat\vartheta-\vartheta^*\|\le r\}$ the mean-value theorem gives $\|\hg_t-\gamma^*_t\|\le D_t\|\hat\vartheta-\vartheta^*\|$; averaging over $t$, $\bar\Delta_N\le(N^{-1}\sum_tD_t^2)\|\hat\vartheta-\vartheta^*\|^2=O_P(1)\,O_P(N^{-1})$ by Lemma~\ref{lem:h2} and (H1). For the expectation, split on the event: $\E[\cdot\,\mathbf 1_{\le r}]\le(\E(N^{-1}\sum D_t^2)^2)^{1/2}(\E\|\hat\vartheta-\vartheta^*\|^4)^{1/2}=O(N^{-1})$ by Cauchy--Schwarz and (H1$'$), and the complement contributes $\le P(\|\hat\vartheta-\vartheta^*\|>r)\le CN^{-2}$ since $\|\hg-\gamma^*\|\le1$. Since $|x(1-x)-y(1-y)|\le|x-y|$, $|\E\hat v-v^*|\le\E|\hg-\gamma^*|\le\sqrt{\Delta_N}$. Let $P$ be the (non-expansive) $L^2$ projection onto $\sigma(X,\hg)$ and $c=\E[D\mid X,\hg]=P\gamma^X$. As $\hg$ is $\sigma(X,\hg)$-measurable, $\hg=P\hg$ and $CE=\|P(\hg-\gamma^X)\|^2\le\|\hg-\gamma^X\|^2\le(\sqrt{\delta_X}+\sqrt{\Delta_N})^2$. Prop.~\ref{prop:calib} gives $|\E\hat v-v_N|\le\sqrt{CE}+CE$. Further $|v_N-v^*|=|\E c(1-c)-\E\gamma^*(1-\gamma^*)|\le\|c-\gamma^*\|\le\|c-\gamma^X\|+\sqrt{\delta_X}\le\|\hg-\gamma^X\|+\sqrt{\delta_X}\le2\sqrt{\delta_X}+\sqrt{\Delta_N}$, using $\|c-\gamma^X\|=\|(I-P)\gamma^X\|\le\|\hg-\gamma^X\|$. If $\delta_X=0$, $\gamma^X=\gamma^*$, $c=P\gamma^*$ has $\E c=\E\gamma^*$, so $v_N-v^*=\E(\gamma^*)^2-\E c^2=\|\gamma^*-c\|^2\ge0$ (Pythagoras) and $\|\gamma^*-c\|\le\|\gamma^*-\hg\|$. $\square$
+
+\emph{Empirical rate} (\texttt{x21\_hmm\_rate.csv}, 24 replications per $N\in\{500,\dots,16000\}$, $\rho=0.9$, $\Delta_Z=0.8$): when the emission model is correct, $\E|\hg-\gamma^*|$ falls from $6.7\times10^{-3}$ to $1.3\times10^{-3}$ with log--log slope $-0.49$ and the median $|\hat v-v^*|$ with slope $-0.55$, as H1--H2 predict. With the diagonal-covariance HMM used in our experiments and correlated proxies (misspecified emissions, so H1 fails), the error plateaus (slope $-0.09$; $|\hat v-v^*|\approx2\times10^{-3}$, about 9\% of $v^*$): $\hg$ then converges to a pseudo-true posterior, not to the true one. We tested it directly (\texttt{x29}): for correlated $t_5$ proxies ($\Delta_Z{=}0.5$, $N{=}3000$, 24 replications) the in-sample plug-in $\hat v$ equals the pseudo-true $v(\vartheta_{KL})$ (signed gap $-10^{-4}$, standard deviation $0.002$, maximum $0.005$), so \texttt{x21}'s plateau is small in this sense, but both understate the realised residual variance $\E(S-\hg)^2$ by a factor of two ($0.059$ versus $0.122$). The law with the realised variance predicts the bias ($0.326$ versus observed $0.308$), whereas the plug-in law predicts $0.168$. With well-specified Gaussian emissions the understatement is $14\%$ ($0.063$ versus $0.073$; law $0.204$ versus $0.194$, plug-in $0.178$). Under misspecification the plug-in $\hat v$ is therefore a lower bound on the bias-relevant variance, not an estimate, and the calibration bound of Prop.~\ref{prop:calib} (whose $CE$ needs $S$) cannot be checked from data. \emph{Checks of (H1), Lemma~\ref{lem:h2} and $\delta_X$ for the fit we actually use} (\texttt{x24}--\texttt{x27}). The HMM is a NumPy EM capped at 25 iterations from a fixed quantile initialisation (\texttt{hmmlearn} is not installed). In the simulation designs ($N{=}3000$, 8 replications for each $\Delta_Z\in\{0.5,0.8,1.2\}$) it is indistinguishable from the converged fit (log-likelihood gap $\le4\times10^{-4}$, identical $\hat v$ to four digits), and five random restarts reach the same optimum within $6\times10^{-6}$ (H1 holds in practice). The finite-difference sensitivity $\partial\gamma_t/\partial\vartheta$ at the truth has root-mean-square $0.03$--$0.13$ per parameter, flat in $N\in[10^3,6.4\times10^4]$, while its maximum over $t$ is $0.3$--$1.8$ and drifts up slowly with $N$: consistent with Lemma~\ref{lem:h2} (which gives moment, not almost-sure, bounds). On the real series, Delhi, Bengaluru and Kolkata have a single optimum, but Mumbai's likelihood is multimodal: five restarts span $1{,}182$ log-likelihood units and the default fit is $118$ below the best restart, so H1 fails there; with the best of eight converged restarts Mumbai's $\hat v$ moves from $0.021$ to $0.025$ and $b^*$ from $11.9$ to $7.1$ SD, and no conclusion changes. $\delta_X>0$ on the real series (H3 fails): the fitted posterior is predictable from the controls ($R^2=0.74/0.73/0.75$ with ridge and $0.96/0.94/0.89$ with boosting for Delhi/Bengaluru/Kolkata, $0.19/0.28$ for Mumbai) because the controls contain the proxy variables, so $\hat v$ there overstates the variance left given $(X,\hg)$, and the robustness values are conservative with respect to this channel but not otherwise validated.
+
+\paragraph{Change-point constant (isolated switch).} Let the true change be at $0$ with a uniform prior on its location $c\in\mathbb Z$ and let $W_k$ ($k\neq0$, $W_0=0$) be the log-likelihood ratio of a change at $k$ against $0$: the right walk $W_k=\sum_{j=1}^k\xi_j$ and the left walk $W_{-k}$ are independent with iid steps $\xi\sim N(-d^2/2,d^2)$, so $\E e^{p\xi}=e^{-(d^2/2)p(1-p)}$ and $\E e^{\xi/2}=e^{-d^2/8}=:q$. The posterior is $p_k=e^{W_k}/\sum_je^{W_j}$, $\gamma_t=P(c\le t)$, $M=\sum_{t\in\mathbb Z}\E\gamma_t(1-\gamma_t)$. Put $h(w)=1/(4\cosh^2(w/2))=e^w/(1+e^w)^2$ (even, $\le e^{-|w|}$, $\le\sqrt{e^w}/2$) and $M_{NN}=2\E h(W_1)$, the two-point (nearest-neighbour) value.
+\begin{proposition}[Isolated switch]\label{prop:cp}
+(a) $M_{NN}=\sqrt{\pi/2}\,\dfrac qd\,\big(1-\tfrac{\pi^2}{2d^2}+O(d^{-4})\big)$. (b) For $d\ge3$, $M=M_{NN}(1+\rho_d)$ with $|\rho_d|\le C\,d\,q$ for an absolute constant $C$; moreover the sites $t\ge1$ and $t\le-2$ contribute $0\le\sum_{|t+1/2|>1}\E\gamma_t(1-\gamma_t)\le q^2/(1-q)^2$. Hence $M=\sqrt{\pi/2}\,(q/d)\,(1+O(d^{-2}+dq))$.
+\end{proposition}
+\emph{Proof.} (a) $W_1$ has density $\frac{q}{d\sqrt{2\pi}}e^{-w/2}e^{-w^2/2d^2}$, and $h$ is even, so $\E h(W_1)=\frac{q}{d\sqrt{2\pi}}I(d)$ with $I(d)=\int e^{-w^2/2d^2}/(4\cosh(w/2))\,dw$. Since $\int dw/(4\cosh(w/2))=\pi/2$, $\int w^2dw/(4\cosh(w/2))=\pi^3/2$ and $y-y^2/2\le1-e^{-y}\le y$, $I(d)=\frac\pi2(1-\frac{\pi^2}{2d^2}+O(d^{-4}))$; multiply by $2$.
+
+(b) By the reflection $k\mapsto-k$, $M=2\sum_{t\ge0}m_t$, $m_t=\E\gamma_t(1-\gamma_t)$. \emph{Site $t=0$.} $\gamma_0=A/(A+B)$ with $A=1+\lambda$, $\lambda=\sum_{k\ge1}e^{W_{-k}}$, $B=e^{W_1}(1+\eta)$, $\eta=\sum_{n\ge1}e^{\xi_2+\dots+\xi_{n+1}}$, so $\gamma_0(1-\gamma_0)=h(W_1+u)$ with $u=\log\frac{1+\eta}{1+\lambda}$, and $u$ is independent of $W_1$. Hence $m_0=\E\psi(u)$, $\psi(u):=\E h(W_1+u)$, and a change of variable in the density of $W_1$ gives the exact identity
+$$\psi(u)=\frac{q}{d\sqrt{2\pi}}\,e^{u/2-u^2/2d^2}J(u/d^2),\qquad J(s)=\int h(x)\cosh\!\big((\tfrac12-s)x\big)e^{-x^2/2d^2}dx,$$
+with $\psi(0)=m_{NN}:=\E h(W_1)$. For $|s|\le\frac14$, $\cosh((\frac12-s)x)/\cosh(x/2)\in[e^{-|s||x|},e^{|s||x|}]$ and $h\cosh(x/2)=1/(4\cosh(x/2))$ is integrable against $|x|e^{|x|/4}$, so $|J(s)/J(0)-1|\le C_1|s|$ with $C_1$ absolute ($d\ge1$). Therefore on $\{|u|\le d^2/4\}$, $|\psi(u)/\psi(0)-1|\le|e^{u/2}-1|+e^{u/2}\,\frac{u^2}{2d^2}+C_1e^{u/2}\frac{|u|}{d^2}$ (up to constants). Now: (i) $e^{u/2}-1=(1+x)(1-y)-1$ with $x=\sqrt{1+\eta}-1\ge0$, $y=1-(1+\lambda)^{-1/2}\in[0,1)$, so $|e^{u/2}-1|\le2x+y$ and $\E x\le\E\eta^{1/2}\le\sum_{n\ge1}q^n=q/(1-q)$, $\E y\le\E\lambda^{1/2}\le q/(1-q)$ (subadditivity of $z\mapsto z^{1/2}$); (ii) with $e^{u/2}=\sqrt{1+\eta}/\sqrt{1+\lambda}$ and $u^2\le2\log^2(1+\eta)+2\log^2(1+\lambda)$, the terms are $\E[\sqrt{1+\eta}\log^2(1+\eta)]$ and $\E[\log^2(1+\lambda)/\sqrt{1+\lambda}]\cdot\E\sqrt{1+\eta}$ (independence); for $\delta=1/d$ and all $z>0$, $\sqrt{1+z}\log^2(1+z)\le C\delta^{-2}z^{1/2+\delta}$ and $\log^2(1+z)/\sqrt{1+z}\le C\delta^{-2}z^{1/2+\delta}$, while $\E\eta^{1/2+\delta}\le\sum_n e^{-(d^2/2)(1/4-\delta^2)n}\le\sqrt e\,q/(1-\sqrt eq)$ (the same for $\lambda$; $\sqrt eq<1$ needs $d\ge3$), so $\E[e^{u/2}u^2]/(2d^2)\le C\,q$ and, likewise, $\E[e^{u/2}|u|]/d^2\le C\,q/d$; (iii) $P(|u|>d^2/4)\le Cq^2$ by Markov applied to $\eta^{1/2}$ and $\lambda^{1/2}$, and on that event $\psi\le\frac14$ and $\psi(0)\le\frac14$, so its total contribution $\le Cq^2\le C\,d\,q\,m_{NN}$ because $m_{NN}\ge c\,q/d$ by (a). Altogether $|m_0/m_{NN}-1|\le C\,d\,q$. \emph{Sites $t\ge1$.} $A\ge1$, $B=e^{W_{t+1}}(1+\eta_t)$, $h(x)\le\sqrt x/2$ give $m_t\le\frac12\E e^{W_{t+1}/2}\,\E(1+\eta_t)^{1/2}\le\frac12q^{t+1}(1+\frac q{1-q})=\frac{q^{t+1}}{2(1-q)}$, and $\sum_{t\ge1}2m_t\le q^2/(1-q)^2$; dividing by $M_{NN}\ge c\,q/d$ gives a relative contribution $\le C\,d\,q$. $\square$ Numerical check of the identity $m_0=\E\psi(u)$, of $\E x,\E y\le q/(1-q)$ and of the bound on $m_t$ (\texttt{x31\_cp\_proof\_check.csv}, $d=3,4,5$): $m_0$ and $\E\psi(u)$ agree to Monte Carlo error ($0.0499/0.0499$, $0.0174/0.0174$, $0.0048/0.0048$), $\E x=0.19,0.068,0.021\le0.48,0.157,0.046$, $m_1=0.0109,0.0014,0.0001\le0.078,0.0106,0.0010$, and $m_0/m_{NN}-1\approx1.2\%,1.2\%,0.8\%$ (Monte Carlo error about $0.5\%$), so most of the measured remainder ($M/M_{NN}-1\approx30\%,10\%,3\%$ summing $t\le6$) comes from the sites $t\ge1$ (96\%, 88\%, 76\%); the bound on $m_t$ is conservative by a factor of about seven to ten.
+\begin{corollary}[Stationary chain, $\epsilon\to0$]\label{cor:cp}
+For the two-state Gaussian HMM with switch rate $r=\pi_0\epsilon_0+\pi_1\epsilon_1$, the ratio $\epsilon_0/\epsilon_1$ held fixed (so $\pi$ stays bounded away from $0$), and fixed $d$, $\lim_{r\to0}v/r=M$ with $v=\E\gamma_t(1-\gamma_t)$.
+\end{corollary}
+\emph{Proof.} \emph{Lower bound.} Conditioning on more information (all of $Z$ together with the two endpoint states) lowers the expected posterior variance, so $v\ge\E\Var(S_t\mid Z_{t-L:t+L},S_{t-L},S_{t+L})$ for every $L$. By the Markov property this is the posterior variance of the window with known endpoint states. If the endpoints differ (probability $\sim2rL$) the window contains one switch up to relative $O(rL)$, with uniform location (the switch contributes the factor $\epsilon$ whatever its position), so the conditional posterior is the isolated-switch posterior on a window of $2L+1$ sites, and summing over switch positions and using stationarity gives $v\ge r\,M_L(1-O(rL))$, where $M_L\to M$ as $L\to\infty$ (the truncated posterior differs from the infinite-line one only through terms of relative size $O(q^{L})$ by the moment bounds above). \emph{Upper bound.} $v=\min_fE(S_t-f(Z))^2\le E(S_t-f_L)^2$ for the Bayes estimator $f_L$ of the truncated model (at most one switch in the window $[t-L,t+L]$, stationary initial state, data in the window only). On the event of at most one switch in the window this is the isolated posterior up to the error of identifying a constant state from $2L+1$ observations, $O(e^{-cL})$ by a Chernoff bound; on two or more switches, which have probability $O((rL)^2)$, the error is at most $1$. Choosing $L=C\log(1/r)$ with $C$ large enough that $e^{-cL}=o(r)$ gives $v\le r\,M(1+o(1))$. $\square$ This proof is a sketch at the level of the finite-window expansions (the $O(rL)$ and $O(e^{-cL})$ terms are not written out). (The exact-HMM windowed estimates of \texttt{x19\_hmm\_window.csv} are the numerical counterpart: $v\,d\,e^{d^2/8}/\epsilon=1.19,1.12,1.12$ at $d=3,4,5$ against $M\,d/q=1.18,1.12,1.11$ from \texttt{x31}.)
+
+\paragraph{Cross-fitting when the HMM is fitted on all of $Z$.} The posterior $\hg_t$ is $\sigma(Z,X)$-measurable, so $\mathcal G=\sigma(S,Z,X)$ contains every input to $\hg$ and the nuisance features. This gives a partial argument, under the additional assumption that $(V,U)$ is $\alpha$-mixing jointly with $\mathcal G$ (stronger than Assumption~\ref{as:noise}, and violated when controls include lagged outcomes, as in the real data):
+(i) \emph{Noise terms.} A learner trained on other folds is a function of $\mathcal G$ and the training noise, so for a test index $t$ the conditional means of $V_t$ and $U_t$ given $\mathcal G$ and the training noise vanish exactly if the noise is independent across folds and up to $\alpha(\tau)$ otherwise. Fitting the HMM on held-out $Z$ adds nothing here because the noise is independent of $Z$.
+(ii) \emph{Regime terms.} Given $(Z_{1:N},X)$, $S$ is an inhomogeneous Markov chain whose dependence decays geometrically under strong mixing of the transition kernel (forgetting of the conditional chain, \citealp{cappe2005inference}), so covariances between training-fold functions of $S_s$ and the test-fold $S_t$ given $(Z,X)$ are $O(\varrho^{|t-s|})$. The test residual $\tilde D_t$ is centred given $F_t$, not given $(Z,X)$: $\E[\tilde D_t\mid Z,X]=\gamma^X_t-c_t$, which is $O(N^{-1/2}+\sqrt{\delta_X})$ in $L^2$-average over $t$ under (H1$'$) (Prop.~\ref{prop:rate}), so the regime cross terms are $O(\varrho^\tau)+O(N^{-1/2}+\sqrt{\delta_X})$ in that sense. The global dependence of $\hat\vartheta$ on test-fold $Z$ adds a further $O_P(N^{-1/2})$ coupling that we do not bound separately.
+Empirically (\texttt{x22\_cond\_decay.csv}; known parameters, 40 posterior draws of $S$ given $Z$, $N{=}20000$), the correlation of $S_t-\gamma_t$ and $S_{t+h}-\gamma_{t+h}$ decays geometrically, from $0.29$--$0.77$ at $h=1$ to below $0.006$ at $h=12$ for $\rho=0.9$ ($0.054$ at $\rho=0.97$, $\Delta_Z=0.5$) and below $0.003$ at $h=24$ in all six settings ($\Delta_Z\in\{0.5,0.8,1.2\}$, $\rho\in\{0.9,0.97\}$). The embargo of $24$ used throughout is adequate in these designs; $\varrho$ is not bounded in general (a persistent chain with weak proxies has $\varrho$ near $1$).
+
+\emph{Direct test} (\texttt{x30}): refitting the HMM on the training folds only (purged blocks, $\tau{=}24$, five folds) rather than on all of $Z$ changes neither the bias nor the plug-in $v$ in 24 replications: the fold-wise and global estimates of $\hat\theta-\theta$ have correlation $0.999$, mean difference $6\times10^{-4}$ (bias $0.308$ versus $0.308$), and $\hat v$ differs by $2\times10^{-4}$ (well-specified design: correlation $0.998$, mean $|\Delta\hat v|=5\times10^{-4}$). Cross-fitting the HMM is therefore not what drives the bias in these designs; this is evidence, not a proof of independence.
+
+\section{HETEROGENEOUS EFFECTS AND MULTIPLE REGIMES}\label{app:hetero}
+\paragraph{Heterogeneous effects ($K=2$).} Let $Y_t=\theta(S_t)T_t+g(X_t)+bD_t+U_t$ with $\theta(0)=\theta_0,\theta(1)=\theta_1$, $\bar\theta=\E\theta(S)$, $T_t=\bar m+m_0(X_t)+aD_t+V_t$ with $\E m_0=0$, and assume $\E[m_0(X)\Var(D\mid F)]=0$. Then
+\[
+\hth\xrightarrow{p}\bar\theta+\frac{a\,v\,[\,b+a(\theta_1-\bar\theta)+\bar m(\theta_1-\theta_0)\,]}{a^2v+\sigma^2}.
+\]
+\emph{Proof.} $\E[\tilde T\tilde Y]=\E[\tilde T\,\theta(S)T]+ab\,v$; expanding with $\tilde T=a\tilde D+V$ gives $\E[\tilde T\theta(S)T]=a\bar m(\theta_1-\theta_0)v+a^2\theta_1v+\sigma^2\bar\theta$, using $\E[\tilde D\,\theta(S)]=(\theta_1-\theta_0)v$ and $\E[V^2\theta(S)]=\sigma^2\bar\theta$. Subtract $\bar\theta(a^2v+\sigma^2)$. $\square$ The oracle-state estimator ($v=0$) converges to $\bar\theta$.
+
+\paragraph{$K>2$.} Theorem~\ref{thm:law} holds with matrix $\Sigma_N$ and $|B|\le\sqrt{b^\top\Sigma b}/(2\sigma)$; the hump persists along any direction $a=s\,a_0$. Hard-versus-soft monotonicity (Prop.~\ref{prop:info}) holds in the Loewner order but $|B|$ need not be monotone in $\Sigma$ for $K>2$.
+
+\section{EXTENDED COMPARISON OF ESTIMATORS}\label{app:ext}
+Bias (RMSE) of $\hat\theta-\theta$ with $\theta{=}1$ (ATE target for the heterogeneous row), $N{=}3000$, 12 replications ($\Delta_g{=}3$, $\Delta_Z{=}0.5$, persistence $0.9$; continuous rows: 12 replications, AR(1) coefficient $0.97$). Posterior-DML uses cross-fitted nuisances on $(X,\hg)$. Code: \texttt{src/bias\_law/ext\_*.py}; raw output \texttt{reports/bias\_law/x*.csv} (\texttt{x1}--\texttt{x30}; \texttt{x1}--\texttt{x5} comparisons, \texttt{x6} Kalman/sieve, \texttt{x7} real joint, \texttt{x8}--\texttt{x9} finite-state/X-aware, \texttt{x10}--\texttt{x11} environments, \texttt{x12}--\texttt{x20} change-point checks, \texttt{x21}--\texttt{x22} learned-HMM rate and decorrelation, \texttt{x23}--\texttt{x27} hourly-grid rerun and EM checks, \texttt{x28} total change-point constant, \texttt{x29}--\texttt{x30} misspecified-$v$ and fold-wise HMM). Change-point constant: $v\,d\,e^{d^2/8}/\epsilon$ for the stationary exact HMM at $d=4$ is $1.63,1.46,1.30$ for $\epsilon=0.1,0.03,0.01$ (\texttt{x16\_hmm\_limit.csv}; its rows at $\epsilon\le0.003$ are Monte Carlo noise and are superseded by the windowed \texttt{x19\_hmm\_window.csv}), against the nearest-neighbour limit $\sqrt{\pi/2}=1.25$ (\texttt{x20\_nn\_quad.csv}); asymmetric chains: \texttt{x14\_asym.csv}. With $Z$ uninformative ($\Delta_Z{=}0$) and $\Delta_g{=}3$ the joint MLE is still unbiased for every $\Delta_T\in\{0.5,\dots,4\}$ (bias $|\cdot|\le0.02$) because the mixture in $(T,Y)$ is identifiable under Gaussianity; non-identification without proxies therefore holds only without parametric assumptions on the mixture.
+\begin{table}[h]
+\caption{Estimator comparison under misspecification.}\label{tab:ext}
+\centering\small
+\resizebox{\columnwidth}{!}{\input{generated/tab_ext.tex}}
+\end{table}
+
+\section{EXPERIMENTAL DETAILS}\label{app:exp}
+\paragraph{Learned-HMM grid.} $K=2$: $\Delta_Z\in\{0.5,0.8,1.2\}$, $\Delta_T\in\{0.25,0.5,1,2,4,8,16,32\}$, 12 replications per cell, $N=3000$, persistence 0.9, $\Delta_g=3$, $\sigma=1$. The HMM is fitted once per replication (Gaussian emissions, diagonal covariance, EM); smoothing and filtering posteriors are both used. Predicted vs.\ observed peak (value of $\Delta_T$ at the maximum measured bias, grid-limited): $\Delta_Z=0.5$: 4.0 vs.\ 4.0; $\Delta_Z=0.8$: 6.7 vs.\ 8; $\Delta_Z=1.2$: 14.1 vs.\ 16 (linear nuisances, smoother); predicted peak heights 0.375/0.224/0.106 vs.\ observed 0.392/0.226/0.117. \texttt{reports/bias\_law/e1\_peak\_check.csv}.
+\paragraph{$K=3$.} Proxy means on a circle of radius $1.8\Delta_Z$; $(a,b)\in\{(0,2,5;0,3,1),(0,3,{-}3;0,2,2),(0,1,1;0,3,{-}3),(0,6,3;0,3,3)\}$; 20 replications; linear nuisances.
+\paragraph{Table-1 DGP.} \texttt{generate\_difficulty\_dgp} with $\Delta_T=4$, outcome offsets 15 and 50, state-free treatment level $\bar m=2$, $\theta=(0.75,2.5)$; the oracle-state estimator provides $\bar\theta$.
+\paragraph{Compute.} 2-CPU container, single-threaded nuisances; most scripts run in minutes, and the long Monte Carlo checks (\texttt{x16}, \texttt{x19}, \texttt{x21}) take up to about an hour. Seeds are fixed in the scripts.
+
+\section{COUPLED OR-DML AND THE BENCHMARK}\label{app:ordml}
+The coupled regime-weighted estimator $\hat\theta=(\hat J+\lambda I)^{-1}\hat S$ of our earlier work, with a spectral penalty $\lambda\propto N^{-1/2}$, is evaluated against honest baselines (Table~\ref{tab:full}; 100 replications per $\Delta_Z$). At $\Delta_Z\ge2$ it ties regime fixed effects built from the same HMM; at $\Delta_Z\le1$ every method fails, with regime fixed effects better at $\Delta_Z=1$. The spectral penalty is numerically inert (the ``spectral'' and ``unregularized'' rows differ by $\le0.003$ in mean absolute bias at $\Delta_Z=2$). Coverage for the regime-FE row uses the blocked-DML standard error and should be read as indicative only. We therefore do not present the coupled estimator as a contribution.
+\begin{table}[h]
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Difficulty-frontier benchmark (100 replications per $\Delta_Z$, $N=1200$, true $\theta_{\rm ATE}=1.5278$); \texttt{reports/or\_dml\_benchmark\_summary.csv}.}\label{tab:full}
+\input{generated/tab_benchmark_full.tex}
+\end{table}
+
+\section{REAL-DATA DETAILS}\label{app:real}
+\textbf{Data.} CPCB monitors via OpenAQ (timestamps at hh:30Z, floored to the hour and paired with the Open-Meteo reanalysis hour that began 30 minutes earlier) and Open-Meteo, regularised to an hourly grid with forward-filling of at most 2 hours (\texttt{ext\_real\_hourly\_fix.py}); complete cases: 9{,}024 (Delhi), 8{,}113 (Mumbai), 7{,}775 (Bengaluru), 2{,}322 (Kolkata). The legacy pipeline (\texttt{data\_pipeline\_clean.py}) used \texttt{round('h')}, which sends every hh:30 to an even hour, so its 14{,}122 complete cases are a 2-hourly series (lags and rolling means span 2 h and 6 h; consecutive rows are 2 h apart). Treatment: NO$_2$; outcome: PM$_{2.5}$; proxies $Z$: temperature, wind speed (km/h), humidity, pressure, hour-of-day sine/cosine; controls $X$: lagged and rolling pollutants plus the meteorological variables (so $Z$ overlaps $X$; the plug-in $\hat v$ ignores the information in $X$ and can overstate $v$). Sensor screening: runs of $\ge6$ identical NO$_2$ readings are \emph{not} removed in the main analysis; Table~\ref{tab:cities} reports both. Delhi has none; On the hourly grid, screening removes 1{,}857 rows in Mumbai, 575 in Bengaluru and 861 in Kolkata, whose NO$_2$ has 16 distinct values.
+\begin{table}[h]
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Full real-data sensitivity table (hourly grid); \texttt{reports/bias\_law/x23\_real\_hourly\_fix.csv}.}
+\input{generated/tab_cities_full.tex}
+\end{table}
+\begin{table}[h]
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Legacy 2-hourly series (pipeline artifact; for comparison only); \texttt{reports/bias\_law/e5\_real\_city\_sensitivity.csv}.}\label{tab:cities2h}
+\input{generated/tab_cities_2h_full.tex}
+\end{table}
+\textbf{Newey--West sensitivity of the regime-specific OR-DML estimates.} Recomputed on the corrected hourly grid with the frozen-reading screen. Standard errors grow with the lag in every cell (Delhi regime 1: $0.050\to0.066$ from lag 12 to 168), and one regime-level conclusion changes sign of evidence: Bengaluru's regime-2 effect has $p=0.017$ at lag 12, $0.051$ at lag 72 and $0.087$ at lag 168, so it is not robust to the choice of lag. Delhi's regime-1 effect ($p<0.001$) and regime-2 effect ($p=0.002\to0.010$) remain significant at every lag. Mumbai has no significant regime effect at any lag (smallest $p=0.064$). Kolkata's regime-2 effect ($p\le0.006$ at all lags) rests on a nearly constant NO$_2$ sensor (16 distinct values) and we do not interpret it. Lags are in hours; the choice of lag matters only for Bengaluru.
+\begin{table}[h]
+\centering\scriptsize\setlength{\tabcolsep}{4pt}
+\caption{HAC-lag sensitivity (hours); \texttt{reports/bias\_law/e6\_hac\_lag\_sensitivity.csv}.}
+\input{generated/tab_hac.tex}
+\end{table}
+
+\end{document}

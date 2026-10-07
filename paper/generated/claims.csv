@@ -1,0 +1,246 @@
+macro,value,source,how
+FacRhoD,0.995,reports/factorial_reliability_correlations.csv,Spearman_Run_Difficulty
+FacRhoEps,0.626,reports/factorial_reliability_correlations.csv,Spearman_Run_ProxyError
+FacRhoLam,0.521,reports/factorial_reliability_correlations.csv,Spearman_Run_InvLambda
+FacRhoAdd,0.535,reports/factorial_reliability_correlations.csv,Spearman_Run_Additive
+FacRhoDCell,0.996,reports/factorial_reliability_correlations.csv,Spearman_Cell_Difficulty
+FacRetainErr,2.61,reports/factorial_risk_coverage.csv,mean error at 40% retention
+FacFullErr,48.81,reports/factorial_risk_coverage.csv,mean error at 100% retention
+FacNRuns,"4,900",reports/factorial_reliability_raw.csv,rows
+CFRatioMed,0.999,reports/synthesis/closed_form_factorial_summary.json,median obs/pop over eps>0 cells
+CFRatioLo,0.993,reports/synthesis/closed_form_factorial_summary.json,q25
+CFRatioHi,1.008,reports/synthesis/closed_form_factorial_summary.json,q75
+CFRatioMin,0.98,reports/synthesis/closed_form_factorial_summary.json,min
+CFRatioMax,1.02,reports/synthesis/closed_form_factorial_summary.json,max
+CFNCells,42,reports/synthesis/closed_form_factorial_summary.json,cells
+CFLamInfl,70,reports/synthesis/closed_form_factorial_summary.json,lambda(eps=.4)/lambda(eps=0) at sigma1=.08
+CFLamLo,0.0028,reports/synthesis/closed_form_factorial_summary.json,lambda at eps=0
+CFLamHi,0.199,reports/synthesis/closed_form_factorial_summary.json,lambda at eps=.4
+CFErrPeak,320,reports/synthesis/closed_form_factorial_summary.json,peak median error at sigma1=.08
+CFErrEnd,62,reports/synthesis/closed_form_factorial_summary.json,"median error at eps=.4, sigma1=.08"
+CFRhoProxy,0.997,reports/synthesis/closed_form_factorial_summary.json,cell Spearman eps/lambda_proxy
+CFRhoDesign,0.958,reports/synthesis/closed_form_factorial_summary.json,cell Spearman eps/sigma1^2
+CFNHump,4,reports/synthesis/closed_form_factorial_summary.json,sigma levels with interior maximum
+CFPeakA,0.05,reports/synthesis/closed_form_factorial_summary.json,observed argmax eps at sigma1=0.08
+CFPeakB,0.10,reports/synthesis/closed_form_factorial_summary.json,observed argmax eps at sigma1=0.15
+CFPeakC,0.20,reports/synthesis/closed_form_factorial_summary.json,observed argmax eps at sigma1=0.3
+LPRhoD,0.517,reports/synthesis/learned_posterior_coupled_scores.csv,"eps/lambda_proxy, run level"
+LPRhoDOracle,0.750,reports/synthesis/learned_posterior_coupled_scores.csv,eps/lambda_oracle
+LPRhoScaled,0.695,reports/synthesis/learned_posterior_coupled_scores.csv,eps*dm*dy/lambda_proxy
+LPRhoScaledCell,0.863,reports/synthesis/learned_posterior_coupled_scores.csv,cell level
+LPRhoScaledEnt,0.664,reports/synthesis/learned_posterior_coupled_scores.csv,observable scaled
+LPRhoEnt,0.581,reports/synthesis/learned_posterior_coupled_scores.csv,entropy/lambda_proxy
+LPNRuns,720,reports/synthesis/learned_posterior_coupled_meta.json,runs
+LPNCells,36,reports/synthesis/learned_posterior_coupled_meta.json,cells
+LPFracInfl,82,reports/synthesis/learned_posterior_coupled_meta.json,% runs lambda_proxy>lambda_oracle
+LPInflMed,1.9,reports/synthesis/learned_posterior_coupled_meta.json,median lambda_proxy/lambda_oracle
+LPInflQn,11,reports/synthesis/learned_posterior_coupled_meta.json,q90 ratio
+LPHardBetter,100,reports/synthesis/learned_posterior_coupled_meta.json,% cells hard FE better
+LPErrRatio,1.40,reports/synthesis/learned_posterior_coupled_meta.json,median coupled/hard error
+LPPABetter,72,reports/synthesis/learned_posterior_coupled_meta.json,% cells posterior-adjusted OR-DML beats hard FE
+LPPARunsBetter,69,reports/synthesis/learned_posterior_coupled_meta.json,% runs posterior-adjusted beats hard FE
+LPPARatio,0.97,reports/synthesis/learned_posterior_coupled_meta.json,median cell error ratio posterior-adjusted/hard
+LPPAvsW,0.69,reports/synthesis/learned_posterior_coupled_meta.json,median cell error ratio posterior-adjusted/weighted
+FDNRuns,900,reports/synthesis/frontier_designs_summary.csv,replications (datasets) across all cells
+FDStd,8.44,reports/synthesis/frontier_designs_summary.csv,"standard DML bias, dz=2"
+FDBlock,8.47,reports/synthesis/frontier_designs_summary.csv,"block DML bias, dz=2"
+FDTrueATE,1.53,src/synthetic_dgp_benchmark.py,stationary ATE of the DGP
+FDOursOne,2.134,reports/synthesis/frontier_designs_summary.csv,OR-DML (posterior-adjusted) ATE bias dz=1.0
+FDHardOne,2.575,reports/synthesis/frontier_designs_summary.csv,hard FE ATE bias dz=1.0
+FDFeatOne,2.164,reports/synthesis/frontier_designs_summary.csv,posterior-feature ATE bias dz=1.0
+FDWOne,4.236,reports/synthesis/frontier_designs_summary.csv,weighted OR-DML ATE bias dz=1.0
+FDOursThOne,2.954,reports/synthesis/frontier_designs_summary.csv,OR-DML median regime error dz=1.0
+FDHardThOne,3.652,reports/synthesis/frontier_designs_summary.csv,hard FE median regime error dz=1.0
+FDWThOne,6.107,reports/synthesis/frontier_designs_summary.csv,weighted median regime error dz=1.0
+FDCovOursOne,0,reports/synthesis/frontier_designs_summary.csv,OR-DML SATE coverage dz=1.0
+FDEpsOne,0.062,reports/synthesis/frontier_designs_summary.csv,median posterior error dz=1.0
+FDOursTwo,0.129,reports/synthesis/frontier_designs_summary.csv,OR-DML (posterior-adjusted) ATE bias dz=2.0
+FDHardTwo,0.141,reports/synthesis/frontier_designs_summary.csv,hard FE ATE bias dz=2.0
+FDFeatTwo,0.141,reports/synthesis/frontier_designs_summary.csv,posterior-feature ATE bias dz=2.0
+FDWTwo,0.147,reports/synthesis/frontier_designs_summary.csv,weighted OR-DML ATE bias dz=2.0
+FDOursThTwo,0.070,reports/synthesis/frontier_designs_summary.csv,OR-DML median regime error dz=2.0
+FDHardThTwo,0.077,reports/synthesis/frontier_designs_summary.csv,hard FE median regime error dz=2.0
+FDWThTwo,0.095,reports/synthesis/frontier_designs_summary.csv,weighted median regime error dz=2.0
+FDCovOursTwo,91,reports/synthesis/frontier_designs_summary.csv,OR-DML SATE coverage dz=2.0
+FDEpsTwo,0.000,reports/synthesis/frontier_designs_summary.csv,median posterior error dz=2.0
+FDOursFour,0.031,reports/synthesis/frontier_designs_summary.csv,OR-DML (posterior-adjusted) ATE bias dz=4.0
+FDHardFour,0.031,reports/synthesis/frontier_designs_summary.csv,hard FE ATE bias dz=4.0
+FDFeatFour,0.044,reports/synthesis/frontier_designs_summary.csv,posterior-feature ATE bias dz=4.0
+FDWFour,0.032,reports/synthesis/frontier_designs_summary.csv,weighted OR-DML ATE bias dz=4.0
+FDOursThFour,0.063,reports/synthesis/frontier_designs_summary.csv,OR-DML median regime error dz=4.0
+FDHardThFour,0.063,reports/synthesis/frontier_designs_summary.csv,hard FE median regime error dz=4.0
+FDWThFour,0.063,reports/synthesis/frontier_designs_summary.csv,weighted median regime error dz=4.0
+FDCovOursFour,94,reports/synthesis/frontier_designs_summary.csv,OR-DML SATE coverage dz=4.0
+FDEpsFour,0.000,reports/synthesis/frontier_designs_summary.csv,median posterior error dz=4.0
+FDPerLoOneOurs,2.725,reports/synthesis/frontier_designs_summary.csv,OR-DML bias p00=0.7 dz=1.0
+FDPerLoOneHard,3.260,reports/synthesis/frontier_designs_summary.csv,hard FE bias p00=0.7 dz=1.0
+FDPerLoOneEps,0.090,reports/synthesis/frontier_designs_summary.csv,posterior error p00=0.7 dz=1.0
+FDPerLoTwoOurs,0.052,reports/synthesis/frontier_designs_summary.csv,OR-DML bias p00=0.7 dz=2.0
+FDPerLoTwoHard,0.070,reports/synthesis/frontier_designs_summary.csv,hard FE bias p00=0.7 dz=2.0
+FDPerLoTwoEps,0.001,reports/synthesis/frontier_designs_summary.csv,posterior error p00=0.7 dz=2.0
+FDPerHiOneOurs,0.960,reports/synthesis/frontier_designs_summary.csv,OR-DML bias p00=0.97 dz=1.0
+FDPerHiOneHard,1.194,reports/synthesis/frontier_designs_summary.csv,hard FE bias p00=0.97 dz=1.0
+FDPerHiOneEps,0.026,reports/synthesis/frontier_designs_summary.csv,posterior error p00=0.97 dz=1.0
+FDPerHiTwoOurs,0.035,reports/synthesis/frontier_designs_summary.csv,OR-DML bias p00=0.97 dz=2.0
+FDPerHiTwoHard,0.039,reports/synthesis/frontier_designs_summary.csv,hard FE bias p00=0.97 dz=2.0
+FDPerHiTwoEps,0.000,reports/synthesis/frontier_designs_summary.csv,posterior error p00=0.97 dz=2.0
+FDPerMidOneOurs,2.134,reports/synthesis/frontier_designs_summary.csv,OR-DML bias p00=.88 dz=1
+FDPerMidOneEps,0.062,reports/synthesis/frontier_designs_summary.csv,posterior error p00=.88 dz=1
+FDNCells,7,reports/synthesis/frontier_designs_summary.csv,frontier cells with dz>=1
+FDBestATE,7,reports/synthesis/frontier_designs_summary.csv,cells (dz>=1) where OR-DML ATE bias is within 0.001 of the best non-oracle
+FDBestTheta,7,reports/synthesis/frontier_designs_summary.csv,cells (dz>=1) where OR-DML regime error is within 0.001 of the best coupled
+SSDelhiFeat,0.55,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-feature DML bias
+SSDelhiHard,0.55,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE bias
+SSDelhiSoft,0.88,reports/synthesis/semisynthetic_hourly_summary.csv,soft coupled bias
+SSDelhiStd,1.94,reports/synthesis/semisynthetic_hourly_summary.csv,standard DML bias
+SSDelhiEps,0.087,reports/synthesis/semisynthetic_hourly_summary.csv,posterior error
+SSDelhiLaw,0.36,reports/synthesis/semisynthetic_hourly_summary.csv,bias-law plug-in prediction
+SSDelhiObs,0.55,reports/synthesis/semisynthetic_hourly_summary.csv,observed mean bias
+SSDelhiLamP,0.085,reports/synthesis/semisynthetic_hourly_summary.csv,lambda proxy
+SSDelhiLamO,0.082,reports/synthesis/semisynthetic_hourly_summary.csv,lambda oracle
+SSDelhiPA,0.42,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML bias
+SSDelhiPATh,0.59,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML regime error
+SSDelhiHardTh,0.77,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE regime error
+SSDelhiWTh,1.21,reports/synthesis/semisynthetic_hourly_summary.csv,weighted OR-DML regime error
+SSMumbaiFeat,1.03,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-feature DML bias
+SSMumbaiHard,1.86,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE bias
+SSMumbaiSoft,3.10,reports/synthesis/semisynthetic_hourly_summary.csv,soft coupled bias
+SSMumbaiStd,3.00,reports/synthesis/semisynthetic_hourly_summary.csv,standard DML bias
+SSMumbaiEps,0.097,reports/synthesis/semisynthetic_hourly_summary.csv,posterior error
+SSMumbaiLaw,1.41,reports/synthesis/semisynthetic_hourly_summary.csv,bias-law plug-in prediction
+SSMumbaiObs,1.03,reports/synthesis/semisynthetic_hourly_summary.csv,observed mean bias
+SSMumbaiLamP,0.024,reports/synthesis/semisynthetic_hourly_summary.csv,lambda proxy
+SSMumbaiLamO,0.010,reports/synthesis/semisynthetic_hourly_summary.csv,lambda oracle
+SSMumbaiPA,1.65,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML bias
+SSMumbaiPATh,2.56,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML regime error
+SSMumbaiHardTh,2.84,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE regime error
+SSMumbaiWTh,4.59,reports/synthesis/semisynthetic_hourly_summary.csv,weighted OR-DML regime error
+SSBengaluruFeat,1.51,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-feature DML bias
+SSBengaluruHard,1.97,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE bias
+SSBengaluruSoft,3.22,reports/synthesis/semisynthetic_hourly_summary.csv,soft coupled bias
+SSBengaluruStd,2.97,reports/synthesis/semisynthetic_hourly_summary.csv,standard DML bias
+SSBengaluruEps,0.088,reports/synthesis/semisynthetic_hourly_summary.csv,posterior error
+SSBengaluruLaw,1.70,reports/synthesis/semisynthetic_hourly_summary.csv,bias-law plug-in prediction
+SSBengaluruObs,1.51,reports/synthesis/semisynthetic_hourly_summary.csv,observed mean bias
+SSBengaluruLamP,0.019,reports/synthesis/semisynthetic_hourly_summary.csv,lambda proxy
+SSBengaluruLamO,0.011,reports/synthesis/semisynthetic_hourly_summary.csv,lambda oracle
+SSBengaluruPA,1.69,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML bias
+SSBengaluruPATh,2.40,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML regime error
+SSBengaluruHardTh,2.83,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE regime error
+SSBengaluruWTh,4.56,reports/synthesis/semisynthetic_hourly_summary.csv,weighted OR-DML regime error
+SSKolkataFeat,2.17,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-feature DML bias
+SSKolkataHard,2.30,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE bias
+SSKolkataSoft,3.81,reports/synthesis/semisynthetic_hourly_summary.csv,soft coupled bias
+SSKolkataStd,3.23,reports/synthesis/semisynthetic_hourly_summary.csv,standard DML bias
+SSKolkataEps,0.083,reports/synthesis/semisynthetic_hourly_summary.csv,posterior error
+SSKolkataLaw,2.00,reports/synthesis/semisynthetic_hourly_summary.csv,bias-law plug-in prediction
+SSKolkataObs,2.17,reports/synthesis/semisynthetic_hourly_summary.csv,observed mean bias
+SSKolkataLamP,0.018,reports/synthesis/semisynthetic_hourly_summary.csv,lambda proxy
+SSKolkataLamO,0.008,reports/synthesis/semisynthetic_hourly_summary.csv,lambda oracle
+SSKolkataPA,2.05,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML bias
+SSKolkataPATh,2.88,reports/synthesis/semisynthetic_hourly_summary.csv,posterior-adjusted OR-DML regime error
+SSKolkataHardTh,3.21,reports/synthesis/semisynthetic_hourly_summary.csv,hard FE regime error
+SSKolkataWTh,5.33,reports/synthesis/semisynthetic_hourly_summary.csv,weighted OR-DML regime error
+SSAccMin,95,reports/synthesis/semisynthetic_hourly_summary.csv,min expected state accuracy 1-eps/2
+SSAccMax,96,reports/synthesis/semisynthetic_hourly_summary.csv,max expected state accuracy
+SSLawErrMin,7,reports/synthesis/semisynthetic_hourly_summary.csv,min |law/obs-1| %
+SSLawErrMax,37,reports/synthesis/semisynthetic_hourly_summary.csv,max |law/obs-1| %
+SSInflMin,1.7,reports/synthesis/semisynthetic_hourly_summary.csv,"lambda inflation, non-Delhi min"
+SSInflMax,2.4,reports/synthesis/semisynthetic_hourly_summary.csv,"lambda inflation, non-Delhi max"
+SSInflDelhi,1.04,reports/synthesis/semisynthetic_hourly_summary.csv,lambda inflation Delhi
+SSNMin,"2,324",reports/synthesis/semisynthetic_hourly_calibration.csv,min N
+SSNMax,"9,034",reports/synthesis/semisynthetic_hourly_calibration.csv,max N
+SSStayMin,0.90,reports/synthesis/semisynthetic_hourly_calibration.csv,min stay prob
+SSStayMax,0.96,reports/synthesis/semisynthetic_hourly_calibration.csv,max stay prob
+BMTrueATE,1.528,reports/or_dml_benchmark_summary.csv,true ATE in DGP
+BMLamStd,4.95,reports/or_dml_benchmark_summary.csv,residual variance of standard DML
+BMLamOracle,0.45,reports/or_dml_benchmark_summary.csv,oracle lambda_min
+BMLamSoftLow,0.80,reports/or_dml_benchmark_summary.csv,proxy lambda at dz=.2
+BMEpsLow,0.78,reports/or_dml_benchmark_summary.csv,proxy error at dz=.2
+BMZTOne,1.20,reports/or_dml_benchmark_summary.csv,"HMM(Z,T) at dz=1"
+FBSoft,78.0\%,reports/frontier_b_size_distortion_summary.csv,type I error OR-DML
+FBHard,31.0\%,reports/frontier_b_size_distortion_summary.csv,type I error hard FE
+FCSoftLow,1.45,reports/frontier_c_persistence_stress_summary.csv,rho=.3
+FCSoftHigh,0.48,reports/frontier_c_persistence_stress_summary.csv,rho=.88
+FCHardLow,1.02,reports/frontier_c_persistence_stress_summary.csv,rho=.3
+FCHardHigh,0.34,reports/frontier_c_persistence_stress_summary.csv,rho=.88
+FCSwLow,561,reports/frontier_c_persistence_stress_summary.csv,switches at rho=.3
+FCSwHigh,96,reports/frontier_c_persistence_stress_summary.csv,switches at rho=.88
+RegLamBest,0.1,reports/or_dml_regularization_frontier.csv,MSE-minimising lambda
+RegRatio,55,reports/or_dml_regularization_frontier.csv,MSE(0)/MSE(best)
+RegCovBest,87,reports/or_dml_regularization_frontier.csv,coverage at best lambda
+RegCovZero,1,reports/or_dml_regularization_frontier.csv,coverage at lambda=0
+SVHSoft,3.71,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,soft
+SVHHard,2.81,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,hard
+SVHStd,3.83,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,standard
+SVHWin,0,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,% soft better
+SVHPA,2.32,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,posterior-adjusted OR-DML
+SVHPAWin,100,reports/synthesis/soft_vs_hard_continuous_mixture_summary.csv,% posterior-adjusted better than hard
+DEErrLo,0.18,reports/deep_eval_exploration4_task_conditioning_summary.csv,error at smallest dT
+DEErrHi,1.89,reports/deep_eval_exploration4_task_conditioning_summary.csv,error at largest dT
+DELamLo,0.44,reports/deep_eval_exploration4_task_conditioning_summary.csv,min lambda
+DELamHi,0.50,reports/deep_eval_exploration4_task_conditioning_summary.csv,max lambda
+DEEps,0.008,reports/deep_eval_exploration4_task_conditioning_summary.csv,mean proxy error
+DETLo,0.5,reports/deep_eval_exploration4_task_conditioning_summary.csv,smallest dT
+DETHi,8,reports/deep_eval_exploration4_task_conditioning_summary.csv,largest dT
+CLMaxDev,0.008,reports/synthesis/coupled_law_check.csv,max |estimate - law| over configurations (N=1e6)
+CLNConf,9,reports/synthesis/coupled_law_check.csv,configurations
+CLZeroShift,0.005,reports/synthesis/coupled_law_check.csv,bias norm with zero treatment shift
+CLLamLo,0.23,reports/synthesis/coupled_law_check.csv,lambda_min(J) at a=0
+CLLamHi,1.27,reports/synthesis/coupled_law_check.csv,lambda_min(J) at a=8
+CLLamOracle,0.50,reports/synthesis/coupled_law_check.csv,oracle lambda_min
+CLAPeak,4,reports/synthesis/coupled_law_check.csv,treatment shift with largest bias
+OrthPA,0.4,reports/synthesis/orthogonality_check.csv,"score derivative / Jacobian norm, posterior-adjusted (%)"
+OrthW,85,reports/synthesis/orthogonality_check.csv,"score derivative / Jacobian norm, posterior-weighted (%)"
+ZooEceGRU,47.9\%,reports/representation_zoo_calibration_intervention.csv,ECE reduction GRU
+ZooEceTr,60.3\%,reports/representation_zoo_calibration_intervention.csv,ECE reduction Transformer
+ZooDaucGRU,-0.0035,reports/representation_zoo_calibration_intervention.csv,AUC change GRU
+ZooDaucTr,-0.0075,reports/representation_zoo_calibration_intervention.csv,AUC change Transformer
+LowoFOne,0.113,reports/representation_zoo_lowo_evaluation.csv,LOWO R2 F1 only
+LowoFNll,0.221,reports/representation_zoo_lowo_evaluation.csv,LOWO R2 F1+NLL
+ZooAucHMM,0.615,reports/representation_zoo_reliability_auc.csv,"AUC of D_t, HMM"
+BLCorr,0.996,reports/bias_law/summary_numbers.json,corr law(v_hat) vs bias
+BLRmse,0.012,reports/bias_law/summary_numbers.json,RMSE
+BLMedRel,5.2,reports/bias_law/summary_numbers.json,median relative error %
+BLMedRelTrue,3.5,reports/bias_law/summary_numbers.json,median rel err with realised v_N
+BLCells,72,reports/bias_law/summary_numbers.json,cells
+BLAdjBefore,0.126,reports/bias_law/summary_numbers.json,MAE uncorrected
+BLAdjAfter,0.021,reports/bias_law/summary_numbers.json,MAE corrected
+BLTabOneErr,0.04,reports/bias_law/summary_numbers.json,max abs error on Table-1 DGP
+ESevLamLo,0.54,reports/bias_law/e7_corrected_conditioning.csv,lambda X-only min
+ESevLamHi,14.4,reports/bias_law/e7_corrected_conditioning.csv,lambda X-only max
+ESevErrPeak,14.0,reports/bias_law/e7_corrected_conditioning.csv,peak error X-only
+ESevErrEnd,5.7,reports/bias_law/e7_corrected_conditioning.csv,error at largest dT X-only
+ESevRegLo,0.06,reports/bias_law/e7_corrected_conditioning.csv,regime nuisance min error
+ESevRegHi,0.10,reports/bias_law/e7_corrected_conditioning.csv,max
+ESevRegLam,0.51,reports/bias_law/e7_corrected_conditioning.csv,regime nuisance lambda
+CityDelhiATE,0.234,reports/synthesis/city_ordml_hourly.csv,Delhi ATE
+CityDelhiATESE,0.032,reports/synthesis/city_ordml_hourly.csv,Delhi ATE SE
+CityDelhiATEW,0.241,reports/synthesis/city_ordml_hourly.csv,"Delhi ATE, weighted-nuisance OR-DML"
+CityMaxATEDiff,0.12,reports/synthesis/city_ordml_hourly.csv,max |ATE posterior-adjusted - weighted| outside Kolkata
+CityDelhiRone,0.430,reports/synthesis/city_ordml_hourly.csv,Delhi regime 1
+CityDelhiRtwo,0.102,reports/synthesis/city_ordml_hourly.csv,Delhi regime 2
+CityLamMax,63.2,reports/synthesis/city_ordml_hourly.csv,max raw lambda
+CityLamMin,0.0012,reports/synthesis/city_ordml_hourly.csv,min raw lambda
+CityLamStdMin,0.20,reports/synthesis/city_ordml_hourly.csv,min std lambda
+CityLamStdMax,0.46,reports/synthesis/city_ordml_hourly.csv,max std lambda
+CityKolkataScrATE,3.32,reports/synthesis/city_ordml_hourly.csv,Kolkata screened ATE
+CityMumbaiATE,3.02,reports/synthesis/city_ordml_hourly.csv,Mumbai ATE
+CityMumbaiScrATE,0.38,reports/synthesis/city_ordml_hourly.csv,Mumbai screened ATE
+CityMumbaiN,"8,113",reports/synthesis/city_ordml_hourly.csv,Mumbai N
+CityMumbaiScrN,"6,256",reports/synthesis/city_ordml_hourly.csv,Mumbai screened N
+PlDelhiLead,0.072,reports/synthesis/city_placebo_hourly.csv,Delhi lead -1 effect
+PlDelhiLeadP,0.020,reports/synthesis/city_placebo_hourly.csv,p
+PlDelhiPeak,1.61,reports/synthesis/city_placebo_hourly.csv,Delhi max dynamic effect
+PlDelhiPeakH,6,reports/synthesis/city_placebo_hourly.csv,horizon of max
+PlKolkataP,0.0003,reports/synthesis/city_placebo_hourly.csv,Kolkata screened min placebo p
+AuMumbaiRun,277,reports/synthesis/city_audit_hourly.csv,Mumbai longest constant NO2 run (h)
+AuKolkataUniq,16,reports/synthesis/city_audit_hourly.csv,Kolkata distinct NO2
+AuHourlyMin,93,reports/synthesis/city_audit_hourly.csv,"% consecutive rows 1h apart, min"
+BstarDelhi,82,reports/bias_law/x23_real_hourly_fix.csv,Delhi robustness value (SD)
+BstarDelhiLo,54,reports/bias_law/x23_real_hourly_fix.csv,lo
+BstarDelhiHi,144,reports/bias_law/x23_real_hourly_fix.csv,hi
+PooledDelhi,0.37,reports/bias_law/x23_real_hourly_fix.csv,posterior-feature pooled Delhi
+PooledDelhiLo,0.29,reports/bias_law/x23_real_hourly_fix.csv,lo
+PooledDelhiHi,0.44,reports/bias_law/x23_real_hourly_fix.csv,hi
+LegacyDelhi,0.58,reports/bias_law/e5_real_city_sensitivity.csv,legacy 2-h grid Delhi

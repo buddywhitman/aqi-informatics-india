@@ -1,15 +1,14 @@
-# Core scientific & numerical computing
-numpy>=1.26.0,<2.3.0
-scipy>=1.11.0,<1.15.0
-pandas>=2.0.0,<2.3.0
-scikit-learn>=1.3.0,<1.6.0
-torch>=2.0.0,<2.5.0
+# Versions used to produce the submitted artifacts (Python 3.13). The fast reproduction path
+# (reproduce.sh without --full) needs only the packages in the first block.
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.1
+scikit-learn==1.9.1
+hmmlearn==0.3.3
+statsmodels==0.15.0
+matplotlib==3.11.2
+sympy==1.14.0
+joblib==1.6.0
 
-# Visualization & Reporting
-matplotlib>=3.7.0,<3.10.0
-seaborn>=0.12.0,<0.14.0
-pypdf>=3.0.0,<5.0.0
-
-# Utilities & Networking
-requests>=2.28.0,<3.0.0
-tqdm>=4.65.0,<5.0.0
+# Only for `reproduce.sh --full` (representation zoo: GRU / Transformer / SSM encoders)
+torch>=2.0

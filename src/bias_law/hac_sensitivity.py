@@ -2,6 +2,7 @@
 hac_sensitivity.py -- Newey-West lag sensitivity of the regime-specific OR-DML estimates (real data), on the corrected
 hourly grid (ext_real_hourly_fix.build) with the frozen-reading screen (>=6 identical NO2 readings removed).
 
+Uses OR-DML with posterior-adjusted nuisances (nuisance_mode='posterior'), the estimator of the paper.
 Replaces the unsupported "standard errors are stable across lags" statement of the previous draft with measured values.
     python src/bias_law/hac_sensitivity.py   ->  reports/bias_law/e6_hac_lag_sensitivity.csv
 """
@@ -32,7 +33,8 @@ def main():
         X, Z = d[CONTROLS].values.astype(float), d[REGIME_FEATURES].values.astype(float)
         for lag in LAGS:
             m = OverlapAwareRegimeDML(n_regimes=2, n_splits=5, embargo_tau=24, reg_alpha=0.05, posterior_mode='smooth',
-                                      nuisance_model=Ridge(alpha=1.0), hac_lag=lag, random_state=42).fit(Y, T, X, Z)
+                                      nuisance_model=Ridge(alpha=1.0), hac_lag=lag, random_state=42,
+                                      nuisance_mode='posterior').fit(Y, T, X, Z)
             for k in range(2):
                 th, se = float(m.theta_regimes_[k]), float(m.se_regimes_[k])
                 rows.append(dict(city=city, lag=lag, regime=k + 1, theta=th, se=se, z=th / se,
