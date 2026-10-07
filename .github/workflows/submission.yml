@@ -23,15 +23,16 @@ jobs:
       - name: Install LaTeX and poppler
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended poppler-utils
+          sudo apt-get install -y -qq texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-science poppler-utils
       - name: Numbers, tables, closed form and estimator invariances
         run: python verify_submission.py --no-artifacts
       - name: Manuscript compiles from committed sources
         run: |
           cd paper
           python build_appendix.py && python prune_bib.py
-          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null
-          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null || { tail -40 main.log; exit 1; }
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null || { tail -40 main.log; exit 1; }
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex > /dev/null || { tail -40 main.log; exit 1; }
           if grep -E "undefined references|Citation .* undefined|Reference .* undefined" main.log; then exit 1; fi
       - name: Committed artifacts (PDF, archive, anonymity)
         run: |
