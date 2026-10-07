@@ -26,7 +26,9 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install scientific dependencies
-        run: pip install numpy pandas scipy scikit-learn hmmlearn statsmodels matplotlib sympy joblib
+        run: pip install numpy pandas scipy scikit-learn hmmlearn statsmodels matplotlib seaborn sympy joblib
+      - name: Record execution environment
+        run: pip freeze > reports/synthesis/correction_environment.txt
       - name: Install manuscript tools
         run: |
           sudo apt-get update -qq

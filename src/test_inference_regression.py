@@ -75,6 +75,26 @@ class InferenceRegression(unittest.TestCase):
         score = rng.normal(size=(80, 2))
         np.testing.assert_allclose(hac(score + [3, -8], 4), hac(score, 4), atol=1e-12)
 
+    def test_decoupled_bootstrap_preserves_squared_weight_equation(self):
+        model = OverlapAwareRegimeDML(
+            n_regimes=2, n_splits=3, embargo_tau=3, n_inits=1,
+            nuisance_mode='posterior', nuisance_model=Ridge(),
+            weighting_mode='coupled', solve_mode='decoupled',
+            reg_lambda=0.08, hac_lag=3, random_state=7,
+            compute_bootstrap=True, n_boot=16, boot_block_len=11,
+        ).fit(self.Y, self.T, self.X, self.Z)
+        rng = np.random.RandomState(7)
+        boot = []
+        n = len(self.T)
+        for _ in range(16):
+            starts = rng.randint(0, n - 11 + 1, size=int(np.ceil(n / 11)))
+            ix = np.concatenate([np.arange(s, s + 11) for s in starts])[:n]
+            w, rt, ry = model.weights_[ix], model.tilde_T_.T[ix], model.tilde_Y_.T[ix]
+            boot.append((w * rt * ry).mean(0) /
+                        ((w ** 2 * rt ** 2).mean(0) + 0.08))
+        np.testing.assert_allclose(list(model.boot_se_regimes_.values()),
+                                   np.std(boot, axis=0), atol=1e-12)
+
 
 if __name__ == '__main__':
     unittest.main()
