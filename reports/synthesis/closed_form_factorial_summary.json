@@ -1,10 +1,10 @@
 {
   "n_cells_compared": 42,
-  "ratio_median": 0.9992259457205213,
-  "ratio_q25": 0.9929694222965496,
-  "ratio_q75": 1.0080966742346216,
-  "ratio_min": 0.9839845552065969,
-  "ratio_max": 1.022028837554594,
+  "ratio_median": 0.9992259457205214,
+  "ratio_q25": 0.9929694222965495,
+  "ratio_q75": 1.0080966742346218,
+  "ratio_min": 0.9839845552065962,
+  "ratio_max": 1.0220288375545938,
   "spearman_population_vs_observed": 1.0,
   "lambda_max_rel_diff": 0.011036325136960392,
   "peaks": [
@@ -48,8 +48,8 @@
   "lambda_inflation_smallest_sigma": 70.14222233577802,
   "lambda_smallest_sigma_eps0": 0.00284217504237479,
   "lambda_smallest_sigma_epsmax": 0.1993564737394518,
-  "err_smallest_sigma_peak": 320.140210801618,
-  "err_smallest_sigma_epsmax": 62.32874628520925,
+  "err_smallest_sigma_peak": 320.1402108016181,
+  "err_smallest_sigma_epsmax": 62.328746285209235,
   "spearman_cell_D_proxy": 0.9967587715744269,
   "spearman_cell_D_design": 0.9576917125381663,
   "symbolic": {

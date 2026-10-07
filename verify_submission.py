@@ -169,6 +169,16 @@ def check_zip():
             hits |= {(w, n) for w in FORBIDDEN if w.lower() in low}
     ok(not hits, 'archive text members anonymous' + (f' (found {sorted(hits)[:5]})' if hits else ''))
     ok(not any('/.git/' in n or n.endswith('.git') for n in names), 'archive has no git metadata')
+    stale = []
+    for member in names:
+        rel = member[len(pre):]
+        active = os.path.join(ROOT, rel)
+        if os.path.isfile(active) and rel.startswith(('paper/', 'src/')):
+            with open(active, 'rb') as f:
+                if f.read() != z.read(member):
+                    stale.append(rel)
+    ok(not stale, 'archive manuscript and code match the working tree'
+       + (f' (stale: {stale[:5]})' if stale else ''))
 
 
 if __name__ == '__main__':

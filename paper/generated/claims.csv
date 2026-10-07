@@ -217,7 +217,7 @@ ESevRegLam,0.51,reports/bias_law/e7_corrected_conditioning.csv,regime nuisance l
 CityMumbaiRemoved,"1,857",reports/synthesis/city_ordml_hourly.csv,complete cases removed by all frozen-run flags
 CityMumbaiRemovedPct,22.9,reports/synthesis/city_ordml_hourly.csv,percentage of complete cases removed by screen
 CityDelhiATE,0.234,reports/synthesis/city_ordml_hourly.csv,Delhi ATE
-CityDelhiATESE,0.032,reports/synthesis/city_ordml_hourly.csv,Delhi ATE SE
+CityDelhiATESE,0.029,reports/synthesis/city_ordml_hourly.csv,Delhi ATE SE
 CityDelhiATEW,0.241,reports/synthesis/city_ordml_hourly.csv,"Delhi ATE, weighted-nuisance OR-DML"
 CityMaxATEDiff,0.12,reports/synthesis/city_ordml_hourly.csv,max |ATE posterior-adjusted - weighted| outside Kolkata
 CityDelhiRone,0.430,reports/synthesis/city_ordml_hourly.csv,Delhi regime 1
@@ -232,7 +232,7 @@ CityMumbaiScrATE,0.38,reports/synthesis/city_ordml_hourly.csv,Mumbai screened AT
 CityMumbaiN,"8,113",reports/synthesis/city_ordml_hourly.csv,Mumbai N
 CityMumbaiScrN,"6,256",reports/synthesis/city_ordml_hourly.csv,Mumbai screened N
 PlDelhiLead,0.072,reports/synthesis/city_placebo_hourly.csv,Delhi lead -1 effect
-PlDelhiLeadP,0.020,reports/synthesis/city_placebo_hourly.csv,p
+PlDelhiLeadP,0.012,reports/synthesis/city_placebo_hourly.csv,p
 PlDelhiPeak,1.61,reports/synthesis/city_placebo_hourly.csv,Delhi max dynamic effect
 PlDelhiPeakH,6,reports/synthesis/city_placebo_hourly.csv,horizon of max
 PlKolkataP,0.0003,reports/synthesis/city_placebo_hourly.csv,Kolkata screened min placebo p
