@@ -1,0 +1,12 @@
+anchors, k=1, c=0                  miscal=0.000  OR-DML=1.011  MM raw=0.016  MM recal=0.045
+anchors, k=1.3, c=0                miscal=0.035  OR-DML=1.024  MM raw=0.431  MM recal=0.061
+anchors, k=0.7, c=0                miscal=0.051  OR-DML=1.001  MM raw=1.636  MM recal=0.037
+anchors, k=2, c=0                  miscal=0.084  OR-DML=1.059  MM raw=0.780  MM recal=0.062
+anchors, k=1, c=0.5                miscal=0.068  OR-DML=0.913  MM raw=1.150  MM recal=0.041
+anchors, k=1, c=-0.5               miscal=0.068  OR-DML=1.107  MM raw=0.761  MM recal=0.051
+anchors, k=0.5, c=-0.5             miscal=0.127  OR-DML=1.171  MM raw=3.234  MM recal=0.060
+NO anchors (probs in [0.05,0.95])  miscal=0.000  OR-DML=1.114  MM raw=0.023  MM recal=0.473
+NO anchors (probs in [0.15,0.85])  miscal=0.000  OR-DML=1.271  MM raw=0.042  MM recal=1.037
+NO anchors (probs in [0.3,0.7])    miscal=0.000  OR-DML=1.400  MM raw=0.042  MM recal=1.406
+anchors, k=2, weak treat. shift a=0.5 miscal=0.084  OR-DML=0.342  MM raw=0.240  MM recal=0.032
+anchors, k=2, weak treat. shift a=1.0 miscal=0.084  OR-DML=0.636  MM raw=0.434  MM recal=0.034
