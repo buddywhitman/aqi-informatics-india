@@ -49,3 +49,11 @@ bash reproduce.sh --full               # also reruns the long legacy benchmarks 
 `archive/manuscript_lineages/` holds the earlier manuscripts this paper consolidates: the submitted overlap-aware DML draft, the residual-state bias-law manuscript (with full proofs of the change-point and Wiener results summarized in Appendix G) and the pre-synthesis integrated draft. `research/` is the research ledger behind the phantom-resolution and directional-reliability results. Appendix Q of the paper lists every claim that changed during consolidation and why.
 
 Some result files in `reports/` come from legacy analyses that the paper no longer uses as evidence: the financial transfer, the policy simulation, failure forecasting and the imputation table on the two-hour grid. They are kept for transparency and are not referenced by any macro.
+
+## Corrected inference scope
+
+The current non-identification proof uses independent randomized treatment and verifies the entire observable probability table, including proxy sufficiency. It proves that the regime effect vector is unidentified; its average effect is shared and identified. Run `python src/synthesis/nonidentification_check.py`.
+
+The inference appendix now proves the posterior-adjusted coupled case under explicit sufficient boundedness, absolute-regularity and calibration conditions. The canonical HAC score matches the normal equation, is centered at the regularized proxy target, and includes effect--occupation cross-covariance for empirical-share aggregation. Run `python -m unittest discover -s src -p test_inference_regression.py -v`.
+
+Implemented intervals exclude HMM fitting uncertainty and structural latent bias. They do not certify structural coverage for full-sample smoothing. Compact benchmark ATE intervals treat empirical shares as fixed and their simulated coverage is a diagnostic. Legacy uncertainty columns and null-rejection percentages produced by the earlier canonical score calculation are retired; historical CSV files remain for provenance. No universal lower-bound claim is made for misspecified posterior Gini, and entropy/conditioning thresholds are abstention heuristics rather than identification tests.

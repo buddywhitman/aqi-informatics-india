@@ -5,7 +5,7 @@ Run: python -m unittest discover -s src -p 'test_inference_regression.py' -v
 import unittest
 import numpy as np
 from sklearn.linear_model import Ridge
-from or_dml import OverlapAwareRegimeDML
+from or_dml import OverlapAwareRegimeDML, estimate_optimal_embargo
 from synthesis.estimators import hac
 
 
@@ -74,6 +74,13 @@ class InferenceRegression(unittest.TestCase):
         rng = np.random.default_rng(13)
         score = rng.normal(size=(80, 2))
         np.testing.assert_allclose(hac(score + [3, -8], 4), hac(score, 4), atol=1e-12)
+
+    def test_embargo_search_cap_does_not_truncate_logarithmic_floor(self):
+        rng = np.random.default_rng(27)
+        x = rng.normal(size=(200, 2))
+        z = rng.normal(size=(200, 1))
+        tau = estimate_optimal_embargo(x, z, max_tau=8, c_log=10)
+        self.assertGreaterEqual(tau, int(np.ceil(10 * np.log(200))))
 
     def test_decoupled_bootstrap_preserves_squared_weight_equation(self):
         model = OverlapAwareRegimeDML(

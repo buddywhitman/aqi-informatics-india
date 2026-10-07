@@ -214,6 +214,8 @@ ESevErrEnd,5.7,reports/bias_law/e7_corrected_conditioning.csv,error at largest d
 ESevRegLo,0.06,reports/bias_law/e7_corrected_conditioning.csv,regime nuisance min error
 ESevRegHi,0.10,reports/bias_law/e7_corrected_conditioning.csv,max
 ESevRegLam,0.51,reports/bias_law/e7_corrected_conditioning.csv,regime nuisance lambda
+CityMumbaiRemoved,"1,857",reports/synthesis/city_ordml_hourly.csv,complete cases removed by all frozen-run flags
+CityMumbaiRemovedPct,22.9,reports/synthesis/city_ordml_hourly.csv,percentage of complete cases removed by screen
 CityDelhiATE,0.234,reports/synthesis/city_ordml_hourly.csv,Delhi ATE
 CityDelhiATESE,0.032,reports/synthesis/city_ordml_hourly.csv,Delhi ATE SE
 CityDelhiATEW,0.241,reports/synthesis/city_ordml_hourly.csv,"Delhi ATE, weighted-nuisance OR-DML"

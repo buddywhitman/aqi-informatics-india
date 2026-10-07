@@ -460,6 +460,12 @@ def main(outdir):
     tabs['tab_cities'] = '\n'.join(lines)
     s = 'reports/synthesis/city_ordml_hourly.csv'
     gc = lambda c, col, scr=False, reg=1: co[(co.city == c) & (co.frozen_screen == scr) & (co.regime == reg)][col].iloc[0]  # noqa: E731
+    n_mumbai = int(gc('Mumbai', 'N'))
+    n_mumbai_screened = int(gc('Mumbai', 'N', scr=True))
+    L.add('CityMumbaiRemoved', n_mumbai - n_mumbai_screened, s,
+          'complete cases removed by all frozen-run flags', '{:,}')
+    L.add('CityMumbaiRemovedPct', 100 * (n_mumbai - n_mumbai_screened) / n_mumbai, s,
+          'percentage of complete cases removed by screen', '{:.1f}')
     L.add('CityDelhiATE', gc('Delhi', 'ate'), s, 'Delhi ATE'); L.add('CityDelhiATESE', gc('Delhi', 'ate_se'), s, 'Delhi ATE SE')
     L.add('CityDelhiATEW', gc('Delhi', 'ate_weighted'), s, 'Delhi ATE, weighted-nuisance OR-DML')
     L.add('CityMaxATEDiff', float((co.ate - co.ate_weighted).abs()[co.city != 'Kolkata'].max()), s, 'max |ATE posterior-adjusted - weighted| outside Kolkata', '{:.2f}')

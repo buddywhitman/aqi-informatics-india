@@ -204,7 +204,11 @@ class LatentRegimeHMM:
 
 
 def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 24, c_log: float = 2.0) -> int:
-    """Estimate optimal embargo buffer tau* per Eq. 17 using Bartlett 95% autocorrelation bound and C*log(N)."""
+    """Choose an operational embargo from finite-lag ACF bands and a log floor.
+
+    max_tau limits the ACF search, not the final embargo. These bands do not
+    estimate or certify the absolute-regularity exponent in the inference proof.
+    """
     N = len(X)
     crit = 1.96 / np.sqrt(N)
     V = np.column_stack([X, Z])
@@ -218,10 +222,10 @@ def estimate_optimal_embargo(X: np.ndarray, Z: np.ndarray, max_tau: int = 24, c_
         corr_h = np.abs(cov_h / var_V)
         if np.any(corr_h >= crit):
             significant_lags.append(h)
-    bartlett_tau = max(significant_lags)
+    bartlett_tau = max(significant_lags) + 1
     min_log_tau = int(np.ceil(c_log * np.log(max(N, 2))))
     tau_star = max(bartlett_tau, min_log_tau, 1)
-    return int(min(tau_star, max_tau))
+    return int(tau_star)
 
 
 class PurgedBlockKFold:

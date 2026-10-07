@@ -39,7 +39,7 @@ from sklearn.model_selection import KFold
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
 from src.bias_law.ext_real_hourly_fix import build              # noqa: E402
-from src.synthesis.estimators import coupled_posterior            # noqa: E402
+from src.synthesis.estimators import coupled_posterior, hac            # noqa: E402
 
 warnings.filterwarnings('ignore')
 OUT = os.path.join(ROOT, 'reports', 'synthesis')
@@ -99,16 +99,6 @@ def purged(n, k=5, emb=24):
     for i in range(k):
         te = np.arange(e[i], e[i + 1])
         yield np.r_[0:max(0, e[i] - emb), min(n, e[i + 1] + emb):n], te
-
-
-def hac(psi, L=24):
-    psi = np.asarray(psi) - np.mean(psi, axis=0)
-    n = len(psi)
-    om = psi.T @ psi / n
-    for l in range(1, L + 1):
-        G = psi[l:].T @ psi[:-l] / n
-        om += (1 - l / (L + 1)) * (G + G.T)
-    return om
 
 
 def single_index(X, T, Y, folds):
