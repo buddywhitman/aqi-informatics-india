@@ -21,13 +21,13 @@ def ordml_pa(g, X, T, Y):
 
 def mm(g, X, T, Y):
     """Regress every moment of Z=(1,X,T) and Z*Y on (1-g, g): coefficients are regime-conditional moments."""
-    Z = np.c_[np.ones(len(g)), X, T]; W = np.c_[1-g, g]
+    Z = np.c_[np.ones(len(g)), X.reshape(len(g), -1), T]; W = np.c_[1-g, g]; d = Z.shape[1]
     ZZ = np.einsum('ni,nj->nij', Z, Z).reshape(len(g), -1); ZY = Z*Y[:, None]
-    A = np.linalg.lstsq(W, np.c_[ZZ, ZY], rcond=None)[0]       # 2 x (9+3)
+    A = np.linalg.lstsq(W, np.c_[ZZ, ZY], rcond=None)[0]
     th = []
     for s in range(2):
-        M = A[s, :9].reshape(3, 3); c = A[s, 9:]
-        th.append(np.linalg.solve(M, c)[2])
+        M = A[s, :d*d].reshape(d, d); c = A[s, d*d:]
+        th.append(np.linalg.solve(M, c)[-1])
     return np.array(th)
 
 if __name__ == '__main__':

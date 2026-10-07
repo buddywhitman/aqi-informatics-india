@@ -9,9 +9,10 @@ sig = lambda x: 1/(1+np.exp(-x)); logit = lambda p: np.log(p/(1-p))
 def recal(g, X, T, K=10, lo_q=0.01, hi_q=0.99):
     knots = np.quantile(g, np.linspace(0, 1, K+1)[1:-1])
     B = np.c_[g, *[np.maximum(g-k, 0) for k in knots]]
-    F = np.c_[np.ones(len(g)), X, B]
+    X2 = X.reshape(len(g), -1)
+    F = np.c_[np.ones(len(g)), X2, B]
     coef = np.linalg.lstsq(F, T, rcond=None)[0]
-    f = B @ coef[2:]
+    f = B @ coef[1 + X2.shape[1]:]
     order = np.argsort(g); iso = IsotonicRegression(increasing='auto').fit(g[order], f[order])
     fi = iso.predict(g)
     flo, fhi = np.quantile(fi, lo_q), np.quantile(fi, hi_q)
