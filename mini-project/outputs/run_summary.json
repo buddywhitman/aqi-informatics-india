@@ -1,0 +1,24 @@
+{
+  "city": "Delhi",
+  "station": "Alipur, Delhi - DPCC",
+  "period_start": "2024-11-01 00:00:00",
+  "period_end": "2024-11-30 23:00:00",
+  "observations": 701,
+  "pm25_observations": 701,
+  "no2_observations": 701,
+  "weather_matched_observations": 701,
+  "status_counts": {
+    "Normal": 666,
+    "Watch": 35,
+    "Suspicious": 0
+  },
+  "median_pollution_index_proxy": 102.56,
+  "max_pollution_index_proxy": 163.8,
+  "highest_scored_case": null,
+  "chart_files": [
+    "pollution_timeline.html",
+    "severity_vs_suspicion.html",
+    "pollution_weather_context.html"
+  ],
+  "index_note": "Exploratory city-relative proxy; not India's regulatory AQI."
+}

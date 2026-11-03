@@ -1,0 +1,457 @@
+Data Driven Detection ofAnomalous Pollution Spikes
+
+An hourly investigation of when a pollution reading deserves a second look
+
+REAL CPCB MONITORING DATA  •  WEATHER CONTEXT  •  TRANSPARENT PYTHON SCORING
+
+PROJECT DETAILS
+
+Course
+
+Data Science Using Python
+
+Project question
+
+When should an observed pollution spike be reviewed more closely?
+
+Study location
+
+Alipur monitoring station, Delhi, India
+
+Study period
+
+1–30 November 2024 (hourly; Indian Standard Time)
+
+Prepared by
+
+[Add student names and roll numbers]
+
+Submitted to
+
+[Professor / department]
+
+Project report and single-file Python implementation
+
+Executive Summary
+
+This project builds a small, reproducible data-science investigation to screen hourly air-pollution observations for unusual patterns. It asks whether a high reading is consistent with recent conditions, the second pollutant, and available weather context. The result is an interpretable AQI Suspicion Score with Normal, Watch, and Suspicious labels; it is a review aid, not a verdict about whether a sensor reading is true or false.
+
+The analysis uses real CPCB station readings distributed by the India Air Quality Database (XKDR Forum), paired by local hour with Open-Meteo historical weather. The selected slice contains 701 complete PM2.5 and NO2 observations from Alipur, Delhi, during November 2024. Weather was available for all 701 observation hours. The reported status counts are 666 Normal, 35 Watch, and 0 Suspicious. The highest score is 45/100, assigned to several hours during a very high PM2.5 episode because the index is extreme relative to this month and PM2.5 differs strongly from NO2.
+
+The principal result is methodological: the supplied project formula is transparent and easy to explain, but the 100% relative-jump condition did not occur in this month after standardizing pollutants and rescaling them to a 0–500 proxy. The project therefore exposes a threshold-calibration issue rather than manufacturing a Suspicious case. It also demonstrates why analysts must inspect score components and retain the raw pollutant observations.
+
+1. Introduction
+
+Air-quality monitoring systems compress complex environmental conditions into a set of measurements. A sharp rise may reflect a genuine pollution event, local accumulation, a short-lived emissions source, instrument behaviour, a data-transfer problem, or a combination of causes. A single pollutant value cannot distinguish among these explanations. A simple data-quality screen can help identify observations that merit inspection by a human analyst.
+
+This mini-project follows the workflow described in the supplied aqi-informatics-india project material: grouped time-series processing, lags and rolling statistics, city-relative pollutant standardization, weather context, an interpretable score, and interactive visual analysis. The analysis is intentionally narrower than a multi-city research pipeline so the data source, score, and limitations can be explained and reproduced in a classroom setting.
+
+2. Problem Statement
+
+For each observed hour at one Delhi monitoring station, calculate how unusual the current pollution pattern is compared with the recent six-hour baseline; compare PM2.5 and NO2 behaviour; and check whether low wind makes accumulation more plausible. Classify each hour as Normal, Watch, or Suspicious. The project does not estimate future AQI and does not claim to diagnose faults or identify pollution causes.
+
+3. Data and Dataset Use
+
+The project uses two real-world data sources. Air-quality readings are hourly measurements from the CPCB Continuous Ambient Air Quality Monitoring network, distributed through the XKDR Forum India Air Quality Database. The dataset is not dummy or simulated: each row originates from a monitoring station record. For a compact reproducible demonstration, the script queries station site_5024 (Alipur, Delhi – DPCC) for November 2024 and the PM2.5 and NO2 parameters. The public demo key is documented by the database and is limited to 2024 and 10,000 rows per query.
+
+Weather is historical ERA5 reanalysis provided through Open-Meteo for the station coordinates and the same dates, in Asia/Kolkata time. ERA5 combines observations with a numerical weather model to provide a spatially complete estimate; these weather values are not measurements from the air-quality monitor itself. The nearest grid-cell series is joined to each pollutant record by timestamp.
+
+Source
+
+Fields used
+
+How the project uses it
+
+CPCB CAAQM readings via XKDR
+
+station_id, parameter_name, period_start, mean, unit
+
+Hourly PM2.5 and NO2 readings; pivot to one row per station-hour; preserve the original values for result tables.
+
+Open-Meteo Historical Weather
+
+time, temperature_2m, relative_humidity_2m, surface_pressure, wind_speed_10m
+
+Join on IST timestamp. Wind is used in the score; temperature, humidity and pressure are kept as contextual variables for inspection or future extensions.
+
+Project repository workflow
+
+city, pm25, no2, weather, rolling features, time series visualizations
+
+Provides the project logic and naming conventions reflected in the script; the processed CSV shown in the prompt is not bundled with the assignment document.
+
+Data preparation and scope
+
+The selected month has 744 possible hourly slots. The source returned 701 hours with both pollutants, or 94.2% coverage. Missing hours are left missing; the script does not fill them with synthetic values. This avoids creating artificial spikes or smooth trends. The analysis is station-specific and month-specific, so city-relative statistics mean “relative to Alipur during this selected month,” not a long-term Delhi norm.
+
+The source API reports the selected station’s timestamps in Indian Standard Time. The weather request uses Asia/Kolkata so the join is aligned to local time. The script checks the required air-data columns, coerces pollutant and weather values to numeric types, aligns the hourly series, and saves both downloaded source files for reproducibility.
+
+4. Methodology
+
+The workflow turns the source readings into a sequence of transparent features. It uses pandas for tabular cleaning and grouped rolling calculations, NumPy for numeric score operations, and Plotly when installed for interactive figures. The supplied script also creates static PNG charts when Plotly is unavailable.
+
+Step
+
+Operation
+
+Reason
+
+1. Acquire
+
+Fetch a station-month CSV from the public CPCB-derived API and hourly weather from Open-Meteo.
+
+Use real measurements and a same-period weather record.
+
+2. Clean and align
+
+Parse timestamps; convert values to numeric; pivot pollutants to columns; left-join weather by hourly IST timestamp.
+
+Create one analysis row per observed station-hour without fabricating data.
+
+3. Standardize
+
+Compute each pollutant’s city/station-slice median and interquartile range (IQR).
+
+Compare departures from the station’s own distribution.
+
+4. Build index
+
+Average the PM2.5 and NO2 standardized values and rescale to a 0–500 presentation proxy.
+
+Summarize two pollutants on a single readable axis; explicitly not regulatory AQI.
+
+5. Measure recent change
+
+Calculate the preceding six-hour rolling median and median absolute deviation (MAD), plus jump and relative-jump scores.
+
+Use a robust local baseline that is less affected by an extreme value than a mean.
+
+6. Add context and flags
+
+Mark low wind, top-five-percent index values, large relative jumps, and pollutant disagreement.
+
+Make each score component inspectable.
+
+7. Score and present
+
+Add weighted flags, assign a status, save results and charts.
+
+Deliver a repeatable case-screening workflow.
+
+Why a six-hour rolling median?
+
+A rolling median resists the influence of one very high or low observation. The calculation uses shift(1), so the hour being evaluated is excluded from its own baseline. The first two hours do not have the minimum three prior observations needed for the rolling features; those rows remain in the output, and their jump flags are off because their jump values are unavailable.
+
+The wind feature is deliberately modest. Low wind can reduce near-surface dispersion and make pollutant accumulation more plausible, but wind alone cannot establish the cause of an event. The feature is used as supporting context, not as a causal claim.
+
+5. Features and AQI Suspicion Score
+
+The script uses a deterministic weighted rule rather than fitting a black-box classifier. This is appropriate for a classroom screen because the user can explain exactly why a row receives points. The output is an AQI Suspicion Score (0–100) even though the underlying Pollution Severity Index is not an official AQI.
+
+Feature
+
+Definition in the script
+
+Points / use
+
+PM2.5 severity
+
+(PM2.5 − station median) / station IQR
+
+Input to combined Pollution Severity Index.
+
+NO2 severity
+
+(NO2 − station median) / station IQR
+
+Input to combined Pollution Severity Index.
+
+Pollution Severity Index
+
+clip(100 + 25 × mean(PM2.5 severity, NO2 severity), 0, 500)
+
+Exploratory standardized proxy; not CPCB AQI.
+
+Extreme flag
+
+Proxy index exceeds the station-period 95th percentile
+
+35 points.
+
+Large-jump flag
+
+Absolute difference from prior 6-hour median / (median + 1) > 1.0
+
+35 points.
+
+Unsupported-spike flag
+
+Relative jump > 1.0 and wind is not below 60% of station-period median wind
+
+20 points.
+
+Pollutant-disagreement flag
+
+Absolute difference between PM2.5 and NO2 severity > 2
+
+10 points.
+
+Score = 35 × extreme flag + 35 × large-jump flag + 20 × unsupported-spike flag + 10 × disagreement flag.
+
+Score range
+
+Class
+
+Meaning
+
+0–30
+
+Normal
+
+No or limited evidence under the selected rules.
+
+31–65
+
+Watch
+
+At least one notable rule is active; inspect context.
+
+Above 65
+
+Suspicious
+
+Several weighted conditions coincide; request a second look.
+
+Interpretation safeguard
+
+A high score indicates unusualness under the chosen rules; it does not prove sensor error, deliberate manipulation, or the source of emissions. A true pollution episode can be unusual and still be valid. Every flagged row must be checked against station metadata, neighbouring monitors, instrument logs, and the original provider before operational use.
+
+6. Python Code and How to Run It
+
+The companion file pollution_spike_investigation.py is a single executable script. It downloads the real source slice by default, runs cleaning and feature engineering, prints a summary, and saves the scored data and three charts. No separate dataset download is required when the machine has internet access.
+
+Run steps
+
+Install Python 3.10 or later.
+
+Install dependencies: pip install pandas numpy matplotlib plotly
+
+Run: python pollution_spike_investigation.py
+
+Open outputs/pollution_timeline.html, outputs/severity_vs_suspicion.html, and outputs/pollution_weather_context.html to present the interactive graphs. If Plotly is absent, static PNG files are produced instead.
+
+The raw air CSV and weather JSON are cached in outputs/raw_data; scored observations, case table and run summary are also saved in outputs.
+
+Core analysis sequence
+
+pollutant severity = (value − station median) / station IQR
+
+pollution proxy = clip(100 + 25 × mean(PM2.5 severity, NO2 severity), 0, 500)
+
+recent baseline = median of up to six prior hourly proxy values
+
+jump ratio = absolute deviation from recent baseline / (recent baseline + 1)
+
+score = weighted sum of extreme, jump, wind-context and pollutant-disagreement flags
+
+The script writes hourly_scored_observations.csv with all raw fields, derived features, score components, and class labels; suspicious_cases.csv with the highest Suspicious rows (empty in this run); and run_summary.json with counts and the top scored case. If the professor requests an offline run, the script accepts --air-csv and --weather-json paths for the already-fetched real source files.
+
+Reproducible offline example: python pollution_spike_investigation.py --air-csv outputs/raw_data/delhi_cpcb_hourly_nov2024.csv --weather-json outputs/raw_data/delhi_weather_nov2024.json
+
+7. Results
+
+The November 2024 query returned 701 paired station-hours from a possible 744. All 701 pollutant rows matched an hourly weather value. The observed PM2.5 median was 249.0 µg/m³ and the 95th percentile was 619.0 µg/m³; the NO2 median was 51.55 µg/m³. These are the returned station values and should be checked against the provider’s live dataset before reuse, because provider data can be updated.
+
+Run metric
+
+Observed result
+
+Station / period
+
+Alipur, Delhi – DPCC / 1–30 Nov 2024 IST
+
+Usable hourly rows
+
+701 of 744 possible hours (94.2%)
+
+Weather matches
+
+701 of 701 pollutant rows
+
+Status counts
+
+Normal 666  |  Watch 35  |  Suspicious 0
+
+Pollution Severity Index proxy
+
+Median 102.56  |  maximum 163.80
+
+Highest score
+
+45 out of 100
+
+Figure 1. Hourly Pollution Severity Index proxy at Alipur. Amber markers show Watch observations; none crossed the Suspicious threshold.
+
+The timeline shows several clustered high-index hours in mid-November rather than one isolated point. This is consistent with a sustained episode in the station record. The score labels the highest observations Watch, not Suspicious, because the large-jump and unsupported-spike rules did not activate.
+
+7. Results Continued: Case Review
+
+The highest-scoring rows receive 45 points from two active components: 35 points for exceeding the month’s 95th-percentile proxy value and 10 points for strong disagreement between standardized PM2.5 and NO2. The score does not award jump points because the relative jump remains below 1.0 (a 100% increase over the rolling index baseline).
+
+Timestamp (IST)
+
+PM2.5 (µg/m³)
+
+NO2 (µg/m³)
+
+Index proxy
+
+Relative jump
+
+Score / label
+
+13 Nov 2024 01:00
+
+713.0
+
+51.35
+
+142.56
+
+0.101
+
+45 / Watch
+
+13 Nov 2024 02:00
+
+699.0
+
+47.50
+
+139.55
+
+0.010
+
+45 / Watch
+
+13 Nov 2024 03:00
+
+887.0
+
+63.08
+
+163.80
+
+0.171
+
+45 / Watch
+
+13 Nov 2024 04:00
+
+860.0
+
+60.78
+
+160.29
+
+0.134
+
+45 / Watch
+
+Figure 2. Proxy severity versus score. Watch observations group at scores of 35 and 45; the selected rule thresholds yielded no Suspicious rows.
+
+What this case suggests
+
+The high PM2.5 values and strong pollutant disagreement merit review against nearby stations and instrument records. They do not by themselves indicate a bad reading: particulate matter and NO2 can respond differently to emissions, weather, source mix and station location. The plot also makes clear that a top-period value is not automatically a suspicious observation under the scoring rule.
+
+Weather Context, Limitations and Discussion
+
+Figure 3. Pollution Severity Index proxy and Open-Meteo ERA5 wind speed (km/h), joined by IST hour.
+
+Wind context is shown alongside the pollution proxy because low wind can be compatible with local accumulation. The weather values are gridded reanalysis estimates rather than readings at the DPCC monitor. The code also retains temperature, relative humidity and surface pressure, but they are not included in the weighted score. This prevents the project from implying that it has built a complete atmospheric model.
+
+Limitations and risks to interpretation
+
+Single station and one month: station-period medians and IQRs are not long-term or city-wide normal conditions.
+
+Non-regulatory index: the Pollution Severity Index is a standardized comparison aid. It is not the Indian National AQI and must not be used for health advice or regulatory reporting.
+
+Threshold sensitivity: the 100% relative-jump threshold operates on a rescaled index. In this run, the proxy stayed between 66.4 and 163.8 and no jump exceeded the threshold; no Suspicious class was produced. Thresholds should be evaluated against labelled historical episodes and neighbouring monitors before deployment.
+
+Weather uncertainty: ERA5 reanalysis is spatially gridded and model-assisted. The low-wind check is exploratory and cannot prove causality.
+
+Provider and instrument uncertainty: monitoring records can have gaps, calibration issues or preliminary values. The screening score does not replace source validation or instrument logs.
+
+Recommended next analysis
+
+For a stronger follow-up, extend the same workflow across multiple Delhi stations and several seasons; compare synchronized readings from nearby monitors; calibrate thresholds using documented maintenance events and known pollution episodes; and report sensitivity and false-positive rates. Keep the simple score as an interpretable baseline while validating whether it improves review prioritization.
+
+8. Conclusion
+
+This project presents an end-to-end, real-data screening workflow for hourly pollution spikes. It obtains CPCB-derived PM2.5 and NO2 readings, aligns them with historical weather, builds city-relative pollutant features and a robust recent baseline, calculates an interpretable score, and saves graphs and case tables for review.
+
+In the Alipur November 2024 run, 35 of 701 observations were labeled Watch and none were labeled Suspicious. The highest score was 45/100. The mid-November PM2.5 rise is visible in the timeline and deserves contextual review, while the absence of Suspicious labels reveals that the supplied relative-jump threshold is poorly matched to the standardized index for this sample. The next step is not to force a higher label; it is to validate thresholds against multiple stations, longer history and trusted episode labels.
+
+The central conclusion is that an extreme concentration and a suspicious measurement are different questions. This project helps identify observations that deserve a second look; it cannot decide whether a reading is true, false, or caused by a specific source.
+
+9. Contribution of Four Project Members
+
+Replace Member 1–4 with the actual names and adjust the role descriptions to match the work each person completed. These are proposed task allocations, not claims about contributions already made.
+
+Member
+
+Contribution area
+
+Expected deliverable
+
+Member 1: [Name]
+
+Dataset acquisition and documentation
+
+Query the real CPCB-derived records, record source fields, units, dates and missingness.
+
+Member 2: [Name]
+
+Cleaning and feature engineering
+
+Prepare hourly joins, grouped medians/IQRs, rolling median/MAD, and time encodings if extended.
+
+Member 3: [Name]
+
+Scoring and validation
+
+Implement the transparent score, inspect threshold behaviour and document false-positive/false-negative risks.
+
+Member 4: [Name]
+
+Visualization and report/presentation
+
+Create and explain the timeline, scatter and weather plots; assemble references and present the findings.
+
+Presentation sequence
+
+Open with a high PM2.5 hour and ask whether the class would trust it. Reveal that a high value alone is not enough: compare its local history, the second pollutant, and weather context. Show the timeline, score components and a Watch case. Close by emphasizing that a screening flag requests investigation; it does not declare a value fake.
+
+10. References
+
+[1] Buddy Whitman, aqi-informatics-india repository, project workflow reference supplied in the assignment. https://github.com/buddywhitman/aqi-informatics-india (accessed 28 October 2026).
+
+[2] XKDR Forum. India Air Quality Database and public API documentation. Hourly measurements from CPCB CAAQM stations and US Embassy monitors; the documented demo key is limited to 2024 and 10,000 rows per query. https://airquality.xkdr.org/ and https://github.com/xKDR/Air-Quality-Database/blob/main/docs/PUBLIC_API.md (accessed 28 October 2026).
+
+[3] Central Pollution Control Board (CPCB), Continuous Ambient Air Quality Monitoring Network (CAAQM). Source monitoring network identified by the India Air Quality Database. https://cpcb.nic.in/ (accessed 28 October 2026).
+
+[4] Open-Meteo. Historical Weather API documentation. ERA5 and ERA5-Land historical weather products and hourly variables. https://open-meteo.com/en/docs/historical-weather-api (accessed 28 October 2026).
+
+[5] Open-Meteo. Historical Weather API endpoint. https://archive-api.open-meteo.com/v1/archive (queried for the period in this report).
+
+[6] pandas documentation. https://pandas.pydata.org/docs/ (accessed 28 October 2026).
+
+[7] NumPy documentation. https://numpy.org/doc/ (accessed 28 October 2026).
+
+[8] Plotly Python documentation. https://plotly.com/python/ (accessed 28 October 2026).
+
+Data and interpretation note
+
+The data provider describes the records as source-network readings and states that they may be preliminary and are not validated for regulatory, legal or health decisions. The project follows that limitation. All conclusions in this report are exploratory and specific to the returned station-month sample.
+
+Source citations and run values were checked against the actual API responses used to produce the included result tables and graphs. Because the API can be updated, rerunning the script may change the last few reported values or score counts.

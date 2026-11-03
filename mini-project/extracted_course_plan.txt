@@ -1,0 +1,461 @@
+--- PAGE 1 ---
+   
+Page 1 of 5 
+ MIT/QA/Gen/UGCPT-F01/2026/R00 
+  
+B.Tech. in Electrical Engineering 
+COURSE PLAN: THEORY COURSE 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+Mapping of Course Outcomes (COs)/Course Learning Outcomes (CLOs) #  
+CO/
+CLO Statements 
+No. of 
+Contact 
+Hours 
+Marks 
+Program 
+Outcomes 
+(POs) 
+ 
+Learning 
+Outcomes
+# 
+ 
+BL* 
+(Recom
+mended) 
+1 Apply Python data analysis 
+libraries and frameworks. 7 22 1,5,7,8,11 1,3,17,18 2,3,4 
+2 Analyze data using inferential 
+statistics and probability. 8 22 1,2,5,7 1,2,3,17, 18 3,4 
+3 Analyze data by applying statistical 
+tools and techniques. 8 22 1,2,5,7 1,2,3,17, 18 3,4 
+4 
+Analyze data models using 
+supervised learning algorithms of          
+regression & classification. 
+8 22 1,2,5,7,8,9,1
+1 
+1,2,3,4,17, 
+18 3,4,5 
+5 
+Analyze data models using 
+dimensionality reduction & 
+unsupervised learning algorithms. 
+5 12 1,2,5,7 1,2,3,4,17, 
+18 3,4,5 
+ Total 36 100    
+# Applicable to IET Accredited Programs Only 
+*Preferred BL levels are above 3 (apply)  
+Course Articulation Matrix 
+ 
+PO1 
+PO2 
+PO3 
+PO4 
+PO5 
+PO6 
+PO7 
+PO8 
+PO9 
+PO10 
+PO11 
+PSO1 
+PSO2 
+PSO3 
+CO1 2    3  1 1   1   3 
+CO2 3 3   3  1       2 
+CO3 3 3   3  1       2 
+CO4 3 3   3  1 1 1  1   3 
+CO5 3 3   3  1       3 
+Average 
+Articulation 
+Level  
+2.8 3   3  1 1 1  1   2.6 
+ 
+School Name School of Elerctrical Engineering 
+Course Name  Introduction to Data Science 
+Course Code ELE 4449 Semester VII Core / PE / OE PE 
+Name of the faculty  Bharathi R. B. 
+L T P C 
+3 0 0 3 
+No of contact hours/week: 
+
+--- PAGE 2 ---
+   
+Page 2 of 5 
+ MIT/QA/Gen/UGCPT-F01/2026/R00 
+Module Matrix# 
+ 
+LO1 
+LO2 
+LO3 
+LO4 
+LO5 
+LO6 
+LO7 
+LO8 
+LO9 
+LO10 
+LO11 
+LO12 
+LO13 
+LO14 
+LO15 
+LO16 
+LO17 
+LO18 
+CLO1 B  B              B B 
+CLO2 B B B              B B 
+CLO3 B B B              B B 
+CLO4 B B B B             B B 
+CLO5 B B B B             B B 
+# Applicable to IET Accredited Programs Only. Fill with B or C  
+ Delivery and Assessment Plan of LOs# 
+Learning Outcome (LO) mapped to the course 
+Delivery and assessment Plan 
+LO LO statement 
+   1 Knowledge and Understanding 
+Fundamental knowledge of data science concepts, 
+Python programming, data analysis libraries, statistical 
+methods, probability, machine learning, and tutorials, 
+and laboratory 
+Assessment: Assignments, quizzes, laboratory 
+exercises, and written examinations. 
+2 Engineering Analysis 
+Analyze datasets using inferential statistics, 
+probability, statistical tools, regression, classification, 
+clustering 
+Assessment: Assignments, quizzes, programming 
+assignments, and written examinations. 
+3 Design/Development of Solutions 
+Students develop Python -based data analysis and 
+machine learning solutions by selecting appropriate 
+preprocessing methods, statistical techniques, 
+supervised and unsupervised learning algorithms for 
+different datasets.  
+Assessment: Mini-projects, programming assignments, 
+laboratory assessments, and project evaluation. 
+4 Investigation 
+Investigate real -world datasets by collecting, 
+preprocessing, visualizing, analyzing, and interpreting 
+data using statistical and machine learning techniques.  
+Assessment: Laboratory experiments, case studies, 
+project reports. 
+L17 Planning Skills 
+Students plan and execute data analysis workflows, 
+organize datasets, select suitable algorithms, manage 
+project timelines, and document the analysis process 
+during laboratory exercises and mini-projects.  
+Assessment: Project planning, laboratory records, 
+assignments, and project evaluation. 
+L18 Continuous Professional Development  
+Students develop self -learning skills by exploring 
+emerging Python libraries, machine learning 
+techniques, and recent advancements in data science 
+through independent study, online resources, and 
+project work.  
+Assessment: Self -learning assignments, seminar 
+presentations, project work, and continuous internal 
+assessment. 
+# Applicable to IET Accredited Programs Only
+--- PAGE 3 ---
+   
+Page 3 of 5 
+ MIT/QA/Gen/UGCPT-F01/2026/R00 
+Assessment Plan 
+In – Semester Assessments 
+(MISAC: Mandatory In-Semester Assessment Component and FISAC: Flexible In-Semester Assessment Component) 
+S. 
+No. 
+ 
+Assessment Mode 
+ 
+No. Assessment 
+Method 
+Time 
+Duration 
+Marks / 
+Weightage 
+ 
+Pattern Typology of 
+Questions 
+ 
+Schedule 
+ 
+Topics Covered 
+ 
+1 
+ 
+MISAC 1 
+ 
+1 
+ 
+Quiz 
+ 
+15 Min 
+ 
+5 
+(5 %) 
+ 
+Objective: 5 M 
+(10 MCQs × 0.5) 
+ 
+Bloom’s Level: 
+2, 3 
+      August 18th, 2026 
+ 
+ 
+Covering L1 – L6 
+(CO1) 
+ 
+ 
+2 
+ 
+ 
+MISAC 2 
+ 
+ 
+1 
+ 
+ 
+Mid-Term 
+Exam 
+ 
+ 
+120 Min 
+ 
+ 
+30 
+(30 %) 
+Objective: 5 M 
+(10 MCQs × 0.5) 
+Descriptive: 25 M 
+(5 x 3 M) + (2 x 4 M) + 
+(1 x 2 M) 
+ 
+ 
+Bloom’s Level: 
+2, 3, 4 
+ 
+ 
+17th Sep 2026 
+ 
+Comprehensive Examination 
+Covering L1 – L14 
+Students are expected to 
+answer all questions. 
+(CO1, CO2) 
+ 
+3 
+ 
+MISAC 3 
+ 
+1 
+ 
+Surprise 
+Assignment 
+ 
+20 Min 5 
+(5 %) 
+Descriptive:5M 
+questions  
+(2M+3 M) 
+Bloom’s Level: 
+2, 3 
+Oct 18th ,2026 
+ 
+Covering L1 – L14 
+(CO1, CO2) 
+   Mini-Project       
+ 
+ 
+4 
+ 
+ 
+FISAC 
+ 
+ 
+1 
+(End to End 
+Project with 
+Python – 
+Applying Data 
+Science and 
+Machine 
+Learning) 
+ 
+ 
+4 Weeks 
+ 
+ 
+10 
+(10 %) 
+Mini-project (Group 
+activity)- Simulation 
+implementation for 
+application-based 
+problems using python 
+programming. 
+ 
+ 
+Bloom’s Level: 
+3, 4, 5 
+ 
+September 20th -
+Oct 24th ,2026 
+ 
+ 
+ 
+Lecture L1 – L36 
+(CO1-CO5) 
+End – Semester Assessment 
+ 
+ 
+1 
+ 
+ 
+Regular / Make–up Exam 
+ 
+ 
+180 
+Minutes 
+ 
+ 
+50 
+(50 %) 
+Answer all 5 full 
+questions of 10 marks 
+each. Each question 
+can have 3 parts of 2 / 
+3 / 4 / 5 / 6 marks 
+ 
+ 
+Bloom’s Level: 
+2, 3, 4,5 
+ 
+27th November 
+2026 
+Comprehensive examination 
+covering full syllabus. 
+Students are expected to 
+answer all questions. 
+(CO 1 – CO5) 
+--- PAGE 4 ---
+   
+Page 4 of 5 
+ MIT/QA/Gen/UGCPT-F01/2026/R00 
+Lesson Plan 
+L No Topics CO Addressed 
+0 
+To address OBE philosophy towards NBA and IET accreditation followed by a 
+discussion on Course Plan, Course Outcomes, CO-PO Mapping and Blooms 
+Taxonomy, with prerequisites for the course, if any. 
+ 
+1 Introduction to the Course 1 
+2 Steps in Data Analysis, Components & Types of Data Structures, File Formats, Data Sources, ETL 1 
+3 Python Libraries & Frameworks: Python Programming Basics, Python Libraries & Frameworks 1 
+4 Arrays using NumPy Library 1 
+5 Linear Algebra and Matrices using NumPy Library 1 
+6 Working with Data Sets using Pandas Library 1 
+7 Data Visualization using Matplotlib and Seaborn Python Libraries 2 
+8 Inferential Statistics & Probability: Basic Stats – Mean, Median, Mode, Variance, Standard Deviation 2 
+9 Standard Deviation, Skewness & Kurtosis, Analytical Problems 2 
+10 Box and Whisker Plot, Analytical Problems 2 
+11 Grouped Data Analysis – Analytical Problems 2 
+12 Probability Basics-PDFs and CDFs 2 
+13 Discrete Probability Distributions – Bernoulli’s, Binomial, Negative Binomial 2 
+14 Poisson and Geometric Distributions – Python Implementation 2 
+15 Continuous Probability Distributions – Normal and Standard Normal 3 
+16 Statistical Tools & Techniques: Covariance & Correlation 3 
+17 Pearsons’, Spearman’s ad Kendall’s Correlation Coefficients 3 
+18 Bivariate Grouped Data Analysis, Central Limit Theorem and Baye’s Theorem 3 
+19 Confidence Interval and Standard Error: Z and T Distributions 3 
+20 Hypothesis Testing – Null and Alternate Hypothesis, P-value in Statistics 3 
+21 Parametric Tests: Z and T Statistical Tests 3 
+22 Parametric Tests: Goodness of Fit Test, F Statistic and ANOVA Test 3 
+23 Errors in Hypothesis Testing, Python Implementation of Tests 4 
+24 Supervised Data Analytics: Transformation & Feature Scaling - Attributes, Dimensionality & Filtering 4 
+25 Linear Regression: Simple & Multiple Linear Regression, Best Fit Line 4 
+26 Coefficient of Determination, Univariate & Bivariate Distribution Analysis 4 
+27 Evaluation Metrics, Gradient Descent – Types & Optimizing Cost Function 4 
+28 Classification: Logistic Regression, Decision Tree Classification 4 
+29 Entropy, Gini Impurity, Gini Gain & Gini Coefficient 4 
+30 Model Evaluation Metrics – Confusion Matrix, Log Loss Error 4 
+31 ROC-AUC Curves and PR-AUC Curves Assessment Criteria 5 
+32 Dimensionality Reduction and Unsupervised Data Analytics: Principal Components Analysis 5 
+33 Time-Series Analysis – Components, Data Types, Stationarity Tests 5 
+34 Time-Series Methods – SMA, CMA, EMA, Autocorrelation & Partial Autocorrelation 5 
+35 AR, MA, ARMA, ARIMA Time-Series Models 5 
+36 Clustering Analysis and Association Rule Principles 5 
+37 Deep Learning Neural Networks Essentials (Self-Directed Learning) 5 
+ 
+--- PAGE 5 ---
+   
+Page 5 of 5 
+ MIT/QA/Gen/UGCPT-F01/2026/R00 
+Self Directed Learning (SDL) 
+Sl. No. TOPIC 
+ 
+No. of learning 
+hours 
+CO 
+ 
+1 Data types and Functions 2 1 
+2 Examples on Python code using Numpy library 2 1 
+3 Examples on Python code using Matplotlib library 3 1 
+4 Inferential Statistics 6 2 
+5 Simple & Multiple Linear Regression 3 2 
+6 Probability Basics-PDFs and CDFs 3 3 
+7 Covariance & Correlation 3 3 
+8 Hypothesis Testing 5 4 
+9 Logistic Regression 3 4 
+10 Decision Tree Classification 3 4 
+11 Random forest classification 3 4 
+12 Model Evaluation Metrics – Confusion Matrix, Log Loss Error, ROC-AUC Curves 2 4 
+13 Principal Components Analysis 2 5 
+14 Time-Series Analysis – Components, Data Types, Stationarity Tests 2 5 
+15 Time-Series Methods – SMA, CMA, EMA, Autocorrelation & Partial Autocorrelation- 
+examples 
+2 5 
+16 spotify-data-analytic 5 5 
+17 indian-air-quality-analysis-prediction-using-m 5 5 
+ Total Number of learning hours  54  
+References:  
+ 
+Textbooks 
+1)  Douglas C Montgomery, George C Runger, “Applied Statistics and Probability for Engineers,” 5th 
+Edition, John Wiley & Sons, 2011. 
+2)   Jay L. Devore, “Probability and Statistics for Engineering and the Sciences,” Cengage Learning, 2011. 
+3)  Glenn J. Myatt, Wayne P. Johnson, “Making Sense of Data I: A Practical Guide to Exploratory Data 
+Analysis and Data   Mining,” 2nd Edition, John Wiley & Sons, 2014. 
+4)  EMC Education Services, “Data Science & Big Data Analytics: Discovering, Analyzing, Visualizing 
+and Presenting Data,” John Wiley & Sons, 2015. 
+Self-Directed Learning 
+Case Studies 
+https://www.kaggle.com/code/yashwanthn454556/spotify-data-
+analytics 
+https://www.kaggle.com/code/anbarivan/indian-air-quality-analysis-
+prediction-using-ml 
+NPTEL courses 
+NPTEL Course on “Introduction to Data analytics,” by Prof. N. Sudarsanam, 
+Dr. B. Ravindran, IIT Madras. Online (Available): 
+https://nptel.ac.in/courses/110106072.  
+ 
+SWAYAM Course on “Data Analytics with Python,” by Prof. A. Ramesh, 
+IIT Roorkee. 
+Link: https://onlinecourses.nptel.ac.in/noc21_cs45/preview.  
+Submitted by:  
+ 
+ 
+(Signature of the faculty) 
+Date: 28-07-2026 
+Approved by:  
+ 
+(Signature of the Dean) 

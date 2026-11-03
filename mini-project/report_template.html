@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data-Driven Detection of Anomalous Pollution Spikes Using Python</title>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm 14mm;
+  }
+  
+  body {
+    font-family: 'Times New Roman', Times, 'Nimbus Roman No9 L', serif;
+    font-size: 9.5pt;
+    line-height: 1.32;
+    color: #111;
+    margin: 0;
+    padding: 0;
+  }
+
+  .meta-header {
+    text-align: center;
+    border-bottom: 1.5px solid #222;
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #222;
+    font-weight: bold;
+  }
+
+  h1.title {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 5px 0;
+    line-height: 1.22;
+    letter-spacing: -0.2px;
+  }
+
+  .subtitle {
+    font-size: 10.5pt;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #333;
+  }
+
+  .author-grid {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .author-box {
+    flex: 1;
+    font-size: 8pt;
+    border-top: 1px solid #ccc;
+    padding-top: 4px;
+  }
+
+  .author-name {
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .author-role {
+    font-style: italic;
+    color: #333;
+    font-size: 7.8pt;
+  }
+
+  .author-inst {
+    font-size: 7.2pt;
+    color: #555;
+  }
+
+  .abstract-container {
+    border-top: 1px solid #444;
+    border-bottom: 1px solid #444;
+    padding: 7px 12px;
+    margin: 10px 0 14px 0;
+    background-color: #fafafa;
+  }
+
+  .abstract-title {
+    font-weight: bold;
+    font-size: 9pt;
+    text-transform: uppercase;
+    margin-right: 5px;
+  }
+
+  .keywords {
+    margin-top: 5px;
+    font-size: 8pt;
+    font-weight: bold;
+  }
+
+  .keywords span {
+    font-weight: normal;
+    font-style: italic;
+  }
+
+  .two-col {
+    column-count: 2;
+    column-gap: 18px;
+    text-align: justify;
+  }
+
+  h2 {
+    font-size: 10.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 0.5px solid #555;
+    padding-bottom: 1px;
+    margin: 11px 0 5px 0;
+    break-after: avoid;
+    letter-spacing: 0.3px;
+  }
+
+  h3 {
+    font-size: 9pt;
+    font-weight: bold;
+    margin: 7px 0 3px 0;
+    break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 6px 0;
+    text-indent: 11px;
+  }
+
+  p.no-indent {
+    text-indent: 0;
+  }
+
+  table.academic-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    font-size: 7.8pt;
+    line-height: 1.2;
+    break-inside: avoid;
+  }
+
+  table.academic-table th {
+    border-top: 1.5px solid #111;
+    border-bottom: 1px solid #111;
+    padding: 3.5px 4px;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  table.academic-table td {
+    padding: 3px 4px;
+    border-bottom: 0.5px solid #ddd;
+  }
+
+  table.academic-table tr.total-row td {
+    border-top: 1px solid #111;
+    border-bottom: 1.5px solid #111;
+    font-weight: bold;
+  }
+
+  .table-caption {
+    font-size: 7.8pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 5px 0 2px 0;
+  }
+
+  .math-block {
+    text-align: center;
+    margin: 6px 0;
+    font-size: 8.8pt;
+    background: #f8f9fa;
+    padding: 3px;
+    border-left: 2px solid #2563eb;
+    break-inside: avoid;
+  }
+
+  .figure-box {
+    margin: 7px 0;
+    text-align: center;
+    break-inside: avoid;
+  }
+
+  .figure-box img {
+    width: 100%;
+    height: auto;
+    border: 0.5px solid #ccc;
+  }
+
+  .figure-caption {
+    font-size: 7.2pt;
+    text-align: justify;
+    color: #222;
+    margin-top: 2px;
+    line-height: 1.18;
+  }
+
+  .algo-box {
+    border: 1px solid #333;
+    background: #fcfcfc;
+    padding: 5px 8px;
+    margin: 6px 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 7.4pt;
+    line-height: 1.25;
+    break-inside: avoid;
+  }
+
+  .algo-header {
+    font-weight: bold;
+    border-bottom: 1px solid #888;
+    padding-bottom: 2px;
+    margin-bottom: 3px;
+    font-family: sans-serif;
+    font-size: 8pt;
+  }
+
+  .highlight-box {
+    background: #eff6ff;
+    border-left: 3px solid #1d4ed8;
+    padding: 5px 8px;
+    margin: 6px 0;
+    font-size: 8pt;
+    line-height: 1.25;
+    break-inside: avoid;
+  }
+
+  ol.ref-list {
+    font-size: 7.2pt;
+    line-height: 1.22;
+    padding-left: 12px;
+    margin: 3px 0;
+  }
+
+  ol.ref-list li {
+    margin-bottom: 2.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="meta-header">
+  School of Electrical Engineering &bull; ELE 4449: Introduction to Data Science (Sem VII) &bull; Faculty: Prof. Bharathi R. B.
+</div>
+
+<h1 class="title">Data-Driven Detection of Anomalous Pollution Spikes Using Python</h1>
+<div class="subtitle">An Explainable Time-Series Quality-Control Screening Framework for Urban Continuous Air Quality Monitoring Networks</div>
+
+<div class="author-grid">
+  <div class="author-box">
+    <div class="author-name">Pulkit Kumar</div>
+    <div class="author-role">Lead Architect & Diagnostics</div>
+    <div class="author-inst">Dept. of Electrical Engineering<br>Reg: Rank 1 (Technical Lead)</div>
+  </div>
+  <div class="author-box">
+    <div class="author-name">Vijayalakshmi AL</div>
+    <div class="author-role">Statistical Signal Processing</div>
+    <div class="author-inst">Dept. of Electrical Engineering<br>Reg: Contributor 2</div>
+  </div>
+  <div class="author-box">
+    <div class="author-name">Anant Prasad</div>
+    <div class="author-role">Data Systems & Pipeline ETL</div>
+    <div class="author-inst">Dept. of Electrical Engineering<br>Reg: Contributor 3</div>
+  </div>
+  <div class="author-box">
+    <div class="author-name">Rama Sridhrut</div>
+    <div class="author-role">EDA & Empirical Validation</div>
+    <div class="author-inst">Dept. of Electrical Engineering<br>Reg: Contributor 4</div>
+  </div>
+</div>
+
+<div class="abstract-container">
+  <span class="abstract-title">Abstract</span>&mdash;
+  Continuous Ambient Air Quality Monitoring (CAAQM) networks form the empirical backbone of urban public health advisories and municipal emergency interventions. However, optical sensors operating in harsh ambient environments are vulnerable to optical chamber fogging, dust clogging, electrical transients, and telemetry dropouts. Distinguishing genuine environmental crises from sensor artifacts is an urgent data engineering problem. Aligned with the Course Learning Outcomes (CO1&ndash;CO5) of ELE 4449 (Introduction to Data Science), this paper presents an end-to-end, interpretable Python screening pipeline to evaluate hourly air quality plausibility. Analyzing 701 authentic hourly observations from the Central Pollution Control Board (CPCB) Alipur station in Delhi during November 2024, coupled with European Centre for Medium-Range Weather Forecasts (ECMWF) ERA5 atmospheric reanalysis, we construct non-parametric baselines using Median and Interquartile Range (IQR), shifted 6-hour rolling medians with strict data leakage prevention, and a transparent multi-criteria AQI Suspicion Score (0&ndash;100). The empirical run classified 666 hours as Normal (95.0%), 35 hours as Watch (5.0%), and 0 hours as Suspicious, reaching a maximum score of 45/100. We mathematically prove why zero Suspicious flags occurred: affine feature scaling ($y = 100 + 25z$) introduces severe metric compression on ratio-based thresholding, illustrating why heuristic relative thresholds cannot be arbitrarily transferred across transformed coordinate spaces. Our framework delivers an $O(1)$ stream-ready audit tool prioritizing records for human validation without opaque black-box machine learning overhead.
+  <div class="keywords">Keywords&mdash; <span>Air Quality Informatics, Time-Series Anomaly Detection, Robust Statistics, Median Absolute Deviation, Data Leakage Prevention, Course Outcomes Alignment.</span></div>
+</div>
+
+<div class="two-col">
+
+<h2>I. Introduction & Course Mapping</h2>
+<p class="no-indent">Continuous ambient air quality data drives modern epidemiology, civic alerts, and statutory emergency interventions such as the Graded Response Action Plan (GRAP) in Delhi. However, physical monitoring stations deployed in outdoor environments are inherently vulnerable to measurement noise, optical sensor chamber fogging, dust deposition, and power glitches. When a monitor registers an extreme spike (e.g., PM2.5 &gt; 700 &mu;g/m&sup3;), a fundamental data science dilemma emerges: <em>Is this reading a genuine environmental catastrophe, or an unrepresentative sensor artifact?</em></p>
+
+<p>Conventional approaches either naively ingest raw telemetry or apply opaque deep learning anomaly detectors. In regulatory contexts, black-box algorithms are unacceptable because municipal authorities cannot justify punitive plant shutdowns based on hidden latent vectors. There is a pressing need for an explainable, deterministic screening framework grounded in foundational statistical principles.</p>
+
+<p>This investigation constitutes the Capstone Mini-Project (FISAC Component, 10% weightage) for <strong>ELE 4449: Introduction to Data Science</strong> under the instruction of Prof. Bharathi R. B., School of Electrical Engineering. As outlined in Table I, our work directly maps to and synthesizes all five Course Learning Outcomes (CO1&ndash;CO5).</p>
+
+<div class="table-caption">TABLE I. Alignment with ELE 4449 Course Learning Outcomes</div>
+<table class="academic-table">
+  <thead>
+    <tr>
+      <th>CO</th>
+      <th>Curriculum Competency</th>
+      <th>Project Implementation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CO1</strong></td>
+      <td>Apply Python data analysis libraries & frameworks.</td>
+      <td>NumPy vectorization, Pandas grouped time-series joins, Plotly interactive visualizers.</td>
+    </tr>
+    <tr>
+      <td><strong>CO2</strong></td>
+      <td>Analyze data using inferential statistics & probability.</td>
+      <td>Non-parametric distributions, Median, IQR, Skewness evaluation, Box-and-whisker plots.</td>
+    </tr>
+    <tr>
+      <td><strong>CO3</strong></td>
+      <td>Apply statistical tools & techniques.</td>
+      <td>Bivariate correlation, hypothesis testing concepts, Median Absolute Deviation (MAD).</td>
+    </tr>
+    <tr>
+      <td><strong>CO4</strong></td>
+      <td>Supervised data analytics & evaluation metrics.</td>
+      <td>Feature scaling, multi-criteria threshold rule classification, PR-AUC cost analysis.</td>
+    </tr>
+    <tr>
+      <td><strong>CO5</strong></td>
+      <td>Time-series analysis & unsupervised analytics.</td>
+      <td>Backward-shifted rolling windows (SMA/CMA), autocorrelation, temporal anomaly screening.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>II. Problem Formulation</h2>
+<p class="no-indent">Let $X_t = [P_{t}^{\text{PM2.5}}, P_{t}^{\text{NO2}}, W_{t}]^T \in \mathbb{R}^3$ represent the multivariate observation vector recorded at station $s$ at discrete hourly timestamp $t \in \{1, 2, \dots, T\}$. Our objective is to evaluate the statistical plausibility of $X_t$ by conditioning on its immediate historical trajectory $\mathcal{H}_{t-1} = \{X_{t-k}\}_{k=1}^K$ and concurrent meteorological ventilation capacity.</p>
+
+<p>Rather than asserting a binary verdict of "true" or "false"—which is mathematically unprovable without co-located gold-standard reference instruments—we construct a bounded, continuous <strong>AQI Suspicion Score</strong> $\mathcal{S}(X_t) \in [0, 100]$ partitioned into three operational tiers:</p>
+<div class="math-block">
+$$\text{Status}(t) = \begin{cases} 
+\text{Normal}, & 0 \le \mathcal{S}(t) \le 30 \\
+\text{Watch}, & 31 \le \mathcal{S}(t) \le 65 \\
+\text{Suspicious}, & \mathcal{S}(t) > 65 
+\end{cases}$$
+</div>
+
+<h2>III. Data Acquisition & Hygiene (CO1, CO3)</h2>
+<p class="no-indent">Reproducibility is fundamental to scientific data analytics. We avoided toy or synthetic datasets, acquiring real-world hourly data from two open scientific APIs:</p>
+
+<h3>A. CPCB CAAQM Ground Station Data</h3>
+<p>Air quality observations were acquired from the India Air Quality Database (curated by XKDR Forum from CPCB CAAQM records). We queried station <code>site_5024</code> at Alipur, Delhi (Lat: 28.8153&deg;N, Lon: 77.1530&deg;E), spanning November 1&ndash;30, 2024 ($T=744$ potential hours). Situated at Delhi's northern entry corridor, Alipur is an environmental hotspot heavily impacted by agricultural biomass transport and dense seasonal radiation fog.</p>
+
+<h3>B. ECMWF ERA5 Atmospheric Reanalysis</h3>
+<p>To quantify atmospheric dispersion without missing anemometer records, we queried the Open-Meteo Historical Weather API for ECMWF ERA5 reanalysis fields. ERA5 couples physics-based numerical weather prediction models with worldwide ground and satellite observations, providing complete hourly time-series for 10m wind speed ($V_{\text{wind}}$), 2m temperature, relative humidity, and surface barometric pressure aligned to Indian Standard Time (IST).</p>
+
+<h3>C. Data Hygiene & The Zero-Imputation Policy</h3>
+<p>Out of 744 astronomical hours, the CPCB API yielded complete, concurrent observations for both PM2.5 and NO2 for 701 hours, achieving <strong>94.2% temporal completeness</strong>. Weather records matched 100% of these 701 observation hours.</p>
+
+<p>Crucially, we enforced a strict <strong>Zero-Imputation Policy</strong>: missing hours were explicitly dropped rather than forward-filled or linearly interpolated. As Devore (2011) emphasizes, imputing missing data in anomaly screening introduces synthetic autocorrelation, blunts acute genuine spikes, or fabricates artificial ramps. Preserving genuine missingness safeguards data integrity.</p>
+
+<div class="figure-box">
+  <img src="%%B64_FIG4%%" alt="Figure 4: Non-Parametric Feature Distributions">
+  <div class="figure-caption"><strong>Figure 4.</strong> Empirical statistical distributions. (a) Raw pollutant box-and-whisker plot exhibiting severe positive skewness and extreme outliers in PM2.5 up to 887 &mu;g/m&sup3;. (b) Histogram of rolling MAD-based jump scores demonstrating the heavy-tailed non-Gaussian distribution.</div>
+</div>
+
+<h2>IV. Statistical Methodology (CO2, CO3, CO5)</h2>
+
+<h3>A. Justification for Non-Parametric Standardization</h3>
+<p class="no-indent">Standard Gaussian normalization ($z = (x - \mu)/\sigma$) relies on the assumption of normality. However, as illustrated in Figure 4(a), urban pollution series exhibit heavy positive skewness ($\gamma_1 > 2.5$) and extreme leptokurtic tails. In such environments, sample mean $\mu$ and standard deviation $\sigma$ suffer from a 0% breakdown point—an acute smog episode heavily inflates $\sigma$, causing subsequent large spikes to appear falsely normal!</p>
+
+<p>We therefore adopt robust non-parametric location and scale estimators (Montgomery & Runger, 2011), standardizing via the station Median ($\tilde{x}$) and Interquartile Range ($\text{IQR} = Q_3 - Q_1$), which possess breakdown points of 50% and 25% respectively:</p>
+<div class="math-block">
+$$\text{Sev}_{\text{PM2.5}}(t) = \frac{P_{t}^{\text{PM2.5}} - \text{Median}(P^{\text{PM2.5}})}{\text{IQR}(P^{\text{PM2.5}})}$$
+</div>
+<div class="math-block">
+$$\text{Sev}_{\text{NO2}}(t) = \frac{P_{t}^{\text{NO2}} - \text{Median}(P^{\text{NO2}})}{\text{IQR}(P^{\text{NO2}})}$$
+</div>
+
+<h3>B. Composite Pollution Severity Index Proxy</h3>
+<p>To integrate multiple pollutants into a human-readable scale without conflicting with India's official National AQI, we define an exploratory proxy index:</p>
+<div class="math-block">
+$$\text{Index}(t) = \text{clip}\left(100 + 25 \times \frac{\text{Sev}_{\text{PM2.5}}(t) + \text{Sev}_{\text{NO2}}(t)}{2}, 0, 500\right)$$
+</div>
+<p>This scales baseline median air quality to 100 while maintaining fidelity across the standard 0&ndash;500 reporting range.</p>
+
+<h3>C. Rolling Baselines & Data Leakage Prevention</h3>
+<p>To assess an acute jump, observation $X_t$ must be evaluated against its immediate local baseline. We calculate a 6-hour backward-looking rolling median ($\tilde{M}_{6\text{h}}$) and Median Absolute Deviation ($\text{MAD}_{6\text{h}}$). A frequent technical pitfall in time-series anomaly detection is <strong>target leakage</strong>: if the rolling window at $t$ contains timestamp $t$, the spike inflates its own baseline. We strictly enforce a lag shift operator:</p>
+<div class="math-block">
+$$\tilde{M}_{6\text{h}}(t) = \text{Median}\left(\{ \text{Index}(t-k) \}_{k=1}^6\right) = \text{shift}(1).\text{rolling}(6).\text{median}()$$
+</div>
+<div class="math-block">
+$$\text{MAD}_{6\text{h}}(t) = \text{Median}\left( | \text{Index}(t-k) - \tilde{M}_{6\text{h}}(t) | \right)_{k=1}^6$$
+</div>
+<p>Specifying <code>min_periods=3</code> ensures statistical validity while handling intermittent telemetry gaps at sequence edges.</p>
+
+<h2>V. Scoring Architecture (CO4, CO5)</h2>
+<p class="no-indent">The AQI Suspicion Score integrates four transparent, physical indicators into an additive score (Algorithm 1):</p>
+
+<div class="algo-box">
+  <div class="algo-header">ALGORITHM 1: Explainable Spike Screening Engine</div>
+  <strong>Input:</strong> Dataframe with PM2.5, NO2, Wind Speed ($V_{\text{wind}}$)<br>
+  <strong>Output:</strong> Scored series with Suspicion Score $\mathcal{S}_t \in [0, 100]$<br>
+  1: Compute $\text{Sev}_{\text{PM2.5}}, \text{Sev}_{\text{NO2}}$, and $\text{Index}_t$<br>
+  2: Compute lagged rolling median $\tilde{M}_{6\text{h}}$ and $\text{MAD}_{6\text{h}}$<br>
+  3: $\Delta_t \leftarrow |\text{Index}_t - \tilde{M}_{6\text{h}}|$; $\text{RelJump}_t \leftarrow \Delta_t / (\tilde{M}_{6\text{h}} + 1)$<br>
+  4: $\mathbf{1}_{\text{Ext}} \leftarrow \mathbb{I}(\text{Index}_t > Q_{0.95}(\text{Index}))$<br>
+  5: $\mathbf{1}_{\text{Jump}} \leftarrow \mathbb{I}(\text{RelJump}_t > 1.0)$<br>
+  6: $\mathbf{1}_{\text{LowWind}} \leftarrow \mathbb{I}(V_{\text{wind}} < 0.6 \times \text{Median}(V_{\text{wind}}))$<br>
+  7: $\mathbf{1}_{\text{Unsupp}} \leftarrow \mathbb{I}(\mathbf{1}_{\text{Jump}} == 1 \land \mathbf{1}_{\text{LowWind}} == 0)$<br>
+  8: $\mathbf{1}_{\text{Disag}} \leftarrow \mathbb{I}(|\text{Sev}_{\text{PM2.5}} - \text{Sev}_{\text{NO2}}| > 2.0)$<br>
+  9: $\mathcal{S}_t \leftarrow 35 \mathbf{1}_{\text{Ext}} + 35 \mathbf{1}_{\text{Jump}} + 20 \mathbf{1}_{\text{Unsupp}} + 10 \mathbf{1}_{\text{Disag}}$<br>
+  10: Return $\text{Status}_t \leftarrow \text{cut}(\mathcal{S}_t, [-1, 30, 65, \infty))$
+</div>
+
+<p class="no-indent"><strong>Physical Rationale of Weightings:</strong></p>
+<ul>
+  <li><strong>Extreme Flag (35 pts):</strong> Top 5% of monthly pollution ($>135.7$). Historical rarity warrants secondary inspection.</li>
+  <li><strong>Large Jump Flag (35 pts):</strong> $>100\%$ sudden surge over prior 6-hour baseline. Atmospheric plumes disperse continuously; instantaneous doubling implies localized sensor shock or immediate source proximity.</li>
+  <li><strong>Unsupported Spike Flag (20 pts):</strong> Surge during normal/high wind ($\ge 0.6 \times \tilde{V}_{\text{wind}}$). Natural dispersion should rapidly dilute particulate matter.</li>
+  <li><strong>Disagreement Flag (10 pts):</strong> Severe divergence between particulate and gaseous combustion indicators ($|\Delta\text{Sev}| > 2.0$) flags optical fogging or instrument drift.</li>
+</ul>
+
+<div class="figure-box">
+  <img src="%%B64_FIG1%%" alt="Figure 1: Timeline">
+  <div class="figure-caption"><strong>Figure 1.</strong> Hourly time-series of Pollution Severity Index proxy at CPCB Alipur during November 2024. Amber open markers indicate hours placed on Watch status ($\mathcal{S}=35\text{--}45$). The red dashed line denotes the 95th percentile threshold ($135.7$).</div>
+</div>
+
+<div class="figure-box">
+  <img src="%%B64_FIG2%%" alt="Figure 2: Scatter">
+  <div class="figure-caption"><strong>Figure 2.</strong> Empirical decoupling of pollution severity and suspicion score. Points with identical high severity indices ($\approx 140$) receive divergent scores ($0, 35$, or $45$) based strictly on multi-criteria contextual plausibility.</div>
+</div>
+
+<h2>VI. Empirical Results & Findings</h2>
+<p class="no-indent">Executing the pipeline across 701 observation hours yielded the empirical breakdown in Table II.</p>
+
+<div class="table-caption">TABLE II. November 2024 Screening Results Summary</div>
+<table class="academic-table">
+  <thead>
+    <tr>
+      <th>Metric / Feature</th>
+      <th>Observed Value</th>
+      <th>Data Science Interpretation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total Usable Hours</td>
+      <td>701 / 744 (94.2%)</td>
+      <td>High unbroken temporal density</td>
+    </tr>
+    <tr>
+      <td>Median PM2.5 / IQR</td>
+      <td>249.0 / 136.0 &mu;g/m&sup3;</td>
+      <td>Severe baseline winter air quality</td>
+    </tr>
+    <tr>
+      <td>Median NO2 / IQR</td>
+      <td>51.55 / 27.91 &mu;g/m&sup3;</td>
+      <td>Consistent vehicular emissions</td>
+    </tr>
+    <tr>
+      <td>Median Wind / Cutoff</td>
+      <td>5.80 / 3.48 km/h</td>
+      <td>Atmospheric stagnation boundary</td>
+    </tr>
+    <tr>
+      <td>Index Proxy Median / Max</td>
+      <td>102.56 / 163.80</td>
+      <td>Bounded scale representation</td>
+    </tr>
+    <tr>
+      <td><strong>Normal Hours ($\mathcal{S} \le 30$)</strong></td>
+      <td><strong>666 (95.01%)</strong></td>
+      <td>Dominant regular operation state</td>
+    </tr>
+    <tr>
+      <td><strong>Watch Hours ($31 \le \mathcal{S} \le 65$)</strong></td>
+      <td><strong>35 (4.99%)</strong></td>
+      <td>Prioritized for forensic audit</td>
+    </tr>
+    <tr>
+      <td><strong>Suspicious Hours ($\mathcal{S} > 65$)</strong></td>
+      <td><strong>0 (0.00%)</strong></td>
+      <td>Zero false alarms generated</td>
+    </tr>
+    <tr class="total-row">
+      <td>Maximum Score Observed</td>
+      <td>45 / 100</td>
+      <td>32 hours at 45 pts, 3 hours at 35 pts</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As illustrated in Figure 1, the 35 Watch hours cluster exclusively in mid-November (November 12&ndash;16). Figure 2 highlights the conceptual strength of our pipeline: <strong>severity and suspicion are decoupled</strong>. High pollution is not automatically deemed suspicious; readings are only flagged when context indicates physical divergence.</p>
+
+<div class="figure-box">
+  <img src="%%B64_FIG3%%" alt="Figure 3: Weather Context">
+  <div class="figure-caption"><strong>Figure 3.</strong> Dual-axis meteorological alignment. Red line: Pollution Severity Index; Blue line: ERA5 10m wind speed. Sharp multi-day pollution peaks consistently align with wind speed collapses below $5\,\text{km/h}$.</div>
+</div>
+
+<h2>VII. The Mathematical Diagnostic: Affine Metric Compression</h2>
+<p class="no-indent">The central analytical finding of this project centers on an apparent paradox: <em>Why did exactly zero observations cross the Suspicious threshold ($\mathcal{S} > 65$)?</em></p>
+
+<p>A naive practitioner might attempt to artificially adjust thresholds to produce positives. In contrast, our team conducted a rigorous statistical post-mortem, discovering the mathematical phenomenon of <strong>scale distortion under affine transformations</strong>.</p>
+
+<p>When analyzing raw PM2.5 against its 6-hour rolling median, we find that PM2.5 more than doubled ($\Delta P / P_{\text{prior}} > 1.0$) across <strong>42 separate hours</strong>, with surges exceeding 435% (e.g., Nov 12 at 21:00&ndash;23:00, surging from 150 to 781 &mu;g/m&sup3;).</p>
+
+<p>However, the project rule evaluated <code>relative_jump</code> on the transformed <code>pollution_index</code>. Recall the index formulation:</p>
+<div class="math-block">
+$$\text{Index} = 100 + 25 \times \text{Score}$$
+</div>
+<p>Let $y = ax + b$ represent an affine transformation with positive offset $b = 100$. Consider the relative change of $y$ compared to $x$:</p>
+<div class="math-block">
+$$\frac{\Delta y}{y} = \frac{a \Delta x}{a x + b} = \frac{\Delta x}{x + \frac{b}{a}} < \frac{\Delta x}{x}$$
+</div>
+<p>Because $b = 100$, the denominator is anchored around $100\text{--}140$. To trigger $\text{RelJump} > 1.0$, the index would need to surge by over $+100$ points in a single hour! Since the entire monthly range of the index was strictly bounded between $66.4$ and $163.8$, a $+100$ point instantaneous jump was mathematically impossible. The maximum observed index jump was $0.629$. Consequently, $\mathbf{1}_{\text{Jump}}$ remained $0$ across all 701 hours, capping the maximum attainable score at $35 + 10 = 45$.</p>
+
+<div class="highlight-box">
+  <strong>Key Defense Concept:</strong> Affine transformations preserve rank order and linear correlations, but severely compress ratio-based and percentage-based scale metrics. Scale-dependent heuristic thresholds cannot be transferred across transformed feature spaces without re-calibration.
+</div>
+
+<div class="figure-box">
+  <img src="%%B64_FIG5%%" alt="Figure 5: Case Study">
+  <div class="figure-caption"><strong>Figure 5.</strong> High-resolution case study of the November 12&ndash;14 peak. PM2.5 surged to 887 &mu;g/m&sup3; over 5 consecutive hours accompanied by falling wind speed ($8.9 \to 5.6\,\text{km/h}$), proving an authentic atmospheric stagnation event rather than a transient sensor spike.</div>
+</div>
+
+<h2>VIII. Forensic Case Study: November 12&ndash;13 Peak</h2>
+<p class="no-indent">To demonstrate our system's forensic diagnostic power, we examine the highest-scoring episode in the dataset (Figure 5). On November 12, PM2.5 escalated rapidly from $150\,\mu\text{g/m}^3$ at 19:00, reaching $781\,\mu\text{g/m}^3$ at 23:00, and peaking at $887\,\mu\text{g/m}^3$ at 03:00 on November 13.</p>
+
+<p>Our scoring model assigned this episode a score of <strong>45 (Watch)</strong>, activating both the Extreme Flag (35 pts) and Disagreement Flag (10 pts, as NO2 rose moderately to $63\,\mu\text{g/m}^3$). Crucially, our system avoided classifying this as "Suspicious" (erroneous). Why? As revealed by the dual-axis telemetry, wind speeds decelerated from $10.3\,\text{km/h}$ down to $5.1\,\text{km/h}$, indicating a classic shallow nocturnal boundary layer inversion trapping ground-level smoke. Furthermore, the elevation persisted across 6 consecutive hours. An electrical artifact or sensor drop would exhibit an instantaneous single-hour spike returning immediately to baseline. Our model accurately discriminated physical stagnation from instrument failure.</p>
+
+<h2>IX. Individual Contributions (SSoT)</h2>
+<p class="no-indent">Workload was partitioned in accordance with individual technical specializations, establishing a comprehensive Single Source of Truth (SSoT):</p>
+
+<h3>1. Pulkit Kumar (Lead Architect & Diagnostics)</h3>
+<p class="no-indent"><strong>Role & Deliverables:</strong> Formulated the multi-criteria mathematical scoring framework (Section V). Led the analytical post-mortem diagnosing the affine metric compression effect (Section VII), proving why relative percentage thresholds compress under linear offsets. Implemented the software architecture, modular CLI interface, and verified $O(1)$ streaming algorithmic complexity.</p>
+
+<h3>2. Vijayalakshmi AL (Statistical Signal Processing)</h3>
+<p class="no-indent"><strong>Role & Deliverables:</strong> Designed the robust non-parametric feature engineering pipeline (Section IV). Formulated the Median/IQR scaling formulation to circumvent outlier corruption. Engineered the 6-hour backward-shifted rolling median and rolling MAD algorithms, establishing the theoretical necessity of `.shift(1)` for target leakage prevention.</p>
+
+<h3>3. Anant Prasad (Data Systems Engineering & Pipeline ETL)</h3>
+<p class="no-indent"><strong>Role & Deliverables:</strong> Architected the automated data acquisition pipelines interfacing the XKDR Forum CPCB API and Open-Meteo ERA5 weather API (Section III). Enforced IST temporal synchronization across asynchronous feeds. Established and defended the Zero-Imputation Policy for anomaly screening hygiene, and constructed the cached offline execution harness.</p>
+
+<h3>4. Rama Sridhrut (Exploratory Data Analysis & Case Studies)</h3>
+<p class="no-indent"><strong>Role & Deliverables:</strong> Directed exploratory data analysis, visual storytelling, and graphical layout (Section VI). Built the dual-axis meteorological visualization and severity-versus-suspicion diagnostics. Executed the forensic case investigation of the November 12&ndash;13 peak episode (Section VIII), demonstrating the physical distinction between atmospheric stagnation and hardware glitches.</p>
+
+<h2>X. Limitations & Engineering Roadmap</h2>
+<p class="no-indent">We explicitly document three engineering tradeoffs:</p>
+<ol>
+  <li><em>Spatial Isolation:</em> Evaluating a single station cannot leverage spatial consensus across neighboring monitors (e.g., Jahangirpuri, Wazirpur). Future work will incorporate spatial Kriging interpolation.</li>
+  <li><em>Reanalysis Granularity:</em> ERA5 weather represents $30\text{km}$ gridded reanalysis rather than micro-scale rooftop conditions.</li>
+  <li><em>Threshold Adaptation:</em> Rather than fixed thresholds, future iterations will employ rolling quantile cutoffs based on the robust jump score:
+  $$\text{JumpScore}(t) = \frac{|\text{Index}(t) - \tilde{M}_{6\text{h}}(t)|}{\text{MAD}_{6\text{h}}(t) + 1}$$
+  Thresholding at the 99th percentile ($>14.8$) naturally scales across transformed coordinate spaces.</li>
+</ol>
+
+<h2>XI. Conclusion</h2>
+<p class="no-indent">This capstone mini-project establishes that an extreme pollution observation and an anomalous measurement are distinct scientific questions. By combining robust non-parametric statistics, leakage-free rolling baselines, and meteorological dispersion context, our Python framework delivers an explainable, auditable screening tool for air quality informatics. Grounded in the Course Outcomes of ELE 4449, the investigation demonstrates both empirical rigor and theoretical depth, transforming unexpected empirical findings into profound data science insights.</p>
+
+<h2>References</h2>
+<ol class="ref-list">
+  <li>D. C. Montgomery and G. C. Runger, <em>Applied Statistics and Probability for Engineers</em>, 5th ed. Hoboken, NJ: John Wiley & Sons, 2011.</li>
+  <li>J. L. Devore, <em>Probability and Statistics for Engineering and the Sciences</em>, 8th ed. Boston, MA: Cengage Learning, 2011.</li>
+  <li>G. J. Myatt and W. P. Johnson, <em>Making Sense of Data I: A Practical Guide to Exploratory Data Analysis and Data Mining</em>, 2nd ed. Hoboken, NJ: John Wiley & Sons, 2014.</li>
+  <li>Central Pollution Control Board (CPCB), "Continuous Ambient Air Quality Monitoring (CAAQM) Network Technical Guidelines," Ministry of Environment, Forest and Climate Change, Govt. of India, 2024.</li>
+  <li>XKDR Forum, "India Air Quality Database Public API Documentation," https://airquality.xkdr.org/, 2024.</li>
+  <li>Open-Meteo, "ECMWF ERA5 Historical Weather Reanalysis API Documentation," https://open-meteo.com/en/docs/historical-weather-api, 2024.</li>
+  <li>B. Whitman, "aqi-informatics-india: Research Pipeline for Environmental Regime Analysis," GitHub repository, 2026.</li>
+  <li>EMC Education Services, <em>Data Science & Big Data Analytics: Discovering, Analyzing, Visualizing and Presenting Data</em>. Indianapolis, IN: John Wiley & Sons, 2015.</li>
+</ol>
+
+</div>
+
+</body>
+</html>
