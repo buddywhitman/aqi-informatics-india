@@ -1,0 +1,4132 @@
+{
+"robinson1988": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1988,
+"want": 1988,
+"doi": "10.2307/1912705",
+"title": "Root-N-Consistent Semiparametric Regression",
+"cont": "Econometrica",
+"vol": "56",
+"iss": "4",
+"page": "931",
+"authors": [
+[
+"P. M.",
+"Robinson"
+]
+]
+},
+"rosenbaum1983": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1981,
+"want": 1983,
+"doi": "10.21236/ada114514",
+"title": "The Central Role of the Propensity Score in Observational Studies for Causal Effects.",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Paul R.",
+"Rosenbaum"
+],
+[
+"Donald B.",
+"Rubin"
+]
+]
+},
+"pearl1995": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1995,
+"want": 1995,
+"doi": "10.1093/biomet/82.4.669",
+"title": "Causal Diagrams for Empirical Research",
+"cont": "Biometrika",
+"vol": "82",
+"iss": "4",
+"page": "669-669",
+"authors": [
+[
+"Judea",
+"Pearl"
+]
+]
+},
+"athey2016": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2016,
+"want": 2016,
+"doi": "10.1073/pnas.1510489113",
+"title": "Recursive partitioning for heterogeneous causal effects",
+"cont": "Proceedings of the National Academy of Sciences",
+"vol": "113",
+"iss": "27",
+"page": "7353-7360",
+"authors": [
+[
+"Susan",
+"Athey"
+],
+[
+"Guido",
+"Imbens"
+]
+]
+},
+"wager2018": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2017,
+"want": 2018,
+"doi": "10.1080/01621459.2017.1319839",
+"title": "Estimation and Inference of Heterogeneous Treatment Effects using Random Forests",
+"cont": "Journal of the American Statistical Association",
+"vol": "113",
+"iss": "523",
+"page": "1228-1242",
+"authors": [
+[
+"Stefan",
+"Wager"
+],
+[
+"Susan Carleton",
+"Athey"
+]
+]
+},
+"athey2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.1214/18-aos1709",
+"title": "Generalized random forests",
+"cont": "The Annals of Statistics",
+"vol": "47",
+"iss": "2",
+"page": "1148-1178",
+"authors": [
+[
+"Susan Carleton",
+"Athey"
+],
+[
+"Julie",
+"Tibshirani"
+],
+[
+"Stefan",
+"Wager"
+]
+]
+},
+"kunzel2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.1073/pnas.1804597116",
+"title": "Metalearners for estimating heterogeneous treatment effects using machine learning",
+"cont": "Proceedings of the National Academy of Sciences",
+"vol": "116",
+"iss": "10",
+"page": "4156-4165",
+"authors": [
+[
+"Sören R.",
+"Künzel"
+],
+[
+"Jasjeet Singh",
+"Sekhon"
+],
+[
+"Peter J.",
+"Bickel"
+],
+[
+"Bin",
+"Yu"
+]
+]
+},
+"kennedy2023": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2023,
+"want": 2023,
+"doi": "10.1214/23-ejs2157",
+"title": "Towards optimal doubly robust estimation of heterogeneous causal effects",
+"cont": "Electronic Journal of Statistics",
+"vol": "17",
+"iss": "2",
+"page": "3008-3049",
+"authors": [
+[
+"Edward H.",
+"Kennedy"
+]
+]
+},
+"semenova2021": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2021,
+"doi": "10.1093/ectj/utaa027",
+"title": "Debiased machine learning of conditional average treatment effects and other causal functions",
+"cont": "The Econometrics Journal",
+"vol": "24",
+"iss": "2",
+"page": "264-289",
+"authors": [
+[
+"Vira",
+"Semenova"
+],
+[
+"Victor",
+"Chernozhukov"
+]
+]
+},
+"chernozhukov2022lr": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2022,
+"want": 2022,
+"doi": "10.3982/ecta16294",
+"title": "Locally Robust Semiparametric Estimation",
+"cont": "Econometrica",
+"vol": "90",
+"iss": "4",
+"page": "1501-1535",
+"authors": [
+[
+"Victor",
+"Chernozhukov"
+],
+[
+"Juan Carlos",
+"Escanciano"
+],
+[
+"Hidehiko",
+"Ichimura"
+],
+[
+"Whitney K.",
+"Newey"
+],
+[
+"James M.",
+"Robins"
+]
+]
+},
+"belloni2014jep": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2014,
+"want": 2014,
+"doi": "10.1257/jep.28.2.29",
+"title": "High-Dimensional Methods and Inference on Structural and Treatment Effects",
+"cont": "Journal of Economic Perspectives",
+"vol": "28",
+"iss": "2",
+"page": "29-50",
+"authors": [
+[
+"Alexandre",
+"Belloni"
+],
+[
+"Victor",
+"Chernozhukov"
+],
+[
+"Christian",
+"Hansen"
+]
+]
+},
+"belloni2014res": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2013,
+"want": 2014,
+"doi": "10.1093/restud/rdt044",
+"title": "Inference on Treatment Effects after Selection among High-Dimensional Controls",
+"cont": "The Review of Economic Studies",
+"vol": "81",
+"iss": "2",
+"page": "608-650",
+"authors": [
+[
+"A.",
+"Belloni"
+],
+[
+"V.",
+"Chernozhukov"
+],
+[
+"C.",
+"Hansen"
+]
+]
+},
+"farrell2021": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2021,
+"doi": "10.3982/ecta16901",
+"title": "Deep Neural Networks for Estimation and Inference",
+"cont": "Econometrica",
+"vol": "89",
+"iss": "1",
+"page": "181-213",
+"authors": [
+[
+"Max H.",
+"Farrell"
+],
+[
+"Tengyuan",
+"Liang"
+],
+[
+"Sanjog",
+"Misra"
+]
+]
+},
+"bang2005": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2005,
+"want": 2005,
+"doi": "10.1111/j.1541-0420.2005.00377.x",
+"title": "Doubly Robust Estimation in Missing Data and Causal Inference Models",
+"cont": "Biometrics",
+"vol": "61",
+"iss": "4",
+"page": "962-973",
+"authors": [
+[
+"Heejung",
+"Bang"
+],
+[
+"James M.",
+"Robins"
+]
+]
+},
+"robins1994": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1994,
+"want": 1994,
+"doi": "10.1080/01621459.1994.10476818",
+"title": "Estimation of Regression Coefficients When Some Regressors are not Always Observed",
+"cont": "Journal of the American Statistical Association",
+"vol": "89",
+"iss": "427",
+"page": "846-866",
+"authors": [
+[
+"James M.",
+"Robins"
+],
+[
+"Andrea",
+"Rotnitzky"
+],
+[
+"Lue Ping",
+"Zhao"
+]
+]
+},
+"newey1994": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1994,
+"want": 1994,
+"doi": "10.2307/2951752",
+"title": "The Asymptotic Variance of Semiparametric Estimators",
+"cont": "Econometrica",
+"vol": "62",
+"iss": "6",
+"page": "1349",
+"authors": [
+[
+"Whitney K.",
+"Newey"
+]
+]
+},
+"chernozhukov2022riesz": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2022,
+"doi": "10.48550/arxiv.2110.03031",
+"title": "RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests",
+"cont": "RePEc: Research Papers in Economics",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Victor",
+"Chernozhukov"
+],
+[
+"Whitney K.",
+"Newey"
+],
+[
+"Victor",
+"Quintas-Martinez"
+],
+[
+"Vasilis",
+"Syrgkanis"
+]
+]
+},
+"hines2022": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2022,
+"want": 2022,
+"doi": "10.1080/00031305.2021.2021984",
+"title": "Demystifying Statistical Learning Based on Efficient Influence Functions",
+"cont": "The American Statistician",
+"vol": "76",
+"iss": "3",
+"page": "292-304",
+"authors": [
+[
+"Oliver",
+"Hines"
+],
+[
+"Oliver",
+"Dukes"
+],
+[
+"Karla",
+"Diaz‐Ordaz"
+],
+[
+"Stijn",
+"Vansteelandt"
+]
+]
+},
+"kennedy2016": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2016,
+"doi": "10.1007/978-3-319-41259-7_8",
+"title": "Semiparametric Theory and Empirical Processes in Causal Inference",
+"cont": "ICSA book series in statistics",
+"vol": null,
+"iss": null,
+"page": "141-167",
+"authors": [
+[
+"Edward H.",
+"Kennedy"
+]
+]
+},
+"chernozhukov2017dml": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2017,
+"want": 2017,
+"doi": "10.1257/aer.p20171038",
+"title": "Double/Debiased/Neyman Machine Learning of Treatment Effects",
+"cont": "American Economic Review",
+"vol": "107",
+"iss": "5",
+"page": "261-265",
+"authors": [
+[
+"Victor",
+"Chernozhukov"
+],
+[
+"Denis",
+"Chetverikov"
+],
+[
+"Mert",
+"Demirer"
+],
+[
+"Esther",
+"Duflo"
+],
+[
+"Christian",
+"Hansen"
+],
+[
+"Whitney K.",
+"Newey"
+]
+]
+},
+"chang2020": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2020,
+"doi": "10.1093/ectj/utaa001",
+"title": "Double/debiased machine learning for difference-in-differences models",
+"cont": "The Econometrics Journal",
+"vol": "23",
+"iss": "2",
+"page": "177-191",
+"authors": [
+[
+"Neng-Chieh",
+"Chang"
+]
+]
+},
+"fan2022": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2022,
+"doi": "10.1080/07350015.2020.1811102",
+"title": "Estimation of Conditional Average Treatment Effects With High-Dimensional Data",
+"cont": "Journal of Business &amp; Economic Statistics",
+"vol": "40",
+"iss": "1",
+"page": "313-327",
+"authors": [
+[
+"Qingliang",
+"Fan"
+],
+[
+"Yu-Chin",
+"Hsu"
+],
+[
+"Robert P.",
+"Lieli"
+],
+[
+"Yichong",
+"Zhang"
+]
+]
+},
+"robins2000msm": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2000,
+"want": 2000,
+"doi": "10.1097/00001648-200009000-00011",
+"title": "Marginal Structural Models and Causal Inference in Epidemiology",
+"cont": "Epidemiology",
+"vol": "11",
+"iss": "5",
+"page": "550-560",
+"authors": [
+[
+"James M.",
+"Robins"
+],
+[
+"Miguel Ángel",
+"Hernán"
+],
+[
+"Babette",
+"Brumback"
+]
+]
+},
+"granger1969": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1969,
+"want": 1969,
+"doi": "10.2307/1912791",
+"title": "Investigating Causal Relations by Econometric Models and Cross-spectral Methods",
+"cont": "Econometrica",
+"vol": "37",
+"iss": "3",
+"page": "424",
+"authors": [
+[
+"C. W. J.",
+"Granger"
+]
+]
+},
+"runge2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.1126/sciadv.aau4996",
+"title": "Detecting and quantifying causal associations in large nonlinear time series datasets",
+"cont": "Science Advances",
+"vol": "5",
+"iss": "11",
+"page": "eaau4996-eaau4996",
+"authors": [
+[
+"Jakob",
+"Runge"
+],
+[
+"Peer Johannes",
+"Nowack"
+],
+[
+"Marlene",
+"Kretschmer"
+],
+[
+"Seth",
+"Flaxman"
+],
+[
+"Dino",
+"Sejdinović"
+]
+]
+},
+"runge2019natcomm": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2019,
+"want": 2019,
+"doi": "10.1038/s41467-019-10105-3",
+"title": "Inferring causation from time series in Earth system sciences",
+"cont": "Nature Communications",
+"vol": "10",
+"iss": "1",
+"page": null,
+"authors": [
+[
+"Jakob",
+"Runge"
+],
+[
+"Sebastian",
+"Bathiany"
+],
+[
+"Erik",
+"Bollt"
+],
+[
+"Gustau",
+"Camps-Valls"
+],
+[
+"Dim",
+"Coumou"
+],
+[
+"Ethan",
+"Deyle"
+],
+[
+"Clark",
+"Glymour"
+],
+[
+"Marlene",
+"Kretschmer"
+],
+[
+"Miguel D.",
+"Mahecha"
+],
+[
+"Jordi",
+"Muñoz-Marí"
+],
+[
+"Egbert H.",
+"van Nes"
+],
+[
+"Jonas",
+"Peters"
+],
+[
+"Rick",
+"Quax"
+],
+[
+"Markus",
+"Reichstein"
+],
+[
+"Marten",
+"Scheffer"
+],
+[
+"Bernhard",
+"Schölkopf"
+],
+[
+"Peter",
+"Spirtes"
+],
+[
+"George",
+"Sugihara"
+],
+[
+"Jie",
+"Sun"
+],
+[
+"Kun",
+"Zhang"
+],
+[
+"Jakob",
+"Zscheischler"
+]
+]
+},
+"sugihara2012": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2012,
+"want": 2012,
+"doi": "10.1126/science.1227079",
+"title": "Detecting Causality in Complex Ecosystems",
+"cont": "Science",
+"vol": "338",
+"iss": "6106",
+"page": "496-500",
+"authors": [
+[
+"George",
+"Sugihara"
+],
+[
+"Robert",
+"May"
+],
+[
+"Hao",
+"Ye"
+],
+[
+"Chih-hao",
+"Hsieh"
+],
+[
+"Ethan",
+"Deyle"
+],
+[
+"Michael",
+"Fogarty"
+],
+[
+"Stephan",
+"Munch"
+]
+]
+},
+"brodersen2015": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2015,
+"want": 2015,
+"doi": "10.1214/14-aoas788",
+"title": "Inferring causal impact using Bayesian structural time-series models",
+"cont": "The Annals of Applied Statistics",
+"vol": "9",
+"iss": "1",
+"page": "247-274",
+"authors": [
+[
+"Kay H.",
+"Brodersen"
+],
+[
+"Fabian",
+"Gallusser"
+],
+[
+"Jim",
+"Koehler"
+],
+[
+"Nicolas",
+"Remy"
+],
+[
+"Steven L.",
+"Scott"
+]
+]
+},
+"abadie2010": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2007,
+"want": 2010,
+"doi": "10.3386/t0335",
+"title": "Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California's Tobacco Control Program",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Alberto",
+"Abadie"
+],
+[
+"Alexis",
+"Diamond"
+],
+[
+"Jens",
+"Hainmueller"
+]
+]
+},
+"bojinov2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.1080/01621459.2018.1527225",
+"title": "Time Series Experiments and Causal Estimands: Exact Randomization Tests and Trading",
+"cont": "Journal of the American Statistical Association",
+"vol": "114",
+"iss": "528",
+"page": "1665-1682",
+"authors": [
+[
+"Iavor",
+"Bojinov"
+],
+[
+"Neil",
+"Shephard"
+]
+]
+},
+"newey1987": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1987,
+"want": 1987,
+"doi": "10.2307/1913610",
+"title": "A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix",
+"cont": "Econometrica",
+"vol": "55",
+"iss": "3",
+"page": "703",
+"authors": [
+[
+"Whitney K.",
+"Newey"
+],
+[
+"Kenneth D.",
+"West"
+]
+]
+},
+"andrews1991": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1991,
+"want": 1991,
+"doi": "10.2307/2938229",
+"title": "Heteroskedasticity and Autocorrelation Consistent Covariance Matrix Estimation",
+"cont": "Econometrica",
+"vol": "59",
+"iss": "3",
+"page": "817",
+"authors": [
+[
+"Donald W. K.",
+"Andrews"
+]
+]
+},
+"politis1994": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1994,
+"want": 1994,
+"doi": "10.1080/01621459.1994.10476870",
+"title": "The Stationary Bootstrap",
+"cont": "Journal of the American Statistical Association",
+"vol": "89",
+"iss": "428",
+"page": "1303-1303",
+"authors": [
+[
+"Dimitris N.",
+"Politis"
+],
+[
+"Joseph P.",
+"Romano"
+]
+]
+},
+"kunsch1989": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": false,
+"y": 1989,
+"want": 1989,
+"doi": "10.1214/aos/1176347265",
+"title": "The Jackknife and the Bootstrap for General Stationary Observations",
+"cont": "The Annals of Statistics",
+"vol": "17",
+"iss": "3",
+"page": "1217-1241",
+"authors": [
+[
+"Hans R.",
+"Kunsch"
+]
+]
+},
+"racine2000": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2000,
+"want": 2000,
+"doi": "10.1016/s0304-4076(00)00030-0",
+"title": "Consistent cross-validatory model-selection for dependent data: hv-block cross-validation",
+"cont": "Journal of Econometrics",
+"vol": "99",
+"iss": "1",
+"page": "39-61",
+"authors": [
+[
+"Jeffrey Scott",
+"Racine"
+]
+]
+},
+"bergmeir2018": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2018,
+"want": 2018,
+"doi": "10.1016/j.csda.2017.11.003",
+"title": "A note on the validity of cross-validation for evaluating autoregressive time series prediction",
+"cont": "Computational Statistics &amp; Data Analysis",
+"vol": "120",
+"iss": null,
+"page": "70-83",
+"authors": [
+[
+"Christoph",
+"Bergmeir"
+],
+[
+"Rob J.",
+"Hyndman"
+],
+[
+"Bonsoo",
+"Koo"
+]
+]
+},
+"bergmeir2012": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2012,
+"want": 2012,
+"doi": "10.1016/j.ins.2011.12.028",
+"title": "On the use of cross-validation for time series predictor evaluation",
+"cont": "Information Sciences",
+"vol": "191",
+"iss": null,
+"page": "192-213",
+"authors": [
+[
+"Christoph",
+"Bergmeir"
+],
+[
+"José M.",
+"Benítez"
+]
+]
+},
+"bradley2005": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2005,
+"want": 2005,
+"doi": "10.1214/154957805100000104",
+"title": "Basic Properties of Strong Mixing Conditions. A Survey and Some Open Questions",
+"cont": "Probability Surveys",
+"vol": "2",
+"iss": "none",
+"page": "107-144",
+"authors": [
+[
+"Richard C.",
+"Bradley"
+]
+]
+},
+"yu1994": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1994,
+"want": 1994,
+"doi": "10.1214/aop/1176988849",
+"title": "Rates of Convergence for Empirical Processes of Stationary Mixing Sequences",
+"cont": "The Annals of Probability",
+"vol": "22",
+"iss": "1",
+"page": "94-116",
+"authors": [
+[
+"Bin",
+"Yu"
+]
+]
+},
+"mcdonald2015": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2015,
+"want": 2015,
+"doi": "10.1214/15-ejs1094",
+"title": "Estimating beta-mixing coefficients via histograms",
+"cont": "Electronic Journal of Statistics",
+"vol": "9",
+"iss": "2",
+"page": "2855-2883",
+"authors": [
+[
+"Daniel J.",
+"McDonald"
+],
+[
+"Cosma Rohilla",
+"Shalizi"
+],
+[
+"Mark J.",
+"Schervish"
+]
+]
+},
+"lewis2021dyn": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2020,
+"want": 2021,
+"doi": "",
+"title": "Double/Debiased Machine Learning for Dynamic Treatment Effects",
+"cont": "arXiv (Cornell University)",
+"vol": "34",
+"iss": null,
+"page": "",
+"authors": [
+[
+"Greg",
+"Lewis"
+],
+[
+"Vasilis",
+"Syrgkanis"
+]
+]
+},
+"hernan2016": {
+"src": "crossref",
+"ok": true,
+"sim": 0.96,
+"am": true,
+"y": 2016,
+"want": 2016,
+"doi": "10.1093/aje/kwv254",
+"title": "Using Big Data to Emulate a Target Trial When a Randomized Trial Is Not Available: Table 1.",
+"cont": "American Journal of Epidemiology",
+"vol": "183",
+"iss": "8",
+"page": "758-764",
+"authors": [
+[
+"Miguel A.",
+"Hernán"
+],
+[
+"James M.",
+"Robins"
+]
+]
+},
+"hyndman2008": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2008,
+"want": 2008,
+"doi": "10.18637/jss.v027.i03",
+"title": "Automatic Time Series Forecasting: The forecast Package for R",
+"cont": "Journal of Statistical Software",
+"vol": "27",
+"iss": "3",
+"page": "",
+"authors": [
+[
+"Rob J.",
+"Hyndman"
+],
+[
+"Yeasmin",
+"Khandakar"
+]
+]
+},
+"kiviet": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2024,
+"want": 2024,
+"doi": "10.3150/23-bej1711",
+"title": "Boundary adaptive local polynomial conditional density estimators",
+"cont": "Bernoulli",
+"vol": "30",
+"iss": "4",
+"page": "3193-3223",
+"authors": [
+[
+"Matias D.",
+"Cattaneo"
+],
+[
+"Rajita",
+"Chandak"
+],
+[
+"Michael",
+"Jansson"
+],
+[
+"Xinwei",
+"Ma"
+]
+]
+},
+"rabiner1989": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1989,
+"want": 1989,
+"doi": "10.1109/5.18626",
+"title": "A tutorial on hidden Markov models and selected applications in speech recognition",
+"cont": "Proceedings of the IEEE",
+"vol": "77",
+"iss": "2",
+"page": "257-286",
+"authors": [
+[
+"L. R.",
+"Rabiner"
+]
+]
+},
+"baum1970": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1970,
+"want": 1970,
+"doi": "10.1214/aoms/1177697196",
+"title": "A Maximization Technique Occurring in the Statistical Analysis of Probabilistic Functions of Markov Chains",
+"cont": "The Annals of Mathematical Statistics",
+"vol": "41",
+"iss": "1",
+"page": "164-171",
+"authors": [
+[
+"Leonard E.",
+"Baum"
+],
+[
+"Ted",
+"Petrie"
+],
+[
+"George",
+"Soules"
+],
+[
+"Norman",
+"Weiss"
+]
+]
+},
+"baumpetrie1966": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1966,
+"want": 1966,
+"doi": "10.1214/aoms/1177699147",
+"title": "Statistical Inference for Probabilistic Functions of Finite State Markov Chains",
+"cont": "The Annals of Mathematical Statistics",
+"vol": "37",
+"iss": "6",
+"page": "1554-1563",
+"authors": [
+[
+"Leonard E.",
+"Baum"
+],
+[
+"Ted",
+"Petrie"
+]
+]
+},
+"dempster1977": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1977,
+"want": 1977,
+"doi": "10.1111/j.2517-6161.1977.tb01600.x",
+"title": "Maximum Likelihood from Incomplete Data Via the EM Algorithm",
+"cont": "Journal of the Royal Statistical Society Series B (Statistical Methodology)",
+"vol": "39",
+"iss": "1",
+"page": "1-22",
+"authors": [
+[
+"A. P.",
+"Dempster"
+],
+[
+"Nan M.",
+"Laird"
+],
+[
+"Donald B.",
+"Rubin"
+]
+]
+},
+"kuroki2014": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2011,
+"want": 2014,
+"doi": "10.21236/ada557455",
+"title": "Measurement Bias and Effect Restoration in Causal Inference",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Manabu",
+"Kuroki"
+],
+[
+"Judea",
+"Pearl"
+]
+]
+},
+"louizos2017": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2017,
+"want": 2017,
+"doi": "10.48550/arxiv.1705.08821",
+"title": "Causal Effect Inference with Deep Latent-Variable Models",
+"cont": "UvA-DARE (University of Amsterdam)",
+"vol": "30",
+"iss": null,
+"page": "6446-6456",
+"authors": [
+[
+"Christos",
+"Louizos"
+],
+[
+"Uri",
+"Shalit"
+],
+[
+"Joris M.",
+"Mooij"
+],
+[
+"David Alexander",
+"Sontag"
+],
+[
+"Richard S.",
+"Zemel"
+],
+[
+"Max",
+"Welling"
+]
+]
+},
+"ranganath2018": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2018,
+"doi": "10.48550/arxiv.1805.08273",
+"title": "Multiple Causal Inference with Latent Confounding",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Rajesh",
+"Ranganath"
+],
+[
+"Adler",
+"Perotte"
+]
+]
+},
+"ogburn2019": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2019,
+"want": 2019,
+"doi": "10.1080/01621459.2019.1689139",
+"title": "Comment on “Blessings of Multiple Causes”",
+"cont": "Journal of the American Statistical Association",
+"vol": "114",
+"iss": "528",
+"page": "1611-1615",
+"authors": [
+[
+"Elizabeth L.",
+"Ogburn"
+],
+[
+"Ilya",
+"Shpitser"
+],
+[
+"Eric J. Tchetgen",
+"Tchetgen"
+]
+]
+},
+"shi2019dragonnet": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.48550/arxiv.1906.02120",
+"title": "Adapting Neural Networks for the Estimation of Treatment Effects",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Claudia",
+"Shi"
+],
+[
+"David M.",
+"Blei"
+],
+[
+"Victor",
+"Veitch"
+]
+]
+},
+"veitch2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "10.48550/arxiv.1902.04114",
+"title": "Using Embeddings to Correct for Unobserved Confounding in Networks",
+"cont": "arXiv (Cornell University)",
+"vol": "32",
+"iss": null,
+"page": "13769-13779",
+"authors": [
+[
+"Victor",
+"Veitch"
+],
+[
+"Zhaoran",
+"Wang"
+],
+[
+"David M.",
+"Blei"
+]
+]
+},
+"kallus2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2019,
+"doi": "10.48550/arxiv.1810.02894",
+"title": "Interval Estimation of Individual-Level Causal Effects Under Unobserved Confounding",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "2281-2290",
+"authors": [
+[
+"Nathan",
+"Kallus"
+],
+[
+"Xiaojie",
+"Mao"
+],
+[
+"Angela",
+"Zhou"
+]
+]
+},
+"anandkumar2014": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2012,
+"want": 2014,
+"doi": "10.48550/arxiv.1210.7559",
+"title": "Tensor decompositions for learning latent variable models",
+"cont": "arXiv (Cornell University)",
+"vol": "15",
+"iss": "1",
+"page": "2773-2832",
+"authors": [
+[
+"Animashree",
+"Anandkumar"
+],
+[
+"Ge,",
+"Rong"
+],
+[
+"Daniel",
+"Hsu"
+],
+[
+"Sham M.",
+"Kakade"
+],
+[
+"Matus",
+"Telgarsky"
+]
+]
+},
+"schoelkopf2021": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2021,
+"doi": "10.1109/jproc.2021.3058954",
+"title": "Toward Causal Representation Learning",
+"cont": "Proceedings of the IEEE",
+"vol": "109",
+"iss": "5",
+"page": "612-634",
+"authors": [
+[
+"Bernhard",
+"Schölkopf"
+],
+[
+"Francesco",
+"Locatello"
+],
+[
+"Stefan",
+"Bauer"
+],
+[
+"Nan Rosemary",
+"Ke"
+],
+[
+"Nal",
+"Kalchbrenner"
+],
+[
+"Anirudh",
+"Goyal"
+],
+[
+"Yoshua",
+"Bengio"
+]
+]
+},
+"gassiat2016": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2015,
+"want": 2016,
+"doi": "10.1007/s11222-014-9523-8",
+"title": "Inference in finite state space non parametric Hidden Markov Models and applications",
+"cont": "Statistics and Computing",
+"vol": "26",
+"iss": "1-2",
+"page": "61-71",
+"authors": [
+[
+"E.",
+"Gassiat"
+],
+[
+"A.",
+"Cleynen"
+],
+[
+"S.",
+"Robin"
+]
+]
+},
+"vanhandel2009": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2009,
+"want": 2009,
+"doi": "10.1016/j.spa.2009.09.004",
+"title": "Uniform time average consistency of Monte Carlo particle filters",
+"cont": "Stochastic Processes and their Applications",
+"vol": "119",
+"iss": "11",
+"page": "3835-3861",
+"authors": [
+[
+"Ramon van",
+"Handel"
+]
+]
+},
+"hamilton1990": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1990,
+"want": 1990,
+"doi": "10.1016/0304-4076(90)90093-9",
+"title": "Analysis of time series subject to changes in regime",
+"cont": "Journal of Econometrics",
+"vol": "45",
+"iss": "1-2",
+"page": "39-70",
+"authors": [
+[
+"James Douglas",
+"Hamilton"
+]
+]
+},
+"hamilton2016": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2016,
+"doi": "10.1016/bs.hesmac.2016.03.004",
+"title": "Macroeconomic Regimes and Regime Shifts",
+"cont": "Handbook of macroeconomics",
+"vol": null,
+"iss": null,
+"page": "163-201",
+"authors": [
+[
+"James Douglas",
+"Hamilton"
+]
+]
+},
+"chib1998": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1998,
+"want": 1998,
+"doi": "10.1016/s0304-4076(97)00115-2",
+"title": "Estimation and comparison of multiple change-point models",
+"cont": "Journal of Econometrics",
+"vol": "86",
+"iss": "2",
+"page": "221-241",
+"authors": [
+[
+"Siddhartha",
+"Chib"
+]
+]
+},
+"bartolucci2014": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2012,
+"want": 2014,
+"doi": "10.1201/b13246",
+"title": "Latent Markov Models for Longitudinal Data",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Francesco",
+"Bartolucci"
+],
+[
+"Alessio",
+"Farcomeni"
+],
+[
+"Fulvia",
+"Pennoni"
+]
+]
+},
+"vermunt2010": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2010,
+"want": 2010,
+"doi": "10.1093/pan/mpq025",
+"title": "Latent Class Modeling with Covariates: Two Improved Three-Step Approaches",
+"cont": "Political Analysis",
+"vol": "18",
+"iss": "4",
+"page": "450-469",
+"authors": [
+[
+"Jeroen K.",
+"Vermunt"
+]
+]
+},
+"bakk2013": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2014,
+"want": 2013,
+"doi": "10.1093/pan/mpu003",
+"title": "Relating Latent Class Assignments to External Variables: Standard Errors for Correct Inference",
+"cont": "Political Analysis",
+"vol": "22",
+"iss": "4",
+"page": "520-540",
+"authors": [
+[
+"Zsuzsa",
+"Bakk"
+],
+[
+"Daniel Leonard",
+"Oberski"
+],
+[
+"Jeroen Kornelis",
+"Vermunt"
+]
+]
+},
+"lipsitch2010": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2010,
+"want": 2010,
+"doi": "10.1097/ede.0b013e3181d61eeb",
+"title": "Negative Controls: A Tool for Detecting Confounding and Bias in Observational Studies",
+"cont": "Epidemiology",
+"vol": "21",
+"iss": "3",
+"page": "383-388",
+"authors": [
+[
+"Marc",
+"Lipsitch"
+],
+[
+"Eric Tchetgen",
+"Tchetgen"
+],
+[
+"Ted",
+"Cohen"
+]
+]
+},
+"shi2020nc": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2020,
+"doi": "10.1111/rssb.12361",
+"title": "Multiply Robust Causal Inference with Double-Negative Control Adjustment for Categorical Unmeasured Confounding",
+"cont": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+"vol": "82",
+"iss": "2",
+"page": "521-540",
+"authors": [
+[
+"Xu",
+"Shi"
+],
+[
+"Wang",
+"Miao"
+],
+[
+"Jennifer C.",
+"Nelson"
+],
+[
+"Eric J.",
+"Tchetgen Tchetgen"
+]
+]
+},
+"shi2020rev": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2020,
+"want": 2020,
+"doi": "10.1007/s40471-020-00243-4",
+"title": "A Selective Review of Negative Control Methods in Epidemiology",
+"cont": "Current Epidemiology Reports",
+"vol": "7",
+"iss": "4",
+"page": "190-202",
+"authors": [
+[
+"Xu",
+"Shi"
+],
+[
+"Wang",
+"Miao"
+],
+[
+"Eric Tchetgen",
+"Tchetgen"
+]
+]
+},
+"kallus2022": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2022,
+"doi": "10.48550/arxiv.2103.14029",
+"title": "Causal Inference Under Unmeasured Confounding With Negative Controls: A Minimax Learning Approach",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Nathan",
+"Kallus"
+],
+[
+"Xiaojie",
+"Mao"
+],
+[
+"Masatoshi",
+"Uehara"
+],
+[
+"Zhang,",
+"Zhiheng"
+]
+]
+},
+"deaner2018": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2018,
+"doi": "10.48550/arxiv.1810.00283",
+"title": "Proxy Controls and Panel Data",
+"cont": "RePEc: Research Papers in Economics",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Ben",
+"Deaner"
+]
+]
+},
+"miao2018b": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2018,
+"want": 2018,
+"doi": "10.1093/biomet/asy038",
+"title": "Identifying causal effects with proxy variables of an unmeasured confounder",
+"cont": "Biometrika",
+"vol": "105",
+"iss": "4",
+"page": "987-993",
+"authors": [
+[
+"Wang",
+"Miao"
+],
+[
+"Zhi",
+"Geng"
+],
+[
+"Eric J",
+"Tchetgen Tchetgen"
+]
+]
+},
+"tchetgen2020": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2020,
+"doi": "10.1101/2020.09.21.20198762",
+"title": "An Introduction to Proximal Causal Learning",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Eric J Tchetgen",
+"Tchetgen"
+],
+[
+"Andrew",
+"Ying"
+],
+[
+"Yifan",
+"Cui"
+],
+[
+"Xu",
+"Shi"
+],
+[
+"Wang",
+"Miao"
+]
+]
+},
+"liu2024proxy": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2024,
+"want": 2024,
+"doi": "10.1093/aje/kwae370",
+"title": "Regression-based proximal causal inference",
+"cont": "American Journal of Epidemiology",
+"vol": "194",
+"iss": "7",
+"page": "2030-2036",
+"authors": [
+[
+"Jiewen",
+"Liu"
+],
+[
+"Chan",
+"Park"
+],
+[
+"Kendrick",
+"Li"
+],
+[
+"Eric J",
+"Tchetgen Tchetgen"
+]
+]
+},
+"shpitser2023": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2023,
+"doi": "",
+"title": "Proximal Causal Inference with Hidden Mediators: Front-Door and Related Mediation Problems.",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"AmirEmad",
+"Ghassami"
+],
+[
+"Ilya",
+"Shpitser"
+],
+[
+"Eric Tchetgen",
+"Tchetgen"
+]
+]
+},
+"rosenbaum1983sens": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1983,
+"want": 1983,
+"doi": "10.1111/j.2517-6161.1983.tb01242.x",
+"title": "Assessing Sensitivity to an Unobserved Binary Covariate in an Observational Study with Binary Outcome",
+"cont": "Journal of the Royal Statistical Society Series B (Statistical Methodology)",
+"vol": "45",
+"iss": "2",
+"page": "212-218",
+"authors": [
+[
+"Peter",
+"Rosenbaum"
+],
+[
+"Donald B.",
+"Rubin"
+]
+]
+},
+"imbens2003": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2003,
+"want": 2003,
+"doi": "10.1257/000282803321946921",
+"title": "Sensitivity to Exogeneity Assumptions in Program Evaluation",
+"cont": "American Economic Review",
+"vol": "93",
+"iss": "2",
+"page": "126-132",
+"authors": [
+[
+"Guido W",
+"Imbens"
+]
+]
+},
+"vanderweele2017": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2017,
+"want": 2017,
+"doi": "10.7326/m16-2607",
+"title": "Sensitivity Analysis in Observational Research: Introducing the E-Value",
+"cont": "Annals of Internal Medicine",
+"vol": "167",
+"iss": "4",
+"page": "268-274",
+"authors": [
+[
+"Tyler J.",
+"VanderWeele"
+],
+[
+"Peng",
+"Ding"
+]
+]
+},
+"oster2019": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2017,
+"want": 2019,
+"doi": "10.1080/07350015.2016.1227711",
+"title": "Unobservable Selection and Coefficient Stability: Theory and Evidence",
+"cont": "Journal of Business &amp; Economic Statistics",
+"vol": "37",
+"iss": "2",
+"page": "187-204",
+"authors": [
+[
+"Emily",
+"Oster"
+]
+]
+},
+"altonji2005": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2005,
+"want": 2005,
+"doi": "10.1086/426036",
+"title": "Selection on Observed and Unobserved Variables: Assessing the Effectiveness of Catholic Schools",
+"cont": "Journal of Political Economy",
+"vol": "113",
+"iss": "1",
+"page": "151-184",
+"authors": [
+[
+"Joseph G.",
+"Altonji"
+],
+[
+"Todd E.",
+"Elder"
+],
+[
+"Christopher R.",
+"Taber"
+]
+]
+},
+"cinelli2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2019,
+"doi": "",
+"title": "Sensitivity Analysis of Linear Structural Causal Models",
+"cont": "International Conference on Machine Learning",
+"vol": null,
+"iss": null,
+"page": "1252-1261",
+"authors": [
+[
+"Carlos",
+"Cinelli"
+],
+[
+"Daniel R.",
+"Kumor"
+],
+[
+"Bryant",
+"Chen"
+],
+[
+"Judea",
+"Pearl"
+],
+[
+"Elias",
+"Bareinboim"
+]
+]
+},
+"tan2006": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2006,
+"want": 2006,
+"doi": "10.1198/016214506000000023",
+"title": "A Distributional Approach for Causal Inference Using Propensity Scores",
+"cont": "Journal of the American Statistical Association",
+"vol": "101",
+"iss": "476",
+"page": "1619-1637",
+"authors": [
+[
+"Zhiqiang",
+"Tan"
+]
+]
+},
+"masten2018": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2017,
+"want": 2018,
+"doi": "10.2139/ssrn.3010774",
+"title": "Identification of Treatment Effects under Conditional Partial Independence",
+"cont": "SSRN Electronic Journal",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Matthew A.",
+"Masten"
+],
+[
+"Alexandre",
+"Poirier"
+]
+]
+},
+"manski1990": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1989,
+"want": 1990,
+"doi": "",
+"title": "NONPARAMETRIC BOUNDS ON TREATMENT EFFECTS",
+"cont": "American Economic Review",
+"vol": "80",
+"iss": "2",
+"page": "319-323",
+"authors": [
+[
+"Charles F.",
+"Manski"
+]
+]
+},
+"zhang2021sens": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2021,
+"want": 2021,
+"doi": "10.1609/aaai.v35i13.17449",
+"title": "Bounding Causal Effects on Continuous Outcome",
+"cont": "Proceedings of the AAAI Conference on Artificial Intelligence",
+"vol": "35",
+"iss": "13",
+"page": "12207-12215",
+"authors": [
+[
+"Junzhe",
+"Zhang"
+],
+[
+"Elias",
+"Bareinboim"
+]
+]
+},
+"bhattacharya2007": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2007,
+"want": 2007,
+"doi": "10.3386/t0343",
+"title": "Do Instrumental Variables Belong in Propensity Scores?",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Jay",
+"Bhattacharya"
+],
+[
+"William",
+"Vogt"
+]
+]
+},
+"wooldridge2016": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2016,
+"want": 2016,
+"doi": "10.1016/j.rie.2016.01.001",
+"title": "Should instrumental variables be used as matching variables?",
+"cont": "Research in Economics",
+"vol": "70",
+"iss": "2",
+"page": "232-237",
+"authors": [
+[
+"Jeffrey M.",
+"Wooldridge"
+]
+]
+},
+"myers2011": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2011,
+"want": 2011,
+"doi": "10.1093/aje/kwr364",
+"title": "Effects of Adjusting for Instrumental Variables on Bias and Precision of Effect Estimates",
+"cont": "American Journal of Epidemiology",
+"vol": "174",
+"iss": "11",
+"page": "1213-1222",
+"authors": [
+[
+"Jessica A.",
+"Myers"
+],
+[
+"Jeremy A.",
+"Rassen"
+],
+[
+"Joshua J.",
+"Gagne"
+],
+[
+"Krista F.",
+"Huybrechts"
+],
+[
+"Sebastian",
+"Schneeweiss"
+],
+[
+"Kenneth J.",
+"Rothman"
+],
+[
+"Marshall M.",
+"Joffe"
+],
+[
+"Robert J.",
+"Glynn"
+]
+]
+},
+"middleton2016": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2016,
+"doi": "10.1093/pan/mpw015",
+"title": "Bias Amplification and Bias Unmasking",
+"cont": "Political Analysis",
+"vol": "24",
+"iss": "3",
+"page": "307-323",
+"authors": [
+[
+"Joel A.",
+"Middleton"
+],
+[
+"Marc A.",
+"Scott"
+],
+[
+"Ronli",
+"Diakow"
+],
+[
+"Jennifer",
+"Hill"
+]
+]
+},
+"pearl2011": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2011,
+"want": 2011,
+"doi": "10.1093/aje/kwr352",
+"title": "Invited Commentary: Understanding Bias Amplification",
+"cont": "American Journal of Epidemiology",
+"vol": "174",
+"iss": "11",
+"page": "1223-1227",
+"authors": [
+[
+"J.",
+"Pearl"
+]
+]
+},
+"rothe2017": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2015,
+"want": 2017,
+"doi": "10.2139/ssrn.2554886",
+"title": "Robust Confidence Intervals for Average Treatment Effects Under Limited Overlap",
+"cont": "SSRN Electronic Journal",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Christoph",
+"Rothe"
+]
+]
+},
+"khan2010": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": false,
+"y": 2010,
+"want": 2010,
+"doi": "10.3982/ecta7372",
+"title": "Irregular Identification, Support Conditions, and Inverse Weight Estimation",
+"cont": "Econometrica",
+"vol": "78",
+"iss": "6",
+"page": "2021-2042",
+"authors": []
+},
+"ma2020": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2019,
+"want": 2020,
+"doi": "10.1080/01621459.2019.1660173",
+"title": "Robust Inference Using Inverse Probability Weighting",
+"cont": "Journal of the American Statistical Association",
+"vol": "115",
+"iss": "532",
+"page": "1851-1860",
+"authors": [
+[
+"Xinwei",
+"Ma"
+],
+[
+"Jingshen",
+"Wang"
+]
+]
+},
+"li2018": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2018,
+"doi": "10.1080/01621459.2016.1260466",
+"title": "Balancing Covariates via Propensity Score Weighting",
+"cont": "Journal of the American Statistical Association",
+"vol": "113",
+"iss": "521",
+"page": "390-400",
+"authors": [
+[
+"Fan",
+"Li"
+],
+[
+"Kari Lock",
+"Morgan"
+],
+[
+"Alan M.",
+"Zaslavsky"
+]
+]
+},
+"heiler2021": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2020,
+"want": 2021,
+"doi": "10.1016/j.jeconom.2020.03.025",
+"title": "Valid inference for treatment effect parameters under irregular identification and many extreme propensity scores",
+"cont": "Journal of Econometrics",
+"vol": "222",
+"iss": "2",
+"page": "1083-1108",
+"authors": [
+[
+"Phillip",
+"Heiler"
+],
+[
+"Ekaterina",
+"Kazak"
+]
+]
+},
+"rubin2008": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2008,
+"want": 2008,
+"doi": "10.1214/08-aoas187",
+"title": "For objective causal inference, design trumps analysis",
+"cont": "The Annals of Applied Statistics",
+"vol": "2",
+"iss": "3",
+"page": "808-840",
+"authors": [
+[
+"Donald B.",
+"Rubin"
+]
+]
+},
+"stuart2010": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2010,
+"want": 2010,
+"doi": "10.1214/09-sts313",
+"title": "Matching Methods for Causal Inference: A Review and a Look Forward",
+"cont": "Statistical Science",
+"vol": "25",
+"iss": "1",
+"page": "1-21",
+"authors": [
+[
+"Elizabeth A.",
+"Stuart"
+]
+]
+},
+"hahn1998": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1998,
+"want": 1998,
+"doi": "10.2307/2998560",
+"title": "On the Role of the Propensity Score in Efficient Semiparametric Estimation of Average Treatment Effects",
+"cont": "Econometrica",
+"vol": "66",
+"iss": "2",
+"page": "315",
+"authors": [
+[
+"Jinyong",
+"Hahn"
+]
+]
+},
+"dominici2002": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2002,
+"want": 2002,
+"doi": "10.1198/016214502753479266",
+"title": "Air Pollution and Mortality: Estimating Regional and National Dose-Response Relationships",
+"cont": "Journal of the American Statistical Association",
+"vol": "97",
+"iss": "457",
+"page": "100-111",
+"authors": [
+[
+"Francesca",
+"Dominici"
+],
+[
+"Michael J.",
+"Daniels"
+],
+[
+"Scott L.",
+"Zeger"
+],
+[
+"Jonathan M.",
+"Samet"
+]
+]
+},
+"zigler2014": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2014,
+"want": 2014,
+"doi": "10.1093/aje/kwu263",
+"title": "Point: Clarifying Policy Evidence With Potential-Outcomes Thinking--Beyond Exposure-Response Estimation in Air Pollution Epidemiology",
+"cont": "American Journal of Epidemiology",
+"vol": "180",
+"iss": "12",
+"page": "1133-1140",
+"authors": [
+[
+"C. M.",
+"Zigler"
+],
+[
+"F.",
+"Dominici"
+]
+]
+},
+"wu2020": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2020,
+"want": 2020,
+"doi": "10.1126/sciadv.aba5692",
+"title": "Evaluating the impact of long-term exposure to fine particulate matter on mortality among the elderly",
+"cont": "Science Advances",
+"vol": "6",
+"iss": "29",
+"page": null,
+"authors": [
+[
+"X.",
+"Wu"
+],
+[
+"D.",
+"Braun"
+],
+[
+"J.",
+"Schwartz"
+],
+[
+"M. A.",
+"Kioumourtzoglou"
+],
+[
+"F.",
+"Dominici"
+]
+]
+},
+"henneman2019": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2019,
+"want": 2019,
+"doi": "10.1097/ede.0000000000001024",
+"title": "Accountability Assessment of Health Improvements in the United States Associated with Reduced Coal Emissions Between 2005 and 2012",
+"cont": "Epidemiology",
+"vol": "30",
+"iss": "4",
+"page": "477-485",
+"authors": [
+[
+"Lucas R. F.",
+"Henneman"
+],
+[
+"Christine",
+"Choirat"
+],
+[
+"Corwin M.",
+"Zigler"
+]
+]
+},
+"grange2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2019,
+"doi": "10.1016/j.scitotenv.2018.10.344",
+"title": "Using meteorological normalisation to detect interventions in air quality time series",
+"cont": "The Science of The Total Environment",
+"vol": "653",
+"iss": null,
+"page": "578-588",
+"authors": [
+[
+"Stuart K.",
+"Grange"
+],
+[
+"David C.",
+"Carslaw"
+]
+]
+},
+"vu2019": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2019,
+"want": 2019,
+"doi": "10.5194/acp-19-11303-2019",
+"title": "Assessing the impact of clean air action on air quality trends in Beijing using a machine learning technique",
+"cont": "Atmospheric Chemistry and Physics",
+"vol": "19",
+"iss": "17",
+"page": "11303-11314",
+"authors": [
+[
+"Tuan V.",
+"Vu"
+],
+[
+"Zongbo",
+"Shi"
+],
+[
+"Jing",
+"Cheng"
+],
+[
+"Qiang",
+"Zhang"
+],
+[
+"Kebin",
+"He"
+],
+[
+"Shuxiao",
+"Wang"
+],
+[
+"Roy M.",
+"Harrison"
+]
+]
+},
+"shi2021covid": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2021,
+"want": 2021,
+"doi": "10.1126/sciadv.abd6696",
+"title": "Abrupt but smaller than expected changes in surface air quality attributable to COVID-19 lockdowns",
+"cont": "Science Advances",
+"vol": "7",
+"iss": "3",
+"page": null,
+"authors": [
+[
+"Zongbo",
+"Shi"
+],
+[
+"Congbo",
+"Song"
+],
+[
+"Bowen",
+"Liu"
+],
+[
+"Gongda",
+"Lu"
+],
+[
+"Jingsha",
+"Xu"
+],
+[
+"Tuan",
+"Van Vu"
+],
+[
+"Robert J. R.",
+"Elliott"
+],
+[
+"Weijun",
+"Li"
+],
+[
+"William J.",
+"Bloss"
+],
+[
+"Roy M.",
+"Harrison"
+]
+]
+},
+"guttikunda2014": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2014,
+"want": 2014,
+"doi": "10.1016/j.atmosenv.2014.04.057",
+"title": "Atmospheric emissions and pollution from the coal-fired thermal power plants in India",
+"cont": "Atmospheric Environment",
+"vol": "92",
+"iss": null,
+"page": "449-460",
+"authors": [
+[
+"Sarath K.",
+"Guttikunda"
+],
+[
+"Puja",
+"Jawahar"
+]
+]
+},
+"greenstone2014": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2011,
+"want": 2014,
+"doi": "10.3386/w17210",
+"title": "Environmental Regulations, Air and Water Pollution, and Infant Mortality in India",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Michael",
+"Greenstone"
+],
+[
+"Rema",
+"Hanna"
+]
+]
+},
+"beirle2011": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2011,
+"want": 2011,
+"doi": "10.1126/science.1207824",
+"title": "Megacity Emissions and Lifetimes of Nitrogen Oxides Probed from Space",
+"cont": "Science",
+"vol": "333",
+"iss": "6050",
+"page": "1737-1739",
+"authors": [
+[
+"Steffen",
+"Beirle"
+],
+[
+"K. F.",
+"Boersma"
+],
+[
+"U.",
+"Platt"
+],
+[
+"M. G.",
+"Lawrence"
+],
+[
+"Thomas",
+"Wagner"
+]
+]
+},
+"hammer2020": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2020,
+"want": 2020,
+"doi": "10.1021/acs.est.0c01764",
+"title": "Global Estimates and Long-Term Trends of Fine Particulate Matter Concentrations (1998–2018)",
+"cont": "Environmental Science & Technology",
+"vol": "54",
+"iss": "13",
+"page": "7879-7890",
+"authors": [
+[
+"Melanie S.",
+"Hammer"
+],
+[
+"Aaron van",
+"Donkelaar"
+],
+[
+"Chi",
+"Li"
+],
+[
+"Alexei",
+"Lyapustin"
+],
+[
+"A. M.",
+"Sayer"
+],
+[
+"Nai-Yung Christina",
+"Hsu"
+],
+[
+"R. C.",
+"Levy"
+],
+[
+"M. J.",
+"Garay"
+],
+[
+"О. В.",
+"Калашникова"
+],
+[
+"Ralph A.",
+"Kahn"
+],
+[
+"Michael D",
+"Brauer"
+],
+[
+"Joshua Schulz",
+"Apte"
+],
+[
+"Daven K.",
+"Henze"
+],
+[
+"Li",
+"Zhang"
+],
+[
+"Qiang",
+"Zhang"
+],
+[
+"Bonne",
+"Ford"
+],
+[
+"Jeffrey R.",
+"Pierce"
+],
+[
+"Randall V.",
+"Martin"
+]
+]
+},
+"vandonkelaar2021": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2021,
+"want": 2021,
+"doi": "10.1021/acs.est.1c05309",
+"title": "Monthly Global Estimates of Fine Particulate Matter and Their Uncertainty",
+"cont": "Environmental Science &amp; Technology",
+"vol": "55",
+"iss": "22",
+"page": "15287-15300",
+"authors": [
+[
+"Aaron",
+"van Donkelaar"
+],
+[
+"Melanie S.",
+"Hammer"
+],
+[
+"Liam",
+"Bindle"
+],
+[
+"Michael",
+"Brauer"
+],
+[
+"Jeffery R.",
+"Brook"
+],
+[
+"Michael J.",
+"Garay"
+],
+[
+"N. Christina",
+"Hsu"
+],
+[
+"Olga V.",
+"Kalashnikova"
+],
+[
+"Ralph A.",
+"Kahn"
+],
+[
+"Colin",
+"Lee"
+],
+[
+"Robert C.",
+"Levy"
+],
+[
+"Alexei",
+"Lyapustin"
+],
+[
+"Andrew M.",
+"Sayer"
+],
+[
+"Randall V.",
+"Martin"
+]
+]
+},
+"pant2019": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2019,
+"doi": "10.1007/s11869-018-0629-6",
+"title": "Monitoring particulate matter in India: recent trends and future outlook",
+"cont": "Air Quality Atmosphere & Health",
+"vol": "12",
+"iss": "1",
+"page": "45-58",
+"authors": [
+[
+"Pallavi",
+"Pant"
+],
+[
+"Raj M.",
+"Lal"
+],
+[
+"Sarath",
+"Guttikunda"
+],
+[
+"Armistead Goode",
+"Russell"
+],
+[
+"Ajay Singh",
+"Nagpure"
+],
+[
+"Anu",
+"Ramaswami"
+],
+[
+"Richard E.",
+"Peltier"
+]
+]
+},
+"gani2019": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2019,
+"want": 2019,
+"doi": "10.5194/acp-19-6843-2019",
+"title": "Submicron aerosol composition in the world's most polluted megacity: the Delhi Aerosol Supersite study",
+"cont": "Atmospheric Chemistry and Physics",
+"vol": "19",
+"iss": "10",
+"page": "6843-6859",
+"authors": [
+[
+"Shahzad",
+"Gani"
+],
+[
+"Sahil",
+"Bhandari"
+],
+[
+"Sarah",
+"Seraj"
+],
+[
+"Dongyu S.",
+"Wang"
+],
+[
+"Kanan",
+"Patel"
+],
+[
+"Prashant",
+"Soni"
+],
+[
+"Zainab",
+"Arub"
+],
+[
+"Gazala",
+"Habib"
+],
+[
+"Lea",
+"Hildebrandt Ruiz"
+],
+[
+"Joshua S.",
+"Apte"
+]
+]
+},
+"paatero1994": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1994,
+"want": 1994,
+"doi": "10.1002/env.3170050203",
+"title": "Positive matrix factorization: A non‐negative factor model with optimal utilization of error estimates of data values",
+"cont": "Environmetrics",
+"vol": "5",
+"iss": "2",
+"page": "111-126",
+"authors": [
+[
+"Pentti",
+"Paatero"
+],
+[
+"Unto",
+"Tapper"
+]
+]
+},
+"hopke2016": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2016,
+"want": 2016,
+"doi": "10.1080/10962247.2016.1140693",
+"title": "Review of receptor modeling methods for source apportionment",
+"cont": "Journal of the Air &amp; Waste Management Association",
+"vol": "66",
+"iss": "3",
+"page": "237-259",
+"authors": [
+[
+"Philip K.",
+"Hopke"
+]
+]
+},
+"carslaw2012": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2011,
+"want": 2012,
+"doi": "10.1016/j.envsoft.2011.09.008",
+"title": "openair — An R package for air quality data analysis",
+"cont": "Environmental Modelling & Software",
+"vol": "27-28",
+"iss": null,
+"page": "52-61",
+"authors": [
+[
+"David C.",
+"Carslaw"
+],
+[
+"Karl",
+"Ropkins"
+]
+]
+},
+"lelieveld2015": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2015,
+"want": 2015,
+"doi": "10.1038/nature15371",
+"title": "The contribution of outdoor air pollution sources to premature mortality on a global scale",
+"cont": "Nature",
+"vol": "525",
+"iss": "7569",
+"page": "367-371",
+"authors": [
+[
+"Jos",
+"Lelieveld"
+],
+[
+"John S.",
+"Evans"
+],
+[
+"Mohammed S.",
+"Fnais"
+],
+[
+"Despina",
+"Giannadaki"
+],
+[
+"Andrea",
+"Pozzer"
+]
+]
+},
+"burnett2018": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2018,
+"want": 2018,
+"doi": "10.1073/pnas.1803222115",
+"title": "Global estimates of mortality associated with long-term exposure to outdoor fine particulate matter",
+"cont": "Proceedings of the National Academy of Sciences",
+"vol": "115",
+"iss": "38",
+"page": "9592-9597",
+"authors": [
+[
+"Richard Thomas",
+"Burnett"
+],
+[
+"Hong",
+"Chen"
+],
+[
+"Mieczysław",
+"Szyszkowicz"
+],
+[
+"Neal L.",
+"Fann"
+],
+[
+"Bryan",
+"Hubbell"
+],
+[
+"C. Arden",
+"Pope"
+],
+[
+"Joshua Schulz",
+"Apte"
+],
+[
+"Michael D",
+"Brauer"
+],
+[
+"Aaron",
+"Cohen"
+],
+[
+"Scott",
+"Weichenthal"
+],
+[
+"Jay S.",
+"Coggins"
+],
+[
+"Qian",
+"Di"
+],
+[
+"Bert",
+"Brunekreef"
+],
+[
+"Joseph Jon",
+"Frostad"
+],
+[
+"Stephen S",
+"Lim"
+],
+[
+"Haidong",
+"Kan"
+],
+[
+"Katherine D.",
+"Walker"
+],
+[
+"George D.",
+"Thurston"
+],
+[
+"Richard B.",
+"Hayes"
+],
+[
+"Chris Chaeha",
+"Lim"
+],
+[
+"Michelle C.",
+"Turner"
+],
+[
+"Michael",
+"Jerrett"
+],
+[
+"Daniel R.",
+"Krewski"
+],
+[
+"Susan M.",
+"Gapstur"
+],
+[
+"W. Ryan",
+"Diver"
+],
+[
+"Bart David",
+"Ostro"
+],
+[
+"Debbie E.",
+"Goldberg"
+],
+[
+"Dan L.",
+"Crouse"
+],
+[
+"Randall V.",
+"Martin"
+],
+[
+"Paul A.",
+"Peters"
+],
+[
+"Lauren L.",
+"Pinault"
+],
+[
+"Michael",
+"Tjepkema"
+],
+[
+"Aaron van",
+"Donkelaar"
+],
+[
+"Paul J.",
+"Villeneuve"
+],
+[
+"Anthony B.",
+"Miller"
+],
+[
+"Peng",
+"Yin"
+],
+[
+"Maigeng",
+"Zhou"
+],
+[
+"Lijun",
+"Wang"
+],
+[
+"Nicole",
+"Janssen"
+],
+[
+"Marten",
+"Marra"
+],
+[
+"Richard W.",
+"Atkinson"
+],
+[
+"Hilda",
+"Tsang"
+],
+[
+"TQ",
+"Thach"
+],
+[
+"John B.",
+"Cannon"
+],
+[
+"Ryan T.",
+"Allen"
+],
+[
+"Jaime E.",
+"Hart"
+],
+[
+"Francine",
+"Laden"
+],
+[
+"Giulia",
+"Cesaroni"
+],
+[
+"Francesco",
+"Forastiere"
+],
+[
+"Gudrun",
+"Weinmayr"
+],
+[
+"Andrea",
+"Jaensch"
+],
+[
+"Gabriele",
+"Nagel"
+],
+[
+"Hans",
+"Concin"
+],
+[
+"Joseph V.",
+"Spadaro"
+]
+]
+},
+"cusworth2018": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2018,
+"want": 2018,
+"doi": "10.1088/1748-9326/aab303",
+"title": "Quantifying the influence of agricultural fires in northwest India on urban air pollution in Delhi, India",
+"cont": "Environmental Research Letters",
+"vol": "13",
+"iss": "4",
+"page": "044018",
+"authors": [
+[
+"Daniel H",
+"Cusworth"
+],
+[
+"Loretta J",
+"Mickley"
+],
+[
+"Melissa P",
+"Sulprizio"
+],
+[
+"Tianjia",
+"Liu"
+],
+[
+"Miriam E",
+"Marlier"
+],
+[
+"Ruth S",
+"DeFries"
+],
+[
+"Sarath K",
+"Guttikunda"
+],
+[
+"Pawan",
+"Gupta"
+]
+]
+},
+"liu2020covidindia": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2020,
+"want": 2020,
+"doi": "10.1016/j.scitotenv.2020.138878",
+"title": "Effect of restricted emissions during COVID-19 on air quality in India",
+"cont": "The Science of The Total Environment",
+"vol": "728",
+"iss": null,
+"page": "138878-138878",
+"authors": [
+[
+"Shubham",
+"Sharma"
+],
+[
+"Mengyuan",
+"Zhang"
+],
+[
+"Anshika",
+"Anshika"
+],
+[
+"Jingsi",
+"Gao"
+],
+[
+"Hongliang",
+"Zhang"
+],
+[
+"Sri Harsha",
+"Kota"
+]
+]
+},
+"dockery1993": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1993,
+"want": 1993,
+"doi": "10.1056/nejm199312093292401",
+"title": "An Association between Air Pollution and Mortality in Six U.S. Cities",
+"cont": "New England Journal of Medicine",
+"vol": "329",
+"iss": "24",
+"page": "1753-1759",
+"authors": [
+[
+"Douglas W.",
+"Dockery"
+],
+[
+"C. Arden",
+"Pope"
+],
+[
+"Xiping",
+"Xu"
+],
+[
+"John D.",
+"Spengler"
+],
+[
+"James H.",
+"Ware"
+],
+[
+"Martha E.",
+"Fay"
+],
+[
+"Benjamin G.",
+"Ferris"
+],
+[
+"Frank E.",
+"Speizer"
+]
+]
+},
+"pope2002": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2002,
+"want": 2002,
+"doi": "10.1001/jama.287.9.1132",
+"title": "Lung Cancer, Cardiopulmonary Mortality, and Long-term Exposure to Fine Particulate Air Pollution",
+"cont": "JAMA",
+"vol": "287",
+"iss": "9",
+"page": "1132",
+"authors": [
+[
+"C. Arden",
+"Pope III"
+]
+]
+},
+"kloog2014": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2014,
+"want": 2014,
+"doi": "10.1016/j.rse.2014.04.024",
+"title": "Predicting spatiotemporal mean air temperature using MODIS satellite surface temperature measurements across the Northeastern USA",
+"cont": "Remote Sensing of Environment",
+"vol": "150",
+"iss": null,
+"page": "132-139",
+"authors": [
+[
+"Itai",
+"Kloog"
+],
+[
+"Francesco",
+"Nordio"
+],
+[
+"Brent A.",
+"Coull"
+],
+[
+"Joel",
+"Schwartz"
+]
+]
+},
+"breiman2001": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2001,
+"want": 2001,
+"doi": "10.1023/a:1010933404324",
+"title": "Random Forests",
+"cont": "Machine Learning",
+"vol": "45",
+"iss": "1",
+"page": "5-32",
+"authors": [
+[
+"Leo",
+"Breiman"
+]
+]
+},
+"friedman2001": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2001,
+"want": 2001,
+"doi": "10.1214/aos/1013203451",
+"title": "Greedy function approximation: A gradient boosting machine.",
+"cont": "The Annals of Statistics",
+"vol": "29",
+"iss": "5",
+"page": "1189-1232",
+"authors": [
+[
+"Jerome H.",
+"Friedman"
+]
+]
+},
+"chen2016": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2016,
+"doi": "10.1145/2939672.2939785",
+"title": "XGBoost: A Scalable Tree Boosting System",
+"cont": "ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)",
+"vol": null,
+"iss": null,
+"page": "785-794",
+"authors": [
+[
+"Tianqi",
+"Chen"
+],
+[
+"Carlos",
+"Guestrin"
+]
+]
+},
+"ke2017": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2017,
+"want": 2017,
+"doi": "",
+"title": "LightGBM: A Highly Efficient Gradient Boosting Decision Tree",
+"cont": "HAL",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Guolin",
+"Ke"
+],
+[
+"Qi",
+"Meng"
+],
+[
+"Thomas",
+"Finley"
+],
+[
+"Taifeng",
+"Wang"
+],
+[
+"Wei",
+"Chen"
+],
+[
+"Weidong",
+"Ma"
+],
+[
+"Qiwei",
+"Ye"
+],
+[
+"Tie‐Yan",
+"Liu"
+]
+]
+},
+"tibshirani1996": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1996,
+"want": 1996,
+"doi": "10.1111/j.2517-6161.1996.tb02080.x",
+"title": "Regression Shrinkage and Selection Via the Lasso",
+"cont": "Journal of the Royal Statistical Society Series B (Statistical Methodology)",
+"vol": "58",
+"iss": "1",
+"page": "267-288",
+"authors": [
+[
+"Robert John",
+"Tibshirani"
+]
+]
+},
+"zou2005": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2005,
+"want": 2005,
+"doi": "10.1111/j.1467-9868.2005.00503.x",
+"title": "Regularization and Variable Selection Via the Elastic Net",
+"cont": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+"vol": "67",
+"iss": "2",
+"page": "301-320",
+"authors": [
+[
+"Hui",
+"Zou"
+],
+[
+"Trevor",
+"Hastie"
+]
+]
+},
+"lundberg2017": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2017,
+"want": 2017,
+"doi": "10.48550/arxiv.1705.07874",
+"title": "A Unified Approach to Interpreting Model Predictions",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Scott",
+"Lundberg"
+],
+[
+"Su‐In",
+"Lee"
+]
+]
+},
+"shalizi2013": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2013,
+"want": 2013,
+"doi": "10.1214/12-aos1044",
+"title": "Consistency under sampling of exponential random graph models",
+"cont": "The Annals of Statistics",
+"vol": "41",
+"iss": "2",
+"page": "508-535",
+"authors": [
+[
+"Cosma Rohilla",
+"Shalizi"
+],
+[
+"Alessandro",
+"Rinaldo"
+]
+]
+},
+"stone1974": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1974,
+"want": 1974,
+"doi": "10.1111/j.2517-6161.1974.tb00994.x",
+"title": "Cross-Validatory Choice and Assessment of Statistical Predictions",
+"cont": "Journal of the Royal Statistical Society Series B (Statistical Methodology)",
+"vol": "36",
+"iss": "2",
+"page": "111-133",
+"authors": [
+[
+"M.",
+"Stone"
+]
+]
+},
+"molnar2022": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2022,
+"want": 2022,
+"doi": "10.1007/978-3-031-04083-2_4",
+"title": "General Pitfalls of Model-Agnostic Interpretation Methods for Machine Learning Models",
+"cont": "Lecture notes in computer science",
+"vol": null,
+"iss": null,
+"page": "39-68",
+"authors": [
+[
+"Christoph",
+"Molnar"
+],
+[
+"Gunnar",
+"König"
+],
+[
+"Julia",
+"Herbinger"
+],
+[
+"Timo",
+"Freiesleben"
+],
+[
+"Susanne",
+"Dandl"
+],
+[
+"Christian A.",
+"Scholbeck"
+],
+[
+"Giuseppe",
+"Casalicchio"
+],
+[
+"Moritz",
+"Grosse‐Wentrup"
+],
+[
+"Bernd",
+"Bischl"
+]
+]
+},
+"hardt2016": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2016,
+"want": 2016,
+"doi": "10.48550/arxiv.1610.02413",
+"title": "Equality of Opportunity in Supervised Learning",
+"cont": "arXiv (Cornell University)",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Moritz",
+"Hardt"
+],
+[
+"Eric",
+"Price"
+],
+[
+"Nathan",
+"Srebro"
+]
+]
+},
+"spirtes2000": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2001,
+"want": 2000,
+"doi": "10.7551/mitpress/1754.001.0001",
+"title": "Causation, Prediction, and Search",
+"cont": "The MIT Press eBooks",
+"vol": null,
+"iss": null,
+"page": "",
+"authors": [
+[
+"Peter",
+"Spirtes"
+],
+[
+"Clark",
+"Glymour"
+],
+[
+"Richard",
+"Scheines"
+]
+]
+},
+"pearl2009": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 2009,
+"want": 2009,
+"doi": "10.1214/09-ss057",
+"title": "Causal inference in statistics: An overview",
+"cont": "Statistics Surveys",
+"vol": "3",
+"iss": "none",
+"page": "96-146",
+"authors": [
+[
+"Judea",
+"Pearl"
+]
+]
+},
+"rubin1974": {
+"src": "openalex",
+"ok": true,
+"sim": 1.0,
+"y": 1974,
+"want": 1974,
+"doi": "10.1037/h0037350",
+"title": "Estimating causal effects of treatments in randomized and nonrandomized studies.",
+"cont": "Journal of Educational Psychology",
+"vol": "66",
+"iss": "5",
+"page": "688-701",
+"authors": [
+[
+"Donald B.",
+"Rubin"
+]
+]
+},
+"holland1986": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1985,
+"want": 1986,
+"doi": "10.1002/j.2330-8516.1985.tb00125.x",
+"title": "STATISTICS AND CAUSAL INFERENCE*",
+"cont": "ETS Research Report Series",
+"vol": "1985",
+"iss": "2",
+"page": null,
+"authors": [
+[
+"Paul W.",
+"Holland"
+],
+[
+"Clark",
+"Glymour"
+],
+[
+"Clive",
+"Granger"
+]
+]
+},
+"imbens2004": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 2003,
+"want": 2004,
+"doi": "10.3386/t0294",
+"title": "Nonparametric Estimation of Average Treatment Effects under Exogeneity: A Review",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Guido",
+"Imbens"
+]
+]
+},
+"angrist1996": {
+"src": "crossref-relaxed",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1993,
+"want": 1996,
+"doi": "10.3386/t0136",
+"title": "Identification of Causal Effects Using Instrumental Variables",
+"cont": "",
+"vol": null,
+"iss": null,
+"page": null,
+"authors": [
+[
+"Joshua",
+"Angrist"
+],
+[
+"Guido",
+"Imbens"
+],
+[
+"D.B.",
+"Rubin"
+]
+]
+},
+"leroux1992": {
+"src": "crossref",
+"ok": true,
+"sim": 1.0,
+"am": true,
+"y": 1992,
+"want": 1992,
+"doi": "10.1016/0304-4149(92)90141-c",
+"title": "Maximum-likelihood estimation for hidden Markov models",
+"cont": "Stochastic Processes and their Applications",
+"vol": "40",
+"iss": "1",
+"page": "127-143",
+"authors": [
+[
+"Brian G.",
+"Leroux"
+]
+]
+}
+}
