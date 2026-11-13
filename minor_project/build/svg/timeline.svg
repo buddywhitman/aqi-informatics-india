@@ -1,0 +1,10 @@
+<svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="11.5">
+<line x1="20" y1="95" x2="680" y2="95" stroke="#14213D" stroke-width="2"/>
+<g fill="#14213D"><circle cx="40" cy="95" r="6"/><circle cx="330" cy="95" r="6" fill="#E8651A"/><circle cx="440" cy="95" r="6" fill="#E8651A"/><circle cx="520" cy="95" r="6" fill="#E8651A"/><circle cx="660" cy="95" r="6"/></g>
+<rect x="40" y="70" width="290" height="10" fill="#c9d3e6"/><rect x="330" y="70" width="110" height="10" fill="#E8651A" opacity=".55"/><rect x="440" y="70" width="80" height="10" fill="#3B6FB6" opacity=".7"/>
+<g fill="#14213D" font-weight="600"><text x="40" y="58">Phase 1 · applied study</text><text x="330" y="58">Phase 2 · pivot</text><text x="440" y="40">Phase 3 · consolidation</text></g>
+<g fill="#5b6270" font-size="10.5"><text x="40" y="125">23 Mar 2026</text><text x="40" y="139">first commit; data pipeline,</text><text x="40" y="152">forecasting, policy simulation</text>
+<text x="300" y="125">28 Sep</text><text x="300" y="139">forensic audit;</text><text x="300" y="152">RC-DML pivot</text>
+<text x="425" y="125">6 Oct</text><text x="425" y="139">bias law, phantom</text><text x="425" y="152">resolution merged</text>
+<text x="505" y="170">7 Oct</text><text x="505" y="184">scientific corrections</text>
+<text x="615" y="125">Nov 2026</text><text x="615" y="139">this report</text><text x="615" y="152">and deck</text></g></svg>

@@ -13,3 +13,11 @@ dummy.csv
 *.zip
 aistats2027_pack/
 overleaf_submission_pack/
+
+# minor_project build artefacts
+minor_project/build/node_modules/
+minor_project/build/slides_png/
+minor_project/build/deck.src.bak.html
+minor_project/out/.deck.src.bak
+.serena/
+nul

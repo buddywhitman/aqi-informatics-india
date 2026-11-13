@@ -1,0 +1,183 @@
+<section class="slide cover" data-nofoot>
+<div class="kick">Minor project · AISTATS 2027 submission</div>
+<div class="cover-row">
+<div class="cl"><div class="title">Reliable causal estimation under latent <em style="color:#E8651A">Markov</em> confounding</div>
+<p class="mut" style="font-size:34px;max-width:900px">Overlap-aware regime Double Machine Learning, tested on air-quality sensors in four Indian cities</p></div>
+<div class="cr"><svg viewBox="0 0 600 380" fill="none"><line x1="10" y1="330" x2="590" y2="330" stroke="#cfc8b6" stroke-width="2"/><path d="M10 322 C 120 318, 170 260, 240 150 S 340 20, 400 52 S 500 290, 590 322" stroke="#14213D" stroke-width="3.5"/><path d="M10 300 C 140 290, 280 262, 400 188 S 540 60, 590 40" stroke="#E8651A" stroke-width="3.5" stroke-dasharray="2 10" stroke-linecap="round"/><circle cx="352" cy="38" r="9" fill="#14213D"/><text x="372" y="30" font-size="22" fill="#14213D" font-family="Inter">error peaks, then falls</text><text x="10" y="70" font-size="22" fill="#E8651A" font-family="Inter">apparent information grows</text><text x="300" y="366" font-size="20" fill="#6b7080" font-family="Inter" text-anchor="middle">state estimate gets worse →</text></svg></div>
+</div>
+<div class="rule"></div>
+<div class="who">Pulkit Kumar · Utsav Verma · Nishant Kumar Upadhyay<br><span>Guide: Dr. Savitha G · School of Computer Engineering · MIT Manipal · November 2026</span></div>
+<img class="logo" src="../assets/mit_logo.png">
+<aside class="notes">Introduce team and guide. One-line summary: we studied when a causal estimate built on an estimated hidden state can be trusted, found that the usual trust rule fails, and built an estimator that does better. The research output is the AISTATS 2027 submission.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The project in one slide</div>
+<h2>A trust rule everyone uses <em>fails</em>. We show exactly how, and fix the estimator.</h2>
+<div class="stats">
+<div><div class="big">4,900</div><div class="lab">simulation runs matched by our closed-form law, within 2%</div></div>
+<div><div class="big">82<small>%</small></div><div class="lab">of learned-state runs where a wrong state looks better conditioned than the true one</div></div>
+<div><div class="big">4</div><div class="lab">Indian cities: Delhi, Mumbai, Bengaluru, Kolkata</div></div>
+</div>
+<aside class="notes">The three numbers: the exact law reproduces 4,900 factorial runs (observed to predicted ratio 0.999); in 82% of learned-posterior runs the generated state looks better conditioned than the oracle state; four cities.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The question</div>
+<h2>Does cutting <em>NO₂</em> cut PM₂.₅?</h2>
+<div class="row"><div style="flex:1"><p>A forecast cannot answer this. The atmosphere has a hidden state, such as stagnation or ventilation, that raises both pollutants together.</p><p class="mut">We never observe that state. We only see weather proxies.</p></div>
+<div style="flex:1.6"><div class="fig">{{SVG:dag}}</div></div></div>
+<aside class="notes">Traffic-related NO2 and PM2.5 rise together in stagnant air. The regime is a confounder that persists for hours to days and is seen only via meteorology.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Objectives</div>
+<h2>Six things we set out to do.</h2>
+<ul class="l">
+<li><b>01</b>Assemble and audit a multi-city hourly dataset</li>
+<li><b>02</b>Characterize how state error becomes causal error</li>
+<li><b>03</b>Build a reliable regime-aware estimator</li>
+<li><b>04</b>Validate from synthetic to real data</li>
+<li><b>05</b>Produce a peer-reviewed research submission</li>
+<li><b>06</b>Make every number reproducible</li>
+</ul>
+<aside class="notes">All six were met; the report maps each to a chapter.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Data</div>
+<h2>Sixteen months of hourly <em>sensor</em> data.</h2>
+<div class="row"><div style="flex:1.5"><div class="fig"><img src="../assets/coverage.png" style="mix-blend-mode:multiply"></div></div>
+<div style="flex:1"><p>OpenAQ / CPCB pollution and Open-Meteo weather, February 2025 to June 2026.</p><p class="mut">A rounding bug had put “hourly” data on a two-hour grid. We found it and recomputed everything.</p></div></div>
+<aside class="notes">Kolkata's record ends June 2025. Delhi has the densest record. The time-grid defect changed Delhi's single-index estimate from 0.58 to 0.37.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Why standard methods fail</div>
+<h2>Standard DML is off by <em>5×</em>, at every proxy quality.</h2>
+<div class="stats" style="margin-top:30px"><div><div class="big">8.44</div><div class="lab">bias of standard Double ML</div></div><div><div class="big" style="color:var(--or)">1.53</div><div class="lab">true average effect in the benchmark</div></div></div>
+<p style="margin-top:60px">Adding more observed controls can make the bias worse, not better.</p>
+<aside class="notes">Theorem 1: omitted-regime bias. The denominator shrinks as controls explain more of the treatment, while the confounding numerator does not move (bias amplification).</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Approach</div>
+<h2>Infer the state, then estimate <em>carefully</em>.</h2>
+<div class="fig" style="margin-bottom:60px">{{SVG:pipeline}}</div>
+<div class="row" style="gap:60px;align-items:flex-start"><p class="col">Hidden Markov model gives a probability of each regime at each hour.</p><p class="col">Cross-fitting skips neighbouring hours so time dependence cannot leak.</p><p class="col">A regularized coupled score gives one effect per regime.</p></div>
+<aside class="notes">OR-DML: Gaussian HMM, purged block cross-fitting, posterior-adjusted nuisances, spectral regularization, HAC inference.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Key discovery</div>
+<h2>A worse state estimate can look <em>better</em>.</h2>
+<div class="fig"><img src="../assets/fig1_phantom_resolution_hi.png" style="mix-blend-mode:multiply"></div>
+<p style="margin-top:34px;max-width:1500px">We call it <b>phantom causal resolution</b>: error rises while the usual conditioning check improves, up to 70×.</p>
+<aside class="notes">Left: error is a hump in proxy error. Middle: smallest eigenvalue of the generated-state Gram matrix grows with proxy error. Right: 82% of learned-HMM runs lie above the identity line.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The rules: why it fails</div>
+<h2>Two <em>laws</em> explain the failure.</h2>
+<div class="row" style="align-items:stretch;gap:44px">
+<div class="card"><h3>Omitted-regime bias</h3><p class="kd">$$\hat\theta_{\rm naive}\to\sum_k\omega_k\theta_k^*+\mathcal B_{\rm het}+\mathcal B_{\rm conf}$$</p><p class="mut">Controls alone cannot see the hidden regime. More controls can make the bias worse.</p></div>
+<div class="card"><h3>State-confusion law</h3><p class="kd">$$\lambda_-=\tfrac12\sigma^2(1-\varepsilon_\gamma)^2+\tfrac18\varepsilon_\gamma^2\Delta^2$$</p><p class="mut">Conditioning improves as the state estimate gets worse. Matches 4,900 runs.</p></div></div>
+<aside class="notes">Theorem 1 and Proposition 1 with Corollary 1 in the report (sections 3.2 and 5.3). The weights omega are variance shares of each regime in the residual treatment; B_het and B_conf are the heterogeneity and confounding terms. In the second law, epsilon is the posterior error, sigma squared is treatment noise, Delta is the regime gap in treatment mean. When epsilon exceeds 8 sigma squared over (Delta squared plus 4 sigma squared), the generated state looks better conditioned than the true one.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The rules: what we build from them</div>
+<h2>Three <em>rules</em> shape the estimator.</h2>
+<div class="row" style="align-items:stretch;gap:36px">
+<div class="card"><h3>Orthogonality</h3><p class="kd">$$\partial_{(m,\mu)}\,\mathbb E\,\psi_k=0$$</p><p class="mut">Condition nuisances on the posterior: first-order errors drop out for every posterior.</p></div>
+<div class="card"><h3>Error bound</h3><p class="kd">$$\|\hat\theta-\theta^*\|\lesssim\frac{\varepsilon_\gamma}{\lambda_{\min}(J)}$$</p><p class="mut">State error and nuisance error add; neither hides the other.</p></div>
+<div class="card"><h3>Residual-state bias</h3><p class="kd">$$B=\frac{a\,b\,v}{a^{2}v+\sigma^{2}}$$</p><p class="mut">State error × treatment shift × outcome shift, over a variance the shift inflates.</p></div></div>
+<aside class="notes">Lemma 1, Theorem 3 and Theorem 4 in the report (sections 5.1, 5.2, 5.4). a and b are the regime shifts in treatment and outcome, v is the leftover state variance the posterior cannot explain, sigma squared is treatment noise. Peak bias at a equals sigma over root v. Full proofs in Annexure G.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The estimator</div>
+<h2>Condition on the posterior. <em>Don’t</em> weight by it.</h2>
+<div class="row" style="align-items:flex-start"><div style="flex:1.25"><pre class="code" data-lang="python">F = np.column_stack([X, G] + [G[:, [k]] * X for k in range(K-1)])
+for train, test in purged_blocks(N, embargo):
+    m_y = fit(F[train], Y[train])      # posterior as a feature
+    m_t = fit(F[train], T[train])
+J = weighted_gram(tilde_T, w)           # posterior as a weight
+theta = inv(J + lam * I) @ S</pre></div>
+<div style="flex:.75"><div class="big" style="font-size:150px">85%<small> → 0.4%</small></div><div class="lab">non-orthogonality of the old weighted design versus ours</div></div></div>
+<aside class="notes">Lemma 1: nuisances conditioned on the posterior make the coupled score exactly Neyman-orthogonal for every posterior. The old design weighted nuisances by the posterior and its Gram derivative was 85% of the Jacobian.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Results</div>
+<h2>Best in <em>every</em> city.</h2>
+<div class="fig"><img src="../assets/fig3_estimators_hi.png" style="mix-blend-mode:multiply"></div>
+<p style="margin-top:24px;max-width:1600px;font-size:30px" class="mut">Purple: ours. Pink: our earlier design. Below separation of about 1, every method fails.</p>
+<aside class="notes">Panels a, b: learned posteriors across proxy separation. Panel c: real-data-calibrated benchmark per city, regime-effect error. For the pooled ATE, posterior-feature DML is best in Mumbai and Bengaluru; our advantage is for regime effects.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Real sensors, honest verdicts</div>
+<h2>What the four cities <em>can</em> say.</h2>
+<table class="d"><tr><th>City</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>Delhi</td><td><span class="tag o">association</span></td><td>Positive in both regimes. Needs an 82 SD hidden shift to vanish, but a lead placebo rejects: not an emissions effect.</td></tr>
+<tr><td>Mumbai</td><td><span class="tag">inconclusive</span></td><td>One 277-hour constant NO₂ run; screening removes 23% of the data.</td></tr>
+<tr><td>Bengaluru</td><td><span class="tag">inconclusive</span></td><td>Fails placebo checks.</td></tr>
+<tr><td>Kolkata</td><td><span class="tag">inconclusive</span></td><td>Only 16 distinct NO₂ values; screened effect fails placebo.</td></tr></table>
+<aside class="notes">No known truth here, so these are exposure associations. The refusal to over-claim is part of the contribution.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Reproducibility</div>
+<h2>Every number traces to a <em>file</em>.</h2>
+<div style="display:block"><div style="margin-bottom:30px"><pre class="code" data-lang="text" style="font-size:23px">macro,value,source,how
+FacRhoD,0.995,reports/factorial_reliability_correlations.csv,Spearman_Run_Difficulty
+LPFracInfl,82,reports/synthesis/learned_posterior_coupled_meta.json,% runs lambda_proxy>lambda_oracle
+...                                # 247 rows in claims.csv</pre><pre class="code" data-lang="bash" style="margin-top:24px;font-size:23px">python verify_submission.py --fast
+bash reproduce.sh        # ~12 min on 2 cores</pre></div><p style="max-width:1400px">One script writes every table and number in the paper. A verifier fails on any mismatch.</p></div>
+<aside class="notes">The second row is illustrative of the claims ledger format; the actual file is paper/generated/claims.csv with 247 macros. The verifier regenerates everything and requires byte-identical output.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The journey</div>
+<h2>We audited our own work, and <em>retired</em> claims.</h2>
+<div class="fig" style="margin-bottom:50px">{{SVG:timeline}}</div>
+<ul class="l" style="max-width:1500px"><li><b>OUT</b>A health-benefit figure built on an arbitrary scalar</li><li><b>OUT</b>Lags that were “hourly” but two hours</li><li><b>OUT</b>Placebo tests that were mechanically zero</li></ul>
+<aside class="notes">Phase 1 applied study; audit found fabricated scalar and abs() sign flip; Phase 2 pivot to regime DML; Phase 3 consolidation and corrections. Each retired claim is documented in the report, chapter 10.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Where it is submitted</div>
+<h2>A top-tier, <em>peer-reviewed</em> venue.</h2>
+<div class="stats" style="margin-top:20px;gap:90px">
+<div><div class="big">A</div><div class="lab">CORE conference rank (A* flagship, A excellent)</div></div>
+<div><div class="big">31<small>%</small></div><div class="lab">of submissions accepted in 2025: 583 of 1,861</div></div>
+<div><div class="big">1985</div><div class="lab">series began, proceedings published in PMLR</div></div>
+</div>
+<p style="margin-top:50px;max-width:1500px">AISTATS 2027 sits where machine learning meets statistics. In AI, conferences like this are full, blind-reviewed publications, not just talks.</p>
+<aside class="notes">AISTATS is the International Conference on Artificial Intelligence and Statistics. CORE rank A in the 2017 to 2023 rankings; the 2025 edition accepted 583 of 1,861 submissions, about 31 percent. Proceedings appear in PMLR, the series linked to the Journal of Machine Learning Research. Our manuscript is submitted and under review; acceptance is not claimed. In AI, top conferences play the role that journals play in many engineering fields.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Conclusions</div>
+<h2>Two rules <em>survive</em>.</h2>
+<div class="row" style="align-items:stretch;gap:50px"><div class="card"><h3>Design</h3><p>Use the posterior as an adjustment feature. Use it as a weight only on the target.</p></div><div class="card"><h3>Reporting</h3><p>State the leftover state variance, the regime shifts, a robustness value, simple baselines, and aligned placebos.</p></div></div>
+<aside class="notes">Trust is not a function of posterior confidence and conditioning alone.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">Limits and next steps</div>
+<h2>What we <em>do not</em> claim.</h2>
+<div class="row" style="align-items:flex-start;gap:90px"><div class="col"><p><b>Limits</b></p><p class="mut">Every method fails at weak proxy separation. City results are associations. Inference theory excludes full-sample smoothing.</p></div><div class="col"><p><b>Next</b></p><p class="mut">Open-source package. Policy-shock designs for emission claims. Re-test the dual-factor idea of ambiguity times conditioning.</p></div></div>
+<aside class="notes">Be direct about limits. Future work is hypotheses, not findings.</aside>
+</section>
+
+<section class="slide cover" data-nofoot>
+<div class="kick">Thank you</div>
+<div class="title" style="font-size:150px;margin-top:40px">Questions?</div>
+<div class="rule"></div>
+<div class="who">Pulkit Kumar · Utsav Verma · Nishant Kumar Upadhyay<br><span>Guide: Dr. Savitha G · School of Computer Engineering · MIT Manipal</span></div>
+<p class="mut" style="margin-top:50px;font-size:26px;max-width:1300px">Report, manuscript, code and reproduction pipeline are in the project repository.</p>
+<img class="logo" src="../assets/mit_logo.png">
+<aside class="notes">Likely questions: what is a regime (hidden weather state); why not just add weather controls (bias amplification, Theorem 1); is Delhi a causal effect (no, association; lead placebo rejects); why does the estimator still fail at weak separation (no information to recover the state); what was the research output (AISTATS 2027 submission).</aside>
+</section>

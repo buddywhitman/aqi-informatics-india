@@ -1,0 +1,23 @@
+<svg viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg" font-family="Source Serif 4, serif" font-size="17">
+<defs>
+<marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#14213D"/></marker>
+<marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E8651A"/></marker>
+</defs>
+<g fill="none" stroke-width="1.8">
+<path d="M228 50 L352 50" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M185 72 L110 168" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M205 72 L262 166" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M222 68 L398 168" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M300 195 L372 195" stroke="#14213D" marker-end="url(#k)"/>
+<path d="M590 72 L305 172" stroke="#14213D" marker-end="url(#k)"/>
+<path d="M600 72 L440 170" stroke="#14213D" marker-end="url(#k)"/>
+</g>
+<g stroke-width="1.8" fill="#fdf0e8" stroke="#E8651A"><circle cx="200" cy="50" r="26" stroke-dasharray="5 4"/><circle cx="380" cy="50" r="26"/></g>
+<g stroke-width="1.8" fill="#fff" stroke="#14213D"><rect x="55" y="170" width="78" height="50" rx="7"/><rect x="225" y="170" width="78" height="50" rx="7"/><rect x="375" y="170" width="78" height="50" rx="7"/><rect x="560" y="26" width="78" height="50" rx="7"/></g>
+<g text-anchor="middle" fill="#14213D">
+<text x="200" y="56">S<tspan dy="5" font-size="12">t</tspan></text><text x="380" y="56">S<tspan dy="5" font-size="12">t+1</tspan></text>
+<text x="94" y="201">Z<tspan dy="5" font-size="12">t</tspan></text><text x="264" y="201">T<tspan dy="5" font-size="12">t</tspan></text><text x="414" y="201">Y<tspan dy="5" font-size="12">t</tspan></text><text x="599" y="57">X<tspan dy="5" font-size="12">t</tspan></text>
+<g font-size="12.5" fill="#5b6270"><text x="94" y="242">proxy (weather)</text><text x="264" y="242">treatment (NO₂)</text><text x="414" y="242">outcome (PM₂.₅)</text><text x="599" y="96">controls</text></g>
+<text x="290" y="36" font-size="12.5" fill="#E8651A">Markov</text>
+<text x="200" y="14" font-size="12.5" fill="#E8651A">hidden state</text>
+</g></svg>

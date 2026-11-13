@@ -1,0 +1,18 @@
+<section class="slide">
+<div class="kick">The rules: why it fails</div>
+<h2>Two <em>laws</em> explain the failure.</h2>
+<div class="row" style="align-items:stretch;gap:44px">
+<div class="card"><h3>Omitted-regime bias</h3><p class="kd">$$\hat\theta_{\rm naive}\to\sum_k\omega_k\theta_k^*+\mathcal B_{\rm het}+\mathcal B_{\rm conf}$$</p><p class="mut">Controls alone cannot see the hidden regime. More controls can make the bias worse.</p></div>
+<div class="card"><h3>State-confusion law</h3><p class="kd">$$\lambda_-=\tfrac12\sigma^2(1-\varepsilon_\gamma)^2+\tfrac18\varepsilon_\gamma^2\Delta^2$$</p><p class="mut">Conditioning improves as the state estimate gets worse. Matches 4,900 runs.</p></div></div>
+<aside class="notes">Theorem 1 and Proposition 1 with Corollary 1 in the report (sections 3.2 and 5.3). The weights omega are variance shares of each regime in the residual treatment; B_het and B_conf are the heterogeneity and confounding terms. In the second law, epsilon is the posterior error, sigma squared is treatment noise, Delta is the regime gap in treatment mean. When epsilon exceeds 8 sigma squared over (Delta squared plus 4 sigma squared), the generated state looks better conditioned than the true one.</aside>
+</section>
+
+<section class="slide">
+<div class="kick">The rules: what we build from them</div>
+<h2>Three <em>rules</em> shape the estimator.</h2>
+<div class="row" style="align-items:stretch;gap:36px">
+<div class="card"><h3>Orthogonality</h3><p class="kd">$$\partial_{(m,\mu)}\,\mathbb E\,\psi_k=0$$</p><p class="mut">Condition nuisances on the posterior: first-order errors drop out for every posterior.</p></div>
+<div class="card"><h3>Error bound</h3><p class="kd">$$\|\hat\theta-\theta^*\|\lesssim\frac{\varepsilon_\gamma}{\lambda_{\min}(J)}$$</p><p class="mut">State error and nuisance error add; neither hides the other.</p></div>
+<div class="card"><h3>Residual-state bias</h3><p class="kd">$$B=\frac{a\,b\,v}{a^{2}v+\sigma^{2}}$$</p><p class="mut">State error × treatment shift × outcome shift, over a variance the shift inflates.</p></div></div>
+<aside class="notes">Lemma 1, Theorem 3 and Theorem 4 in the report (sections 5.1, 5.2, 5.4). a and b are the regime shifts in treatment and outcome, v is the leftover state variance the posterior cannot explain, sigma squared is treatment noise. Peak bias at a equals sigma over root v. Full proofs in Annexure G.</aside>
+</section>

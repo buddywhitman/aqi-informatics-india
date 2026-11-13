@@ -1,0 +1,21 @@
+[
+ "Introduce team and guide. One-line summary: we studied when a causal estimate built on an estimated hidden state can be trusted, found that the usual trust rule fails, and built an estimator that does better. The research output is the AISTATS 2027 submission.",
+ "The three numbers: the exact law reproduces 4,900 factorial runs (observed to predicted ratio 0.999); in 82% of learned-posterior runs the generated state looks better conditioned than the oracle state; four cities.",
+ "Traffic-related NO2 and PM2.5 rise together in stagnant air. The regime is a confounder that persists for hours to days and is seen only via meteorology.",
+ "All six were met; the report maps each to a chapter.",
+ "Kolkata's record ends June 2025. Delhi has the densest record. The time-grid defect changed Delhi's single-index estimate from 0.58 to 0.37.",
+ "Theorem 1: omitted-regime bias. The denominator shrinks as controls explain more of the treatment, while the confounding numerator does not move (bias amplification).",
+ "OR-DML: Gaussian HMM, purged block cross-fitting, posterior-adjusted nuisances, spectral regularization, HAC inference.",
+ "Left: error is a hump in proxy error. Middle: smallest eigenvalue of the generated-state Gram matrix grows with proxy error. Right: 82% of learned-HMM runs lie above the identity line.",
+ "Theorem 1 and Proposition 1 with Corollary 1 in the report (sections 3.2 and 5.3). The weights omega are variance shares of each regime in the residual treatment; B_het and B_conf are the heterogeneity and confounding terms. In the second law, epsilon is the posterior error, sigma squared is treatment noise, Delta is the regime gap in treatment mean. When epsilon exceeds 8 sigma squared over (Delta squared plus 4 sigma squared), the generated state looks better conditioned than the true one.",
+ "Lemma 1, Theorem 3 and Theorem 4 in the report (sections 5.1, 5.2, 5.4). a and b are the regime shifts in treatment and outcome, v is the leftover state variance the posterior cannot explain, sigma squared is treatment noise. Peak bias at a equals sigma over root v. Full proofs in Annexure G.",
+ "Lemma 1: nuisances conditioned on the posterior make the coupled score exactly Neyman-orthogonal for every posterior. The old design weighted nuisances by the posterior and its Gram derivative was 85% of the Jacobian.",
+ "Panels a, b: learned posteriors across proxy separation. Panel c: real-data-calibrated benchmark per city, regime-effect error. For the pooled ATE, posterior-feature DML is best in Mumbai and Bengaluru; our advantage is for regime effects.",
+ "No known truth here, so these are exposure associations. The refusal to over-claim is part of the contribution.",
+ "The second row is illustrative of the claims ledger format; the actual file is paper/generated/claims.csv with 247 macros. The verifier regenerates everything and requires byte-identical output.",
+ "Phase 1 applied study; audit found fabricated scalar and abs() sign flip; Phase 2 pivot to regime DML; Phase 3 consolidation and corrections. Each retired claim is documented in the report, chapter 10.",
+ "AISTATS is the International Conference on Artificial Intelligence and Statistics. CORE rank A in the 2017 to 2023 rankings; the 2025 edition accepted 583 of 1,861 submissions, about 31 percent. Proceedings appear in PMLR, the series linked to the Journal of Machine Learning Research. Our manuscript is submitted and under review; acceptance is not claimed. In AI, top conferences play the role that journals play in many engineering fields.",
+ "Trust is not a function of posterior confidence and conditioning alone.",
+ "Be direct about limits. Future work is hypotheses, not findings.",
+ "Likely questions: what is a regime (hidden weather state); why not just add weather controls (bias amplification, Theorem 1); is Delhi a causal effect (no, association; lead placebo rejects); why does the estimator still fail at weak separation (no information to recover the state); what was the research output (AISTATS 2027 submission)."
+]

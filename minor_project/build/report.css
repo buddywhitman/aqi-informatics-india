@@ -1,0 +1,99 @@
+@font-face{font-family:"Source Serif 4";src:url(fonts/source-serif-4-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:"Source Serif 4";src:url(fonts/source-serif-4-latin-400-italic.woff2);font-weight:400;font-style:italic}
+@font-face{font-family:"Source Serif 4";src:url(fonts/source-serif-4-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:"Source Serif 4";src:url(fonts/source-serif-4-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:"Source Serif 4";src:url(fonts/source-serif-4-latin-700-italic.woff2);font-weight:700;font-style:italic}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:"JetBrains Mono";src:url(fonts/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:"JetBrains Mono";src:url(fonts/jetbrains-mono-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:"Instrument Serif";src:url(fonts/instrument-serif-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:"Instrument Serif";src:url(fonts/instrument-serif-latin-400-italic.woff2);font-weight:400;font-style:italic}
+:root{--navy:#14213D;--or:#E8651A;--mut:#5b6270;--rule:#d8dce4;--tint:#f4f6fa}
+@page{size:A4;margin:26mm 24mm 26mm 28mm}
+@page cover{margin:0}
+@page plain{margin:22mm 26mm}
+@page chap1{counter-reset:page 1;@top-left{content:string(chap);font:italic 9pt "Source Serif 4";color:#5b6270}@top-right{content:"Reliable Causal Estimation under Latent Markov Confounding";font:8.5pt Inter;color:#5b6270}}
+@page front{}
+@page main{@top-left{content:string(chap);font:italic 9pt "Source Serif 4";color:#5b6270}@top-right{content:"Reliable Causal Estimation under Latent Markov Confounding";font:8.5pt Inter;color:#5b6270}}
+html{font:10.6pt/1.52 "Source Serif 4",serif;color:#1c2230;hyphens:auto}
+body{margin:0}
+.cover{page:cover;break-after:page;height:297mm;box-sizing:border-box;padding:20mm 24mm 20mm 30mm;position:relative}
+.cover:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7mm;background:var(--navy)}
+.cover:after{content:"";position:absolute;left:7mm;top:0;bottom:0;width:1.4mm;background:var(--or)}
+.lh{position:relative;text-align:center;font-family:'Times New Roman',Times,serif;color:#000;padding:2mm 0 7mm;margin-bottom:8mm;border-bottom:1px solid #000}
+.lh{display:flex;align-items:center;gap:3mm}.lh img{width:22mm;flex:none}.lh .tx{flex:1}.lh .a1{font-weight:700;font-size:11.5pt}.lh .a2{font-weight:700;font-size:15pt;margin:1.2mm 0;white-space:nowrap}.lh .a3{font-size:10.5pt}
+.lh img{width:22mm}.lh .t{font:600 8.5pt Inter;letter-spacing:.14em;color:var(--mut)}
+.lh .n{font:700 17pt "Source Serif 4";color:var(--navy);letter-spacing:.02em;margin:1mm 0}
+.lh .a{font:8.5pt Inter;color:var(--mut)}
+.cover h1.ct{font:400 27pt/1.12 "Instrument Serif","Source Serif 4";color:var(--navy);margin:16mm 0 3mm}
+.cover .st{font:500 11.5pt Inter;color:var(--or);margin-bottom:9mm}
+.cover .kicker{font:600 8.5pt Inter;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin:6mm 0 2mm}
+.cover table{border-collapse:collapse;width:100%;font:10.5pt "Source Serif 4"}
+.cover td{padding:1.3mm 0;border-bottom:.6px solid var(--rule)}.cover td:first-child{font-weight:600;width:55%}.cover td:last-child{color:var(--mut);font:9pt Inter}
+.cover .foot{position:absolute;left:30mm;right:24mm;bottom:16mm;font:8.5pt Inter;color:var(--mut);border-top:1.2px solid var(--navy);padding-top:3mm}
+.plain{page:plain;break-before:page}
+.plain .body{margin-top:12mm;text-align:justify;font-size:11.5pt;line-height:1.7}
+.plain h2.ch{font:700 13pt Inter;letter-spacing:.2em;text-align:center;margin:16mm 0 8mm;color:var(--navy)}
+.sig{display:flex;justify-content:space-between;margin-top:32mm;font:italic 10.5pt "Source Serif 4"}.sig div{text-align:center;line-height:1.35}
+.front{page:front;break-before:page;page-break-before:always}
+.front+.front{break-before:page!important}
+.front h1,.unnum h1{font:700 14pt Inter;letter-spacing:.16em;text-transform:uppercase;text-align:center;color:var(--navy);margin:0 0 8mm;padding-bottom:4mm;border-bottom:1px solid var(--rule)}
+.toc a{color:inherit;text-decoration:none;display:flex;gap:2mm;align-items:baseline}
+.toc a:after,.fl a:after{content:none!important}
+.pg{font:9pt Inter;order:3}
+.pn{position:absolute;left:0;right:0;bottom:11mm;text-align:center;font:9pt Inter;color:#5b6270}
+.toc a i{flex:1;border-bottom:1px dotted #aaa;order:2;transform:translateY(-3px)}
+.toc .c{font-weight:700;margin-top:2.2mm;color:var(--navy)}.toc .s{margin-left:9mm;font-size:9.4pt;line-height:1.38}
+.main{page:main}
+.chapter{break-before:page}
+.chapter.first{page:chap1}
+h1.chapter-title .tt{string-set:chap content()}
+h1.chapter-title{font:400 25pt/1.1 "Instrument Serif","Source Serif 4";color:var(--navy);margin:14mm 0 9mm;padding-bottom:5mm;border-bottom:2px solid var(--navy)}
+h1.chapter-title .num{display:block;font:600 9pt Inter;letter-spacing:.2em;color:var(--or);text-transform:uppercase;margin-bottom:3mm}
+h2{font:700 12.6pt/1.25 Inter;color:var(--navy);margin:7mm 0 2.5mm;break-after:avoid}
+h3{font:600 10.8pt Inter;color:var(--navy);margin:5mm 0 1.5mm;break-after:avoid}
+p{margin:0 0 2.6mm;text-align:justify;orphans:3;widows:3}
+a{color:var(--navy)}
+ul,ol{margin:0 0 3mm;padding-left:6.5mm}li{margin-bottom:1mm;text-align:justify}
+blockquote{margin:3mm 0;padding:2.5mm 4mm;border-left:3px solid var(--or);background:var(--tint);font-size:10pt}blockquote p{margin:0}
+code{font:8.4pt "JetBrains Mono",monospace;background:var(--tint);padding:.2mm 1mm;border-radius:2px}
+pre{font:7.4pt/1.4 "JetBrains Mono",monospace;background:#0f1729;color:#e6e9f2;padding:3.5mm 4.5mm;border-radius:4px;margin:3mm 0 4mm;white-space:pre-wrap;break-inside:avoid}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.hljs-keyword,.hljs-built_in{color:#f4a261}.hljs-string{color:#9ad1a5}.hljs-comment{color:#7f89a3;font-style:italic}.hljs-number{color:#8fb8ff}.hljs-title{color:#ffd88a}
+figure{margin:4mm 0;break-inside:avoid;text-align:center}figure img,figure svg{max-width:100%}figure.w img{width:100%}
+figcaption{font:8.8pt/1.4 Inter;color:var(--mut);text-align:left;margin-top:2mm;padding-top:1.5mm;border-top:1px solid var(--rule)}figcaption b{color:var(--navy)}
+.tabwrap{margin:4mm 0;break-inside:avoid}.tabwrap.long{break-inside:auto}.tabwrap .cap{break-after:avoid}table.t tr{break-inside:avoid}
+.tabwrap .cap{font:8.8pt/1.4 Inter;color:var(--mut);margin-bottom:1.5mm}.tabwrap .cap b{color:var(--navy)}
+table.t{border-collapse:collapse;width:100%;font:8.4pt/1.3 Inter;margin:0}
+table.t th,table.t td{padding:1.1mm 1.4mm;text-align:center;border-bottom:.5px solid var(--rule)}
+table.t td:first-child,table.t th:first-child{text-align:left}
+table.t thead tr:first-child th{border-top:1.5px solid var(--navy)}table.t thead tr:last-child th{border-bottom:1px solid var(--navy)}
+table.t tr:last-child td{border-bottom:1.5px solid var(--navy)}
+table.t tr.sep td{border-top:.8px solid var(--navy)}table.t tr.sub td{font-style:italic;background:var(--tint);text-align:left}
+table.t.sm{font-size:7.3pt}table.t.sm th,table.t.sm td{padding:.8mm .8mm}
+table.md{border-collapse:collapse;width:100%;font:8.8pt/1.35 Inter;margin:3mm 0 4mm;break-inside:avoid}
+table.md th{border-top:1.5px solid var(--navy);border-bottom:1px solid var(--navy);padding:1.2mm 1.6mm;text-align:left}table.md td{padding:1.2mm 1.6mm;border-bottom:.5px solid var(--rule);vertical-align:top}table.md tr:last-child td{border-bottom:1.5px solid var(--navy)}
+.callout{border:1px solid var(--rule);border-left:4px solid var(--or);background:var(--tint);padding:3mm 4mm;margin:4mm 0;break-inside:avoid;font-size:10pt}.callout p{margin:0 0 1.5mm}.callout .h{font:700 8.5pt Inter;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-bottom:1mm}
+.thm{border-left:3px solid var(--navy);padding:1mm 0 1mm 4mm;margin:3.5mm 0;break-inside:avoid}.thm .h{font:700 9.5pt Inter;color:var(--navy);margin-bottom:.8mm}.thm p{margin-bottom:1mm}
+.refs p{padding-left:8mm;text-indent:-8mm;font-size:9.6pt;margin-bottom:1.6mm}
+.fl a{display:flex;gap:2mm;text-decoration:none;color:inherit;margin-bottom:1.6mm;font-size:10pt;align-items:baseline}.fl a:after{content:target-counter(attr(href),page);font:9pt Inter;order:3}
+.fl a i{flex:1;border-bottom:1px dotted #aaa;order:2;transform:translateY(-3px)}
+.katex{font-size:1.03em}.katex-display{margin:2mm 0}
+
+
+figure:not(.w) img{max-width:70%}
+
+.chapter.annex ~ .chapter.annex{break-before:auto}
+.chapter.annex ~ .chapter.annex h1.chapter-title{margin-top:8mm;font-size:17pt;border-bottom-width:1px}
+
+.chapter.annex:not(.keep){break-before:page!important}
+.chapter.annex + .chapter.annex.keep{break-before:auto!important}
+.tabwrap.long td:nth-child(2){text-align:left}
+h1.chapter-title{break-after:avoid}
+
+p:has(+pre){break-after:avoid}
+
+.annex p{text-align:left;hyphens:auto}

@@ -1,0 +1,56 @@
+<section class="cover">
+  <div class="lh"><img src="../assets/mit_logo.png"><div class="tx"><div class="a1">SCHOOL OF ELECTRICAL ENGINEERING</div><div class="a2">MANIPAL INSTITUTE OF TECHNOLOGY</div><div class="a3">MANIPAL - 576104, KARNATAKA, INDIA</div></div></div>
+  <h1 class="ct">Reliable Causal Estimation under Latent Markov Confounding</h1>
+  <div class="st">Overlap-aware regime Double Machine Learning, with evidence from Indian urban air-quality sensor networks</div>
+  <div class="kicker">Submitted by</div>
+  <table>
+    <tr><td>Pulkit Kumar</td><td>Reg. No. 230906192</td></tr>
+    <tr><td>Utsav Verma</td><td>Reg. No. 230906526</td></tr>
+    <tr><td>Nishant Kumar Upadhyay</td><td>Reg. No. 230906522</td></tr>
+  </table>
+  <div class="kicker">Under the guidance of</div>
+  <table><tr><td>Dr. Savitha G</td><td>School of Computer Engineering, MIT Manipal</td></tr></table>
+  <div class="kicker">In partial fulfilment of</div>
+  <p style="font-size:10.5pt;margin:0;text-align:left">the credit requirement of the Minor in Data Science (8 credits), towards the award of the degree of <b>Bachelor of Technology in Electrical and Electronics Engineering</b>, School of Electrical Engineering, Manipal Institute of Technology, Manipal (7th semester, academic year 2026-27).</p>
+</section>
+
+<section class="plain">
+  <h2 class="ch">DECLARATION</h2>
+  <div class="body">We hereby declare that this minor project report is the record of the work carried out by us, and that the results, tables, figures and code reported here are those of the project repository, are regenerated from committed artifacts, and have not been submitted elsewhere for the award of any degree or diploma. Prior work is credited in the text and in the references. Large language models were used as assistants for code, derivations, experiment scripting and drafting; every number is produced by a single script from committed result files and the authors reviewed all arguments and take full responsibility for the content (Annexure B).</div>
+  <div class="sig"><div>Pulkit Kumar</div><div>Utsav Verma</div><div>Nishant Kumar Upadhyay</div></div>
+</section>
+
+<section class="front"><h1>Acknowledgement</h1>
+<p>We express our sincere gratitude to our guide, <b>Dr. Savitha G</b>, School of Computer Engineering, for her guidance, patience and for allowing us to work on a problem that sits at the edge of what a minor project usually attempts. Her questions pushed us to separate what we had shown from what we had hoped.</p>
+<p>We thank the Director of Manipal Institute of Technology, the Dean of the School of Computer Engineering, the Dean of the School of Electrical Engineering, and the coordinators of the Data Science Minor for the opportunity and the framework within which this work was done.</p>
+<p>We are grateful to the maintainers of the open data on which the study rests: OpenAQ and the Central Pollution Control Board for continuous ambient air-quality records, and Open-Meteo for ERA5-based meteorological reanalysis. We acknowledge the authors of the double machine learning, proximal causal inference and latent-variable literature whose results we build on and, in places, qualify.</p>
+<p>Finally, we thank our families and friends for their constant support during the semester.</p></section>
+
+<section class="front"><h1>Abstract</h1>
+<p>Observational time series are frequently driven by a persistent state that nobody measures: the boundary-layer regime of an airshed, the liquidity regime of a market, the operating mode of a plant. When that state moves both a treatment and an outcome, adjusting for observed covariates does not identify the effect. The standard remedy is a two-stage recipe: infer the state with a hidden Markov model (HMM), then run regime-aware Double Machine Learning (DML). The recipe carries an implicit reliability rule: trust the estimate when the posterior is confident and the score Jacobian is well conditioned.</p>
+<p>This project shows that the rule fails in a specific and checkable way. A generated state does not only add noise to the downstream estimating equation; it changes that equation’s geometry, so that the smallest eigenvalue of the generated-state Gram matrix can <i>grow</i> as the state estimate gets worse (it grows 70 times in a controlled design while causal error first rises and then falls, and in 82% of learned-posterior runs the generated state looks better conditioned than the true one). We call this <i>phantom causal resolution</i>. We derive two exact laws: the population displacement of a coupled regime score under state confusion, which reproduces a 4,900-run factorial experiment to within 2%, and a residual-state bias law, an omitted-variable identity in the posterior’s leftover state variance. The laws dictate the estimator: <i>overlap-aware regime DML</i> (OR-DML) conditions its nuisances on the posterior rather than weighting them by it, which makes the coupled score exactly Neyman-orthogonal for every posterior, and combines purged block cross-fitting, spectral regularization and HAC inference.</p>
+<p>Evidence comes from factorial and learned-posterior synthetic designs, a real-data-calibrated semi-synthetic benchmark on four Indian cities (Delhi, Mumbai, Bengaluru, Kolkata) on a corrected hourly grid, and an audited observational stress test with aligned placebos and robustness values. Posterior-adjusted OR-DML is the most accurate regime-aware estimator in every synthetic frontier cell and in every semi-synthetic city for regime effects; no estimator removes residual-state bias under weak observability, and the report states where each result stops. The work yielded the peer-reviewed manuscript submitted to AISTATS 2027, a verified reproduction pipeline in which every number is generated from committed artifacts, and an honest account of an earlier applied study that an internal audit led us to retire.</p>
+<p><b>Keywords:</b> causal inference, double machine learning, latent Markov models, regime switching, phantom causal resolution, air quality, reproducibility.</p></section>
+
+<section class="front unnum"><h1>Table of Contents</h1><div class="toc">{{TOC}}</div></section>
+<section class="front unnum"><h1>List of Figures</h1><div class="fl">{{LOF}}</div></section>
+<section class="front unnum"><h1>List of Tables</h1><div class="fl">{{LOT}}</div></section>
+
+<section class="front unnum"><h1>Notation and Abbreviations</h1>
+<table class="md"><tr><th>Symbol</th><th>Meaning</th></tr>
+<tr><td>$S_t \in \{1,\dots,K\}$</td><td>latent regime at time $t$ (first-order Markov chain)</td></tr>
+<tr><td>$Z_t, X_t$</td><td>regime proxies (meteorology) and observed controls (lagged pollutants, weather)</td></tr>
+<tr><td>$T_t, Y_t$</td><td>treatment (NO₂) and outcome (PM₂.₅)</td></tr>
+<tr><td>$\gamma_{tk}$</td><td>HMM posterior probability $P(S_t = k \mid \cdot)$</td></tr>
+<tr><td>$\theta_k^*$, $\theta^*_{\rm ATE}$</td><td>regime-$k$ effect and stationary average effect</td></tr>
+<tr><td>$\varepsilon_\gamma$</td><td>posterior error $\mathbb{E}\|\gamma_t - H_t\|_1$ against the one-hot true state $H_t$</td></tr>
+<tr><td>$\hat J, \hat S, \lambda_{\min}$</td><td>coupled Gram matrix, score vector, and its smallest eigenvalue</td></tr>
+<tr><td>$v_t=\gamma_t(1-\gamma_t)$</td><td>posterior variance of the regime indicator (residual state variance)</td></tr>
+<tr><td>$\tau^*$</td><td>embargo (purge) length in time steps</td></tr>
+<tr><td>$b^\star$</td><td>robustness value: smallest outcome regime shift (in SD of $\tilde Y$) that explains the estimate away</td></tr></table>
+<table class="md"><tr><th>Abbreviation</th><th>Expansion</th><th>Abbreviation</th><th>Expansion</th></tr>
+<tr><td>AISTATS</td><td>Intl. Conf. on Artificial Intelligence and Statistics</td><td>HAC</td><td>heteroskedasticity- and autocorrelation-consistent</td></tr>
+<tr><td>DML</td><td>Double / Debiased Machine Learning</td><td>HMM</td><td>hidden Markov model</td></tr>
+<tr><td>OR-DML</td><td>overlap-aware regime DML</td><td>EM</td><td>expectation–maximization</td></tr>
+<tr><td>ATE</td><td>average treatment effect</td><td>CPCB</td><td>Central Pollution Control Board</td></tr>
+<tr><td>DGP</td><td>data-generating process</td><td>ECE / AUC</td><td>expected calibration error / area under ROC</td></tr></table></section>

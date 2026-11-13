@@ -1,0 +1,233 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Minor Project Presentation</title>
+<link rel="stylesheet" href="katex.min.css"><link rel="stylesheet" href="deck.css"></head><body><section class="slide cover" id="s1">
+<div class="kick">Minor project · AISTATS 2027 submission</div>
+<div class="cover-row">
+<div class="cl"><div class="title">Reliable causal estimation under latent <em style="color:#E8651A">Markov</em> confounding</div>
+<p class="mut" style="font-size:34px;max-width:900px">Overlap-aware regime Double Machine Learning, tested on air-quality sensors in four Indian cities</p></div>
+<div class="cr"><svg viewBox="0 0 600 380" fill="none"><line x1="10" y1="330" x2="590" y2="330" stroke="#cfc8b6" stroke-width="2"/><path d="M10 322 C 120 318, 170 260, 240 150 S 340 20, 400 52 S 500 290, 590 322" stroke="#14213D" stroke-width="3.5"/><path d="M10 300 C 140 290, 280 262, 400 188 S 540 60, 590 40" stroke="#E8651A" stroke-width="3.5" stroke-dasharray="2 10" stroke-linecap="round"/><circle cx="352" cy="38" r="9" fill="#14213D"/><text x="372" y="30" font-size="22" fill="#14213D" font-family="Inter">error peaks, then falls</text><text x="10" y="70" font-size="22" fill="#E8651A" font-family="Inter">apparent information grows</text><text x="300" y="366" font-size="20" fill="#6b7080" font-family="Inter" text-anchor="middle">state estimate gets worse →</text></svg></div>
+</div>
+<div class="rule"></div>
+<div class="who">Pulkit Kumar · Utsav Verma · Nishant Kumar Upadhyay<br><span>Guide: Dr. Savitha G · School of Computer Engineering · MIT Manipal · November 2026</span></div>
+<img class="logo" src="../assets/mit_logo.png">
+
+</section>
+
+<section class="slide" id="s2">
+<div class="kick">The project in one slide</div>
+<h2>A trust rule everyone uses <em>fails</em>. We show exactly how, and fix the estimator.</h2>
+<div class="stats">
+<div><div class="big">4,900</div><div class="lab">simulation runs matched by our closed-form law, within 2%</div></div>
+<div><div class="big">82<small>%</small></div><div class="lab">of learned-state runs where a wrong state looks better conditioned than the true one</div></div>
+<div><div class="big">4</div><div class="lab">Indian cities: Delhi, Mumbai, Bengaluru, Kolkata</div></div>
+</div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>02 / 19</span></div></section>
+
+<section class="slide" id="s3">
+<div class="kick">The question</div>
+<h2>Does cutting <em>NO₂</em> cut PM₂.₅?</h2>
+<div class="row"><div style="flex:1"><p>A forecast cannot answer this. The atmosphere has a hidden state, such as stagnation or ventilation, that raises both pollutants together.</p><p class="mut">We never observe that state. We only see weather proxies.</p></div>
+<div style="flex:1.6"><div class="fig"><svg viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg" font-family="Source Serif 4, serif" font-size="17">
+<defs>
+<marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#14213D"/></marker>
+<marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E8651A"/></marker>
+</defs>
+<g fill="none" stroke-width="1.8">
+<path d="M228 50 L352 50" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M185 72 L110 168" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M205 72 L262 166" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M222 68 L398 168" stroke="#E8651A" marker-end="url(#o)"/>
+<path d="M300 195 L372 195" stroke="#14213D" marker-end="url(#k)"/>
+<path d="M590 72 L305 172" stroke="#14213D" marker-end="url(#k)"/>
+<path d="M600 72 L440 170" stroke="#14213D" marker-end="url(#k)"/>
+</g>
+<g stroke-width="1.8" fill="#fdf0e8" stroke="#E8651A"><circle cx="200" cy="50" r="26" stroke-dasharray="5 4"/><circle cx="380" cy="50" r="26"/></g>
+<g stroke-width="1.8" fill="#fff" stroke="#14213D"><rect x="55" y="170" width="78" height="50" rx="7"/><rect x="225" y="170" width="78" height="50" rx="7"/><rect x="375" y="170" width="78" height="50" rx="7"/><rect x="560" y="26" width="78" height="50" rx="7"/></g>
+<g text-anchor="middle" fill="#14213D">
+<text x="200" y="56">S<tspan dy="5" font-size="12">t</tspan></text><text x="380" y="56">S<tspan dy="5" font-size="12">t+1</tspan></text>
+<text x="94" y="201">Z<tspan dy="5" font-size="12">t</tspan></text><text x="264" y="201">T<tspan dy="5" font-size="12">t</tspan></text><text x="414" y="201">Y<tspan dy="5" font-size="12">t</tspan></text><text x="599" y="57">X<tspan dy="5" font-size="12">t</tspan></text>
+<g font-size="12.5" fill="#5b6270"><text x="94" y="242">proxy (weather)</text><text x="264" y="242">treatment (NO₂)</text><text x="414" y="242">outcome (PM₂.₅)</text><text x="599" y="96">controls</text></g>
+<text x="290" y="36" font-size="12.5" fill="#E8651A">Markov</text>
+<text x="200" y="14" font-size="12.5" fill="#E8651A">hidden state</text>
+</g></svg>
+</div></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>03 / 19</span></div></section>
+
+<section class="slide" id="s4">
+<div class="kick">Objectives</div>
+<h2>Six things we set out to do.</h2>
+<ul class="l">
+<li><b>01</b>Assemble and audit a multi-city hourly dataset</li>
+<li><b>02</b>Characterize how state error becomes causal error</li>
+<li><b>03</b>Build a reliable regime-aware estimator</li>
+<li><b>04</b>Validate from synthetic to real data</li>
+<li><b>05</b>Produce a peer-reviewed research submission</li>
+<li><b>06</b>Make every number reproducible</li>
+</ul>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>04 / 19</span></div></section>
+
+<section class="slide" id="s5">
+<div class="kick">Data</div>
+<h2>Sixteen months of hourly <em>sensor</em> data.</h2>
+<div class="row"><div style="flex:1.5"><div class="fig"><img src="../assets/coverage.png" style="mix-blend-mode:multiply"></div></div>
+<div style="flex:1"><p>OpenAQ / CPCB pollution and Open-Meteo weather, February 2025 to June 2026.</p><p class="mut">A rounding bug had put “hourly” data on a two-hour grid. We found it and recomputed everything.</p></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>05 / 19</span></div></section>
+
+<section class="slide" id="s6">
+<div class="kick">Why standard methods fail</div>
+<h2>Standard DML is off by <em>5×</em>, at every proxy quality.</h2>
+<div class="stats" style="margin-top:30px"><div><div class="big">8.44</div><div class="lab">bias of standard Double ML</div></div><div><div class="big" style="color:var(--or)">1.53</div><div class="lab">true average effect in the benchmark</div></div></div>
+<p style="margin-top:60px">Adding more observed controls can make the bias worse, not better.</p>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>06 / 19</span></div></section>
+
+<section class="slide" id="s7">
+<div class="kick">Approach</div>
+<h2>Infer the state, then estimate <em>carefully</em>.</h2>
+<div class="fig" style="margin-bottom:60px"><svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="12.5">
+<defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#14213D"/></marker></defs>
+<g stroke="#14213D" stroke-width="1.4" fill="#fff"><rect x="5" y="40" width="110" height="64" rx="8"/><rect x="150" y="40" width="110" height="64" rx="8"/><rect x="295" y="40" width="110" height="64" rx="8"/><rect x="440" y="40" width="110" height="64" rx="8" fill="#fdf0e8" stroke="#E8651A"/><rect x="585" y="40" width="110" height="64" rx="8"/></g>
+<g stroke="#14213D" stroke-width="1.4" marker-end="url(#b)"><path d="M115 72 L148 72"/><path d="M260 72 L293 72"/><path d="M405 72 L438 72"/><path d="M550 72 L583 72"/></g>
+<g text-anchor="middle" fill="#14213D" font-weight="600"><text x="60" y="68">Sensor data</text><text x="205" y="68">Gaussian HMM</text><text x="350" y="68">Purged cross-fit</text><text x="495" y="68">Coupled score</text><text x="640" y="68">Reliability</text></g>
+<g text-anchor="middle" fill="#555" font-size="11"><text x="60" y="86">NO₂, PM₂.₅, weather</text><text x="205" y="86">posteriors γₜ</text><text x="350" y="86">nuisances on F</text><text x="495" y="86">(J+λI)⁻¹ S</text><text x="640" y="86">report + placebos</text></g>
+<text x="350" y="130" text-anchor="middle" fill="#E8651A" font-size="11.5">posterior enters twice: adjustment feature (fine) and score weight (coarse target)</text>
+</svg>
+</div>
+<div class="row" style="gap:60px;align-items:flex-start"><p class="col">Hidden Markov model gives a probability of each regime at each hour.</p><p class="col">Cross-fitting skips neighbouring hours so time dependence cannot leak.</p><p class="col">A regularized coupled score gives one effect per regime.</p></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>07 / 19</span></div></section>
+
+<section class="slide" id="s8">
+<div class="kick">Key discovery</div>
+<h2>A worse state estimate can look <em>better</em>.</h2>
+<div class="fig"><img src="../assets/fig1_phantom_resolution_hi.png" style="mix-blend-mode:multiply"></div>
+<p style="margin-top:34px;max-width:1500px">We call it <b>phantom causal resolution</b>: error rises while the usual conditioning check improves, up to 70×.</p>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>08 / 19</span></div></section>
+
+<section class="slide" id="s9">
+<div class="kick">The rules: why it fails</div>
+<h2>Two <em>laws</em> explain the failure.</h2>
+<div class="row" style="align-items:stretch;gap:44px">
+<div class="card"><h3>Omitted-regime bias</h3><p class="kd"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mover accent="true"><mi>θ</mi><mo>^</mo></mover><mrow><mi mathvariant="normal">n</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">v</mi><mi mathvariant="normal">e</mi></mrow></msub><mo>→</mo><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>ω</mi><mi>k</mi></msub><msubsup><mi>θ</mi><mi>k</mi><mo>∗</mo></msubsup><mo>+</mo><msub><mi mathvariant="script">B</mi><mrow><mi mathvariant="normal">h</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi></mrow></msub><mo>+</mo><msub><mi mathvariant="script">B</mi><mrow><mi mathvariant="normal">c</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">f</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\hat\theta_{\rm naive}\to\sum_k\omega_k\theta_k^*+\mathcal B_{\rm het}+\mathcal B_{\rm conf}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.1079em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord katex-accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9579em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span></span><span style="top:-3.2634em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1667em;"><span class="mord">^</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3175em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight">naive</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.3521em;vertical-align:-1.3021em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.8479em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.3021em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7387em;"><span style="top:-2.453em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mbin mtight">∗</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathcal" style="margin-right:0.0304em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0304em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight">het</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathcal" style="margin-right:0.0304em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0304em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight" style="margin-right:0.0778em;">conf</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p><p class="mut">Controls alone cannot see the hidden regime. More controls can make the bias worse.</p></div>
+<div class="card"><h3>State-confusion law</h3><p class="kd"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>λ</mi><mo>−</mo></msub><mo>=</mo><mstyle scriptlevel="0" displaystyle="false"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>ε</mi><mi>γ</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>+</mo><mstyle scriptlevel="0" displaystyle="false"><mfrac><mn>1</mn><mn>8</mn></mfrac></mstyle><msubsup><mi>ε</mi><mi>γ</mi><mn>2</mn></msubsup><msup><mi mathvariant="normal">Δ</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\lambda_-=\tfrac12\sigma^2(1-\varepsilon_\gamma)^2+\tfrac18\varepsilon_\gamma^2\Delta^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9028em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathnormal">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2583em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mbin mtight">−</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.2091em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.1502em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">ε</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0556em;">γ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.2472em;vertical-align:-0.3831em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">8</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord"><span class="mord mathnormal">ε</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-2.453em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0556em;">γ</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3831em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord">Δ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></p><p class="mut">Conditioning improves as the state estimate gets worse. Matches 4,900 runs.</p></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>09 / 19</span></div></section>
+
+<section class="slide" id="s10">
+<div class="kick">The rules: what we build from them</div>
+<h2>Three <em>rules</em> shape the estimator.</h2>
+<div class="row" style="align-items:stretch;gap:36px">
+<div class="card"><h3>Orthogonality</h3><p class="kd"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi mathvariant="normal">∂</mi><mrow><mo stretchy="false">(</mo><mi>m</mi><mo separator="true">,</mo><mi>μ</mi><mo stretchy="false">)</mo></mrow></msub><mtext> </mtext><mi mathvariant="double-struck">E</mi><mtext> </mtext><msub><mi>ψ</mi><mi>k</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\partial_{(m,\mu)}\,\mathbb E\,\psi_k=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0496em;vertical-align:-0.3552em;"></span><span class="mord"><span class="mord" style="margin-right:0.0556em;">∂</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.5198em;margin-left:-0.0556em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathnormal mtight">m</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight">μ</span><span class="mclose mtight">)</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3552em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathbb">E</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">ψ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span></span></p><p class="mut">Condition nuisances on the posterior: first-order errors drop out for every posterior.</p></div>
+<div class="card"><h3>Error bound</h3><p class="kd"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">∥</mi><mover accent="true"><mi>θ</mi><mo>^</mo></mover><mo>−</mo><msup><mi>θ</mi><mo>∗</mo></msup><mi mathvariant="normal">∥</mi><mo>≲</mo><mfrac><msub><mi>ε</mi><mi>γ</mi></msub><mrow><msub><mi>λ</mi><mi>min</mi><mo>⁡</mo></msub><mo stretchy="false">(</mo><mi>J</mi><mo stretchy="false">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\|\hat\theta-\theta^*\|\lesssim\frac{\varepsilon_\gamma}{\lambda_{\min}(J)}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.2079em;vertical-align:-0.25em;"></span><span class="mord">∥</span><span class="mord katex-accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9579em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span></span><span style="top:-3.2634em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1667em;"><span class="mord">^</span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7387em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mbin mtight">∗</span></span></span></span></span></span></span></span><span class="mord">∥</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel amsrm">≲</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.0436em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.1076em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3175em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mop mtight"><span class="mtight">m</span><span class="mtight">i</span><span class="mtight">n</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0962em;">J</span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">ε</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0556em;">γ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p><p class="mut">State error and nuisance error add; neither hides the other.</p></div>
+<div class="card"><h3>Residual-state bias</h3><p class="kd"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>B</mi><mo>=</mo><mfrac><mrow><mi>a</mi><mtext> </mtext><mi>b</mi><mtext> </mtext><mi>v</mi></mrow><mrow><msup><mi>a</mi><mn>2</mn></msup><mi>v</mi><mo>+</mo><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac></mrow><annotation encoding="application/x-tex">B=\frac{a\,b\,v}{a^{2}v+\sigma^{2}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.1408em;vertical-align:-0.7693em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.0359em;">v</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7693em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p><p class="mut">State error × treatment shift × outcome shift, over a variance the shift inflates.</p></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>10 / 19</span></div></section>
+
+<section class="slide" id="s11">
+<div class="kick">The estimator</div>
+<h2>Condition on the posterior. <em>Don’t</em> weight by it.</h2>
+<div class="row" style="align-items:flex-start"><div style="flex:1.25"><pre class="code"><code>F = np.column_stack([X, G] + [G[:, [k]] * X <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(K-<span class="hljs-number">1</span>)])
+<span class="hljs-keyword">for</span> train, test <span class="hljs-keyword">in</span> purged_blocks(N, embargo):
+    m_y = fit(F[train], Y[train])      <span class="hljs-comment"># posterior as a feature</span>
+    m_t = fit(F[train], T[train])
+J = weighted_gram(tilde_T, w)           <span class="hljs-comment"># posterior as a weight</span>
+theta = inv(J + lam * I) @ S</code></pre></div>
+<div style="flex:.75"><div class="big" style="font-size:150px">85%<small> → 0.4%</small></div><div class="lab">non-orthogonality of the old weighted design versus ours</div></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>11 / 19</span></div></section>
+
+<section class="slide" id="s12">
+<div class="kick">Results</div>
+<h2>Best in <em>every</em> city.</h2>
+<div class="fig"><img src="../assets/fig3_estimators_hi.png" style="mix-blend-mode:multiply"></div>
+<p style="margin-top:24px;max-width:1600px;font-size:30px" class="mut">Purple: ours. Pink: our earlier design. Below separation of about 1, every method fails.</p>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>12 / 19</span></div></section>
+
+<section class="slide" id="s13">
+<div class="kick">Real sensors, honest verdicts</div>
+<h2>What the four cities <em>can</em> say.</h2>
+<table class="d"><tr><th>City</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>Delhi</td><td><span class="tag o">association</span></td><td>Positive in both regimes. Needs an 82 SD hidden shift to vanish, but a lead placebo rejects: not an emissions effect.</td></tr>
+<tr><td>Mumbai</td><td><span class="tag">inconclusive</span></td><td>One 277-hour constant NO₂ run; screening removes 23% of the data.</td></tr>
+<tr><td>Bengaluru</td><td><span class="tag">inconclusive</span></td><td>Fails placebo checks.</td></tr>
+<tr><td>Kolkata</td><td><span class="tag">inconclusive</span></td><td>Only 16 distinct NO₂ values; screened effect fails placebo.</td></tr></table>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>13 / 19</span></div></section>
+
+<section class="slide" id="s14">
+<div class="kick">Reproducibility</div>
+<h2>Every number traces to a <em>file</em>.</h2>
+<div style="display:block"><div style="margin-bottom:30px"><pre class="code" style="font-size:23px"><code>macro,value,source,how
+FacRhoD,0.995,reports/factorial_reliability_correlations.csv,Spearman_Run_Difficulty
+LPFracInfl,82,reports/synthesis/learned_posterior_coupled_meta.json,% runs lambda_proxy&gt;lambda_oracle
+...                                # 247 rows in claims.csv</code></pre><pre class="code" style="margin-top:24px;font-size:23px"><code>python verify_submission.py --fast
+bash reproduce.sh        <span class="hljs-comment"># ~12 min on 2 cores</span></code></pre></div><p style="max-width:1400px">One script writes every table and number in the paper. A verifier fails on any mismatch.</p></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>14 / 19</span></div></section>
+
+<section class="slide" id="s15">
+<div class="kick">The journey</div>
+<h2>We audited our own work, and <em>retired</em> claims.</h2>
+<div class="fig" style="margin-bottom:50px"><svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="11.5">
+<line x1="20" y1="95" x2="680" y2="95" stroke="#14213D" stroke-width="2"/>
+<g fill="#14213D"><circle cx="40" cy="95" r="6"/><circle cx="330" cy="95" r="6" fill="#E8651A"/><circle cx="440" cy="95" r="6" fill="#E8651A"/><circle cx="520" cy="95" r="6" fill="#E8651A"/><circle cx="660" cy="95" r="6"/></g>
+<rect x="40" y="70" width="290" height="10" fill="#c9d3e6"/><rect x="330" y="70" width="110" height="10" fill="#E8651A" opacity=".55"/><rect x="440" y="70" width="80" height="10" fill="#3B6FB6" opacity=".7"/>
+<g fill="#14213D" font-weight="600"><text x="40" y="58">Phase 1 · applied study</text><text x="330" y="58">Phase 2 · pivot</text><text x="440" y="40">Phase 3 · consolidation</text></g>
+<g fill="#5b6270" font-size="10.5"><text x="40" y="125">23 Mar 2026</text><text x="40" y="139">first commit; data pipeline,</text><text x="40" y="152">forecasting, policy simulation</text>
+<text x="300" y="125">28 Sep</text><text x="300" y="139">forensic audit;</text><text x="300" y="152">RC-DML pivot</text>
+<text x="425" y="125">6 Oct</text><text x="425" y="139">bias law, phantom</text><text x="425" y="152">resolution merged</text>
+<text x="505" y="170">7 Oct</text><text x="505" y="184">scientific corrections</text>
+<text x="615" y="125">Nov 2026</text><text x="615" y="139">this report</text><text x="615" y="152">and deck</text></g></svg>
+</div>
+<ul class="l" style="max-width:1500px"><li><b>OUT</b>A health-benefit figure built on an arbitrary scalar</li><li><b>OUT</b>Lags that were “hourly” but two hours</li><li><b>OUT</b>Placebo tests that were mechanically zero</li></ul>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>15 / 19</span></div></section>
+
+<section class="slide" id="s16">
+<div class="kick">Where it is submitted</div>
+<h2>A top-tier, <em>peer-reviewed</em> venue.</h2>
+<div class="stats" style="margin-top:20px;gap:90px">
+<div><div class="big">A</div><div class="lab">CORE conference rank (A* flagship, A excellent)</div></div>
+<div><div class="big">31<small>%</small></div><div class="lab">of submissions accepted in 2025: 583 of 1,861</div></div>
+<div><div class="big">1985</div><div class="lab">series began, proceedings published in PMLR</div></div>
+</div>
+<p style="margin-top:50px;max-width:1500px">AISTATS 2027 sits where machine learning meets statistics. In AI, conferences like this are full, blind-reviewed publications, not just talks.</p>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>16 / 19</span></div></section>
+
+<section class="slide" id="s17">
+<div class="kick">Conclusions</div>
+<h2>Two rules <em>survive</em>.</h2>
+<div class="row" style="align-items:stretch;gap:50px"><div class="card"><h3>Design</h3><p>Use the posterior as an adjustment feature. Use it as a weight only on the target.</p></div><div class="card"><h3>Reporting</h3><p>State the leftover state variance, the regime shifts, a robustness value, simple baselines, and aligned placebos.</p></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>17 / 19</span></div></section>
+
+<section class="slide" id="s18">
+<div class="kick">Limits and next steps</div>
+<h2>What we <em>do not</em> claim.</h2>
+<div class="row" style="align-items:flex-start;gap:90px"><div class="col"><p><b>Limits</b></p><p class="mut">Every method fails at weak proxy separation. City results are associations. Inference theory excludes full-sample smoothing.</p></div><div class="col"><p><b>Next</b></p><p class="mut">Open-source package. Policy-shock designs for emission claims. Re-test the dual-factor idea of ambiguity times conditioning.</p></div></div>
+
+<div class="foot"><span>MIT Manipal · Data Science Minor · Minor Project</span><span>18 / 19</span></div></section>
+
+<section class="slide cover" id="s19">
+<div class="kick">Thank you</div>
+<div class="title" style="font-size:150px;margin-top:40px">Questions?</div>
+<div class="rule"></div>
+<div class="who">Pulkit Kumar · Utsav Verma · Nishant Kumar Upadhyay<br><span>Guide: Dr. Savitha G · School of Computer Engineering · MIT Manipal</span></div>
+<p class="mut" style="margin-top:50px;font-size:26px;max-width:1300px">Report, manuscript, code and reproduction pipeline are in the project repository.</p>
+<img class="logo" src="../assets/mit_logo.png">
+
+</section>
+
+<script>
+if(!/print=1/.test(location.search)){document.body.classList.add('deckview');const S=[...document.querySelectorAll('.slide')];let k=0;
+const fit=()=>{const s=Math.min(innerWidth/1920,innerHeight/1080);S.forEach(e=>{e.style.transformOrigin='0 0';e.style.transform='scale('+s+')';e.style.margin=((innerHeight-1080*s)/2)+'px 0 0 '+((innerWidth-1920*s)/2)+'px'})};
+const go=n=>{k=Math.max(0,Math.min(S.length-1,n));S.forEach((e,j)=>e.classList.toggle('on',j==k));location.hash=k+1};
+addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key))go(k+1);if(['ArrowLeft','PageUp'].includes(e.key))go(k-1)});
+addEventListener('click',e=>go(e.clientX>innerWidth/2?k+1:k-1));addEventListener('resize',fit);fit();go((+location.hash.slice(1)||1)-1)}
+</script></body></html>
