@@ -51,7 +51,7 @@ Each block: **Speaker. Point. Anchor. Say (loosely). Bridge. Report section.**
 
 **15. The journey (Utsav, 45 s).** Point: audits corrected earlier mistakes. Anchor: the timeline. Say: one example of a claim we withdrew. Bridge: "Where this is submitted." Report: Chapter 10.
 
-**16. Where it is submitted (Nishant, 60 s).** Point: AISTATS is a top-tier peer-reviewed venue. Anchors: CORE A, 31% accepted in 2025 (583 of 1,861). Say: in AI the top conferences play the role journals play elsewhere; submitted, under review, not accepted yet. Do not quote an h5-index unless you checked Google Scholar Metrics. Bridge: "To conclude." Report: 10.6.
+**16. Where it is submitted (Nishant, 60 s).** Point: AISTATS is a top-tier peer-reviewed venue. Anchors: CORE A, 31% accepted in 2025 (583 of 1,861). Say: in AI the top conferences play the role journals play elsewhere; submitted, under review, not accepted yet. The h5-index is 101 (Google Scholar Metrics). Bridge: "To conclude." Report: 10.6.
 
 **17. Conclusions (Pulkit, 45 s).** Point: two rules survive (design, reporting). Say: map back to the objectives. Report: 11.1.
 
@@ -199,7 +199,7 @@ Speakers: **P** = Pulkit Kumar, **U** = Utsav Verma, **N** = Nishant Kumar Upadh
 **N:** In artificial intelligence, the top conferences play the role that journals play in many other fields. The AISTATS proceedings appear in the PMLR series.
 **N:** It is rated CORE A, and the 2025 edition accepted 583 of 1,861 submissions, about 31 percent.
 **N:** To be clear, our paper is submitted and under review. It is not yet accepted.
-**N:** We have not quoted an h5-index in the slides, because the official Google Scholar page could not be checked automatically, as it blocks automated access. Third-party sites list a value near 100. [click]
+**N:** Google Scholar Metrics lists an h5-index of 101 for AISTATS, so its top 101 papers of the last five years each have at least 101 citations. [click]
 
 ### Slide 17. Conclusions (P, 45 s)
 
@@ -227,6 +227,6 @@ Speakers: **P** = Pulkit Kumar, **U** = Utsav Verma, **N** = Nishant Kumar Upadh
 - **Nishant:** slides 1, 3, 4, 16, 19 (about 2.75 minutes).
 - Hand-offs happen on the last line before each `[click]` where the next speaker is named.
 
-### Note on the h5-index (checked 2026-11-13)
+### Note on the h5-index
 
-Google Scholar Metrics blocks automated access (CAPTCHA), so the official AISTATS h5-index could not be read. A third-party aggregator (Paper Copilot) lists about 100, undated. Before the viva, open scholar.google.com/citations?view_op=top_venues, choose Engineering & Computer Science, Artificial Intelligence, and read the AISTATS row yourself. Until then the report says "of the order of 100 per third-party aggregators" and the deck gives no figure.
+AISTATS h5-index is 101 (Google Scholar Metrics, confirmed by Pulkit). Say it only with the explanation on slide 16; if asked for the window, it is the last five complete years (2020 to 2024).
