@@ -1,109 +1,94 @@
-# AISTATS 2027 rebuttal draft, Submission 1823
+# AISTATS 2027 rebuttal draft, Submission 1823 (v2)
 
-Status: DRAFT. Nothing has been posted. Items marked **[VERIFY]** need a number or statement checked against `paper/appendix.tex` and `reports/` before posting. Do not post an unverified claim. The OpenReview comment limit is usually about 5,000 characters, so each block below is written to fit.
+Status: DRAFT, nothing posted. Corrected reviewer mapping after the author's clarification. Only three actions exist on OpenReview (Rebuttal, Official Comment, Flag Review), so **no revised PDF can be uploaded**: every promised fix must be backed by concrete text or numbers shown in the reply. Each block is under about 5,000 characters.
 
-## 0. Triage
+## 0. Where the points are
 
-| Reviewer | Rating (conf.) | Main issue | Stance |
+| Reviewer | Rating (conf.) | Gist | Movable? |
 |---|---|---|---|
-| BBdA | 2 (3) | Clarity; could not check the math | Concede and revise |
-| (unnamed in screenshot, W1-W7/Q1-Q5) | 2 (5) | Identification, assumptions vs. experiments, small gains, baselines | Partly concede, clarify scope |
-| wRgp | 3 (2) | Calibration assumption; Thm 5 vs. implemented procedure | Concede, clarify claim |
-| Qg1H | 4 (2) | Coverage, heteroscedasticity, T in HMM, lambda | Answer directly |
-| mC7v | not visible | Typo and inconsistency audit, no errors found | Thank, fix all |
+| BBdA | 2 (3) | Presentation too poor to check the math | **Yes**: show rewritten text; a 3 is plausible |
+| Qg1H | 2 (5) | Identification, assumption 3, inference, gains, baselines | Hard, but a 3 is possible if the claim scope is conceded |
+| mC7v | 3 (2) | Calibration assumption; Theorem 5 vs. implemented procedure | Hold |
+| wRgp | 4 (2) | Coverage, heteroscedasticity, T in HMM, lambda | Hold |
 
-Area chair's four concerns: (1) which inferential claim is supported; (2) identification and the role of Assumption 3; (3) clarity, "posterior-adjusted" and R-learner; (4) modest gains and missing baselines. Most of these are **valid, not misreadings**. The credible strategy is to narrow the claims and fix the writing, not to argue.
+Current average is 2.75. **One reviewer moving up one point gives 3.0.** BBdA is the best bet because the complaint is about writing, which can be fixed visibly inside the reply. Qg1H is the second.
 
-## 1. Response to Area Chair (post first)
+The "typo audit" (Appendix G/I proofs, Table 3 vs 20, etc.) was the **Program Chairs' AI review**, not a human reviewer. It does not carry a rating. Fix what is real, but do not spend rebuttal space answering it item by item.
 
-> We thank the AC and reviewers. We agree most concerns are valid and have scoped the claims accordingly.
->
-> **1. Which inferential claim is supported.** Theorem 5 gives asymptotic normality for the *proxy target* theta_lambda under a separated HMM-calibration window. It does **not** give nominal coverage for the structural theta*, which additionally requires proxy displacement o(N^-1/2); Table 16 shows this fails (0% coverage for all proxy-based estimators), as stated after Theorem 5. We will state this in the abstract and Sec. 1 and drop "reliable" claims about structural inference. The paper's inferential contribution is the bias law, the robustness value b*, and bias-aware intervals (below), not nominal structural coverage. We will also state that the released software conditions on the fitted HMM (full-sample smoothing), so Theorem 5 does not cover it.
->
-> **2. Identification and Assumption 3.** Theorem 2 shows non-identification when proxies carry no regime information. Theorem 4 shows that for informative but imperfect proxies, theta* is recovered only up to the residual-state term J^-1 b_gamma, which vanishes as the residual state variance v -> 0. We will add a proposition stating when theta* is identified (correctly specified, identifiable HMM emissions, Allman et al. 2009; proxy separation Delta_Z > 0; calibrated posterior) and say plainly that outside this regime it is not. Assumption 3 (proxy sufficiency) is an idealised benchmark used only for Lemma 1. Theorems 3-4 require only posterior calibration given F_t. Our simulations violate Assumption 3 on purpose, to test robustness. We will relabel it and mark where each result uses it. **[VERIFY against App. A that Thm 3/4 do not use Assumption 3]**
->
-> **3. Clarity.** We will rewrite the abstract and introduction in plain language, define "regime", "posterior-adjusted" and "causal error" at first use, state that Lemma 1 holds for a *fixed* posterior and not for estimated HMM parameters (App. H), and add the relation between Eq. (3) and the R-learner (see reply to the reviewer who asked).
->
-> **4. Evidence.** We agree the gains are modest and design-dependent. The claim is that conditioning the nuisances on the posterior (rather than weighting by it) is the better design. In the real-data-calibrated benchmark, posterior-feature DML is better for the pooled ATE in Mumbai and Bengaluru (Table 2), and this is already stated in the text. We will move the Table 10 baselines (joint Markov-switching MLE, proximal 2SLS, HMM(Z,T), bias-adjusted three-step) into the main comparison.
+## 1. Verified facts (checked in this repo)
 
-## 2. Reviewer BBdA (clarity)
+- `verify_submission.py --fast`: all checks pass (PDF, archive and sources consistent).
+- **Assumption 3 is not used by Theorem 3** (App. A, line 51 says so). Where it matters: in the bias-law setting (App. `biaslaw`) `T = m(X) + a D + V` with `V` independent of `(S,Z,X)`. If `T` carried no regime information beyond the posterior (Assumption 3), then `a v = 0`, so the Theorem 4 bias `a b v / (a^2 v + sigma^2)` vanishes. That is the missing link the area chair asked for. **The linear-model argument is mine, not in the paper; check before posting.**
+- **Table 10 (`paper/generated/biaslaw/tab_ext.tex`)**: in the correctly specified HMM case, posterior-DML bias is +0.20 (Delta_T = 1) and +0.40 (Delta_T = 4), while joint Markov-switching MLE is +0.00 and proximal 2SLS is -0.01 / +0.02. Under a continuous AR(1) latent state, MLE is also biased (+0.77 to +0.89), 2SLS is not (about -0.02). A negative-control leak breaks 2SLS (-0.45) but not the MLE.
+  - **Consequence:** reviewers are right that the strong baselines beat posterior-DML when their assumptions hold. The honest message is "which assumptions let `b` be learned", not "OR-DML wins". Concede it.
+- **Frontier (`tab_frontier_designs.tex`, Delta_Z = 1)**: OR-DML (posterior-adjusted) ATE bias 2.134 vs. posterior-feature DML 2.164 and hard regime FE 2.575; weighted nuisances 4.236. At Delta_Z = 2: 0.129 vs. 0.141 vs. 0.141. At Delta_Z <= 0.5 everything fails (5.9 to 8.6). **The gain of posterior-adjusted over posterior-feature DML is essentially zero for the ATE.** Do not claim otherwise. The real gap is conditioning vs. weighting (weighted is worst) and, for regime effects, 2.954 vs. 3.652 (hard FE) at Delta_Z = 1.
+- Coverage: OR-DML 0% at Delta_Z = 1, 91% at Delta_Z = 2, 94% at Delta_Z = 4 (`claims.csv`: FDCovOursOne/Two/Four). Oracle is 94 to 96%.
+- Regularization: best lambda = 0.1 on the ill-conditioned DGP (MSE 0.0143 vs. 0.785 at lambda = 0); in the well-conditioned frontier the penalty is immaterial (App. `surrogate`). **The data-driven selector's selection frequency (wRgp Q4) is not recorded in the reports.** Do not invent it.
 
-> Thank you. We accept the presentation criticism and will revise.
->
-> - **Title typo:** the OpenReview title reads "Casual" instead of "Causal". We will correct the metadata.
-> - **Abstract:** we will shorten it and define causal error (error of the estimated regime effects) and regime-aware (the estimator allows a separate effect in each latent regime).
-> - **"Earlier drafts", AI traces, unnatural phrasing:** we will remove all draft-history language (e.g. p. 2) and rewrite the phrases you cite ("state that nobody measured" to "unobserved state", "geometry of the equation" to "conditioning of the estimating equation", etc.). We will keep the AI Use Statement.
-> - **Forward-references and numbers in the introduction:** we will replace them with motivation and a worked intuition, and present NO2/PM2.5 as an example.
-> - **Added intuition** before Theorems 1 and 2, and Corollary 1 split into result and interpretation.
-> - **W2, "implicit reliability rule":** this is the practice of reporting posterior confidence and the conditioning of the score matrix as evidence of reliability. We will cite the sources that report these diagnostics. **[VERIFY: add concrete citations; do not claim "common" without them]**
-> - **W3, why two-stage:** it is the natural, widely used pipeline; joint latent-model likelihoods are a different class of method. We will say this and expand the baseline descriptions.
->
-> **Q1 (Pearl).** Related but distinct. Pearl (2010) shows that conditioning on more observed controls can amplify omitted bias. Phantom resolution is a *diagnostic* failure: when the state is *generated*, lambda_min(J) grows while bias is non-monotone in proxy error. They share the same algebra (see Related Work); the new element is the generated-state, regime-coupled form and its effect on the usual conditioning diagnostic.
->
-> **Q2 (audit).** We checked the hourly grid against raw timestamps and found the earlier panel rounded half-hour stamps with ties-to-even, collapsing onto a two-hour grid, so "hourly" lags were two hours. We rebuilt the grid, which changed Delhi's single-index estimate from 0.58 to 0.37 (App. O). We will describe this audit in a short paragraph.
->
-> **Q3.** We will define Bartlett bands (a rule for choosing the embargo length from the autocorrelation of the residuals), the asymmetric factorial design, state confusion (the posterior assigns mass to the wrong regime) and placebos (leads of the treatment, aligned to the outcome's information set, that should have zero effect if the temporal reading holds).
+## 2. Posting order
 
-## 3. Reviewer with W1-W7 / Q1-Q5 (rating 2, conf. 5; name not visible in screenshot)
+1. **Rebuttal** to Qg1H (largest lever, conf. 5).
+2. **Rebuttal** to BBdA, with the rewritten text.
+3. **Rebuttal** to mC7v and wRgp (short; point to the scope statement).
+4. **Official Comment** to the area chair summarising the scope changes (block 5).
+5. Do not use Flag Review.
 
-> Thank you for a careful review.
->
-> **W1/Q2 (identification).** See the AC response, item 2. We will add a proposition on identification and will soften "Reliable" in the title/abstract to match what is proved. **[Decide: retitle, e.g. "When Does Causal Estimation Remain Reliable under Latent Markov Confounding?"]**
->
-> **W2 (nonstationarity).** Correct. The theory assumes a fixed transition matrix and stationary law. We will state this as a limitation and remove the "dynamic environments" framing.
->
-> **W3/Q1 (what is adjusted).** Posterior-weighted designs fit regime-k nuisances on X with weights gamma_k. Posterior-adjusted designs fit one shared nuisance pair on F_t = (X_t, gamma_t, gamma_t (x) X_t), so the posterior enters as a *feature*; it is also used as a weight for the regime-effect target. Lemma 1 (exact orthogonality) holds for any fixed posterior; Appendix H states that orthogonality in (m, mu) does not carry over to the fitted representation. We will say this in the main text.
->
-> **Q3 (R-learner).** Eq. (3) is an R-learner-type residual-on-residual regression with effect basis gamma(F) and a ridge penalty. The difference is the use of a *generated* basis: the basis is itself an estimated posterior, so its error enters bias (Theorem 4) and variance (Theorem 5). We will state the connection explicitly and cite Nie and Wager (2021). **[VERIFY wording against Sec. 3]**
->
-> **W4/Q4 (assumption 3; (T,Y) independent of Z given (X,S)).** In the synthetic DGPs this holds by construction in the main design, but the frontier DGP deliberately violates proxy sufficiency (App. G.1). In the real data, meteorology enters as both control and proxy (delta_X > 0), so the condition is an assumption we cannot establish. This is why the city analysis is reported as an exposure association with falsification checks, not an emissions effect.
->
-> **W5.** Agreed. The real-data section is a stress test; only Delhi survives the lead placebo, and we say it is not a causal effect.
->
-> **W6.** Agreed that gains are small except at weak-to-moderate observability. Figure 3 and the text are on different scales (log vs. linear); we will unify them.
->
-> **W7.** We will unify notation (regime indices {0,1} vs {1,2}, v as process vs. expectation, etc.) and add a notation table.
->
-> **Q5.** We will promote these baselines to the main comparison. **[VERIFY results in Table 10 before characterising them]**
+## 3. Block A: Qg1H (rating 2, confidence 5)
 
-## 4. Reviewer wRgp (rating 3)
-
-> Thank you.
+> We thank the reviewer. Your comments identify real gaps and we agree with most of them. We state what the paper does and does not claim, then answer each question.
 >
-> **W1.** Agreed: the diagnostic is only as good as the posterior calibration. We will state that a misspecified HMM can give confident posteriors and an over-reassuring v-hat and b*, and recommend checking calibration (e.g. held-out likelihood, restarts).
+> **Scope (W1, W5).** The paper does not claim that theta* is identified from imperfect proxies, nor that the city results are causal. The contribution is (i) a diagnostic failure ("phantom causal resolution": lambda_min(J-hat) can improve while error grows), (ii) an exact bias law for posterior-conditioned estimators, and (iii) a design principle (condition nuisances on the posterior; use it to weight only the target). We will retitle to remove "Reliable", e.g. "When Does Causal Estimation Remain Reliable under Latent Markov Confounding?", and say in the abstract that no proxy-based estimator is unbiased when proxies are weak.
 >
-> **W2.** Agreed; see AC response, item 1. Theorem 5 covers the proxy target; the application conditions on the fitted HMM. We will state this where results are reported and show the Table 16 coverage in the main text.
-
-## 5. Reviewer Qg1H (rating 4)
-
-> Thank you for the positive and precise review.
+> **Q2, identification.** Theorem 2 gives non-identification when proxies carry no regime information. For informative proxies the answer is Theorem 4, not an identification theorem: theta-hat -> theta + J^{-1} b_gamma, with b_gamma proportional to a b E[v], where a is the treatment regime shift, b the outcome shift, v = gamma(1-gamma) the residual state variance. So theta* is recovered when a = 0 or v -> 0. Assumption 3 (proxy sufficiency) is where a = 0 comes from: if T carries no information about S beyond Z, there is no residual treatment shift. It is therefore an idealised benchmark that our simulations violate deliberately; Theorem 3 does not require it (App. A). We will add this as a remark after Theorem 4.
 >
-> **Q1 (bias-aware intervals).** Yes. We will report intervals theta-hat +/- (|a-hat| v-bar b-bar / Var(T-tilde)-hat) +/- 1.96 SE, indexed by a sensitivity budget b-bar, and show them against the Table 16 setting. **[Only promise this if you will run it. Otherwise say "we will add the construction and discuss coverage"]**
+> **W2.** Correct: the theory assumes a fixed transition matrix and stationary latent law. We will say so and remove the "dynamic environments" framing.
 >
-> **Q2.** Theorem 4 assumes homoscedastic treatment innovations. With sigma_0 != sigma_1 the pooled formula changes (Proposition 1 already carries sigma_s). We expect the same structure with v weighted by regime-specific innovation variances but have not proved it, and we will say so.
+> **W3, Q1.** "Posterior-weighted" fits one nuisance per regime k and weights it by gamma_k. "Posterior-adjusted" fits a single nuisance pair on F = (X, gamma, gamma (x) X), so the posterior enters as a feature. Lemma 1 (exact orthogonality) holds for any fixed posterior; App. H states that this does not extend to the fitted HMM parameters, which is what the sentence you quote means. We will say this in Sec. 3.
 >
-> **Q3.** Including T in the HMM uses information that is correlated with the state; Lemma 1 conditions on F, so adding T to the posterior changes the conditioning set, and collider bias is possible if T is a descendant of S and Y. We have no theory for this case and will say so in the main text next to Table 15.
+> **Q3, R-learner.** Eq. (3) is an R-learner-style residual regression with effect basis gamma(F) and a ridge penalty. The differences are that the basis is a generated posterior (its error enters Theorems 3 to 5) and that the nuisances are conditioned on it. We will add this sentence and cite Nie and Wager (2021).
 >
-> **Q4.** **[VERIFY from `reports/` and App. I: values of lambda tried, selected value per sweep, and share of runs with lambda > 0.]** Currently the paper reports the grid minimum on one ill-conditioned benchmark (Table reg) and states lambda is immaterial in the well-conditioned frontier.
+> **W4, Q4.** Agreed that Assumption 3 fails in our DGPs, and meteorology is both control and proxy in the real data (delta_X > 0, App. `biaslaw`), so (T, Y) independent of Z given (X, S) cannot be established there. The city analysis is labelled an exposure association; only Delhi survives the lead placebo, and we do not interpret the other cities.
+>
+> **W6.** Agreed. For the pooled ATE the margin of posterior-adjusted over posterior-feature DML is negligible (2.13 vs. 2.16 at Delta_Z = 1; 0.129 vs. 0.141 at Delta_Z = 2). The effect is conditioning vs. weighting: weighted nuisances give 4.24 at Delta_Z = 1. We will state this in the abstract and unify the Figure 3 scale.
+>
+> **Q5.** We agree they should be main baselines. Table 10 already shows the result: with a correctly specified HMM, the joint MLE and proximal 2SLS are essentially unbiased (+0.00 and -0.01 at Delta_T = 1), whereas posterior-DML has bias +0.20. So when a parametric joint model is credible it should be preferred. OR-DML and the bias law matter when it is not (continuous latent state: MLE bias +0.79 at SNR 1) and as a diagnostic. We will move Table 10 to the main text and reposition the claim accordingly.
 
-## 6. Reviewer mC7v (typo and inconsistency audit)
+## 4. Block B: BBdA (rating 2, confidence 3)
 
-> Thank you for an unusually thorough audit. We will fix every item: the beta-mixing block-coupling for Step 3 of the pooled-law proof, the O(N eps) scaling and the r_T^2 term, the shared-target phrasing in Theorem 3, the missing sqrt(K) factor, the missing + sign in the Theorem 5 score expansion, the C_K statement (C_2 = 1/ln 2, C_K = 2), the interior-minimiser condition, the B_lambda collision, Appendix J (legacy design), notation collisions, and the Table 3 vs Table 20 and Appendix N vs Table 17 mismatches. We will add the suggested references (Ogburn-VanderWeele, Kuroki-Pearl, Murphy-Topel / Escanciano-Perez-Izquierdo) and the callout for Table 10. **[VERIFY each item against the PDF/appendix before this reply; the numeric mismatches must be reconciled, not just documented]**
+> Thank you. We accept that the presentation was not at publication standard. As we cannot upload a revision, we show the rewritten abstract here and describe the other changes; the full text will be revised.
+>
+> **Revised abstract.** *Observational time series are often driven by an unobserved, persistent state (a "regime", such as the boundary-layer regime of the atmosphere) that affects both a treatment and an outcome. A common remedy infers the state from noisy proxies with a hidden Markov model (HMM) and then applies Double Machine Learning (DML). We show that the usual reliability check for this recipe can fail: when the inferred state is wrong, the conditioning of the estimating equation can improve while the causal estimate gets worse ("phantom causal resolution"). We derive the exact bias, which depends on the residual uncertainty about the state, not on how confident the posterior looks. Using the posterior as an adjustment feature, rather than as a weight, makes the estimator exactly Neyman-orthogonal for any fixed posterior (OR-DML). Experiments on simulated data, on a semi-synthetic benchmark calibrated to four Indian cities, and on real sensors show that OR-DML is the best regime-aware DML variant, but that no proxy-based estimator is unbiased when the proxies are weak. We give a sensitivity bound for this case.*
+>
+> Terms: *causal error* is the distance between estimated and true regime-specific effects; *regime-aware* means the estimator has a separate effect for each latent regime.
+>
+> **Other changes.** (1) Remove all draft-history language (p. 2) and the numbers in the introduction; use the space for motivation. (2) Replace unnatural phrases (e.g. "state that nobody measured" becomes "unobserved state"; "geometry of the equation" becomes "conditioning of the estimating equation"; "locates the damage in the nuisance step" becomes "the bias comes from the nuisance estimation step"). (3) Resolve "it/its circularity" and "the mechanism" references, and present NO2/PM2.5 as an example. (4) Add intuition before Theorems 1 and 2 and split Corollary 1 into result and interpretation. (5) Define Bartlett bands, asymmetric factorial design, state confusion and placebos at first use.
+>
+> **W2.** The implicit rule is the practice of reporting posterior confidence and the conditioning of the score matrix as evidence of reliability. We will cite where it appears. "Regime" is the value of the latent discrete state, not of a confounder in general.
+>
+> **Q1.** Pearl (2010) shows that adding observed controls can amplify omitted bias. Phantom resolution is a diagnostic failure for a generated state: lambda_min(J-hat) grows (70x in the factorial design) while error is non-monotone in proxy error. Same algebra, new object.
+>
+> **Q2.** We audited the hourly grid against raw timestamps and found half-hour stamps rounded ties-to-even, collapsing onto a two-hour grid. We rebuilt it; Delhi's single-index estimate moved from 0.58 to 0.37.
+>
+> **Q3.** Bartlett bands choose the embargo length from residual autocorrelation; the asymmetric factorial design crosses proxy error with treatment-innovation scale so the closed form can be checked cell by cell; state confusion means the posterior puts mass on the wrong regime; placebos are leads of the treatment aligned to the outcome's information set (zero effect expected if the temporal reading holds).
 
-## 7. Revision work list (in priority order)
+## 5. Block C: mC7v (3) and wRgp (4), short
 
-1. Rewrite abstract and introduction (plain language, remove forward-references, remove "earlier drafts").
-2. Narrow claims: title/abstract "reliable"; state Theorem 5 scope and the 0% coverage in the main text.
-3. Add identification proposition and relabel Assumption 3.
-4. Define terms at first use; add notation table; harmonise indices and symbols.
-5. Promote Table 10 baselines to the main comparison.
-6. Reconcile numeric inconsistencies (Table 3 vs 20, Appendix N vs Table 17, Figure 3 scales).
-7. Apply mC7v's proof fixes; rerun `verify_submission.py`.
-8. Fix the OpenReview title typo ("Casual").
-9. Optional: bias-aware intervals (Qg1H Q1).
+> We agree the diagnostic depends on posterior calibration and that Theorem 5 covers the proxy target, not the structural effect (stated after Theorem 5; Table 16 shows 0% structural coverage for proxy-based methods at weak separation). We will state in the abstract that nominal structural coverage is **not** claimed, and that the released software conditions on the fitted HMM (full-sample smoothing).
+>
+> For heteroscedastic innovations, Proposition 1 already carries regime-specific sigma_s; we expect Theorem 4 to hold with v weighted by regime variances but have not proved it. Including T in the HMM changes the conditioning set of Lemma 1 and is outside the theory (Table 15); we will say so. For lambda, we report the MSE-minimising value on the ill-conditioned design (lambda = 0.1; MSE 0.014 vs. 0.785 at lambda = 0) and note that the penalty is immaterial in the well-conditioned frontier. **We did not record how often a data-driven selector picks lambda > 0.**
 
-## 8. Open questions for the authors
+## 6. Block D: Official Comment to the AC
 
-- Is a revised PDF allowed during the rebuttal period, or only comments? This changes how many items can be promised versus shown.
-- Do you want to retitle?
-- Which of items 5 and 9 will you actually run before the deadline?
+> We summarise the changes we commit to. (1) Claims narrowed: remove "reliable"; no structural coverage is claimed; no identification beyond Theorem 4. (2) Assumption 3 relabelled as an idealisation; its role (a = 0, hence no residual bias) is added after Theorem 4. (3) Table 10 moved to the main text with the honest message that a correctly specified joint MLE or proximal 2SLS beats posterior-DML, and OR-DML and the bias law matter when those assumptions fail. (4) Abstract, introduction and notation rewritten (see our reply to BBdA). (5) The gain over posterior-feature DML on the pooled ATE is stated as negligible; the claim is conditioning vs. weighting.
+
+## 7. Do not claim
+
+- That OR-DML clearly beats posterior-feature DML on the ATE (it does not).
+- Any statistic on lambda selection frequency.
+- Any new experiment result: none was run for this draft.
+- A proof of "Assumption 3 implies a v = 0" beyond the linear setting of App. `biaslaw`.
+
+## 8. Still open
+
+- Retitle: yes (user said no objection). Suggested title above.
+- If you want a stronger answer to wRgp Q1/Q4, I can run bias-aware intervals and record lambda selection, and add real numbers to Block C. Not done yet.
