@@ -23,7 +23,20 @@ The "typo audit" (Appendix G/I proofs, Table 3 vs 20, etc.) was the **Program Ch
   - **Consequence:** reviewers are right that the strong baselines beat posterior-DML when their assumptions hold. The honest message is "which assumptions let `b` be learned", not "OR-DML wins". Concede it.
 - **Frontier (`tab_frontier_designs.tex`, Delta_Z = 1)**: OR-DML (posterior-adjusted) ATE bias 2.134 vs. posterior-feature DML 2.164 and hard regime FE 2.575; weighted nuisances 4.236. At Delta_Z = 2: 0.129 vs. 0.141 vs. 0.141. At Delta_Z <= 0.5 everything fails (5.9 to 8.6). **The gain of posterior-adjusted over posterior-feature DML is essentially zero for the ATE.** Do not claim otherwise. The real gap is conditioning vs. weighting (weighted is worst) and, for regime effects, 2.954 vs. 3.652 (hard FE) at Delta_Z = 1.
 - Coverage: OR-DML 0% at Delta_Z = 1, 91% at Delta_Z = 2, 94% at Delta_Z = 4 (`claims.csv`: FDCovOursOne/Two/Four). Oracle is 94 to 96%.
-- Regularization: best lambda = 0.1 on the ill-conditioned DGP (MSE 0.0143 vs. 0.785 at lambda = 0); in the well-conditioned frontier the penalty is immaterial (App. `surrogate`). **The data-driven selector's selection frequency (wRgp Q4) is not recorded in the reports.** Do not invent it.
+- Regularization (wRgp Q4, **now answered**): best lambda = 0.1 on the ill-conditioned DGP (MSE 0.0143 vs. 0.785 at lambda = 0). In the frontier and semi-synthetic sweeps there is **no selection**: lambda is the fixed rule 0.05 tr(J-hat) / (K sqrt(N)) (`estimators.py` line 65; `lam_scale = 0.05`), positive in 100% of OR-DML runs, zero for hard FE and oracle. Measured on 20 frontier datasets (`reports/rebuttal/lambda_rule_check.csv`): lambda about 7e-4 to 9e-4, sqrt(N) lambda about 0.025 to 0.030, shrinkage bias bound about 0.004. **Weakness this exposes:** sqrt(N) lambda is a constant, not o(1), so Theorem 5's condition lambda = o(N^-1/2) is not met by the implemented rule. Disclose it; do not hide it. The data-driven `AdaptiveSpectralOptimizer` is only used in the legacy script `real_megacity_semisynthetic_benchmark.py`.
+- Heteroscedastic innovations (wRgp Q2, **now answered**): derivation plus simulation in `src/rebuttal/hetero_law_check.py`. The pooled law holds with sigma^2 replaced by E[sigma_S^2]; error 0.07% to 1.7% across six configurations vs. 42% to 55% for the naive average-variance law. Pooled estimator only.
+- Bias-aware intervals (wRgp Q1, **now run**), `src/rebuttal/bias_aware_ci.py`, posterior-feature DML on the frontier DGP, 100 datasets per cell, same seeds as the paper, budget on the composite outcome shift b_eff = 42.4 (computed analytically from the DGP):
+
+  | Delta_Z | naive 95% (budget 0) | 0.5 b_eff | b_eff | 2 b_eff | median required budget | mean bias vs. plug-in law |
+  |---|---|---|---|---|---|---|
+  | 1 | 0% | 5% | 94% | 99% | 29.3 | 2.164 vs. 2.045 |
+  | 2 | 98% | 98% | 98% | 99% | 0 | 0.110 vs. 0.073 |
+  | 4 | 100% | 100% | 100% | 100% | 0 | 0.002 vs. 0.000 |
+
+  Read honestly: this is a **sensitivity analysis, not a correction**. The interval is only valid if the budget covers the true shift; here b_eff is known because the DGP is known. A budget of half the truth gives 5% coverage. The plug-in law understates the measured bias by about 5.5% at Delta_Z = 1.
+- Table 15 (HMM(Z,T), `reports/or_dml_benchmark_summary.csv`, legacy difficulty benchmark): HMM(Z,T) OR-DML ATE bias is 1.196 vs. 4.017 for Spectral OR-DML at Delta_Z = 1, and 6.504 vs. 8.627 at Delta_Z = 0.2. The gain comes from using treatment as a second proxy; it requires T to be informative about S, which is exactly Assumption 3 failing.
+- Table 16 (semi-synthetic, `tab_semisynthetic_full.tex`): every proxy-based estimator has 0% coverage in all four cities; oracle coverage is 83%, 83%, 70%, 93% (Delhi, Mumbai, Bengaluru, Kolkata). The AC's "70 to 93%" is correct. Oracle under-coverage is not explained anywhere in the paper; **say so** if asked.
+- Data inconsistencies in the repo (ROC-AUC 0.615 vs. 0.5895; Tables 3 vs. 20 for Kolkata and Bengaluru) are listed in `docs/REVISED_TEXT_AISTATS2027.md` section 9. Cause not traced.
 
 ## 2. Posting order
 
@@ -75,7 +88,13 @@ The "typo audit" (Appendix G/I proofs, Table 3 vs 20, etc.) was the **Program Ch
 
 > We agree the diagnostic depends on posterior calibration and that Theorem 5 covers the proxy target, not the structural effect (stated after Theorem 5; Table 16 shows 0% structural coverage for proxy-based methods at weak separation). We will state in the abstract that nominal structural coverage is **not** claimed, and that the released software conditions on the fitted HMM (full-sample smoothing).
 >
-> For heteroscedastic innovations, Proposition 1 already carries regime-specific sigma_s; we expect Theorem 4 to hold with v weighted by regime variances but have not proved it. Including T in the HMM changes the conditioning set of Lemma 1 and is outside the theory (Table 15); we will say so. For lambda, we report the MSE-minimising value on the ill-conditioned design (lambda = 0.1; MSE 0.014 vs. 0.785 at lambda = 0) and note that the penalty is immaterial in the well-conditioned frontier. **We did not record how often a data-driven selector picks lambda > 0.**
+> **Q1 (bias-aware intervals).** We ran them (posterior-feature DML, frontier DGP, 100 datasets per cell, budget on the composite outcome shift): at Delta_Z = 1 the naive 95% interval covers 0% of the time; with a budget equal to the true shift it covers 94%, with half the true shift 5%, with twice the true shift 99%. At Delta_Z = 2 and 4 the naive interval already covers 98% to 100%. This is a sensitivity analysis, not a correction: it is valid only if the budget covers the true shift, which we know here only because the DGP is known. We will add it with this caveat.
+>
+> **Q2 (heteroscedastic innovations).** The pooled law generalises exactly: replace sigma^2 by E[sigma_S^2]. With a calibrated posterior, tilde T = a(D - gamma) + V and E[V | D] = 0, so the numerator is a b v and the denominator a^2 v + E[sigma_S^2]. A simulation (six configurations, N = 300,000, regime prior 0.2) gives relative errors of 0.07% to 1.7%, against 42% to 55% for the naive law with the average variance. The observable plug-in is unchanged since Var(tilde T) - a^2 v still equals E[sigma_S^2]. We have not proved the extension to the coupled K-regime estimator.
+>
+> **Q3 (T in the HMM).** Lemma 1 holds for any F-measurable posterior, so orthogonality is preserved, but the posterior then carries treatment information: E[T | F] absorbs part of T, the residual treatment variance shrinks and the posterior's own error is lower. That explains Table 15 (HMM(Z,T) bias 1.20 vs. 4.02 at Delta_Z = 1): treatment is a second proxy, which is possible because T depends on S, so this violates proxy sufficiency by design. Under Assumption 1 (regime-conditional unconfoundedness, innovation exogeneity) T is a descendant of S, not a collider of S and the outcome noise, so we do not expect collider bias; we do not have a theorem for this case and say so.
+>
+> **Q4 (lambda).** In all frontier and semi-synthetic sweeps lambda is a fixed rule, lambda = 0.05 tr(J-hat) / (K sqrt(N)), not a selected value, positive in every OR-DML run (about 7e-4 to 9e-4 on the frontier, with shrinkage bias bounded by about 0.004). The data-driven selector is not used in these tables. Since sqrt(N) lambda is a constant, the rule does not satisfy lambda = o(N^-1/2) in Theorem 5; we will state this. On the ill-conditioned design the grid minimum of MSE is at lambda = 0.1 (0.014 vs. 0.785 at lambda = 0).
 
 ## 6. Block D: Official Comment to the AC
 
@@ -84,11 +103,21 @@ The "typo audit" (Appendix G/I proofs, Table 3 vs 20, etc.) was the **Program Ch
 ## 7. Do not claim
 
 - That OR-DML clearly beats posterior-feature DML on the ATE (it does not).
-- Any statistic on lambda selection frequency.
-- Any new experiment result: none was run for this draft.
+- That lambda is "selected" in the main tables (it is a fixed rule).
+- That the bias-aware interval is a correction (it is a sensitivity analysis that needs a correct budget).
+- That the heteroscedastic law covers the coupled K-regime estimator (not proved).
 - A proof of "Assumption 3 implies a v = 0" beyond the linear setting of App. `biaslaw`.
+- That Theorem 5 applies to the implemented estimator: it does not (full-sample smoothing; fixed lambda rule with sqrt(N) lambda constant).
 
-## 8. Still open
+## 8. New files from this round
 
-- Retitle: yes (user said no objection). Suggested title above.
-- If you want a stronger answer to wRgp Q1/Q4, I can run bias-aware intervals and record lambda selection, and add real numbers to Block C. Not done yet.
+- `src/rebuttal/bias_aware_ci.py`, `src/rebuttal/hetero_law_check.py`: both run in under 15 seconds.
+- `reports/rebuttal/`: `bias_aware_ci_{raw,summary}.csv`, `hetero_law_check.csv`, `lambda_rule_check.csv`.
+- `docs/REVISED_TEXT_AISTATS2027.md`: replacement abstract, introduction, contributions, definitions, remarks, discussion, notation fixes, data inconsistencies.
+
+## 9. Still open (needs a human)
+
+- Whether you accept the proposed title. The user said they do not mind dropping "Reliable".
+- Whether Table 3 vs. 20 and the two ROC-AUC values should be traced before replying (not done; cause unknown).
+- `[CITE]` markers in the revised introduction: real citations are needed for "these diagnostics are routinely reported".
+- The archive (`AISTATS2027_Supplementary_Material.zip`) and `verify_submission.py` expect the locked submission files; the new scripts and reports are not in the archive. Rebuild the archive only if a revision window opens.
