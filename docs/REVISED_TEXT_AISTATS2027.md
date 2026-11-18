@@ -47,6 +47,21 @@ Defined at first use: *causal error* = distance between estimated and true regim
 
 ## 6. Remarks to add in Section 2 and after Theorem 4
 
+**Proposition (identification with informative proxies). New; check before use.** Assume:
+- (a) the proxy HMM is identified up to label permutation (Allman et al., 2009; Gassiat et al., 2016 for nonparametric emissions), so gamma_t = P(S_t | Z_{1:N}) is a functional of the observed law;
+- (b) exclusion: (T_t, Y_t) independent of Z_{1:N} given (X_t, S_t);
+- (c) no extra regime information in the controls: P(S_t | X_t, Z_{1:N}) = gamma_t (delta_X = 0);
+- (d) M(x) = E[gamma_t gamma_t^T | X_t = x] is nonsingular for almost every x;
+- (e) Assumptions 1 and 2, and Y = theta_S T + g_S(X) + U with E[U | X, S, T] = 0.
+
+Then for every integrable h, E[h(T, Y) | X, Z] = gamma^T mu_h(X), where mu_h(x) = (E[h | X = x, S = k])_k = M(x)^{-1} E[gamma h | X = x]. Hence theta_k* = Cov(T, Y | X, S = k) / Var(T | X, S = k) and theta_ATE* are identified.
+
+*Proof.* E[h | X, Z] = sum_k P(S = k | X, Z) E[h | X, Z, S = k] = sum_k gamma_k E[h | X, S = k], by (c) and (b). Multiplying by gamma and taking E[. | X] gives E[gamma h | X] = M(X) mu_h(X); invert using (d). Under (e), Cov(T, Y | X, S = k) = theta_k Var(T | X, S = k), which is positive by Assumption 2. QED.
+
+*Remarks.* For K = 2, det M(x) = E[(1 - gamma)^2 | x] E[gamma^2 | x] - E[gamma(1 - gamma) | x]^2, which by Cauchy-Schwarz is zero iff gamma is constant given x. So (d) holds iff the proxies are informative, and Theorem 2 is exactly the singular case. The quantity that certifies identification is lambda_min(M), not lambda_min(J). Proxy sufficiency (Assumption 3) is not needed.
+
+**Estimator (DC-DML).** Regress h in {T, T^2, Y, TY} on gamma (x) basis(X), read off mu_h for each regime, and set theta_k-hat = sum_t w_tk [mu_TY - mu_T mu_Y] / sum_t w_tk [mu_TT - mu_T^2] with w_tk proportional to gamma_tk. Prototype: `src/rebuttal/deconv_estimator.py`, with a quadratic (frontier) or cubic (Table 10) polynomial basis. Its variance grows as lambda_min(M) -> 0, which is the honest price of weak proxies. **Not yet done:** machine-learning nuisances with cross-fitting, an orthogonalised version, and a bootstrap that refits the HMM.
+
 **Remark (role of Assumption 3).** Assumption 3 (proxy sufficiency) is an idealised benchmark, not a condition for Theorems 3 and 4 (App. A). In the model T = m(X) + a D + V it implies a v = 0: if T carried information about the regime beyond the proxies, then P(S = k given X, T, Z) would depend on T unless a = 0 or the posterior were already degenerate. The Theorem 4 bias a b v / (a^2 v + sigma^2) then vanishes. Our simulations violate Assumption 3 on purpose, to measure what happens when it fails. *(Linear-Gaussian setting of the bias-law appendix only.)*
 
 **Remark (heteroscedastic treatment innovations).** If the innovation variance depends on the regime, Var(V given S = k) = sigma_k^2, the pooled law is unchanged except that sigma^2 is replaced by its posterior average: bias = a b v / (a^2 v + E[sigma_S^2]), with E[sigma_S^2] = E[gamma sigma_1^2 + (1 - gamma) sigma_0^2]. *Proof.* With a calibrated posterior, tilde T = a(D - gamma) + V and E[V given D] = 0, so E[tilde T (b tilde D + U)] = a b v and E[tilde T^2] = a^2 v + E[sigma_S^2]. The observable plug-in is unchanged because Var(tilde T) - a^2 v still equals E[sigma_S^2]. *Numerical check* (`src/rebuttal/hetero_law_check.py`, `reports/rebuttal/hetero_law_check.csv`, N = 300,000, six configurations, prior 0.2): relative error of the law 0.07% to 1.7%; the naive law with the average variance is off by 42% to 55%. *The pooled estimator only; extension to the K-regime coupled estimator is not proved.*
