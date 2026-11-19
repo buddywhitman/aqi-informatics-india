@@ -11,7 +11,7 @@ Checks (each prints [OK]/[FAIL]; exit code 1 on any failure):
      and its symbolic identities hold (recomputed with sympy unless --fast).
   5. Estimator invariances of src/or_dml.py (verify_science.py).
   6. paper/main.pdf exists, is newer than every manuscript source, has the AI statement and references after a
-     main body of at most eight pages, and its metadata/text contain no de-anonymizing strings.
+     main body of at most nine pages (camera-ready limit), and its metadata/text contain no de-anonymizing strings.
   7. The supplementary archive exists, contains the required files, and no text member contains de-anonymizing
      strings; the root PDF equals paper/main.pdf.
 
@@ -35,7 +35,7 @@ ROOT_PDF = os.path.join(ROOT, 'AISTATS2027_Main_Paper.pdf')
 import codecs
 # de-anonymizing strings, stored rot13-encoded so that this file does not itself trip the scan
 FORBIDDEN = [codecs.decode(w, 'rot13') for w in ['ohqqljuvgzna', 'chyxvg', 'tvguho.pbz/ohqqljuvgzna', 'ndv-vasbezngvpf-vaqvn', 'chyxvg.gnyxf', 'znavcny', 'srggyr', 'Xhzne,']]
-LOCKED_TITLE = 'Reliable Causal Estimation under Latent Markov Confounding'
+LOCKED_TITLE = 'When Does Causal Estimation Remain Reliable under Latent Markov Confounding?'
 fails = []
 
 
@@ -70,6 +70,23 @@ def check_generated():
     ok(not undefined, f'all {len(generated_like)} number macros used in the manuscript are generated' + (f' (undefined: {undefined})' if undefined else ''))
     unused = sorted(macros - used)
     print(f'       info: {len(macros)} macros generated, {len(unused)} recorded in claims.csv but not quoted in text')
+
+
+def check_rebuttal_generated():
+    """Numbers and tables of the identification/deconvolution section regenerate byte-identically from reports/."""
+    with tempfile.TemporaryDirectory() as td:
+        r = subprocess.run([sys.executable, os.path.join(ROOT, 'src', 'rebuttal', 'make_rebuttal_tables.py'), '--out', td],
+                           capture_output=True, text=True)
+        ok(r.returncode == 0, 'regenerated identification/deconvolution numbers and tables from reports/')
+        fresh = sorted(os.path.basename(p) for p in glob.glob(os.path.join(td, '*')))
+        diffs = [f for f in fresh if not filecmp.cmp(os.path.join(td, f), os.path.join(PAPER, 'generated', f), shallow=False)]
+        ok(not diffs, f'{len(fresh)} identification/deconvolution files byte-identical to committed copies' + (f' (differ: {diffs})' if diffs else ''))
+        macros = set(re.findall(r'\\newcommand\{\\([A-Za-z]+)\}', open(os.path.join(td, 'rebuttal_numbers.tex')).read()))
+    used = set()
+    for f in ('main.tex', 'appendix.tex'):
+        used |= set(re.findall(r'\\(Rb[A-Za-z]+)(?![A-Za-z])', open(os.path.join(PAPER, f)).read()))
+    undefined = sorted(used - macros)
+    ok(not undefined, f'all {len(used)} Rb* macros used in the manuscript are generated' + (f' (undefined: {undefined})' if undefined else ''))
 
 
 def check_closed_form(fast):
@@ -136,7 +153,7 @@ def check_pdf():
     info = subprocess.run(['pdfinfo', pdf], capture_output=True, text=True).stdout
     npages = int(re.search(r'Pages:\s+(\d+)', info).group(1))
     ai_page = next((p for p in range(1, npages + 1) if 'AI Use Statement' in pdftext(pdf, p, p)), None)
-    ok(ai_page is not None and ai_page <= 9, f'main body ends by page 8 (AI statement/references start on page {ai_page})')
+    ok(ai_page is not None and ai_page <= 10, f'main body ends by page 9 (AI statement/references start on page {ai_page})')
     low = (info + pdftext(pdf)).lower()
     hits = [w for w in FORBIDDEN if w.lower() in low]
     ok(not hits, 'PDF text and metadata anonymous' + (f' (found {hits})' if hits else ''))
@@ -190,6 +207,7 @@ if __name__ == '__main__':
     IN_SUPPLEMENT = not os.path.exists(os.path.join(ROOT, '.git')) and not os.path.exists(ZIP)
     check_locked()
     check_generated()
+    check_rebuttal_generated()
     check_closed_form(a.fast)
     check_posterior_adjusted()
     check_estimator()

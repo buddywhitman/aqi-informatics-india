@@ -17,6 +17,7 @@ Appendix~\ref{app:proof_asym} covers inference.
 Appendix~\ref{app:surrogate} gives the operational surrogate, proxy screening and spectral regularization.
 Appendix~\ref{app:algorithm} gives the algorithm and scalability.
 Appendices~\ref{app:factorial}--\ref{app:zoo} document every experiment.
+Appendix~\ref{app:ident} proves the identification result, defines the deconvolution estimator and reports the comparisons with it and with a joint likelihood, the regime-dependent-variance extension, the penalty used and budget-based intervals.
 Appendix~\ref{app:provenance} documents the sensor data and its audit.
 Appendix~\ref{app:repro} explains how to reproduce and verify every number.
 Appendix~\ref{app:lineage} records what changed relative to earlier drafts and why.
@@ -637,6 +638,55 @@ LatentRegimeBench (\texttt{src/train\_real\_representation\_zoo.py}, \texttt{src
 \begin{table}[h]\centering\footnotesize
 \caption{Sensitivity analysis on the corrected hourly grid (posterior-feature estimate, 90\% block-bootstrap intervals; \texttt{reports/bias\_law/x23\_real\_hourly\_fix.csv}).}\label{tab:bstar}
 \input{generated/biaslaw/tab_cities.tex}
+\end{table}
+
+\section{IDENTIFICATION, DECONVOLUTION AND ADDITIONAL CHECKS}
+\label{app:ident}
+
+\subsection{Proof of Proposition~\ref{prop:ident}}
+Fix $t$ and write $\bgam=\bgam_t$. By (c), $P(S_t=k\mid X_t,Z_{1:N})=\gamma_k$. By (b), $\E[h(T_t,Y_t)\mid X_t,Z_{1:N},S_t=k]=\E[h(T_t,Y_t)\mid X_t,S_t=k]=:\mu_{h,k}(X_t)$. Hence
+\[
+\E[h(T_t,Y_t)\mid X_t,Z_{1:N}]=\textstyle\sum_k\gamma_k\,\mu_{h,k}(X_t)=\bgam^\top\mu_h(X_t).
+\]
+Multiplying by $\bgam$ and taking $\E[\,\cdot\mid X_t=x]$ gives $\E[\bgam h\mid X_t{=}x]=M(x)\mu_h(x)$, because $\mu_h$ is a function of $X_t$ only. By (a), $\bgam_t$, and hence the left-hand side and $M(x)$, are functionals of the observed law; by (d) we may invert $M(x)$. This identifies $\mu_{h,k}(x)$ for every $k$ and every integrable $h$, in particular for $h\in\{T,T^2,Y,TY\}$. Under $Y=\theta_ST+g_S(X)+U$ with $\E[U\mid X,S,T]=0$ we get $\Cov(T,Y\mid X{=}x,S{=}k)=\theta_k^*\Var(T\mid X{=}x,S{=}k)$ for every $x$. Averaging over $P(X\mid S{=}k)$ (which is identified, being proportional to $\E[\gamma_k\mid X]\,dP_X$) gives the stated ratio, whose denominator is positive by Assumption~\ref{ass:overlap}. For $K=2$, $\det M(x)=\E[(1-\gamma)^2\mid x]\,\E[\gamma^2\mid x]-\E[\gamma(1-\gamma)\mid x]^2$, which is zero by the equality case of the Cauchy--Schwarz inequality if and only if $\gamma$ is almost surely proportional to $1-\gamma$ given $x$, that is, constant. If the proxies carry no regime information and transitions are memoryless, $\gamma$ is constant and $M$ is singular, which is Theorem~\ref{thm:impossibility}. $\square$
+
+\subsection{Deconvolution DML (DC-DML)}
+\label{app:dcdml}
+Let $\varphi$ be a basis in $X$ and $\hat\mu_{h,k}(x)=\varphi(x)^\top\hat c_{h,k}$, where $(\hat c_{h,1},\dots,\hat c_{h,K})$ is the least-squares coefficient of $h(T_t,Y_t)$ on $(\gamma_{tk}\varphi(X_t))_{k}$, for $h\in\{T,T^2,Y,TY\}$. With weights $w_{tk}=\gamma_{tk}/\sum_s\gamma_{sk}$,
+\[
+\hat\theta_k=\frac{\sum_tw_{tk}\{\hat\mu_{TY,k}(X_t)-\hat\mu_{T,k}(X_t)\hat\mu_{Y,k}(X_t)\}}{\sum_tw_{tk}\{\hat\mu_{TT,k}(X_t)-\hat\mu_{T,k}(X_t)^2\}},\qquad \hat\theta_{\rm ATE}=\textstyle\sum_k\bar\gamma_k\hat\theta_k.
+\]
+Implementation: \texttt{src/rebuttal/deconv\_estimator.py} (quadratic basis in $X$), with a cubic basis for the Table~\ref{tab:dc10} scenarios (\texttt{deconv\_table10.py}) and the city benchmark (\texttt{deconv\_semisynthetic.py}). Intervals use a moving-block bootstrap of the second stage (block 24, 200 resamples on the frontier, 100 on the city benchmark) with the posterior held fixed, so they ignore HMM-estimation error. The estimator is neither orthogonalized nor cross-fitted; it uses parametric regressions, and we have not studied it with machine-learning nuisances. On the city benchmark a variant that adds additive quadratic terms in $Z$ to every moment, to allow a direct effect of meteorology, is unstable (largest ATE error \RbDCZMaxKolkata\ in Kolkata) and is not used.
+
+\textbf{Frontier results} (100 datasets per cell, same datasets and EM posteriors as Table~\ref{tab:main}; \texttt{reports/rebuttal/deconv\_summary.csv}). Mean absolute ATE bias (coverage of the sample ATE, joint coverage of both regime effects): $\Delta_Z=0.5$: \RbDCHalf\ (\RbDCCovHalf\%, \RbDCThCovHalf\%) against \RbORHalf\ (\RbORCovHalf\%) for OR-DML; $\Delta_Z=1$: \RbDCOne\ (\RbDCCovOne\%, \RbDCThCovOne\%) against \RbOROne\ (\RbORCovOne\%); $\Delta_Z=2$: \RbDCTwo\ (\RbDCCovTwo\%, \RbDCThCovTwo\%) against \RbORTwo\ (\RbORCovTwo\%); $\Delta_Z=4$: \RbDCFour\ (\RbDCCovFour\%) against \RbORFour\ (\RbORCovFour\%). RMSE at $\Delta_Z=0.5$ is \RbDCRmseHalf\ for DC-DML and \RbORRmseHalf\ for OR-DML, and at $\Delta_Z=1$ it is \RbDCRmseOne\ against \RbORRmseOne. Joint coverage of both regime effects at $\Delta_Z=0.5$ is only \RbDCThCovHalf\%.
+
+\textbf{Table~\ref{tab:dc10} scenarios.} The data-generating processes of the joint-likelihood comparison (Table~\ref{tab:bl_ext}) are reused with 12 replications per cell ($N=3{,}000$, $\Delta_Z=0.5$, stay probability 0.9, $\Delta_g=3$). The joint MLE is the most accurate in every scenario (absolute bias at most \RbTenJointMax); DC-DML has absolute bias \RbTenDCMin--\RbTenDCMax\ and posterior-feature DML \RbTenDMLMin--\RbTenDMLMax.
+\begin{table}[h]\centering\footnotesize
+\caption{Mean bias (RMSE) of the ATE in the scenarios of Table~\ref{tab:bl_ext}: posterior-feature DML, joint Markov-switching MLE with a common effect, and DC-DML (\texttt{reports/rebuttal/deconv\_table10\_summary.csv}).}\label{tab:dc10}
+\input{generated/tab_dc_table10.tex}
+\end{table}
+
+\textbf{Joint MLE.} Gaussian emissions $Z_t\mid S_t$, $T_t\mid X_t,S_t\sim\mathcal N(X_t^\top b+a_{S_t},\sigma_T^2)$ and $Y_t\mid T_t,X_t,S_t\sim\mathcal N(\theta_{S_t}T_t+X_t^\top\delta+g_{S_t},\sigma_Y^2)$ with a Markov chain, fitted by EM (60 iterations) initialized at the HMM posteriors; the ATE is the share-weighted average of the regime effects (\texttt{joint\_frontier.py}, \texttt{joint\_semisynthetic.py}). On the frontier its emission model is correct and its absolute ATE bias is \RbJFHalf, \RbJFOne, \RbJFTwo\ and \RbJFFour\ at $\Delta_Z=0.5,1,2,4$: it matches the oracle even at weak proxy separation because $(T,Y)$ carry regime information. On the city benchmark its model is misspecified (real NO$_2$ base series, autocorrelated outcome noise); the regime-specific version has absolute ATE bias \RbJCityDelhi, \RbJCityMumbai, \RbJCityBengaluru, \RbJCityKolkata\ (Delhi, Mumbai, Bengaluru, Kolkata), against \RbJCommonCityDelhi, \RbJCommonCityMumbai, \RbJCommonCityBengaluru, \RbJCommonCityKolkata\ with a common effect.
+
+\subsection{Regime-dependent treatment innovations}
+Let $T_t=m(X_t)+aD_t+V_t$ with $\E[V_t\mid D_t,X_t]=0$ and $\Var(V_t\mid S_t=k)=\sigma_k^2$, $Y_t=\theta T_t+g(X_t)+bD_t+U_t$, and a calibrated posterior. Then $\tilde T_t=a(D_t-\gamma_t)+V_t$ and
+\[
+\E[\tilde T(b\tilde D+U)]=ab\,v,\qquad \E[\tilde T^2]=a^2v+\E[\sigma_S^2],\qquad \E[\sigma_S^2]=\E[\gamma_t\sigma_1^2+(1-\gamma_t)\sigma_0^2],
+\]
+so the pooled posterior-feature estimator converges to $\theta+abv/(a^2v+\E[\sigma_S^2])$. The observable plug-in is unchanged: $\widehat{\Var}(\tilde T)-\hat a^2\hat v$ estimates $\E[\sigma_S^2]$. We check this by simulation (\texttt{hetero\_law\_check.py}; $N=300{,}000$, i.i.d.\ regimes with prior 0.2, exact posterior, $a=2$, $b=3$): the relative error of the law is \RbHetErrMin--\RbHetErrMax\%, against \RbHomErrMin--\RbHomErrMax\% for the law that uses the unweighted average of the two variances when the variances differ. This covers the pooled estimator; the extension to the coupled $K$-regime estimator is not proved.
+\begin{table}[h]\centering\footnotesize
+\caption{Pooled bias with regime-dependent treatment innovations: measured bias, the law with $\E[\sigma_S^2]$, and the law with the unweighted average variance $\bar\sigma^2=(\sigma_0^2+\sigma_1^2)/2$ (\texttt{reports/rebuttal/hetero\_law\_check.csv}).}\label{tab:hetero}
+\input{generated/tab_hetero.tex}
+\end{table}
+
+\subsection{The penalty used in the experiments}
+In every frontier and semi-synthetic sweep, OR-DML variants use the fixed penalty $\lambda=0.05\,\mathrm{tr}(\hat\bJ)/(K\sqrt N)$ (\texttt{src/synthesis/estimators.py}); hard fixed effects and the oracle use $\lambda=0$. The data-driven selector of Appendix~\ref{app:adaptive_lambda_derivation} is not used for these tables. On the first 10 frontier datasets at each of $\Delta_Z=1,2$ (\texttt{lambda\_rule\_check.py}) the penalty ranges from \RbLamLo$\times10^{-4}$ to \RbLamHi$\times10^{-4}$, so $\sqrt N\lambda\approx\RbSqrtNLam$, which does not tend to zero; the shrinkage bias bound $\lambda M_\theta/(\lmin+\lambda)$ with $M_\theta=2.6$ has median \RbShrinkBound. On the ill-conditioned design of Table~\ref{tab:reg} the MSE-minimizing penalty is $\lambda=\RegLamBest$.
+
+\subsection{Budget-based intervals}
+For pooled posterior-feature DML the bias is $a\,v\,b_{\rm eff}/\Var(\tilde T)$ with $b_{\rm eff}=b+a(\theta_1-\bar\theta)+\bar m(\theta_1-\theta_0)$ (heterogeneous-effects form, Appendix~\ref{app:biaslaw}). For a budget $\bar b$ on $b_{\rm eff}$ we use $\hat\theta\pm\{|\hat a|\hat v\bar b/\widehat{\Var}(\tilde T)+1.96\,\mathrm{SE}\}$. On the frontier, $b_{\rm eff}=\RbBeff$ is computed analytically from the data-generating process (\texttt{bias\_aware\_ci.py}, 100 datasets per cell, same seeds as Table~\ref{tab:main}). This is a sensitivity analysis, not a correction: its coverage is only as good as the budget, and the true $b_{\rm eff}$ is known here only because the process is known. At $\Delta_Z=1$ the mean measured bias is \RbBAMeasOne\ against \RbBALawOne\ from the plug-in law.
+\begin{table}[h]\centering\footnotesize
+\caption{Coverage of the sample ATE by budget-based intervals for posterior-feature DML, by budget (\texttt{reports/rebuttal/bias\_aware\_ci\_summary.csv}).}\label{tab:budget}
+\input{generated/tab_bias_aware.tex}
 \end{table}
 
 \section{REPRODUCTION AND VERIFICATION}
