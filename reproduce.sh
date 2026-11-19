@@ -25,8 +25,18 @@ python src/synthesis/city_stress_hourly.py           # four-city stress test + a
 python src/bias_law/hac_sensitivity.py               # HAC lag sensitivity, posterior-adjusted OR-DML, corrected grid
 python src/test_soft_vs_hard_continuous_mixture.py   # soft vs hard, continuous mixture
 
+python src/rebuttal/deconv_estimator.py             # deconvolution DML on the frontier (Appendix: identification)
+python src/rebuttal/deconv_semisynthetic.py          # deconvolution DML, city benchmark
+python src/rebuttal/deconv_table10.py                # deconvolution DML in the joint-likelihood scenarios
+python src/rebuttal/joint_frontier.py                # joint Markov-switching MLE, frontier
+python src/rebuttal/joint_semisynthetic.py           # joint Markov-switching MLE, city benchmark
+python src/rebuttal/bias_aware_ci.py                 # budget-based intervals
+python src/rebuttal/hetero_law_check.py              # regime-dependent treatment innovations
+python src/rebuttal/lambda_rule_check.py             # size of the fixed penalty
+
 python src/synthesis/make_figures.py
 python src/synthesis/make_tables_numbers.py
+python src/rebuttal/make_rebuttal_tables.py
 
 ( cd paper && python build_appendix.py && python prune_bib.py \
   && pdflatex -interaction=nonstopmode -halt-on-error main.tex >/dev/null \
